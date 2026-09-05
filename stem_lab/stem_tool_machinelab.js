@@ -3817,6 +3817,44 @@ window.StemLab = window.StemLab || {
     if (apexLabel) S.model.add(apexLabel.sprite);
     S.apexMark = { tick: apexTick, drop: dropLine, label: apexLabel, sig: null };
 
+    // ── Seconds on the arc. One bead per second of flight, each with its
+    // shadow on the ground below it. The horizontal gaps stay about the same
+    // while the vertical ones grow: that is gravity drawn instead of asserted,
+    // and the shadow track bends downwind, which is the crosswind drawn. ──
+    var beadR = Math.max(0.42, standoff * 0.007);
+    var beadGeo = new THREE.SphereGeometry(beadR, 10, 8);
+    var beadMat = new THREE.MeshBasicMaterial({ color: contrast ? 0xffff00 : 0xffd479, transparent: true, opacity: 0.95, fog: false });
+    var beadShMat = new THREE.MeshBasicMaterial({ color: contrast ? 0xffffff : 0x1b1a10, transparent: true, opacity: contrast ? 0.55 : 0.26, depthWrite: false });
+    var beadShGeo = new THREE.CircleGeometry(beadR * 1.15, 12);
+    var beads = [], beadShadows = [];
+    for (var bd = 0; bd < 10; bd++) {
+      var bead = new THREE.Mesh(beadGeo, beadMat);
+      bead.visible = false; bead.renderOrder = 4;
+      S.model.add(bead); beads.push(bead);
+      var bsh = new THREE.Mesh(beadShGeo, beadShMat);
+      bsh.rotation.x = -Math.PI / 2; bsh.position.y = 0.07; bsh.visible = false;
+      S.model.add(bsh); beadShadows.push(bsh);
+    }
+    var trackGeo = new THREE.BufferGeometry();
+    trackGeo.setFromPoints([new THREE.Vector3(0, 0.07, -standoff), new THREE.Vector3(0, 0.07, -standoff + 1)]);
+    var trackLine = new THREE.Line(trackGeo, new THREE.LineBasicMaterial({
+      color: contrast ? 0xffffff : 0xbba876, transparent: true, opacity: 0.55
+    }));
+    trackLine.frustumCulled = false; trackLine.visible = false;
+    S.model.add(trackLine);
+    S.beads = { marks: beads, shadows: beadShadows, track: trackLine, count: 0 };
+
+    // The stone's own shadow, so a stone high over the valley still reads as
+    // being somewhere on the ground rather than pasted on the sky.
+    var stoneShadow = new THREE.Mesh(new THREE.CircleGeometry(0.85, 16), new THREE.MeshBasicMaterial({
+      color: contrast ? 0xffffff : 0x171509, transparent: true, opacity: 0.34, depthWrite: false
+    }));
+    stoneShadow.rotation.x = -Math.PI / 2;
+    stoneShadow.position.y = 0.08;
+    stoneShadow.visible = false;
+    S.model.add(stoneShadow);
+    S.stoneShadow = stoneShadow;
+
     // ── Where the last stone actually landed, flagged on the ground with the
     // distance on it. The stakes say where 50 m is; this says where the shot
     // went, and the two are meant to be read against each other. ──
@@ -4232,6 +4270,36 @@ window.StemLab = window.StemLab || {
                 }
               }
             }
+            // A bead wherever the flight clock passes a whole second, walked
+            // along the same points the line is built from.
+            if (S.beads) {
+              var bpath = data.previewPath || [];
+              var beadPts = [], sec = 1;
+              for (var bx = 1; bx < bpath.length && beadPts.length < S.beads.marks.length; bx++) {
+                var p0 = bpath[bx - 1], p1 = bpath[bx];
+                if ((Number(p1.x) || 0) > standoff + 1) break;
+                if (p0.t == null || p1.t == null) break;
+                while (sec <= S.beads.marks.length && p1.t >= sec) {
+                  var bf = Math.max(0, Math.min(1, (sec - p0.t) / Math.max(1e-6, p1.t - p0.t)));
+                  beadPts.push(new THREE.Vector3(
+                    (p0.z || 0) + (((p1.z || 0) - (p0.z || 0)) * bf),
+                    Math.max(0.2, p0.y + (p1.y - p0.y) * bf),
+                    -standoff + p0.x + ((p1.x - p0.x) * bf)));
+                  sec++;
+                }
+              }
+              S.beads.count = beadPts.length;
+              for (var bk = 0; bk < S.beads.marks.length; bk++) {
+                var bpt = beadPts[bk];
+                if (bpt) {
+                  S.beads.marks[bk].position.copy(bpt);
+                  S.beads.shadows[bk].position.set(bpt.x, 0.07, bpt.z);
+                }
+              }
+              // The track is the arc pressed flat: with a crosswind it leaves
+              // the lane, which is the drift the readout gives as a number.
+              S.beads.track.geometry.setFromPoints(arcPts.map(function (p) { return new THREE.Vector3(p.x, 0.07, p.z); }));
+            }
             var endPt = arcPts[arcPts.length - 1];
             var reaches = endPt.z >= -0.6 && endPt.y > 0.15;
             S.arc.ring.visible = reaches;
@@ -4245,6 +4313,14 @@ window.StemLab = window.StemLab || {
           S.apexMark.tick.visible = apVis;
           S.apexMark.drop.visible = apVis;
           if (S.apexMark.label) S.apexMark.label.sprite.visible = apVis;
+        }
+        if (S.beads) {
+          for (var bv = 0; bv < S.beads.marks.length; bv++) {
+            var bOn = showArc && bv < S.beads.count;
+            S.beads.marks[bv].visible = bOn;
+            S.beads.shadows[bv].visible = bOn;
+          }
+          S.beads.track.visible = showArc && S.beads.count > 0;
         }
         else if (S.arc.ring.visible && !red) S.arc.ring.scale.setScalar(1 + 0.1 * Math.sin(tSec * 4));
       }
@@ -4272,6 +4348,14 @@ window.StemLab = window.StemLab || {
           if (data.sound && !red) SCENE_AUDIO.whoosh(speed);
         }
         S.flyStone.position.copy(stonePos);
+        if (S.stoneShadow) {
+          // Wider and fainter the higher it is, the way a real shadow softens.
+          var shH = Math.max(0, height);
+          S.stoneShadow.visible = t > 0.02;
+          S.stoneShadow.position.set(stonePos.x, 0.08, stonePos.z);
+          S.stoneShadow.scale.setScalar(1 + shH * 0.035);
+          S.stoneShadow.material.opacity = Math.max(0.07, 0.34 - shH * 0.006);
+        }
         S.flyStone.rotation.x += dt * 6; S.flyStone.rotation.z += dt * 4;
         if (!red && t > 0.02) {
           S.trailHist.unshift(stonePos.clone());
@@ -4279,6 +4363,7 @@ window.StemLab = window.StemLab || {
         }
       } else {
         S.flyStone.visible = false;
+        if (S.stoneShadow) S.stoneShadow.visible = false;
         if (flying && landed && S.impactAt == null) {
           S.impactAt = now;
           var last = pts[pts.length - 1];
@@ -8604,7 +8689,11 @@ window.StemLab = window.StemLab || {
               onPointerDown: beginSceneOrbit, onPointerMove: moveSceneOrbit,
               onPointerUp: endSceneOrbit, onPointerCancel: endSceneOrbit,
               'aria-label': __alloT('stem.machinelab.aria_scene3d', 'Immersive three-dimensional siege field: the engine and its crew at one end, the castle at the other, in a valley at ') +
-                TIME_LABELS[timeId] + '. ' + __alloT('stem.machinelab.aria_scene3d2', 'Drag with a mouse or pen to look around. The readouts, ledger and shot feedback below carry the same numbers in text.'),
+                TIME_LABELS[timeId] + '. ' +
+                (d.scenePath !== false
+                  ? __alloT('stem.machinelab.aria_scene3d_arc', 'The dashed line is the predicted flight, marked at its apex and beaded once per second of flight, with each bead\u2019s shadow on the ground below it. ')
+                  : '') +
+                __alloT('stem.machinelab.aria_scene3d2', 'Drag with a mouse or pen to look around. The readouts, ledger and shot feedback below carry the same numbers in text.'),
               style: {
                 width: '100%', height: 'clamp(400px, 64vh, 760px)', minHeight: 320, flex: '1 1 auto',
                 borderRadius: 13, background: '#1a2438', border: '1px solid ' + T.border,
@@ -8660,7 +8749,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 key: 'arc', type: 'button', 'aria-pressed': d.scenePath !== false ? 'true' : 'false',
                 onClick: function () { upd('scenePath', d.scenePath === false); },
-                title: __alloT('stem.machinelab.arc_t', 'Draw the arc the model predicts, and a ring where it meets the wall. Off if you want to predict it yourself first.'),
+                title: __alloT('stem.machinelab.arc_t2', 'Draw the arc the model predicts: a ring where it meets the wall, a mark at the apex, and a bead for every second of flight with its shadow on the ground. Off if you want to predict it yourself first.'),
                 style: {
                   padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
                   border: '1px solid ' + (d.scenePath !== false ? T.accent : T.border),

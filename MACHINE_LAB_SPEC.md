@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 10 (2026-09-05)
+
+- **Seconds on the arc.** A bead wherever the flight clock passes a whole second, up to ten,
+  interpolated from the same path the line is drawn from and stopping where the line stops.
+  The horizontal gaps stay about the same while the vertical ones grow: gravity drawn rather
+  than asserted.
+- **Every bead has its shadow on the ground**, and the whole arc is laid flat as a ground
+  track. With a crosswind the track leaves the lane, which is the drift the readout gives
+  as a number.
+- **The stone carries its own shadow** in flight, wider and fainter the higher it is, so a
+  stone over the valley reads as being somewhere on the ground rather than pasted on the sky.
+- The bay's description and the arc toggle's tooltip both say what the marks mean, and the
+  description says it only while the arc is drawn.
+
 ### Wave 9 (2026-09-05)
 
 - **The apex, marked where it happens.** A ring, a dashed drop line to the ground and an

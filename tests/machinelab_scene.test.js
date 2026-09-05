@@ -637,3 +637,42 @@ describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the
     expect(html).toContain('Apex');
   });
 });
+
+describe('Siege Field wave 10: seconds on the arc, the track on the ground', () => {
+  it('beads the arc wherever the flight clock passes a whole second', () => {
+    const src = source();
+    expect(src).toContain('while (sec <= S.beads.marks.length && p1.t >= sec) {');
+    // The fraction is clamped, so a coarse path cannot throw a bead off the arc.
+    expect(src).toContain('var bf = Math.max(0, Math.min(1, (sec - p0.t) / Math.max(1e-6, p1.t - p0.t)));');
+    // Beads stop where the drawn line stops.
+    expect(src).toContain('if ((Number(p1.x) || 0) > standoff + 1) break;');
+  });
+
+  it('gives every bead a shadow on the ground and lays the whole arc flat as a track', () => {
+    const src = source();
+    expect(src).toContain('S.beads.shadows[bk].position.set(bpt.x, 0.07, bpt.z);');
+    expect(src).toContain('S.beads.track.geometry.setFromPoints(arcPts.map(function (p) { return new THREE.Vector3(p.x, 0.07, p.z); }));');
+  });
+
+  it('shows the beads only with the arc, and only as many as the flight earned', () => {
+    const src = source();
+    expect(src).toContain('var bOn = showArc && bv < S.beads.count;');
+    expect(src).toContain('S.beads.track.visible = showArc && S.beads.count > 0;');
+  });
+
+  it('shadows the flying stone, wider and fainter the higher it is, and clears it on landing', () => {
+    const src = source();
+    expect(src).toContain('S.stoneShadow.scale.setScalar(1 + shH * 0.035);');
+    expect(src).toContain('S.stoneShadow.material.opacity = Math.max(0.07, 0.34 - shH * 0.006);');
+    expect(src).toContain('if (S.stoneShadow) S.stoneShadow.visible = false;');
+  });
+
+  it('says in text what the marks on the arc mean, and only while the arc is drawn', () => {
+    const html = renderTool('machineLab', state({ scenePath: true }));
+    expect(html).toContain('beaded once per second of flight');
+    const off = renderTool('machineLab', state({ scenePath: false }));
+    expect(off).not.toContain('beaded once per second of flight');
+    // The toggle's own tooltip lists what it draws.
+    expect(html).toContain('a bead for every second of flight');
+  });
+});
