@@ -1042,6 +1042,8 @@ var _lazyIcon = function (name) {
       // Plan R+ new dimensions
       c.differentiation ? (c.differentiation.computeFailed ? <FailedDimensionCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : c.differentiation.notEvaluated ? <NotEvaluatedCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : <DifferentiationSection diff={c.differentiation} />) : <MissingDimensionCard id="audit-differentiation" label="Differentiation coverage" />}{c.cognitiveLoad ? (c.cognitiveLoad.computeFailed ? <FailedDimensionCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notApplicable ? <NotApplicableCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notEvaluated ? <NotEvaluatedCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : <CognitiveLoadSection load={c.cognitiveLoad} />) : <MissingDimensionCard id="audit-cognitiveLoad" label="Cognitive load / pacing" />}{c.culturalResponsiveness ? (c.culturalResponsiveness.computeFailed ? <FailedDimensionCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notApplicable ? <NotApplicableCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notEvaluated ? <NotEvaluatedCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : <CulturalResponsivenessSection cr={c.culturalResponsiveness} />) : <MissingDimensionCard id="audit-culturalResponsiveness" label="Cultural responsiveness" />}</section>;
   }
+  function auditResourceFingerprint(resource) { return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null; }
+  function auditResourceSnapshot(resources) { return window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {}; }
   // Types the audit never scores; a new one of these does not make a report stale.
   var FRESHNESS_IGNORED_TYPES = { 'alignment-report': true, 'udl-advice': true };
   function computeAuditFreshness(generatedContent, history) {
@@ -1055,27 +1057,35 @@ var _lazyIcon = function (name) {
     includedIds.forEach(function (id) { included[String(id)] = true; });
     var auditId = String(generatedContent.id || '');
     var present = {};
-    var added = [];
+    var added = [], modified = [], unverified = 0;
+    var fingerprints = comp.auditScope?.artifactFingerprints || {};
+    (comp.auditScope?.includedArtifacts || []).forEach(item=>{ if (item.contentFingerprint && !fingerprints[item.id]) fingerprints = { ...fingerprints, [item.id]:item.contentFingerprint }; });
     history.forEach(function (item) {
       if (!item || !item.type || FRESHNESS_IGNORED_TYPES[item.type]) return;
       var id = String(item.id || '');
       if (id) present[id] = true;
-      if (id && included[id]) return;
+      if (id && included[id]) {
+        if (fingerprints[id] && auditResourceFingerprint(item)) { if (fingerprints[id] !== auditResourceFingerprint(item)) modified.push(item.title || item.type); }
+        else { const changedAt=Date.parse(item.updatedAt || item.timestamp || ''); if (!isNaN(changedAt) && changedAt>generatedAt) modified.push(item.title || item.type); else unverified++; }
+        return;
+      }
       if (id && id === auditId) return;
       var ts = item.timestamp ? Date.parse(item.timestamp) : NaN;
       if (!isNaN(ts) && ts > generatedAt) added.push(item.title || item.type);
     });
     var removed = includedIds.filter(function (id) { return !present[String(id)]; }).length;
-    return { added: added, removed: removed, stale: added.length > 0 || removed > 0 };
+    return { added: added, removed: removed, modified: modified, unverified: unverified, stale: added.length > 0 || removed > 0 || modified.length > 0 };
   }
   function AuditFreshnessNotice(p) {
     var f = p.freshness;
-    if (!f || !f.stale) return null;
+    if (!f || (!f.stale && !f.unverified)) return null;
     var parts = [];
+    if (f.modified?.length) parts.push(f.modified.length + ' audited resource(s) were edited (' + f.modified.slice(0,4).join(', ') + ')');
+    if (f.unverified) parts.push('This older audit has no content version for ' + f.unverified + ' resource(s); re-run it to check for edits');
     if (f.added.length > 0) parts.push(f.added.length + (f.added.length === 1 ? ' resource was' : ' resources were') + ' created after this audit ran (' + f.added.slice(0, 4).join(', ') + (f.added.length > 4 ? ', …' : '') + ')');
     if (f.removed > 0) parts.push(f.removed + (f.removed === 1 ? ' audited resource is' : ' audited resources are') + ' no longer in this lesson');
     return <div role="status" className="p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden">
-      <p className="text-sm text-amber-950 flex-1 min-w-[16rem] m-0"><strong>This audit may be out of date.</strong> {parts.join('; ')}. Findings and the score do not reflect those changes.</p>
+      <p className="text-sm text-amber-950 flex-1 min-w-[16rem] m-0"><strong>{f.stale ? 'This audit may be out of date.' : 'Verify this older audit.'}</strong> {parts.join('; ')}. {f.stale ? 'Findings and the score do not reflect those changes.' : 'Content versions were not stored with this report.'}</p>
       {typeof p.onRerunAudit === 'function' && <button type="button" onClick={p.onRerunAudit} disabled={!!p.isProcessing} className="flex-shrink-0 px-3 py-1.5 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-60 disabled:cursor-not-allowed">{p.isProcessing ? 'Re-running…' : 'Re-run audit'}</button>}
     </div>;
   }

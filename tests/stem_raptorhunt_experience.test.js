@@ -3199,10 +3199,10 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
   it('animates each raptor family with distinct wing and tail mechanics', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function flightAnimationProfileFor(kind)');
-    expect(init).toContain('flightAnimationProfile.flapRate');
-    expect(init).toContain('flightAnimationProfile.flapDepth');
+    expect(functionBody(init, 'updateRaptorWingPose')).toContain('profile.flapRate');
+    expect(functionBody(init, 'updateRaptorWingPose')).toContain('profile.flapDepth');
     expect(init).toContain('flightAnimationProfile.glideDihedral');
-    expect(init).toContain('flightAnimationProfile.tuck');
+    expect(functionBody(init, 'updateRaptorWingPose')).toContain('profile.tuck');
     expect(init).toContain('var tailSteerTarget =');
     expect(init).toContain('var tailSpreadTarget = pullUpKey ? 1.35 : diveKey ? 0.70 : 1');
     expect(init).toContain('tail.rotation.y +=');
@@ -3365,7 +3365,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('var visualCloudCover = weather.cloudCover');
     expect(init).toContain('var cloudShade = 1 - visualCloudCover * 0.58');
-    expect(init).toContain('scene.fog.far = 600 + highStoopFogBoost - visualCloudCover * 150');
+    expect(init).toContain('scene.fog.far = 720 + highStoopFogBoost - visualCloudCover * 150');
     expect(init).toContain('renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12)');
     expect(init).toContain('sun.intensity = daylight * 0.96 * cloudShade');
     expect(init).toContain('starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90)');

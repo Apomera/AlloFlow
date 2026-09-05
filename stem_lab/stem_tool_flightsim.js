@@ -207,37 +207,132 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   };
 
   var AIRCRAFT = [
-    { id: 'cessna172', name: 'Cessna 172 Skyhawk', icon: '🛩️', desc: 'The most popular training aircraft in the world. Forgiving, stable, perfect for learning.', category: 'Trainer',
+    { id: 'cessna172', name: 'Cessna 172 Skyhawk', shortName: 'Cessna 172', icon: '🛩️', desc: 'The most popular training aircraft in the world. Forgiving, stable, perfect for learning.', category: 'Trainer',
       wingArea: 174, weight: 2550, maxThrust: 400, cl0: 0.3, clPerAoa: 0.1, cd0: 0.028, cdK: 0.042,
       maxSpeed: 163, ceiling: 14000, fuelBurn: 8, range: 640, vfe: 85, flapDetents: [0, 10, 20, 30], /* kts (Vne). Data was a mixed-unit mess: 302 here was km/h, fighters were mph, while physics read it as kts */
       lesson: 'The Cessna 172 has a high wing design, which makes it inherently stable. High wings create a pendulum effect — the weight hangs below, naturally resisting bank.' },
-    { id: 'boeing737', name: 'Boeing 737-800', icon: '✈️', desc: 'The workhorse of commercial aviation. Fast but needs longer runways and careful speed management.', category: 'Airliner',
+    { id: 'boeing737', name: 'Boeing 737-800', shortName: '737-800', icon: '✈️', desc: 'The workhorse of commercial aviation. Fast but needs longer runways and careful speed management.', category: 'Airliner',
       wingArea: 1341, weight: 144500, maxThrust: 54000, cl0: 0.35, clPerAoa: 0.11, cd0: 0.022, cdK: 0.038,
       maxSpeed: 460, ceiling: 41000, fuelBurn: 850, range: 3115, vfe: 200, flapDetents: [0, 10, 20, 30], /* kts TAS */
       lesson: 'The 737 uses swept wings (25° sweep angle) to reduce drag at high speeds. Swept wings delay the formation of shock waves near Mach 1 — this is called the critical Mach number.' },
-    { id: 'glider', name: 'ASK 21 Glider', icon: '🪂', desc: 'No engine! Pure energy management — trade altitude for speed. The ultimate physics lesson.', category: 'Glider',
+    { id: 'glider', name: 'ASK 21 Glider', shortName: 'ASK 21', icon: '🪂', desc: 'No engine! Pure energy management — trade altitude for speed. The ultimate physics lesson.', category: 'Glider',
       wingArea: 182, weight: 1100, maxThrust: 0, cl0: 0.45, clPerAoa: 0.12, cd0: 0.012, cdK: 0.035,
       maxSpeed: 151, ceiling: 25000, fuelBurn: 0, range: 0,
       lesson: 'Gliders have a glide ratio of ~34:1, meaning for every foot of altitude lost, they travel 34 feet forward. Finding thermals (rising warm air) is how glider pilots gain altitude without an engine.' },
-    { id: 'f16', name: 'F-16 Fighting Falcon', icon: '🔥', desc: 'Supersonic fighter jet. Incredible thrust-to-weight ratio enables vertical climbs and tight turns.', category: 'Fighter',
+    { id: 'f16', name: 'F-16 Fighting Falcon', shortName: 'F-16', icon: '🔥', desc: 'Supersonic fighter jet. Incredible thrust-to-weight ratio enables vertical climbs and tight turns.', category: 'Fighter',
       wingArea: 300, weight: 19700, maxThrust: 28600, cl0: 0.2, clPerAoa: 0.08, cd0: 0.015, cdK: 0.05,
       maxSpeed: 800, ceiling: 58000, fuelBurn: 250, range: 2280, /* kts — arcade cap; keeps Mach 1 (661 kts) reachable */
       lesson: 'The F-16 has a thrust-to-weight ratio greater than 1, meaning it can accelerate straight up. Its fly-by-wire system means a computer translates pilot inputs into control surface movements 40 times per second.' },
-    { id: 'sr71', name: 'SR-71 Blackbird', icon: '🦅', desc: 'The fastest air-breathing aircraft ever built. Mach 3.3 at 85,000 ft — the edge of space.', category: 'Reconnaissance',
+    { id: 'sr71', name: 'SR-71 Blackbird', shortName: 'SR-71', icon: '🦅', desc: 'The fastest air-breathing aircraft ever built. Mach 3.3 at 85,000 ft — the edge of space.', category: 'Recon',
       wingArea: 1800, weight: 152000, maxThrust: 68000, cl0: 0.15, clPerAoa: 0.06, cd0: 0.009, cdK: 0.06,
       maxSpeed: 1900, ceiling: 85000, fuelBurn: 8000, range: 3200, /* kts ≈ Mach 3.3 at altitude */
       lesson: 'The SR-71 flies so fast that its titanium skin heats to over 600°F from air friction. The fuel tanks are designed to leak on the ground — they only seal properly when the metal expands at operating temperature!' },
-    { id: 'rescue_heli', name: 'UH-60 Rescue Helicopter', icon: '🚁', desc: 'A search-and-rescue helicopter. Hovers in place, lifts straight up, no runway needed. Different physics from fixed-wing — collective controls vertical thrust, cyclic pitches the rotor disk for forward motion.', category: 'Rotor',
+    { id: 'rescue_heli', name: 'UH-60 Rescue Helicopter', shortName: 'UH-60', icon: '🚁', desc: 'A search-and-rescue helicopter. Hovers in place, lifts straight up, no runway needed. Different physics from fixed-wing — collective controls vertical thrust, cyclic pitches the rotor disk for forward motion.', category: 'Helicopter',
       isHelicopter: true,
       wingArea: 1, weight: 11000, maxThrust: 13000, cl0: 0, clPerAoa: 0, cd0: 0.15, cdK: 0,
       maxSpeed: 174, ceiling: 10500, fuelBurn: 230, range: 320,
       lesson: 'A helicopter rotor is a rotating wing. The rotor blades produce lift the same way a fixed wing does — but because the blades are always moving (even when the aircraft isn\'t), the helicopter can hover. Tilt the rotor disk forward and lift becomes thrust + lift; the helicopter accelerates while staying airborne. This is why rescue helicopters can pluck a person off a sinking boat.' },
-    { id: 'drone', name: 'DJI Mavic Drone', icon: '🛸', desc: 'A consumer quadcopter. Snappy, GPS-stabilized, capped at 400 ft AGL by FAA Part 107. Smaller than a helicopter — built for photography, mapping, and survey work.', category: 'Drone',
+    { id: 'drone', name: 'DJI Mavic Drone', shortName: 'Mavic', icon: '🛸', desc: 'A consumer quadcopter. Snappy, GPS-stabilized, capped at 400 ft AGL by FAA Part 107. Smaller than a helicopter — built for photography, mapping, and survey work.', category: 'Drone',
       isDrone: true,
       wingArea: 0.5, weight: 2 /* lbs */, maxThrust: 4 /* very high thrust-to-weight */, cl0: 0, clPerAoa: 0, cd0: 0.4, cdK: 0,
       maxSpeed: 60, ceiling: 400 /* AGL clamp enforced in physics */, fuelBurn: 0, range: 4 /* nm visual line-of-sight */, /* kts — consumer quadcopter sport mode */
       lesson: 'A quadcopter has 4 rotors that vary individual thrust to control roll, pitch, and yaw. GPS holds altitude when you release the throttle — release the stick and the drone hovers in place. Under FAA Part 107, you must keep visual line of sight, fly below 400 ft AGL, and stay clear of airports. These rules exist because drones share airspace with crewed aircraft, and a 2 lb drone hitting a windshield at 200 mph is a real safety issue.' },
   ];
+
+  // ── Top-down planform silhouettes ──
+  // Every real spotter's guide identifies an aircraft by its planform, and the
+  // emoji set has no fighter, no sailplane and no quadcopter — so the picker was
+  // labelling the F-16 with a flame, the SR-71 with an eagle and the ASK 21
+  // sailplane with a parachute. Three of seven tiles showed the student a
+  // picture of something that is not an aircraft. These read as the machine.
+  // `h` is passed in because the tool builds elements inside render().
+  function acSilhouette(h, id, size, color) {
+    var c = color || '#7dd3fc';
+    var parts;
+    if (id === 'boeing737') {
+      parts = [
+        ['ellipse', { cx: 32, cy: 32, rx: 3.8, ry: 28 }],
+        ['polygon', { points: '29,23 35,23 61,44 61,49 35,38 29,38 3,49 3,44' }],
+        ['polygon', { points: '29,50 35,50 47,60 47,63 32,58 17,63 17,60' }],
+        ['ellipse', { cx: 21, cy: 39, rx: 2.6, ry: 5.5 }],
+        ['ellipse', { cx: 43, cy: 39, rx: 2.6, ry: 5.5 }]
+      ];
+    } else if (id === 'glider') {
+      parts = [
+        ['ellipse', { cx: 32, cy: 34, rx: 2.6, ry: 27 }],
+        ['polygon', { points: '2,29 29,24 35,24 62,29 62,32 35,29 29,29 2,32' }],
+        ['polygon', { points: '23,55 41,55 41,58 23,58' }]
+      ];
+    } else if (id === 'f16') {
+      parts = [
+        ['polygon', { points: '30,3 34,3 37,28 37,55 27,55 27,28' }],
+        ['polygon', { points: '28,26 36,26 55,48 55,53 36,45 28,45 9,53 9,48' }],
+        ['polygon', { points: '29,52 35,52 43,63 21,63' }],
+        ['polygon', { points: '31,42 33,42 33,58 31,58' }]
+      ];
+    } else if (id === 'sr71') {
+      parts = [
+        ['polygon', { points: '32,2 35,20 57,55 57,60 37,53 37,61 27,61 27,53 7,60 7,55 29,20' }],
+        ['ellipse', { cx: 22, cy: 45, rx: 3, ry: 8 }],
+        ['ellipse', { cx: 42, cy: 45, rx: 3, ry: 8 }]
+      ];
+    } else if (id === 'rescue_heli') {
+      parts = [
+        ['circle', { cx: 32, cy: 26, r: 24, fill: c, opacity: 0.1 }],
+        ['circle', { cx: 32, cy: 26, r: 24, fill: 'none', stroke: c, strokeWidth: 1.1, opacity: 0.4 }],
+        ['rect', { x: 8, y: 25.1, width: 48, height: 1.8, rx: 0.9, opacity: 0.8, transform: 'rotate(24 32 26)' }],
+        ['rect', { x: 8, y: 25.1, width: 48, height: 1.8, rx: 0.9, opacity: 0.8, transform: 'rotate(114 32 26)' }],
+        ['ellipse', { cx: 32, cy: 26, rx: 7.5, ry: 12 }],
+        ['polygon', { points: '30.4,34 33.6,34 33.6,55 30.4,55' }],
+        ['polygon', { points: '25,52 39,52 39,55.5 25,55.5' }],
+        ['circle', { cx: 32, cy: 57, r: 5.5, fill: 'none', stroke: c, strokeWidth: 1.1, opacity: 0.5 }],
+        ['rect', { x: 26, y: 56.2, width: 12, height: 1.5, rx: 0.7, opacity: 0.7 }]
+      ];
+    } else if (id === 'drone') {
+      parts = [
+        ['polygon', { points: '18,15 21,12 49,46 46,49' }],
+        ['polygon', { points: '46,12 49,15 21,49 18,46' }],
+        ['rect', { x: 25, y: 25, width: 14, height: 14, rx: 3 }],
+        ['circle', { cx: 17, cy: 17, r: 10, fill: c, opacity: 0.16 }],
+        ['circle', { cx: 47, cy: 17, r: 10, fill: c, opacity: 0.16 }],
+        ['circle', { cx: 17, cy: 47, r: 10, fill: c, opacity: 0.16 }],
+        ['circle', { cx: 47, cy: 47, r: 10, fill: c, opacity: 0.16 }],
+        ['circle', { cx: 17, cy: 17, r: 10, fill: 'none', stroke: c, strokeWidth: 1.5, opacity: 0.85 }],
+        ['circle', { cx: 47, cy: 17, r: 10, fill: 'none', stroke: c, strokeWidth: 1.5, opacity: 0.85 }],
+        ['circle', { cx: 17, cy: 47, r: 10, fill: 'none', stroke: c, strokeWidth: 1.5, opacity: 0.85 }],
+        ['circle', { cx: 47, cy: 47, r: 10, fill: 'none', stroke: c, strokeWidth: 1.5, opacity: 0.85 }]
+      ];
+    } else {
+      // Cessna 172 and anything unmapped: high straight wing, fixed gear.
+      parts = [
+        ['rect', { x: 22, y: 5, width: 20, height: 2, rx: 1, opacity: 0.6 }],
+        ['ellipse', { cx: 32, cy: 34, rx: 3.4, ry: 26 }],
+        ['polygon', { points: '5,24 59,24 59,30 5,30' }],
+        ['polygon', { points: '21,53 43,53 43,57 21,57' }]
+      ];
+    }
+    return h('svg', { viewBox: '0 0 64 64', width: size, height: size, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', margin: '0 auto', overflow: 'visible' } },
+      parts.map(function(part, i) {
+        var attrs = Object.assign({ key: i, fill: c }, part[1]);
+        return h(part[0], attrs);
+      })
+    );
+  }
+
+  // Spec figures span five orders of magnitude across the fleet (a 2 lb
+  // quadcopter to a 152,000 lb Blackbird), so a fixed 'divide by 1,000'
+  // rounds the small end to zero and a linear bar leaves it invisible.
+  function specFigure(v, unit) {
+    if (!v && v !== 0) return '\u2014';
+    if (v >= 10000) return (v / 1000).toFixed(0) + 'K ' + unit;
+    if (v >= 1000) return (v / 1000).toFixed(1) + 'K ' + unit;
+    return Math.round(v).toLocaleString() + ' ' + unit;
+  }
+  function specBarPct(v, max) {
+    if (!v || v <= 0) return 0;
+    var pct = 100 * Math.log10(1 + v) / Math.log10(1 + Math.max(v, max));
+    return Math.round(Math.min(100, Math.max(6, pct)));
+  }
 
   // ── ACHIEVEMENT SYSTEM ──
   var ACHIEVEMENTS = [
@@ -12415,6 +12510,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var drawForces = function(gfx, cx, cy, forces, showLabels) {
         if (!showLabels) return;
         var scale = 0.15;
+        // Backing card so the four labels read over any sky or terrain.
+        gfx.fillStyle = 'rgba(2,6,23,0.66)';
+        gfx.beginPath(); gfx.roundRect(cx - 98, cy - 92, 196, 184, 12); gfx.fill();
+        gfx.strokeStyle = 'rgba(125,211,252,0.28)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(cx - 98, cy - 92, 196, 184, 12); gfx.stroke();
+        gfx.fillStyle = '#7dd3fc'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left'; gfx.textBaseline = 'alphabetic';
+        gfx.fillText('FOUR FORCES', cx - 88, cy - 78);
+        gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui'; gfx.textAlign = 'right';
+        gfx.fillText('F to hide', cx + 88, cy - 78);
+        // Airframe dot at the origin so the arrows read as acting ON something.
+        gfx.fillStyle = '#e2e8f0';
+        gfx.beginPath(); gfx.arc(cx, cy, 3.5, 0, Math.PI * 2); gfx.fill();
         var arrows = [
           { f: forces.lift, angle: -90, color: '#22d3ee', label: 'Lift: ' + Math.round(forces.lift) + ' lbs' },
           { f: forces.weight, angle: 90, color: '#f97316', label: 'Weight: ' + Math.round(forces.weight) + ' lbs' },
@@ -12438,8 +12545,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.lineTo(ex - headLen * Math.cos(rad + headAngle), ey - headLen * Math.sin(rad + headAngle));
           gfx.stroke();
           // Label
-          gfx.fillStyle = a.color; gfx.textAlign = 'center';
-          gfx.fillText(a.label, ex + Math.cos(rad) * 15, ey + Math.sin(rad) * 15 + 4);
+          gfx.fillStyle = a.color;
+          if (a.angle === 0) { gfx.textAlign = 'left'; gfx.fillText(a.label, cx + 6, cy - 8); }
+          else if (a.angle === 180) { gfx.textAlign = 'right'; gfx.fillText(a.label, cx - 6, cy + 14); }
+          else { gfx.textAlign = 'center'; gfx.fillText(a.label, ex, ey + (a.angle < 0 ? -6 : 14)); }
         });
       };
 
@@ -15839,12 +15948,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Render active milestones, stacked so simultaneous banners (takeoff
         // + 100 kts happen within seconds) don't overprint each other.
+        // Not while the geography quiz card or the sprint HUD owns the top
+        // of the frame: the quiz is painted before this and was overprinted,
+        // and a sprint starts at Mach 3 in the flight levels, so every
+        // altitude/speed milestone fires at once and stacks six deep.
+        if (geoQuizRef.current.active || sprintRef.current.active) return;
         var msRow = 0;
         milestones.forEach(function(m) {
           var showTime = ms.shown[m.id];
           if (showTime && time - showTime < 6) {
             var alpha = Math.min(1, (6 - (time - showTime)) / 1.5);
-            var yPos = 64 + msRow * 38;
+            var yPos = 100 + msRow * 38;
             msRow++;
             gfx.fillStyle = 'rgba(0,0,0,' + (alpha * 0.7) + ')';
             gfx.fillRect(20, yPos, W - 40, 32);
@@ -15972,11 +16086,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Background card — larger with gradient header
           var cardW = Math.min(W - 40, 520);
           var cardX = (W - cardW) / 2;
-          var cardY = H - 200;
+          // On a narrow canvas a centred 520 px card reaches back to x≈90 and
+          // lands on the bottom-left ATIS strip (x 10..200). Give the ATIS lane
+          // right of way and dock the card to the right instead.
+          if (W < 760) { cardW = Math.min(cardW, W - 224); cardX = W - cardW - 12; }
+          // Lay the fact out BEFORE choosing the card height. A fixed 75 px
+          // body clipped any fact that wrapped to a third line, and a card
+          // pinned at H-200 sat exactly on the adaptive-hint pill (H-175) —
+          // the card paints later, so it hid the one line telling a stuck
+          // beginner which key to hold. Measure, then sit clear above it.
+          gfx.font = '11px system-ui';
+          var discWords = (p.fact || '').split(' ');
+          var discLines = []; var discLine = '';
+          discWords.forEach(function(word) {
+            var test = discLine + (discLine ? ' ' : '') + word;
+            if (discLine && gfx.measureText(test).width > cardW - 24) { discLines.push(discLine); discLine = word; }
+            else { discLine = test; }
+          });
+          if (discLine) discLines.push(discLine);
+          var cardH = 40 + Math.max(1, discLines.length) * 14 + 12;
+          // Bottom edge stays 200 px above the instrument baseline (the
+          // glareshield top in cockpit view, the frame bottom in chase).
+          var cardY = (dataRef.current.thirdPerson ? H : H - 58) - 200 - cardH;
           // Card body
           gfx.fillStyle = 'rgba(15,23,42,0.92)';
-          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 75, 12); gfx.fill(); }
-          else { gfx.fillRect(cardX, cardY, cardW, 75); }
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 12); gfx.fill(); }
+          else { gfx.fillRect(cardX, cardY, cardW, cardH); }
           // Header gradient bar
           var hdrColor = p.type === 'capital' ? '#b45309' : p.type === 'city' ? '#1e40af' : '#065f46';
           var hdrGrad = gfx.createLinearGradient(cardX, cardY, cardX + cardW, cardY);
@@ -15988,7 +16123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Border
           gfx.strokeStyle = p.type === 'capital' ? '#fbbf24' : p.type === 'city' ? '#60a5fa' : '#4ade80';
           gfx.lineWidth = 1.5;
-          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 75, 12); gfx.stroke(); }
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 12); gfx.stroke(); }
 
           // Header text
           var discIcon = p.type === 'capital' ? '\u2605' : p.type === 'city' ? '\uD83C\uDFD9\uFE0F' : '\uD83C\uDF0D';
@@ -16004,18 +16139,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText((p.type === 'capital' ? '\u2605 Capital of ' : '') + p.country + (p.pop ? ' \u2022 Pop: ' + p.pop : ''), cardX + 10, cardY + 32);
 
           gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
-          // Wrap fact text \u2014 starts a full line below the subtitle (was
-          // cardY+35, 3 px under the subtitle baseline, overprinting it)
-          var words = p.fact.split(' ');
-          var line = ''; var lineY = cardY + 47;
-          words.forEach(function(word) {
-            var test = line + (line ? ' ' : '') + word;
-            if (gfx.measureText(test).width > cardW - 24) {
-              gfx.fillText(line, cardX + 12, lineY);
-              line = word; lineY += 14;
-            } else { line = test; }
-          });
-          if (line) gfx.fillText(line, cardX + 12, lineY);
+          // Fact text was laid out above; just paint the lines. It starts a
+          // full line below the subtitle (was cardY+35, 3 px under the
+          // subtitle baseline, overprinting it).
+          discLines.forEach(function(ln, li) { gfx.fillText(ln, cardX + 12, cardY + 47 + li * 14); });
 
           gfx.globalAlpha = 1;
         }
@@ -17433,6 +17560,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         });
         if (!closest || closestDist > 200) return;
 
+        // A country option must name one country: landmark entries carry
+        // "International" or "US/Canada", which are not answers.
+        var isRealCountry = function(c) { return !!c && c !== 'International' && c.indexOf('/') < 0; };
         // Random quiz type
         var types = ['capital', 'country', 'fact'];
         var qType = types[Math.floor(Math.random() * types.length)];
@@ -17441,23 +17571,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (qType === 'capital' && closest.type === 'capital') {
           question = 'What country is ' + closest.name + ' the capital of?';
           correct = closest.country;
-          var others = GEO_PLACES.filter(function(p) { return p.type === 'capital' && p.country !== closest.country; });
+          var others = GEO_PLACES.filter(function(p) { return p.type === 'capital' && p.country !== closest.country && isRealCountry(p.country); });
           options = [correct];
           while (options.length < 4 && others.length > 0) {
             var pick = others.splice(Math.floor(Math.random() * others.length), 1)[0];
             if (options.indexOf(pick.country) < 0) options.push(pick.country);
           }
-        } else if (qType === 'country') {
+        } else if (qType === 'country' && isRealCountry(closest.country)) {
           question = 'What country is ' + closest.name + ' located in?';
           correct = closest.country;
-          var others2 = GEO_PLACES.filter(function(p) { return p.country !== closest.country; });
+          var others2 = GEO_PLACES.filter(function(p) { return p.country !== closest.country && isRealCountry(p.country); });
           options = [correct];
           while (options.length < 4 && others2.length > 0) {
             var pick2 = others2.splice(Math.floor(Math.random() * others2.length), 1)[0];
             if (options.indexOf(pick2.country) < 0) options.push(pick2.country);
           }
         } else {
-          question = 'Which city is nearest to your current position?';
+          question = 'Which place is nearest to your current position?';
           correct = closest.name;
           var others3 = GEO_PLACES.filter(function(p) { return p.name !== closest.name; });
           options = [correct];
@@ -17493,10 +17623,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.save();
         gfx.globalAlpha = fadeAlpha;
 
-        var cardW = Math.min(W - 40, 420);
-        var cardH = 130;
+        var cardW = Math.min(W - 40, 500);
+        var cardH = 150;
         var cardX = (W - cardW) / 2;
-        var cardY = 80 + (1 - fadeAlpha) * 15; // Slide down as it fades in
+        var cardY = 84 + (1 - fadeAlpha) * 15; // Slide down as it fades in
 
         gfx.fillStyle = 'rgba(0,0,0,0.92)';
         if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 14); gfx.fill(); }
@@ -17513,13 +17643,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left';
         gfx.fillText('🌍 GEOGRAPHY QUIZ  (Score: ' + quiz.score + '/' + quiz.total + ')', cardX + 12, cardY + 16);
 
-        gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui';
-        gfx.fillText(quiz.question, cardX + 12, cardY + 38);
+        gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui';
+        gfx.fillText(quiz.question, cardX + 12, cardY + 42);
 
         // Options (press 1-4)
         quiz.options.forEach(function(opt, idx) {
           var ox = cardX + 12 + (idx % 2) * (cardW / 2 - 12);
-          var oy = cardY + 55 + Math.floor(idx / 2) * 30;
+          var oy = cardY + 60 + Math.floor(idx / 2) * 34;
           var isCorrect = opt === quiz.correct;
           var isSelected = quiz.answer === opt;
 
@@ -17527,11 +17657,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ? (isCorrect ? 'rgba(34,197,94,0.3)' : isSelected ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.05)')
             : 'rgba(255,255,255,0.1)';
           gfx.fillStyle = bg;
-          gfx.beginPath(); gfx.roundRect(ox, oy, cardW / 2 - 20, 24, 6); gfx.fill();
+          gfx.beginPath(); gfx.roundRect(ox, oy, cardW / 2 - 20, 28, 6); gfx.fill();
 
           gfx.fillStyle = quiz.showResult && isCorrect ? '#4ade80' : quiz.showResult && isSelected ? '#f87171' : '#e2e8f0';
-          gfx.font = '11px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText((idx + 1) + '. ' + opt, ox + 8, oy + 16);
+          gfx.font = '12px system-ui'; gfx.textAlign = 'left';
+          gfx.fillText((idx + 1) + '. ' + opt, ox + 8, oy + 18);
         });
 
         if (quiz.showResult) {
@@ -18916,7 +19046,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var pop = achievementPopRef.current;
         if (!pop.id || time - pop.time > 5) return;
         var alpha = Math.min(1, (5 - (time - pop.time)) / 1.5);
-        var cardW = 280; var cardX = W - cardW - 10; var cardY = H - 200;
+        // Below the status rail (DOM, ends ~y180) and the tachometer (y162..198).
+        var cardW = 280; var cardX = W - cardW - 10; var cardY = W < 820 ? 300 : 206;
         gfx.globalAlpha = alpha;
         gfx.fillStyle = 'rgba(0,0,0,0.85)';
         gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 50, 10); gfx.fill();
@@ -19451,7 +19582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Timer bar (top)
         var timerPct = sp.timer / sp.maxTime;
-        gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(0, 0, W, 36);
+        gfx.fillStyle = 'rgba(2,6,23,0.95)'; gfx.fillRect(0, 0, W, 36);
         gfx.fillStyle = timerPct > 0.3 ? '#22d3ee' : timerPct > 0.1 ? '#fbbf24' : '#ef4444';
         gfx.fillRect(0, 32, W * timerPct, 4);
 
@@ -19969,6 +20100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var gfx = canvas.getContext('2d');
         var lastTs = 0;        // wall-clock of the previous frame (ms)
         var loopErrCount = 0;  // consecutive failed frames — stops runaway 60fps error spam
+        var loopPauseHeld = false; // pause overlay already painted over the held frame
 
         var loop = function() {
           try {
@@ -20001,8 +20133,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var cssW = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
           var cssH = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
           var dpr = Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
-          canvas.width = Math.round(cssW * dpr);
-          canvas.height = Math.round(cssH * dpr);
+          // While paused the last live frame is HELD (the width assignment is
+          // the wipe), so the pause card sits over the scene, not over black.
+          if (!pausedRef.current || !loopPauseHeld) {
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+          }
           gfx.setTransform(dpr, 0, 0, dpr, 0, 0);
           var W = cssW;
           var H = cssH;
@@ -20067,17 +20203,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             skyAnnounce('Altitude ' + Math.round(st.altitude) + ' feet. Speed ' + ktsInfo + ' knots. Heading ' + Math.round(st.heading) + ' degrees. ' + (st.stalling ? 'WARNING: Stalling! ' : '') + (st.hitCeiling ? 'Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone. ' : '') + (st.onGround ? 'On ground. ' : '') + 'Places discovered: ' + Object.keys(geoDiscoveredRef.current).length + '.');
           }
           if (pausedRef.current) {
-            // Render pause overlay
-            gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
-            gfx.fillStyle = '#fff'; gfx.font = 'bold 28px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⏸ PAUSED', W / 2, H * 0.4);
-            gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
-            gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
-            var ktsP = Math.round(flightRef.current.speed * 0.5924838);
-            gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
-            gfx.fillText('ALT: ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft  |  SPD: ' + ktsP + ' kts  |  HDG: ' + Math.round(flightRef.current.heading) + '°', W / 2, H * 0.58);
-            animRef.current = requestAnimationFrame(loop);
-            return;
+            // Held: nothing to draw. First paused frame: fall through and
+            // draw the scene once more, frozen (dt = 0), so the pause card
+            // at the end of the frame sits over the world, not over black.
+            if (loopPauseHeld) { animRef.current = requestAnimationFrame(loop); return; }
+            dt = 0;
+          } else {
+            loopPauseHeld = false;
           }
           // Sim clock only advances while unpaused — it feeds the flight
           // timer, day/night cycle, and debrief stats, none of which should
@@ -21466,9 +21598,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var kts = telemetry.iasKts;
           var fpm = telemetry.fpm;
           var stallKts = telemetry.stallIasKts;
+          hudRef.current.vrKts = Math.round(stallKts * 1.1);
 
           // Artificial Horizon (center)
-          drawHorizon(gfx, W / 2, H - 85, 58, ctrl.pitch, ctrl.bank);
+          // Cockpit view lays a 58 px glareshield over the bottom of the frame
+          // (drawn later); chase view has none. The whole cluster anchors here.
+          var hudBase = d.thirdPerson ? H : H - 58;
+          drawHorizon(gfx, W / 2, hudBase - 85, 58, ctrl.pitch, ctrl.bank);
 
           // ── ILS localizer + glideslope needles ──
           // Standard instrument-approach crosshair overlaid on the artificial
@@ -21521,7 +21657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           drawFPV(gfx, W, H, state, ctrl);
 
           // Speed Tape (left side)
-          drawSpeedTape(gfx, 30, H - 160, 50, 150, kts, stallKts);
+          drawSpeedTape(gfx, 30, hudBase - 160, 50, 150, kts, stallKts);
 
           // Configuration cue beside the primary airspeed tape. VFE is an
           // immediate red warning because extended flaps can be structurally
@@ -21533,17 +21669,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.font = 'bold 9px monospace';
             var flapW = gfx.measureText(flapTxt).width + 14;
             gfx.fillStyle = flapOverspeed ? 'rgba(127,29,29,0.94)' : flapDegHud > 0 ? 'rgba(120,53,15,0.88)' : 'rgba(2,6,23,0.72)';
-            gfx.beginPath(); gfx.roundRect(30, H - 179, flapW, 17, 4); gfx.fill();
+            gfx.beginPath(); gfx.roundRect(30, hudBase - 179, flapW, 17, 4); gfx.fill();
             gfx.strokeStyle = flapOverspeed ? '#ef4444' : flapDegHud > 0 ? '#fbbf24' : '#64748b';
-            gfx.beginPath(); gfx.roundRect(30, H - 179, flapW, 17, 4); gfx.stroke();
+            gfx.beginPath(); gfx.roundRect(30, hudBase - 179, flapW, 17, 4); gfx.stroke();
             gfx.fillStyle = flapOverspeed ? '#fecaca' : flapDegHud > 0 ? '#fde68a' : '#cbd5e1';
             gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-            gfx.fillText(flapTxt, 30 + flapW / 2, H - 170.5);
+            gfx.fillText(flapTxt, 30 + flapW / 2, hudBase - 170.5);
             gfx.textBaseline = 'alphabetic';
           }
 
           // Altitude Tape (right of center)
-          drawAltTape(gfx, W / 2 + 80, H - 160, 55, 150, state.altitude);
+          drawAltTape(gfx, W / 2 + 80, hudBase - 160, 55, 150, state.altitude);
 
           // Heading Tape (top-center, below status bar)
           drawHeadingTape(gfx, W / 2 - 100, 36, 200, 22, state.heading);
@@ -21587,10 +21723,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // VSI (vertical speed, right side)
-          drawGauge(gfx, W / 2 + 160, H - 85, 30, Math.abs(fpm), 3000, fpm >= 0 ? 'UP' : 'DN', 'FPM', fpm >= 0 ? '#4ade80' : '#f97316');
+          drawGauge(gfx, W / 2 + 160, hudBase - 85, 30, Math.min(9999, Math.abs(fpm)), 3000, fpm >= 0 ? 'UP' : 'DN', 'FPM', fpm >= 0 ? '#4ade80' : '#f97316');
 
           // G-Force indicator
-          drawGForce(gfx, W / 2 - 70, H - 50, state, ctrl);
+          drawGForce(gfx, W / 2 - 70, hudBase - 50, state, ctrl);
 
           // Throttle bar
           gfx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -21750,7 +21886,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling && !state.hitCeiling) {
               gfx.fillStyle = 'rgba(34,197,94,0.3)'; gfx.fillRect(0, 32, W, 28);
               gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'center';
-              gfx.fillText('✈️ Welcome to ' + nearWp.name + ' (' + nearWp.code + ')  —  ' + nearWp.fact, W / 2, 50);
+              // Airport facts run to a full sentence, so this single centred line
+              // used to overrun BOTH canvas edges and read as clipped mid-word at
+              // each end. Shrink a step, then ellipsise the fact (never the airport
+              // name) so the banner always resolves inside the frame.
+              var wlcHead = '✈️ Welcome to ' + nearWp.name + ' (' + nearWp.code + ')';
+              var wlcMax = W - 32;
+              var wlcTxt = wlcHead + '  —  ' + nearWp.fact;
+              if (gfx.measureText(wlcTxt).width > wlcMax) { gfx.font = 'bold 11px system-ui'; }
+              if (gfx.measureText(wlcTxt).width > wlcMax) {
+                var wlcFact = nearWp.fact || '';
+                while (wlcFact.length > 1 && gfx.measureText(wlcHead + '  —  ' + wlcFact + '…').width > wlcMax) {
+                  wlcFact = wlcFact.slice(0, -1);
+                }
+                wlcTxt = wlcFact.length > 1 ? wlcHead + '  —  ' + wlcFact.replace(/[s,;:—-]+$/, '') + '…' : wlcHead;
+              }
+              gfx.fillText(wlcTxt, W / 2, 50);
             }
           }
 
@@ -21788,58 +21939,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillText('⚠️ PART 107 CEILING — 400 ft IS A LEGAL LIMIT, NOT A LIMIT OF THE DRONE', W / 2, 50);
           }
 
-          // ── ATIS information strip ──
-          // Classic airport Automatic Terminal Information Service readout. Real
-          // pilots listen to ATIS on a radio frequency before calling the tower:
-          // wind, visibility, ceiling, temperature, dewpoint, altimeter, active
-          // runway. We surface the same set on-screen when the plane is near an
-          // airport (≤ 6 nm and AGL < 3000 ft), with a letter-code that rotates
-          // hourly (real ATIS updates use sequential A/B/C/... identifiers).
-          if (nearWp && nearDist < 6 && (state.altitude - (nearWp.alt || 0)) < 3000) {
-            var atisWx = weatherRef.current || {};
-            var atisWSpd = Math.round(atisWx.wind || 5);
-            var atisWDir = String(Math.round(atisWx.windDir || 270)).padStart(3, '0');
-            var atisVis = atisWx.visibility != null ? (atisWx.visibility * 10).toFixed(0) + ' mi' : '10 mi';
-            var atisType = (atisWx.type || 'clear');
-            // Altimeter from standard lapse + airport elevation (simple model)
-            var atisAlt = (29.92 - (nearWp.alt || 0) / 1000 * 0.01).toFixed(2);
-            // Temperature (rough standard lapse: 15°C at sea level, -2°C per 1000ft)
-            var atisTemp = Math.round(15 - (nearWp.alt || 0) / 1000 * 2);
-            var atisDewpt = atisTemp - (atisType === 'overcast' || atisType === 'stormy' ? 2 : 8);
-            // Active runway: player's current heading divided by 10 → designator
-            var atisRwy = String(Math.max(1, Math.min(36, Math.round(state.heading / 10)))).padStart(2, '0');
-            // Rotating letter code — A..Z, new letter each hour of solarHour
-            var atisLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            var atisLtr = atisLetters[Math.floor((dayNight.solarHour != null ? dayNight.solarHour : 12) + nearWp.code.length) % 26];
-            // Panel layout — bottom-left, above the speed tape.
-            var atisX = 10;
-            var atisY = H - 320;
-            var atisW2 = 190;
-            var atisH2 = 96;
-            gfx.fillStyle = 'rgba(2,6,23,0.82)';
-            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.fill();
-            gfx.strokeStyle = '#38bdf8';
-            gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.stroke();
-            // Title
-            gfx.fillStyle = '#38bdf8';
-            gfx.font = 'bold 10px monospace';
-            gfx.textAlign = 'left'; gfx.textBaseline = 'top';
-            gfx.fillText(nearWp.code + ' ATIS  INFO ' + atisLtr, atisX + 8, atisY + 6);
-            // Body
-            gfx.fillStyle = '#e2e8f0';
-            gfx.font = '9px monospace';
-            var atisLines = [
-              'WIND ' + atisWDir + '° @ ' + atisWSpd + 'KT',
-              'VIS ' + atisVis + '  ' + atisType.toUpperCase(),
-              'TEMP ' + atisTemp + '°C  DEW ' + atisDewpt + '°C',
-              'ALTIMETER ' + atisAlt + '"',
-              'RWY IN USE: ' + atisRwy
-            ];
-            atisLines.forEach(function(line, li) {
-              gfx.fillText(line, atisX + 8, atisY + 22 + li * 13);
-            });
-          }
+          // The ATIS strip used to be painted HERE, in the middle of the world
+          // pass — before drawAirportGround/drawRunway. Parked at a field (the
+          // one moment a pilot actually reads ATIS) the ground layer painted
+          // straight over it, leaving only the sliver above the horizon: a
+          // title bar with no body. It is now drawn with the other overlays,
+          // below.
 
           // ── ATC radio chatter bubbles ──
           // Short ATC-style transmissions surface at key milestones: engine
@@ -21859,30 +21964,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (atcLog.length > 4) atcLog.shift();
             };
             var atcCall = nearWp.code + ' Tower';
+            var atcType = currentAC.isHelicopter ? 'Helicopter' : currentAC.isDrone ? 'Drone' : (currentAC.shortName || currentAC.name.split(' ')[0]);
             var atcRwy = String(Math.max(1, Math.min(36, Math.round(state.heading / 10)))).padStart(2, '0');
             // Engine start → taxi clearance
             if (flightRef.current._ignitionTime && state.onGround) {
-              atcSay('taxi', atcCall + ': Cessna, taxi to runway ' + atcRwy + ' via Alpha. Wind ' + String(Math.round((weatherRef.current||{}).windDir||270)).padStart(3,'0') + ' @ ' + Math.round((weatherRef.current||{}).wind||5) + '.');
+              atcSay('taxi', atcCall + ': ' + atcType + ', taxi to runway ' + atcRwy + ' via Alpha. Wind ' + String(Math.round((weatherRef.current||{}).windDir||270)).padStart(3,'0') + ' @ ' + Math.round((weatherRef.current||{}).wind||5) + '.');
             }
             // Roll speed > 20 kt → takeoff clearance
             if (state.onGround && state.speed * 0.5924838 > 20 && state.speed * 0.5924838 < 30) {
-              atcSay('tko_clr', atcCall + ': Cessna, runway ' + atcRwy + ' cleared for takeoff.');
+              atcSay('tko_clr', atcCall + ': ' + atcType + ', runway ' + atcRwy + ' cleared for takeoff.');
             }
             // Airborne above 400 ft AGL → departure handoff
             if (!state.onGround && atcAgl2 > 400 && atcAgl2 < 700) {
-              atcSay('dep', atcCall + ': Cessna, contact Departure 121.3. Good day.');
+              atcSay('dep', atcCall + ': ' + atcType + ', contact Departure 121.3. Good day.');
             }
             // Descending through 1500 AGL → traffic pattern entry
             if (!state.onGround && state.vsi < -3 && atcAgl2 > 1200 && atcAgl2 < 1700) {
-              atcSay('entry', atcCall + ': Cessna, report midfield downwind runway ' + atcRwy + '.');
+              atcSay('entry', atcCall + ': ' + atcType + ', report midfield downwind runway ' + atcRwy + '.');
             }
             // Short final below 500 AGL
             if (!state.onGround && atcAgl2 < 500 && atcAgl2 > 200 && state.vsi < 0) {
-              atcSay('final', atcCall + ': Cessna, runway ' + atcRwy + ' cleared to land.');
+              atcSay('final', atcCall + ': ' + atcType + ', runway ' + atcRwy + ' cleared to land.');
             }
             // Touchdown
             if (state.onGround && landingRef.current && landingRef.current.touchdownTime && timeRef.current - landingRef.current.touchdownTime < 3) {
-              atcSay('tdn', atcCall + ': Cessna, taxi clear of runway at your convenience. Nice landing.');
+              atcSay('tdn', atcCall + ': ' + atcType + ', taxi clear of runway at your convenience. Nice landing.');
             }
             // Render the last 4 bubbles, fading by age, stacked bottom-right
             if (atcLog.length > 0) {
@@ -21956,7 +22062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // Force diagram
-          drawForces(gfx, W - 110, 120, state.forces, showForces);
+          drawForces(gfx, W - 112, 352, state.forces, showForces);
 
           // Mini-map (top-right area)
           drawMiniMapEnhanced(gfx, W - 140, 38, 90, state);
@@ -22266,7 +22372,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var ft = Math.round(timeRef.current - log.startTime);
           var logLineY = d.thirdPerson ? H - 16 : H - 64;
           gfx.fillStyle = 'rgba(226,232,240,0.75)'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText('Flight: ' + Math.floor(ft / 60) + ':' + String(ft % 60).padStart(2, '0') + '  |  Dist: ' + Math.round(log.distance) + ' nm  |  Max Alt: ' + Math.round(log.maxAlt).toLocaleString() + ' ft  |  Airports: ' + log.airports.length, 10, logLineY);
+          // x=96 clears the airspeed tape (x 30..85) in both views.
+          gfx.fillText('Flight: ' + Math.floor(ft / 60) + ':' + String(ft % 60).padStart(2, '0') + '  |  Dist: ' + Math.round(log.distance) + ' nm  |  Max Alt: ' + Math.round(log.maxAlt).toLocaleString() + ' ft  |  Airports: ' + log.airports.length, 96, logLineY);
 
           // ═══ VISUAL EFFECTS LAYER ═══
 
@@ -22449,7 +22556,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = 'rgba(0,0,0,0.92)'; gfx.fillRect(0, 0, W, H);
             gfx.fillStyle = '#60a5fa'; gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('✈️ SKYSCHOOL — CONTROLS & HELP', W / 2, 30);
-            var shY = 45;
             var shSections = [
               { title: __alloT('stem.flightsim.flight_controls', '🛩️ FLIGHT CONTROLS'), items: [
                 ['W / ↑', 'Pitch up (climb)'], ['S / ↓', 'Pitch down (descend)'],
@@ -22475,17 +22581,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 ['Navigation', 'File a flight plan in the menu → follow the heading tape'],
               ]},
             ];
-            shSections.forEach(function(section) {
-              shY += 18;
-              gfx.fillStyle = '#60a5fa'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left';
-              gfx.fillText(section.title, 30, shY);
-              section.items.forEach(function(item) {
-                shY += 13;
-                if (shY > H - 25) return;
-                gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'left';
-                gfx.fillText(item[0], 40, shY);
-                gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
-                gfx.fillText(item[1], 170, shY);
+            // Two columns when there is width for them: controls left, the
+            // learning/game keys and tips right. One column otherwise.
+            var shTwoCol = W >= 820;
+            var shColW = shTwoCol ? Math.floor((W - 60) / 2) : W - 60;
+            var shCols = shTwoCol ? [[shSections[0]], [shSections[1], shSections[2], shSections[3]]] : [shSections];
+            shCols.forEach(function(col, ci) {
+              var shX = 30 + ci * (shColW + 20);
+              var shY = 58;
+              col.forEach(function(section) {
+                shY += 22;
+                gfx.fillStyle = '#7dd3fc'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'left';
+                gfx.fillText(section.title, shX, shY);
+                shY += 4;
+                section.items.forEach(function(item) {
+                  shY += 16;
+                  if (shY > H - 28) return;
+                  gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 11px ui-monospace, monospace'; gfx.textAlign = 'left';
+                  gfx.fillText(item[0], shX + 8, shY);
+                  gfx.fillStyle = '#cbd5e1'; gfx.font = '11px system-ui';
+                  gfx.fillText(item[1], shX + 118, shY);
+                });
               });
             });
             gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
@@ -22722,9 +22838,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (!pausedRef.current) {
             var hintMsg2 = null;
             var ktsH = state.speed * 0.5924838;
+            var hintRotor = currentAC.isHelicopter || currentAC.isDrone;
+            var hintVr = hudRef.current.vrKts || 55;
             if (state.onGround && ktsH < 10 && ctrl.throttle < 0.1) {
-              hintMsg2 = '💡 Hold SHIFT to add throttle — need ~55 kt before W to pitch up and take off.';
-            } else if (state.onGround && ktsH > 50 && ktsH < 70 && ctrl.pitch < 1) {
+              hintMsg2 = hintRotor
+                ? '💡 Hold SHIFT to spin the rotor up — you lift straight off the pad. Watch AGL on the right.'
+                : '💡 Hold SHIFT to add throttle — need ~' + hintVr + ' kt before W to pitch up and take off.';
+            } else if (!hintRotor && state.onGround && ktsH > hintVr - 5 && ktsH < hintVr + 15 && ctrl.pitch < 1) {
               hintMsg2 = '💡 You\'re fast enough! Press W to pitch up and take off!';
             } else if (!state.onGround && state.altitude < 500 && state.vsi < -5 && ctrl.throttle < 0.3) {
               hintMsg2 = '⚠️ Low altitude! Add throttle (Shift) and pitch up (W)!';
@@ -22737,9 +22857,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.font = '10px system-ui';
               var hw = Math.min(W - 20, gfx.measureText(hintMsg2).width + 24);
               gfx.fillStyle = 'rgba(0,0,0,0.6)';
-              gfx.beginPath(); gfx.roundRect((W - hw) / 2, H - 175, hw, 18, 4); gfx.fill();
+              // Above the attitude ball, which the cockpit panel pushes up to H-201.
+              var hintBase = d.thirdPerson ? H : H - 58;
+              gfx.beginPath(); gfx.roundRect((W - hw) / 2, hintBase - 175, hw, 18, 4); gfx.fill();
               gfx.fillStyle = '#fbbf24'; gfx.textAlign = 'center';
-              gfx.fillText(hintMsg2, W / 2, H - 163);
+              gfx.fillText(hintMsg2, W / 2, hintBase - 163);
             }
           }
 
@@ -22896,33 +23018,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.restore();
           }
 
-          // ── First-time Flying Tutorial (shows for first 15 seconds) ──
-          if (timeRef.current < 15 && !d.takeoffTutorialDismissed) {
-            var tutAlpha = timeRef.current < 12 ? 0.9 : 0.9 * (1 - (timeRef.current - 12) / 3);
-            gfx.fillStyle = 'rgba(15,23,42,' + tutAlpha + ')';
-            var tutW = Math.min(360, W * 0.6);
-            var tutX = W / 2 - tutW / 2;
-            gfx.fillRect(tutX, H * 0.3, tutW, 180);
-            gfx.strokeStyle = 'rgba(99,102,241,' + tutAlpha + ')';
+          // ── First-time onboarding ──
+          // REMOVED: a canvas-painted "HOW TO FLY" box drew here for the first
+          // 15 s, gated on the SAME d.takeoffTutorialDismissed flag as the DOM
+          // "Ready for Takeoff" card below. Both therefore appeared together on
+          // the very first frame of a student's first flight — two different
+          // tutorials stacked over the runway, the canvas one painted on top of
+          // the runway markings and the discovery card. The DOM card is strictly
+          // better (dismissible, keyboard-reachable, read by a screen reader,
+          // carries the aircraft-specific rotation speed and the Science note),
+          // and the key list this box duplicated is already on the bottom-right
+          // controls strip drawn just below. One tutorial, one owner.
+
+          // ── ATIS information strip ──
+          // Classic airport Automatic Terminal Information Service readout. Real
+          // pilots listen to ATIS on a radio frequency before calling the tower:
+          // wind, visibility, ceiling, temperature, dewpoint, altimeter, active
+          // runway. We surface the same set on-screen when the plane is near an
+          // airport (≤ 6 nm and AGL < 3000 ft), with a letter-code that rotates
+          // hourly (real ATIS updates use sequential A/B/C/... identifiers).
+          if (nearWp && nearDist < 6 && (state.altitude - (nearWp.alt || 0)) < 3000) {
+            var atisWx = weatherRef.current || {};
+            var atisWSpd = Math.round(atisWx.wind || 5);
+            var atisWDir = String(Math.round(atisWx.windDir || 270)).padStart(3, '0');
+            var atisVis = atisWx.visibility != null ? (atisWx.visibility * 10).toFixed(0) + ' mi' : '10 mi';
+            var atisType = (atisWx.type || 'clear');
+            // Altimeter from standard lapse + airport elevation (simple model)
+            var atisAlt = (29.92 - (nearWp.alt || 0) / 1000 * 0.01).toFixed(2);
+            // Temperature (rough standard lapse: 15°C at sea level, -2°C per 1000ft)
+            var atisTemp = Math.round(15 - (nearWp.alt || 0) / 1000 * 2);
+            var atisDewpt = atisTemp - (atisType === 'overcast' || atisType === 'stormy' ? 2 : 8);
+            // Active runway: player's current heading divided by 10 → designator
+            var atisRwy = String(Math.max(1, Math.min(36, Math.round(state.heading / 10)))).padStart(2, '0');
+            // Rotating letter code — A..Z, new letter each hour of solarHour
+            var atisLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            var atisLtr = atisLetters[Math.floor((dayNight.solarHour != null ? dayNight.solarHour : 12) + nearWp.code.length) % 26];
+            // Panel layout — bottom-left, above the speed tape.
+            var atisX = 10;
+            var atisY = H - 320;
+            var atisW2 = 190;
+            var atisH2 = 96;
+            gfx.fillStyle = 'rgba(2,6,23,0.82)';
+            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.fill();
+            gfx.strokeStyle = '#38bdf8';
             gfx.lineWidth = 1;
-            gfx.strokeRect(tutX, H * 0.3, tutW, 180);
-            gfx.fillStyle = 'rgba(255,255,255,' + tutAlpha + ')';
-            gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('\u2708\uFE0F HOW TO FLY', W / 2, H * 0.3 + 24);
-            gfx.font = '11px system-ui';
-            gfx.fillStyle = 'rgba(148,163,184,' + tutAlpha + ')';
-            var tutLines = [
-              '1. Hold SHIFT to increase throttle to 100%',
-              '2. At 60 knots, press W to pitch up',
-              '3. You\u2019re flying! Use A/D to bank (turn)',
-              '4. Press W/S to pitch up/down',
-              '5. CTRL reduces throttle',
-              '',
-              'V = Toggle view | Space = Pause',
-              'Q = Quiz | I = Flight info | ? = Help'
+            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.stroke();
+            // Title
+            gfx.fillStyle = '#38bdf8';
+            gfx.font = 'bold 10px monospace';
+            gfx.textAlign = 'left'; gfx.textBaseline = 'top';
+            gfx.fillText(nearWp.code + ' ATIS  INFO ' + atisLtr, atisX + 8, atisY + 6);
+            // Body
+            gfx.fillStyle = '#e2e8f0';
+            gfx.font = '9px monospace';
+            var atisLines = [
+              'WIND ' + atisWDir + '° @ ' + atisWSpd + 'KT',
+              'VIS ' + atisVis + '  ' + atisType.toUpperCase(),
+              'TEMP ' + atisTemp + '°C  DEW ' + atisDewpt + '°C',
+              'ALTIMETER ' + atisAlt + '"',
+              'RWY IN USE: ' + atisRwy
             ];
-            tutLines.forEach(function(line, li) {
-              gfx.fillText(line, W / 2, H * 0.3 + 44 + li * 17);
+            atisLines.forEach(function(line, li) {
+              gfx.fillText(line, atisX + 8, atisY + 22 + li * 13);
             });
           }
 
@@ -22930,6 +23087,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = 'rgba(200,200,220,0.5)'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
           gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | V: View | Q: Quiz | F: Forces | Space: Pause | ?: Help', W - 10, H - 8);
 
+          if (pausedRef.current && !loopPauseHeld) {
+            loopPauseHeld = true;
+            gfx.fillStyle = 'rgba(2,6,23,0.55)'; gfx.fillRect(0, 0, W, H);
+            var pzW = Math.min(W - 40, 420), pzX = (W - pzW) / 2, pzY = H * 0.5 - 62;
+            gfx.fillStyle = 'rgba(2,6,23,0.88)';
+            gfx.beginPath(); gfx.roundRect(pzX, pzY, pzW, 124, 14); gfx.fill();
+            gfx.strokeStyle = 'rgba(125,211,252,0.35)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.roundRect(pzX, pzY, pzW, 124, 14); gfx.stroke();
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 26px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'alphabetic';
+            gfx.fillText('⏸ PAUSED', W / 2, pzY + 42);
+            gfx.fillStyle = '#bae6fd'; gfx.font = '13px system-ui';
+            gfx.fillText('Space to resume  ·  I for status  ·  Esc to exit', W / 2, pzY + 70);
+            var ktsP = Math.round(flightRef.current.speed * 0.5924838);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '12px ui-monospace, monospace';
+            gfx.fillText('ALT ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft   SPD ' + ktsP + ' kts   HDG ' + String(Math.round(flightRef.current.heading)).padStart(3, '0') + '°', W / 2, pzY + 98);
+          }
           loopErrCount = 0;
           animRef.current = requestAnimationFrame(loop);
           } catch(loopErr) {
@@ -22960,6 +23133,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── MENU VIEW ──
       if (view === 'menu') {
+        var menuSectionHeadStyle = { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 9px', paddingBottom: '6px', borderBottom: '1px solid rgba(125,211,252,0.16)' };
+        var menuJump = function(secId) {
+          var el = document.getElementById('skyschool-sec-' + secId);
+          if (!el) return;
+          var reduce = false;
+          try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+          el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+          var target = el.querySelector('button, select, a, [tabindex]');
+          if (target && typeof target.focus === 'function') target.focus({ preventScroll: true });
+        };
+
         return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%)' /* NOT var(--allo-stem-canvas, <gradient>): that variable IS defined (#ffffff in light), so the defined value always beat the fallback and the gradient was dead code. In light theme the whole SkySchool shell went plain WHITE while all 66 #94a3b8 labels and 79 white-alpha glass panels kept the dark palette they were drawn for -- 21 AA failures, none of them in dark. Every sibling branch of this render is unconditionally dark; this one now matches. */, borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
           h('style', null, '#skyschool-menu button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-menu button:hover{transform:translateY(-1px);filter:brightness(1.07)}#skyschool-menu button:focus-visible,#skyschool-menu select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}'),
           // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
@@ -23063,13 +23247,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               )
             )
           ),
-          // Back button
-          h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
+          // Back button + section jump rail. The menu is eight stacked bands
+          // — planner, aircraft, airports, study modes, lessons, challenges,
+          // sprints, badges — running to roughly 2,000 px. Reaching the
+          // challenges meant scrolling blind past everything above them, and
+          // nothing on screen said the challenges existed.
+          h('div', { style: { position: 'sticky', top: 0, zIndex: 40, padding: '10px 16px 8px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', background: 'linear-gradient(180deg, rgba(7,17,31,0.97) 62%, rgba(7,17,31,0))', backdropFilter: 'blur(8px)' } },
             h('button', {
               onClick: function() { if (ctx.setStemLabTool) ctx.setStemLabTool(null); },
               'aria-label': __alloT('stem.flightsim.back_to_stem_lab', 'Back to STEAM Lab'),
-              style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
-            }, __alloT('stem.flightsim.stem_lab', '\u2190 STEAM Lab'))
+              style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }
+            }, __alloT('stem.flightsim.stem_lab', '\u2190 STEAM Lab')),
+            h('nav', { 'data-flightsim-section-nav': 'true', 'aria-label': __alloT('stem.flightsim.jump_to_a_section', 'Jump to a section'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              [['plan', __alloT('stem.flightsim.nav_plan', 'Plan')],
+               ['aircraft', __alloT('stem.flightsim.nav_aircraft', 'Aircraft')],
+               ['airports', __alloT('stem.flightsim.nav_airports', 'Airports')],
+               ['study', __alloT('stem.flightsim.nav_study', 'Study')],
+               ['lessons', __alloT('stem.flightsim.nav_lessons', 'Lessons')],
+               ['challenges', __alloT('stem.flightsim.nav_challenges', 'Challenges')],
+               ['sprints', __alloT('stem.flightsim.nav_sprints', 'Sprints')],
+               ['badges', __alloT('stem.flightsim.nav_badges', 'Badges')]].map(function(item) {
+                return h('button', { key: item[0], onClick: function() { menuJump(item[0]); },
+                  style: { padding: '5px 10px', borderRadius: '999px', border: '1px solid rgba(125,211,252,0.22)', background: 'rgba(2,6,23,0.6)', color: '#bae6fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                }, item[1]);
+              })
+            )
           ),
           // Cockpit briefing
           (function() {
@@ -23100,7 +23302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '6px', marginBottom: '10px' } },
                     [
-                      ['Aircraft', currentAC.name.split(' ')[0], currentAC.category, '#7dd3fc'],
+                      ['Aircraft', currentAC.shortName || currentAC.name.split(' ')[0], currentAC.category, '#7dd3fc'],
                       ['Route', depWp.code + ' to ' + destWp.code, dist + ' nm', '#fbbf24'],
                       ['Progress', flightMinutes + ' min', (visitedAirports.length || 0) + ' airports', '#86efac'],
                       ['Badges', badgeCount + '/' + ACHIEVEMENTS.length, discoveryCount + ' finds', '#c4b5fd']
@@ -23133,6 +23335,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                       style: secondaryStyle,
                       'aria-label': __alloT('stem.flightsim.open_pre_flight_checklist', 'Open pre-flight checklist')
                     }, __alloT('stem.flightsim.pre_flight', 'Pre-Flight'))
+                  ),
+                  h('div', { 'data-flightsim-key-legend': 'true', style: { marginTop: '10px', padding: '9px 10px', borderRadius: '8px', background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(148,163,184,0.16)' } },
+                    h('div', { style: { fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: '6px' } }, __alloT('stem.flightsim.controls', 'Controls')),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 10px' } },
+                      [['W/S', __alloT('stem.flightsim.key_pitch', 'Pitch')], ['A/D', __alloT('stem.flightsim.key_bank', 'Bank')], ['Shift/Ctrl', __alloT('stem.flightsim.key_throttle', 'Throttle')], ['B', __alloT('stem.flightsim.key_autopilot', 'Autopilot')], ['F', __alloT('stem.flightsim.key_forces', 'Forces')], ['Q', __alloT('stem.flightsim.key_quiz', 'Quiz')], ['Space', __alloT('stem.flightsim.key_pause', 'Pause')], ['?', __alloT('stem.flightsim.key_help', 'Help')], ['Esc', __alloT('stem.flightsim.key_exit', 'Exit')]].map(function(item) {
+                        return h('div', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: '5px' } },
+                          h('kbd', { style: { fontFamily: 'ui-monospace, monospace', fontSize: '9px', fontWeight: 700, color: '#bae6fd', background: 'rgba(30,58,95,0.85)', border: '1px solid rgba(125,211,252,0.2)', padding: '2px 5px', borderRadius: '4px' } }, item[0]),
+                          h('span', { style: { fontSize: '10px', color: '#cbd5e1' } }, item[1])
+                        );
+                      })
+                    )
                   )
                 ),
                 h('div', { style: { borderRadius: '8px', background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(125,211,252,0.18)', padding: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' } },
@@ -23151,7 +23364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     h('circle', { cx: '322', cy: '42', r: '8', fill: '#4ade80' }),
                     h('text', { x: '40', y: '136', textAnchor: 'middle', fontSize: '12', fill: '#e0f2fe', fontWeight: '700' }, depWp.code),
                     h('text', { x: '322', y: '30', textAnchor: 'middle', fontSize: '12', fill: '#dcfce7', fontWeight: '700' }, destWp.code),
-                    h('text', { x: '180', y: '134', textAnchor: 'middle', fontSize: '11', fill: '#fef3c7', fontWeight: '700' }, String(hdg).padStart(3, '0') + ' deg / ' + estMin + ' min')
+                    h('text', { x: '180', y: '134', textAnchor: 'middle', fontSize: '11', fill: '#fef3c7', fontWeight: '700' }, String(hdg).padStart(3, '0') + '° / ' + estMin + ' min')
                   ),
                   h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.45 } },
                     __alloT('stem.flightsim.cockpit_briefing_summary', 'Default mission: depart Portland, build airspeed, rotate near 60 knots, then follow the route or explore landmarks.')
@@ -23191,8 +23404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' } }, __alloT('stem.flightsim.takeoff_from_portland_international_je', 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world'))
           ),
           // Flight Planner
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_planner', '🗺️ Flight Planner')),
+          h('section', { id: 'skyschool-sec-plan', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.flight_planner', '🗺️ Flight Planner')),
             h('div', { style: { background: '#0f172a' /* same trap as the shell above: --allo-stem-deeper IS defined (#e2e8f0 in light), so this panel turned light while its 8px #94a3b8 labels stayed dark-palette -- 2.07:1. The tool is dark in every branch; pin the literal. */, borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
@@ -23247,8 +23460,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Aircraft Selection
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.select_aircraft', '🛩️ Select Aircraft')),
+          h('section', { id: 'skyschool-sec-aircraft', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.select_aircraft', '🛩️ Select Aircraft')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '6px' } },
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
@@ -23257,24 +23470,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   'aria-label': ac.name + ' (' + ac.category + ')' + (isSelected ? ', selected' : ''),
                   style: { padding: '8px 4px', borderRadius: '8px', border: '2px solid ' + (isSelected ? '#3b82f6' : '#1e293b'), background: isSelected ? '#1e3a5f' : '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
-                  h('div', { style: { fontSize: '20px' } }, ac.icon),
-                  h('div', { style: { fontSize: '9px', fontWeight: 700, marginTop: '2px', lineHeight: '1.2' } }, ac.name.split(' ')[0]),
-                  h('div', { style: { fontSize: '8px', color: '#cbd5e1', marginTop: '1px' } }, ac.category)
+                  acSilhouette(h, ac.id, 30, isSelected ? '#7dd3fc' : '#94a3b8'),
+                  h('div', { style: { fontSize: '10px', fontWeight: 800, marginTop: '5px', lineHeight: '1.2' } }, ac.shortName || ac.name.split(' ')[0]),
+                  h('div', { style: { fontSize: '8px', color: isSelected ? '#bae6fd' : '#94a3b8', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.06em' } }, ac.category)
                 );
               })
             ),
             // Selected aircraft detail card
             h('div', { style: { marginTop: '8px', padding: '10px', background: '#0f172a', borderRadius: '8px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '13px', fontWeight: 800, color: '#fff' } }, currentAC.icon + ' ' + currentAC.name),
+                h('span', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 800, color: '#fff' } }, acSilhouette(h, currentAC.id, 22, '#7dd3fc'), currentAC.name),
                 h('span', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: '6px', marginBottom: '6px' } },
-                [['Max Speed', Math.round(currentAC.maxSpeed) + ' kts', Math.min(100, currentAC.maxSpeed / 5), '#60a5fa'],
-                 ['Ceiling', (currentAC.ceiling / 1000).toFixed(0) + 'K ft', Math.min(100, currentAC.ceiling / 500), '#a78bfa'],
-                 ['Range', currentAC.range + ' nm', Math.min(100, currentAC.range / 30), '#4ade80'],
-                 ['Weight', (currentAC.weight / 1000).toFixed(1) + 'K lbs', Math.min(100, currentAC.weight / 7000 * 100), '#f59e0b']
+                [['Max Speed', Math.round(currentAC.maxSpeed).toLocaleString() + ' kts', specBarPct(currentAC.maxSpeed, 1900), '#60a5fa'],
+                 ['Ceiling', specFigure(currentAC.ceiling, 'ft'), specBarPct(currentAC.ceiling, 85000), '#a78bfa'],
+                 ['Range', currentAC.range ? specFigure(currentAC.range, 'nm') : __alloT('stem.flightsim.unpowered', 'Unpowered'), specBarPct(currentAC.range, 3200), '#4ade80'],
+                 ['Weight', specFigure(currentAC.weight, 'lbs'), specBarPct(currentAC.weight, 152000), '#f59e0b']
                 ].map(function(stat) {
                   return h('div', { key: stat[0], style: { background: '#1e293b', borderRadius: '6px', padding: '6px', textAlign: 'center' } },
                     h('div', { style: { fontSize: '11px', fontWeight: 700, color: stat[3] } }, stat[1]),
@@ -23291,8 +23504,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Departure selector
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.or_choose_a_departure_airport', 'Or choose a departure airport')),
+          h('section', { id: 'skyschool-sec-airports', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.or_choose_a_departure_airport', 'Or choose a departure airport')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
               WAYPOINTS.map(function(wp) {
                 var visited = visitedAirports.indexOf(wp.id) >= 0;
@@ -23320,46 +23533,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Learn / Quiz / Preflight / Calculator — new interactive modes
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.learn_practice_calculate', '🎓 Learn, Practice, Calculate')),
+          h('section', { id: 'skyschool-sec-study', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.learn_practice_calculate', '🎓 Learn, Practice, Calculate')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '8px' } },
               [
-                { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.20_topics_forces_instruments_history_c', '100 topics: forces, instruments, history, careers...'), bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
-                { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
-                { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: __alloT('stem.flightsim.interactive_checklist_real_pilots_use', 'Interactive checklist real pilots use'),              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
-                { id: 'calculator', icon: '🧮', label: __alloT('stem.flightsim.lift_calc', 'Lift Calc'),   desc: __alloT('stem.flightsim.compute_lift_for_any_aircraft_speed_al', 'Compute lift for any aircraft + speed + altitude'),   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' },
-                { id: 'stallHunt',  icon: '⚠️', label: __alloT('stem.flightsim.stall_discovery', 'Stall Discovery'), desc: __alloT('stem.flightsim.adjust_airspeed_altitude_aoa_discover_', 'Adjust airspeed, altitude, AoA — discover the stall envelope.'), bg: 'linear-gradient(135deg, #be123c, #9f1239)' }
+                { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.learn_topics_count_desc', '100 topics: forces, instruments, history, careers…'), bg: 'linear-gradient(160deg, #1d4ed8, #1e3a8a)', accent: '#93c5fd' },
+                { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(160deg, #1e40af, #172554)', accent: '#a5b4fc' },
+                { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: __alloT('stem.flightsim.interactive_checklist_real_pilots_use', 'Interactive checklist real pilots use'),              bg: 'linear-gradient(160deg, #115e59, #042f2e)', accent: '#5eead4' },
+                { id: 'calculator', icon: '🧮', label: __alloT('stem.flightsim.lift_calc', 'Lift Calc'),   desc: __alloT('stem.flightsim.compute_lift_for_any_aircraft_speed_al', 'Compute lift for any aircraft + speed + altitude'),   bg: 'linear-gradient(160deg, #0e7490, #083344)', accent: '#67e8f9' },
+                { id: 'stallHunt',  icon: '⚠️', label: __alloT('stem.flightsim.stall_discovery', 'Stall Discovery'), desc: __alloT('stem.flightsim.adjust_airspeed_altitude_aoa_discover_', 'Adjust airspeed, altitude, AoA — discover the stall envelope.'), bg: 'linear-gradient(160deg, #92400e, #451a03)', accent: '#fcd34d' }
               ].map(function(m) {
                 return h('button', {
                   key: m.id,
                   onClick: function() { upd('view', m.id); },
                   'aria-label': m.label + ' — ' + m.desc,
-                  style: { padding: '12px 8px', borderRadius: '10px', border: 'none', background: m.bg, color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }
+                  style: { padding: '12px 8px', borderRadius: '10px', border: '1px solid ' + m.accent + '33', background: m.bg, color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s', boxShadow: '0 4px 12px rgba(2,6,23,0.35)' }
                 },
                   h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, m.icon),
-                  h('div', { style: { fontSize: '12px', fontWeight: 800 } }, m.label),
-                  h('div', { style: { fontSize: '9px', opacity: 0.85, marginTop: '3px', lineHeight: 1.3 } }, m.desc)
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, color: m.accent } }, m.label),
+                  h('div', { style: { fontSize: '9px', color: '#e2e8f0', opacity: 0.88, marginTop: '3px', lineHeight: 1.3 } }, m.desc)
                 );
               })
             )
           ),
           // Lessons
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.aerodynamics_lessons', '📚 Aerodynamics Lessons')),
+          h('section', { id: 'skyschool-sec-lessons', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.aerodynamics_lessons', '📚 Aerodynamics Lessons')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '8px' } },
               Object.keys(LESSONS).map(function(key) {
                 var les = LESSONS[key];
+                var lesDone = !!((d.completedLessons || {})[key]);
                 return h('button', { key: key, onClick: function() { updMulti({ view: 'lesson', selectedLesson: key }); },
-                  style: { padding: '10px 8px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'center' }
-                }, h('div', { style: { fontSize: '20px' } }, les.icon),
+                  'aria-label': les.title + (lesDone ? ' (completed)' : ''),
+                  style: { position: 'relative', padding: '10px 8px', borderRadius: '8px', border: '1px solid ' + (lesDone ? 'rgba(34,197,94,0.5)' : '#334155'), background: lesDone ? 'rgba(20,83,45,0.28)' : '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'center' }
+                }, lesDone ? h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: '5px', right: '7px', fontSize: '11px', fontWeight: 900, color: '#4ade80' } }, '\u2713') : null,
+                  h('div', { style: { fontSize: '20px' } }, les.icon),
                   h('div', { style: { fontSize: '10px', fontWeight: 700, marginTop: '4px' } }, les.title)
                 );
               })
             )
           ),
           // Challenges
-          h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_challenges', '🏆 Flight Challenges')),
+          h('section', { id: 'skyschool-sec-challenges', style: { padding: '0 24px 24px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.flight_challenges', '🏆 Flight Challenges')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
                 var isRescue = ch.id === 'coastal_rescue';
@@ -23408,8 +23624,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // HyperJet Geography Sprint
-          h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.hyperjet_geography_sprint', '🚀 HyperJet Geography Sprint')),
+          h('section', { id: 'skyschool-sec-sprints', style: { padding: '0 24px 24px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, __alloT('stem.flightsim.hyperjet_geography_sprint', '🚀 HyperJet Geography Sprint')),
             h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, __alloT('stem.flightsim.fly_at_mach_3_on_autopilot_name_countr', 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
               SPRINT_ROUTES.map(function(route) {
@@ -23424,35 +23640,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Achievements
-          h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+          h('section', { id: 'skyschool-sec-badges', style: { padding: '0 24px 16px', scrollMarginTop: '52px' } },
+            h('h3', { style: menuSectionHeadStyle }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(196px, 1fr))', gap: '6px' } },
               ACHIEVEMENTS.map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
-                return h('div', { key: ach.id, title: ach.name + ': ' + ach.desc,
-                  style: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (earned ? '#3b82f6' : '#334155'), cursor: 'default' }
-                }, ach.icon + ' ' + (earned ? ach.name : '???'));
+                return h('div', { key: ach.id,
+                  'data-badge-state': earned ? 'earned' : 'locked',
+                  'aria-label': ach.name + (earned ? ' — earned. ' : ' — not yet earned. ') + ach.desc,
+                  style: { display: 'flex', gap: '7px', alignItems: 'flex-start', padding: '7px 9px', borderRadius: '8px', background: earned ? 'rgba(30,58,95,0.9)' : 'rgba(15,23,42,0.7)', border: '1px solid ' + (earned ? '#3b82f6' : '#293548'), cursor: 'default' }
+                },
+                  h('div', { 'aria-hidden': 'true', style: { fontSize: '14px', lineHeight: 1.1, filter: earned ? 'none' : 'grayscale(1)', opacity: earned ? 1 : 0.55 } }, earned ? ach.icon : '🔒'),
+                  h('div', null,
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fbbf24' : '#cbd5e1', lineHeight: 1.2 } }, ach.name),
+                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px', lineHeight: 1.35 } }, ach.desc)
+                  )
+                );
               })
             )
           ),
-          // Controls legend
-          h('div', { style: { padding: '12px 24px', borderTop: '1px solid #1e293b', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' } },
-            [['W/S or ↑/↓', 'Pitch'], ['A/D or ←/→', 'Bank'], ['Shift/Ctrl', 'Throttle'], ['B', 'Autopilot'], ['F', 'Forces'], ['Q', 'Quiz'], ['Space', 'Pause'], ['?', 'Help'], ['ESC', 'Exit']].map(function(item) {
-              return h('div', { key: item[0], style: { textAlign: 'center' } },
-                h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa', background: '#1e3a5f', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
-                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, item[1])
-              );
-            })
-          )
+          // The keyboard legend that used to close the page now sits in the
+          // briefing card at the top, beside the Free Flight button — the
+          // moment a first-time pilot actually needs it. It was the last thing
+          // on a ~2,000 px scroll, i.e. after every launch button on the page.
+          // Arrow keys still work as aliases for W/S and A/D, and the flight
+          // display names them on its own bottom strip.
+          h('div', { style: { height: '8px' } })
         );
       }
 
       // ── LESSON VIEW ──
       if (view === 'lesson' && selectedLesson && LESSONS[selectedLesson]) {
         var les = LESSONS[selectedLesson];
-        return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.flightsim.back_to_menu', '← Back to Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #0c1222, #1e3a5f)', borderRadius: '16px', padding: '24px', color: '#fff' } },
+        var lessonIds = Object.keys(LESSONS);
+        var lessonIdx = lessonIds.indexOf(selectedLesson);
+        var lessonDone = d.completedLessons || {};
+        var prevLessonId = lessonIdx > 0 ? lessonIds[lessonIdx - 1] : null;
+        var nextLessonId = lessonIdx < lessonIds.length - 1 ? lessonIds[lessonIdx + 1] : null;
+        var lessonNavStyle = function(enabled) {
+          return { flex: '1 1 0', padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + (enabled ? 'rgba(125,211,252,0.35)' : 'rgba(71,85,105,0.5)'), background: enabled ? 'rgba(14,165,233,0.12)' : 'rgba(15,23,42,0.4)', color: enabled ? '#e0f2fe' : '#64748b', fontSize: '12px', fontWeight: 700, cursor: enabled ? 'pointer' : 'default', textAlign: 'left', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
+        };
+        return h('div', { style: { padding: '24px', maxWidth: '720px', margin: '0 auto' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' } },
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '13px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, padding: 0 } }, __alloT('stem.flightsim.back_to_menu', '← Back to Menu')),
+            h('div', { 'aria-live': 'polite', style: { fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#94a3b8' } },
+              __alloT('stem.flightsim.lesson', 'Lesson') + ' ' + (lessonIdx + 1) + ' / ' + lessonIds.length + '  \u00B7  ' + Object.keys(lessonDone).filter(function(k) { return LESSONS[k]; }).length + ' ' + __alloT('stem.flightsim.done', 'done'))
+          ),
+          // Lesson strip: every lesson reachable from any lesson, done ones ticked.
+          h('nav', { 'aria-label': __alloT('stem.flightsim.aerodynamics_lessons_nav', 'Aerodynamics lessons'), style: { display: 'grid', gridTemplateColumns: 'repeat(' + lessonIds.length + ', 1fr)', gap: '4px', marginBottom: '14px' } },
+            lessonIds.map(function(id, li) {
+              var isCur = id === selectedLesson, isDone = !!lessonDone[id];
+              return h('button', { key: id, onClick: function() { upd('selectedLesson', id); },
+                'aria-current': isCur ? 'page' : undefined,
+                'aria-label': LESSONS[id].title + (isDone ? ' (completed)' : ''),
+                title: LESSONS[id].title,
+                style: { padding: '7px 4px', borderRadius: '8px', border: '1px solid ' + (isCur ? '#38bdf8' : isDone ? 'rgba(34,197,94,0.45)' : 'rgba(51,65,85,0.8)'), background: isCur ? 'rgba(14,165,233,0.18)' : 'rgba(15,23,42,0.6)', color: isCur ? '#e0f2fe' : isDone ? '#86efac' : '#94a3b8', fontSize: '11px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }
+              }, h('span', { 'aria-hidden': 'true' }, LESSONS[id].icon), h('span', null, String(li + 1)), isDone ? h('span', { 'aria-hidden': 'true', style: { color: '#4ade80' } }, '\u2713') : null);
+            })
+          ),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c1222, #1e3a5f)', borderRadius: '16px', padding: '24px', color: '#fff', border: '1px solid rgba(125,211,252,0.16)' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' } }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, __alloT('stem.flightsim.' + (selectedLesson) + '_content', les.content)),
@@ -23482,7 +23728,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 'aria-pressed': _isDone,
                 style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '10px', border: '1px solid ' + (_isDone ? '#22c55e' : '#475569'), background: _isDone ? 'rgba(34,197,94,0.15)' : 'rgba(15,23,42,0.6)', color: _isDone ? '#4ade80' : '#cbd5e1', fontSize: '13px', fontWeight: 700, cursor: _isDone ? 'default' : 'pointer' }
               }, _isDone ? __alloT('stem.flightsim.lesson_completed', '✓ Lesson completed') : __alloT('stem.flightsim.mark_lesson_complete', '📚 Mark lesson complete'));
-            })()
+            })(),
+            // Previous / next, so the sequence reads as a course.
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+              h('button', { onClick: function() { if (prevLessonId) upd('selectedLesson', prevLessonId); }, disabled: !prevLessonId, style: lessonNavStyle(!!prevLessonId) },
+                prevLessonId ? '\u2190 ' + LESSONS[prevLessonId].title : '\u2190 ' + __alloT('stem.flightsim.first_lesson', 'First lesson')),
+              h('button', { onClick: function() { if (nextLessonId) upd('selectedLesson', nextLessonId); else upd('view', 'menu'); }, style: Object.assign(lessonNavStyle(true), { textAlign: 'right' }) },
+                nextLessonId ? LESSONS[nextLessonId].title + ' \u2192' : __alloT('stem.flightsim.back_to_menu_arrow', 'Back to menu \u2192'))
+            )
           )
         );
       }
@@ -23496,10 +23749,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var flightBadgeStyle = function(color) {
           return { minHeight: '27px', padding: '5px 10px', borderRadius: '999px', background: 'rgba(2,6,23,0.7)', color: color, border: '1px solid ' + color + '44', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 850, letterSpacing: '0.02em', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' };
         };
+        var railOpen = !d.railCollapsed;
+        // Takeoff card: rotorcraft lift vertically — no runway roll, no Vr.
+        var tkRotor = !!(currentAC.isHelicopter || currentAC.isDrone);
+        var tkVr = hudRef.current.vrKts || null;
         var activeWeather = (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]);
         var activeWorldEnv = hudRef.current.worldEnvironment || getWorldEnvironment(flightRef.current.lat, flightRef.current.lon, 0, false);
         return h('div', { id: 'skyschool-flight-container', 'data-flightsim-flight-deck': 'true', 'data-flight-state': pausedUi ? 'paused' : 'active', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 28%, #172554 0%, #071426 48%, #020617 100%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(125,211,252,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -80px 100px rgba(2,6,23,0.32), 0 24px 60px rgba(2,6,23,0.42)' } },
-          h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-command-rail{top:8px!important;left:8px!important;right:8px!important;max-width:none!important;flex-direction:row!important;flex-wrap:wrap!important}.skyschool-command-rail .skyschool-rail-label{width:100%}.skyschool-command-rail button{flex:1 1 110px;justify-content:center}.skyschool-status-rail{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
+          h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-hud-dock{top:8px!important;left:8px!important;right:8px!important;width:auto!important}.skyschool-command-rail{width:auto!important;max-width:none!important;align-self:stretch!important;grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important}.skyschool-rail-collapsed{grid-template-columns:1fr!important;align-self:flex-start!important}.skyschool-command-rail .skyschool-rail-label{grid-column:1/-1}.skyschool-command-rail button{justify-content:center}.skyschool-status-rail{flex-direction:row!important;flex-wrap:wrap!important;column-gap:14px!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
             // Purely the WebGL paint layer stacked under the labelled
@@ -23517,7 +23774,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
             onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
           }),
-          h('div', { className: 'skyschool-status-rail', role: 'status', 'aria-label': 'Flight visual status', style: { position: 'absolute', top: '40px', right: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', padding: '8px 10px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.78), rgba(15,23,42,0.64))', border: '1px solid rgba(125,211,252,0.2)', boxShadow: '0 12px 30px rgba(2,6,23,0.38)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
+          !d.showHelp && h('div', { className: 'skyschool-hud-dock', 'data-flightsim-hud-dock': 'true', style: { position: 'absolute', top: '66px', left: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px', width: railOpen ? '224px' : 'auto' } },
+          h('div', { className: 'skyschool-status-rail', role: 'status', 'aria-label': 'Flight visual status', style: { order: 2, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '5px', padding: '8px 10px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.78), rgba(15,23,42,0.64))', border: '1px solid rgba(125,211,252,0.2)', boxShadow: '0 12px 30px rgba(2,6,23,0.38)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
             h('div', { style: { fontSize: '10px', fontWeight: 900, color: '#e0f2fe', letterSpacing: '0.04em', textTransform: 'uppercase' } }, threeLoaded ? '● RENDER · 3D TERRAIN' : '● RENDER · CANVAS'),
             h('div', { style: { fontSize: '10px', fontWeight: 800, color: d.thirdPerson ? '#c4b5fd' : '#67e8f9' } }, d.thirdPerson ? 'VIEW · CHASE CAMERA' : 'VIEW · COCKPIT'),
             h('div', { ref: worldStatusRef, 'data-world-environment': 'true', 'data-world-biome': activeWorldEnv.id, style: { fontSize: '10px', fontWeight: 850, color: '#a7f3d0' } }, 'WORLD · ' + activeWorldEnv.label.toUpperCase()),
@@ -23526,9 +23784,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               'CONFIG · ' + (currentAC.flapDetents ? 'FLAPS ' + flightConfigUi.flaps + '°' : 'CLEAN') + ' · BRK ' + (flightConfigUi.brake ? 'SET' : 'OFF'))
           ),
           // Overlay controls
-          h('nav', { className: 'skyschool-command-rail', 'data-flightsim-command-rail': 'true', 'aria-label': 'Flight deck controls', style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, maxWidth: '210px', padding: '8px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.82), rgba(15,23,42,0.68))', border: '1px solid rgba(125,211,252,0.22)', boxShadow: '0 14px 34px rgba(2,6,23,0.42)', backdropFilter: 'blur(14px)' } },
-            h('div', { className: 'skyschool-rail-label', style: { padding: '2px 3px 4px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.14em', color: '#bae6fd', textTransform: 'uppercase' } }, 'Flight deck'),
-            h('button', { onClick: function() {
+          h('nav', { className: 'skyschool-command-rail' + (railOpen ? '' : ' skyschool-rail-collapsed'), 'data-flightsim-command-rail': 'true', 'data-rail-open': railOpen ? 'true' : 'false', 'aria-label': 'Flight deck controls', style: { order: 1, alignSelf: railOpen ? 'stretch' : 'flex-start', display: 'grid', gridTemplateColumns: railOpen ? '1fr 1fr' : '1fr', gap: '5px', width: railOpen ? '224px' : 'auto', maxWidth: '224px', padding: '8px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.82), rgba(15,23,42,0.68))', border: '1px solid rgba(125,211,252,0.22)', boxShadow: '0 14px 34px rgba(2,6,23,0.42)', backdropFilter: 'blur(14px)' } },
+            // Header doubles as the collapse control. The rail used to be a
+            // single 13-item column ~430 px tall pinned over the left third of
+            // the windscreen, with no way to move it — the one part of the
+            // scene a student is told to look at (the runway ahead) was the
+            // part it covered. Two columns halve the height, and the chevron
+            // folds the rail down to this single row.
+            h('div', { className: 'skyschool-rail-label', style: { gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', padding: '1px 1px 3px' } },
+              h('span', { style: { fontSize: '9px', fontWeight: 900, letterSpacing: '0.14em', color: '#bae6fd', textTransform: 'uppercase' } }, railOpen ? 'Flight deck' : '\u2708\uFE0F Deck'),
+              h('button', {
+                onClick: function() { upd('railCollapsed', railOpen); },
+                'aria-expanded': railOpen,
+                'aria-label': railOpen ? 'Collapse the flight deck controls' : 'Expand the flight deck controls',
+                style: { minWidth: '26px', minHeight: '22px', padding: '0 6px', borderRadius: '7px', background: 'rgba(56,189,248,0.14)', border: '1px solid rgba(125,211,252,0.3)', color: '#e0f2fe', fontSize: '11px', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }
+              }, railOpen ? '\u2039\u2039' : '\u203A\u203A')
+            ),
+            railOpen &&             railOpen && h('button', { onClick: function() {
               flyingRef.current = false; stopEngineSound(); stopWindSound(); updateStallHorn(false);
               // Generate flight debrief
               var log = logRef.current;
@@ -23554,7 +23826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             },
               style: flightGlassButton(false, '#f87171')
             }, __alloT('stem.flightsim.exit', '✕ Exit')),
-            h('button', { onClick: function() {
+            railOpen && h('button', { onClick: function() {
               var container = document.getElementById('skyschool-flight-container');
               if (!container) return;
               // Inside a sandboxed embed (the Canvas surface) real fullscreen is refused
@@ -23578,26 +23850,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               'aria-pressed': fullscreenActive,
               style: flightGlassButton(fullscreenActive, '#22d3ee')
             }, fullscreenActive ? __alloT('stem.flightsim.exit_fullscreen', '\u26F6 Exit Fullscreen') : __alloT('stem.flightsim.fullscreen', '\u26F6 Fullscreen')),
-            h('button', {
+            railOpen && h('button', {
               onClick: function() { setFlightPaused(!pausedRef.current); },
               'aria-label': pausedUi ? 'Resume flight' : 'Pause flight',
               'aria-pressed': pausedUi,
               style: flightGlassButton(pausedUi, '#fbbf24')
             }, pausedUi ? '\u25B6 Resume' : '\u23F8 Pause'),
-            h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
+            railOpen && h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
               'aria-label': d.thirdPerson ? 'Switch to cockpit view' : 'Switch to third-person view',
               style: flightGlassButton(!!d.thirdPerson, '#818cf8')
             }, d.thirdPerson ? '\uD83C\uDFA5 Cockpit View' : '\uD83C\uDFA5 Chase Cam'),
-            h('button', { onClick: function() { upd('showForces', !d.showForces); },
+            railOpen && h('button', { onClick: function() { upd('showForces', !d.showForces); },
               'aria-label': d.showForces ? 'Hide force vectors' : 'Show force vectors',
               style: flightGlassButton(!!d.showForces, '#22d3ee')
             }, d.showForces ? '⚡ Forces ON' : '⚡ Forces'),
-            currentAC.flapDetents && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' } },
+            railOpen && currentAC.flapDetents && h('div', { style: { gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' } },
               h('button', { onClick: function() { changeFlapDetent(-1); }, disabled: flightConfigUi.flaps <= 0, 'aria-label': 'Retract flaps one detent', style: flightGlassButton(flightConfigUi.flaps > 0, '#fbbf24') }, 'FLAPS −'),
               h('button', { onClick: function() { changeFlapDetent(1); }, disabled: flightConfigUi.flaps >= currentAC.flapDetents[currentAC.flapDetents.length - 1], 'aria-label': 'Extend flaps one detent', style: flightGlassButton(flightConfigUi.flaps > 0, '#fbbf24') }, 'FLAPS +')
             ),
-            !currentAC.isHelicopter && !currentAC.isDrone && h('button', { onClick: toggleWheelBrake, 'aria-label': flightConfigUi.brake ? 'Release wheel brakes' : 'Set wheel brakes', 'aria-pressed': flightConfigUi.brake, style: flightGlassButton(flightConfigUi.brake, '#ef4444') }, flightConfigUi.brake ? '🛑 Brakes SET' : '◉ Wheel Brakes'),
-            h('button', { onClick: function() {
+            railOpen && !currentAC.isHelicopter && !currentAC.isDrone && h('button', { onClick: toggleWheelBrake, 'aria-label': flightConfigUi.brake ? 'Release wheel brakes' : 'Set wheel brakes', 'aria-pressed': flightConfigUi.brake, style: flightGlassButton(flightConfigUi.brake, '#ef4444') }, flightConfigUi.brake ? '🛑 Brakes SET' : '◉ Wheel Brakes'),
+            railOpen && h('button', { onClick: function() {
               var types = WEATHER_TYPES;
               var wx = weatherRef.current;
               var idx = types.findIndex(function(t) { return t.id === wx.type; });
@@ -23608,13 +23880,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             },
               style: flightGlassButton(false, '#38bdf8')
             }, '🌤️ ' + (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]).label),
-            // Discovery counter
-            h('div', { style: flightBadgeStyle('#fbbf24')
-            }, '📍 ' + Object.keys(geoDiscoveredRef.current).length + ' this flight'),
-            h('div', { style: flightBadgeStyle('#60a5fa')
-            }, currentAC.icon + ' ' + currentAC.name.split(' ')[0]),
-            h('div', { style: flightBadgeStyle('#4ade80')
-            }, '🏆 ' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length)
+            // Live tallies. These were three full-width rows of their own — a
+            // third of the rail's height spent on three numbers.
+            railOpen && h('div', { style: { gridColumn: '1 / -1', display: 'flex', gap: '4px' } },
+              h('div', { style: Object.assign(flightBadgeStyle('#fbbf24'), { flex: '1 1 0', padding: '5px 4px' }), title: 'Places discovered this flight' }, '\uD83D\uDCCD ' + Object.keys(geoDiscoveredRef.current).length),
+              h('div', { style: Object.assign(flightBadgeStyle('#60a5fa'), { flex: '1 1 0', padding: '5px 4px' }), title: currentAC.name }, currentAC.shortName || currentAC.name.split(' ')[0]),
+              h('div', { style: Object.assign(flightBadgeStyle('#4ade80'), { flex: '1 1 0', padding: '5px 4px' }), title: 'Badges earned' }, '\uD83C\uDFC6 ' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length)
+            )
+          )
           ),
           // ─── TAKEOFF TUTORIAL OVERLAY ───
           // Shown when plane is on the ground at low speed. Auto-dismisses on liftoff.
@@ -23623,7 +23896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Landing tutorial: shows when player is on approach (low altitude near a
           // runway, descending) and hasn't dismissed it yet. Different content from
           // takeoff: glideslope, flare, target FPM.
-          (flightRef.current && !flightRef.current.onGround && hudRef.current.nearWp
+          (!d.showHelp && !currentAC.isHelicopter && !currentAC.isDrone && flightRef.current && !flightRef.current.onGround && hudRef.current.nearWp
             && hudRef.current.nearDist != null && hudRef.current.nearDist < 5
             && (flightRef.current.altitude - (flightRef.current.fieldElev || 0)) < 1500
             && (flightRef.current.altitude - (flightRef.current.fieldElev || 0)) > 50
@@ -23631,8 +23904,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             && !d.landingTutorialDismissed) ? h('div', {
             className: 'skyschool-tutorial-card',
             style: {
-              position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
-              maxWidth: '340px', padding: '16px', borderRadius: '12px',
+              position: 'absolute', top: '206px', right: '10px',
+              width: 'min(340px, calc(100% - 260px))', maxHeight: 'calc(100% - 190px)', overflowY: 'auto',
+              padding: '16px', borderRadius: '12px',
               background: 'rgba(2,6,23,0.92)', border: '2px solid #fbbf24',
               color: '#e2e8f0', fontSize: '12px', lineHeight: '1.6', zIndex: 20,
               boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
@@ -23676,11 +23950,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               )
             )
           ) : null,
-          (flightRef.current && flightRef.current.onGround && flightRef.current.speed < 30 && !d.takeoffTutorialDismissed) ? h('div', {
+          (!d.showHelp && flightRef.current && flightRef.current.onGround && flightRef.current.speed < 30 && !d.takeoffTutorialDismissed) ? h('div', {
             className: 'skyschool-tutorial-card',
             style: {
-              position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
-              maxWidth: '340px', padding: '16px', borderRadius: '12px',
+              position: 'absolute', top: '206px', right: '10px',
+              width: 'min(340px, calc(100% - 260px))', maxHeight: 'calc(100% - 190px)', overflowY: 'auto',
+              padding: '16px', borderRadius: '12px',
               background: 'rgba(2,6,23,0.92)', border: '2px solid #38bdf8',
               color: '#e2e8f0', fontSize: '12px', lineHeight: '1.6', zIndex: 20,
               boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
@@ -23693,8 +23968,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }
               }, '✕')
             ),
-            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, __alloT('stem.flightsim.you_re_parked_on_the_runway_here_s_how', "You're parked on the runway. Here's how to get airborne:")),
-            h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, (tkRotor ? __alloT('stem.flightsim.you_re_on_the_pad_here_s_how_to_lift_off', "You're on the pad. Here's how to lift off:") : __alloT('stem.flightsim.you_re_parked_on_the_runway_here_s_how', "You're parked on the runway. Here's how to get airborne:"))),
+            tkRotor && h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.rotor_1_add_power', '1. Add power: ')),
+                __alloT('stem.flightsim.rotor_hold', 'Hold '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, __alloT('stem.flightsim.shift', 'Shift')),
+                __alloT('stem.flightsim.rotor_1_body', ' and the rotor spins up. You lift straight off the pad — no runway roll.')
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.rotor_2_hover', '2. Hover: ')),
+                __alloT('stem.flightsim.rotor_2_body', 'Watch the AGL readout on the right. Ease off '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, __alloT('stem.flightsim.shift', 'Shift')),
+                __alloT('stem.flightsim.rotor_2_tail', ' until the climb stops and you hold a height.')
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.rotor_3_move', '3. Move: ')),
+                __alloT('stem.flightsim.rotor_3_press', 'Press '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
+                __alloT('stem.flightsim.rotor_3_body', ' to tip the nose forward and translate; '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'S'),
+                __alloT('stem.flightsim.rotor_3_tail', ' slows you. A/D turn.')
+              ),
+              h('li', null,
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.rotor_4_land', '4. Land: ')),
+                currentAC.isDrone
+                  ? __alloT('stem.flightsim.rotor_4_drone', 'Reduce power gently and settle at under 200 fpm. Part 107 caps you at 400 ft above the ground.')
+                  : __alloT('stem.flightsim.rotor_4_heli', 'Reduce power gently and settle at under 200 fpm. You can land anywhere flat — that is the point of a helicopter.')
+              )
+            ),
+            !tkRotor && h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
               h('li', { style: { marginBottom: '6px' } },
                 h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.1_add_throttle', '1. Add throttle: ')),
                 __alloT('stem.flightsim.hold_2', 'Hold '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, __alloT('stem.flightsim.shift', 'Shift')),
@@ -23702,8 +24001,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ),
               h('li', { style: { marginBottom: '6px' } },
                 h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.2_build_airspeed', '2. Build airspeed: ')),
-                __alloT('stem.flightsim.roll_down_the_runway_don_t_pull_up_yet', 'Roll down the runway. Don\'t pull up yet. Wait for '), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.flightsim.55_65_kts', '~55–65 kts')),
-                __alloT('stem.flightsim.cessna_rotation_speed', ' (Cessna rotation speed).')
+                __alloT('stem.flightsim.roll_down_the_runway_don_t_pull_up_yet', 'Roll down the runway. Don\'t pull up yet. Wait for '), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, tkVr ? '~' + tkVr + '–' + (tkVr + 10) + ' kts' : __alloT('stem.flightsim.the_vr_mark_on_the_airspeed_tape', 'the Vr mark on the airspeed tape')),
+                ' (' + (currentAC.shortName || currentAC.name) + ' ' + __alloT('stem.flightsim.rotation_speed', 'rotation speed') + ').'
               ),
               h('li', { style: { marginBottom: '6px' } },
                 h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.3_rotate', '3. Rotate: ')),
@@ -23718,9 +24017,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { padding: '10px', background: 'rgba(56,189,248,0.1)', borderRadius: '6px', borderLeft: '3px solid #38bdf8', fontSize: '11px' } },
               h('div', { style: { fontWeight: 800, color: '#38bdf8', marginBottom: '4px' } }, __alloT('stem.flightsim.the_science_2', '🔬 The Science')),
               h('div', { style: { color: '#cbd5e1' } },
-                __alloT('stem.flightsim.lift_air_density_velocity_wing_area_c', 'Lift = ½ × air density × velocity² × wing area × C'),
+                tkRotor ? __alloT('stem.flightsim.rotor_science', 'A rotor blade is a wing that the engine spins. It makes lift the same way (½ × air density × velocity² × blade area × C') : __alloT('stem.flightsim.lift_air_density_velocity_wing_area_c', 'Lift = ½ × air density × velocity² × wing area × C'),
                 h('sub', null, 'L'),
-                __alloT('stem.flightsim.lift_grows_with_the_square_of_speed_do', '. Lift grows with the SQUARE of speed. Doubling airspeed = 4× the lift. At ~55 kts with a small angle of attack, your wings produce just enough lift to overcome the plane\'s weight (2,550 lbs for a Cessna 172).')
+                tkRotor ? __alloT('stem.flightsim.rotor_science_tail', '), but the blade speed comes from the engine, not from rolling down a runway — so it lifts at zero ground speed. More power = faster blades = more lift than weight = climb.') : __alloT('stem.flightsim.lift_grows_with_the_square_of_speed_do', '. Lift grows with the SQUARE of speed. Doubling airspeed = 4× the lift. At ~55 kts with a small angle of attack, your wings produce just enough lift to overcome the plane\'s weight (2,550 lbs for a Cessna 172).')
               )
             )
           ) : null
@@ -23800,7 +24099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Educational tip
           tip && h('aside', { 'aria-label': 'Next flight coaching tip', style: { padding: '12px 15px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(14,165,233,0.08))', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '4px solid #818cf8', marginBottom: '16px', fontSize: '12px', color: '#c7d2fe', lineHeight: 1.55, boxShadow: '0 10px 24px rgba(2,6,23,0.2)' } }, tip),
           // Stats grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(max(120px, 22%), 1fr))', gap: '8px', marginBottom: '16px' } },
             [['⏱️', mins + ':' + String(secs).padStart(2, '0'), 'Flight Time'],
              ['📏', db.distance + ' nm', 'Distance'],
              ['🏔️', db.maxAlt.toLocaleString() + ' ft', 'Max Altitude'],
@@ -24109,7 +24408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             );
           }
           var title = entry[titleKey] || entry.title || entry.label || entry.concept || ('Item ' + (i + 1));
-          var keys = Object.keys(entry).filter(function(k) { return k !== titleKey; });
+          var keys = Object.keys(entry).filter(function(k) { return k !== titleKey && k !== 'icon'; });
           return h('div', {
             key: i,
             className: 'skyschool-learn-card',
@@ -24117,7 +24416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           },
             h('h4', {
               style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', margin: '0 0 10px 0' }
-            }, String(title)),
+            }, (entry.icon ? String(entry.icon) + ' ' : '') + String(title)),
             keys.map(function(k) {
               var v = entry[k];
               if (v == null) return null;
@@ -24427,6 +24726,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var totalItems = PREFLIGHT_CHECKLIST.reduce(function(s, p) { return s + p.items.length; }, 0);
         var checkedCount = Object.keys(checked).length;
         var pctComplete = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+        // Phases fold once complete (a finished phase is a one-line receipt,
+        // not eleven struck-through rows); the student can reopen any.
+        var phaseOpen = d.preflightOpen || {};
+        var pfItemId = function(phaseName, idx) { return 'skyschool-pf-' + String(phaseName).replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-' + idx; };
+        var nextUnchecked = null;
+        PREFLIGHT_CHECKLIST.some(function(p) {
+          return p.items.some(function(_, idx) {
+            if (!checked[p.phase + '-' + idx]) { nextUnchecked = { phase: p.phase, idx: idx }; return true; }
+            return false;
+          });
+        });
+        var jumpToNext = function() {
+          if (!nextUnchecked) return;
+          var nextOpen = Object.assign({}, phaseOpen); nextOpen[nextUnchecked.phase] = true;
+          upd('preflightOpen', nextOpen);
+          setTimeout(function() {
+            var el = document.getElementById(pfItemId(nextUnchecked.phase, nextUnchecked.idx));
+            if (!el) return;
+            var reduce = false; try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+            el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+            var box = el.querySelector('input'); if (box && box.focus) box.focus({ preventScroll: true });
+          }, 30);
+        };
 
         return h('div', {
           style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
@@ -24440,9 +24762,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.pre_flight_checklist', '✅ Pre-Flight Checklist'))
           ),
 
-          // Progress
+          // Progress — sticky, so the count and the jump button survive the scroll.
           h('div', {
-            style: { padding: '14px 16px', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', marginBottom: '16px', border: '1px solid #1e293b' }
+            style: { position: 'sticky', top: '-20px', zIndex: 5, padding: '14px 16px', background: 'rgba(12,22,38,0.96)', backdropFilter: 'blur(10px)', borderRadius: '12px', marginBottom: '16px', border: '1px solid #1e293b', boxShadow: '0 10px 24px rgba(2,6,23,0.35)' }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
               h('div', null,
@@ -24450,7 +24772,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 h('div', { style: { fontSize: '20px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#fff' } }, checkedCount + ' / ' + totalItems + ' items')
               ),
               h('div', { style: { fontSize: '28px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#22d3ee' } }, pctComplete + '%'),
-              h('button', { onClick: resetChecklist, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer' } }, __alloT('stem.flightsim.reset_2', '↻ Reset'))
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                nextUnchecked && h('button', { onClick: jumpToNext, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 800, background: 'rgba(14,165,233,0.16)', color: '#e0f2fe', border: '1px solid rgba(125,211,252,0.35)', borderRadius: '6px', cursor: 'pointer' } }, __alloT('stem.flightsim.next_unchecked', 'Next unchecked ↓')),
+                h('button', { onClick: resetChecklist, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer' } }, __alloT('stem.flightsim.reset_2', '↻ Reset'))
+              )
             ),
             h('div', { style: { height: '8px', background: '#0f172a', borderRadius: '4px', overflow: 'hidden' } },
               h('div', { style: { width: pctComplete + '%', height: '100%', background: pctComplete === 100 ? 'linear-gradient(90deg, #16a34a, #22c55e)' : 'linear-gradient(90deg, #3b82f6, #22d3ee)', transition: 'width 0.3s' } })
@@ -24460,19 +24785,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Phases
           PREFLIGHT_CHECKLIST.map(function(phase, pi) {
             var phaseChecked = phase.items.filter(function(_, idx) { return checked[phase.phase + '-' + idx]; }).length;
+            var phaseDone = phaseChecked === phase.items.length;
+            var isOpen = phaseOpen[phase.phase] != null ? !!phaseOpen[phase.phase] : !phaseDone;
+            var bodyId = 'skyschool-pf-body-' + pi;
             return h('div', {
               key: pi,
-              style: { marginBottom: '14px', padding: '14px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' }
+              style: { marginBottom: '14px', padding: isOpen ? '14px' : '10px 14px', background: phaseDone ? 'rgba(20,83,45,0.18)' : 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid ' + (phaseDone ? 'rgba(34,197,94,0.35)' : '#1e293b') }
             },
-              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' } },
-                h('h3', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', margin: 0 } }, phase.phase),
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700 } }, phaseChecked + ' / ' + phase.items.length)
+              h('button', {
+                onClick: function() { var n = Object.assign({}, phaseOpen); n[phase.phase] = !isOpen; upd('preflightOpen', n); },
+                'aria-expanded': isOpen, 'aria-controls': bodyId,
+                style: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'none', border: 'none', padding: 0, marginBottom: isOpen ? '10px' : 0, cursor: 'pointer', textAlign: 'left' }
+              },
+                h('h3', { style: { fontSize: '14px', fontWeight: 800, color: phaseDone ? '#86efac' : '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: '10px', color: '#94a3b8', fontSize: '11px', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform .15s' } }, '▶'),
+                  phase.phase, phaseDone ? h('span', { 'aria-hidden': 'true', style: { color: '#4ade80' } }, '✓') : null),
+                h('div', { style: { fontSize: '11px', color: phaseDone ? '#86efac' : '#94a3b8', fontWeight: 700 } }, phaseChecked + ' / ' + phase.items.length)
               ),
-              h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+              isOpen && h('ul', { id: bodyId, style: { listStyle: 'none', padding: 0, margin: 0 } },
                 phase.items.map(function(item, idx) {
                   var key = phase.phase + '-' + idx;
                   var isChecked = !!checked[key];
-                  return h('li', { key: idx, style: { marginBottom: '6px' } },
+                  return h('li', { key: idx, id: pfItemId(phase.phase, idx), style: { marginBottom: '6px', scrollMarginTop: '120px' } },
                     h('label', {
                       style: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', background: isChecked ? 'rgba(22,163,74,0.1)' : 'rgba(15,23,42,0.4)', borderRadius: '8px', cursor: 'pointer', border: '1px solid ' + (isChecked ? '#16a34a' : '#1e293b'), transition: 'all 0.1s' }
                     },
@@ -24497,7 +24831,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           pctComplete === 100 && h('div', { style: { padding: '20px', textAlign: 'center', background: 'rgba(22,163,74,0.15)', borderRadius: '12px', border: '2px solid #16a34a', marginTop: '16px' } },
             h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '🎉'),
             h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#86efac', marginBottom: '6px' } }, __alloT('stem.flightsim.checklist_complete', 'Checklist Complete!')),
-            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 } }, __alloT('stem.flightsim.you_ve_verified_every_pre_flight_item_', 'You\'ve verified every pre-flight item. Real pilots do this before every flight. Ready to fly!'))
+            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 } }, __alloT('stem.flightsim.you_ve_verified_every_pre_flight_item_', 'You\'ve verified every pre-flight item. Real pilots do this before every flight. Ready to fly!')),
+            h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '14px', flexWrap: 'wrap' } },
+              h('button', { onClick: function() { startFlying('kpwm'); }, style: { padding: '11px 18px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0369a1, #075985)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(14,165,233,0.25)' } }, __alloT('stem.flightsim.fly_now', '\u2708\uFE0F Fly now')),
+              h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '11px 18px', borderRadius: '10px', border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.back_to_menu', '\u2190 Back to Menu'))
+            )
           )
         );
       }

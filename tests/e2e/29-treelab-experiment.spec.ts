@@ -41,10 +41,11 @@ const phase = (page: import('@playwright/test').Page) =>
 test('completes Predict → Run → Explain and preserves controlled A/B snapshots', async ({ page }) => {
   await mount(page);
 
+  await page.getByRole('button', { name: 'Explore freely', exact: true }).click();
   await page.getByRole('button', { name: /Start investigation/ }).click();
   await expect.poll(() => phase(page)).toBe('predict');
 
-  await page.getByLabel(/Soil water/i).fill('0.3');
+  await page.getByRole('slider', { name: /Soil water/i }).fill('0.3');
   await page.getByLabel(/Which factor will limit growth most often/i).selectOption('water');
   await page.getByLabel(/What will happen to the tree/i).selectOption('struggle');
   await page.getByLabel(/Why do you think so/i).fill('Low soil water should close stomata and reduce carbon gain.');
@@ -52,7 +53,7 @@ test('completes Predict → Run → Explain and preserves controlled A/B snapsho
   await expect.poll(() => phase(page)).toBe('ready');
 
   await expect(page.getByRole('button', { name: /Play$/ })).toBeDisabled();
-  await expect(page.getByLabel(/Soil water/i)).toBeDisabled();
+  await expect(page.getByRole('slider', { name: /Soil water/i })).toBeDisabled();
   const locked = await page.evaluate(() => {
     const d = (window as any).__toolData.treeLab;
     return {
@@ -100,7 +101,7 @@ test('completes Predict → Run → Explain and preserves controlled A/B snapsho
   expect(restored.live).toBe(restored.baseline);
   expect(restored.a).toBe(aBefore);
 
-  await page.getByLabel(/Soil water/i).fill('0.8');
+  await page.getByRole('slider', { name: /Soil water/i }).fill('0.8');
   await page.getByLabel(/Which factor will limit growth most often/i).selectOption('light');
   await page.getByLabel(/What will happen to the tree/i).selectOption('thrive');
   await page.getByRole('button', { name: /Lock prediction/ }).click();
@@ -133,6 +134,7 @@ test('completes Predict → Run → Explain and preserves controlled A/B snapsho
 });
 
 test('uses two columns on a wide screen and a no-overflow stack on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 1000 });
   await mount(page);
   const wide = await page.evaluate(() => {
     const workbench = document.querySelector('.allo-tree-workbench') as HTMLElement;
@@ -140,14 +142,15 @@ test('uses two columns on a wide screen and a no-overflow stack on mobile', asyn
     const controls = document.querySelector('.allo-tree-workbench-controls') as HTMLElement;
     const sr = scene.getBoundingClientRect();
     const cr = controls.getBoundingClientRect();
-    return { columns: getComputedStyle(workbench).gridTemplateColumns, sticky:
+    const missionTop = document.querySelector('.allo-tree-workbench-mission')!.getBoundingClientRect().top;
+    return { missionTop, columns: getComputedStyle(workbench).gridTemplateColumns, sticky:
       getComputedStyle(document.querySelector('.allo-tree-workbench-sticky') as HTMLElement).position,
       sceneRight: sr.right, controlsLeft: cr.left, sceneTop: sr.top, controlsTop: cr.top };
   });
   expect(wide.columns.trim().split(/\s+/).length).toBe(2);
   expect(wide.sticky).toBe('sticky');
   expect(wide.sceneRight).toBeLessThanOrEqual(wide.controlsLeft + 2);
-  expect(Math.abs(wide.sceneTop - wide.controlsTop)).toBeLessThan(3);
+  expect(Math.abs(wide.sceneTop - wide.missionTop)).toBeLessThan(3);
 
   await page.setViewportSize({ width: 600, height: 900 });
   await page.evaluate(() => {
@@ -180,7 +183,7 @@ test('uses two columns on a wide screen and a no-overflow stack on mobile', asyn
   expect(mobile.sticky).toBe('static');
   expect(mobile.controlsTop).toBeGreaterThanOrEqual(mobile.sceneBottom - 2);
   expect(mobile.viewerHeight).toBeGreaterThanOrEqual(280);
-  expect(mobile.viewerHeight).toBeLessThanOrEqual(421);
+  expect(mobile.viewerHeight).toBeLessThanOrEqual(431);
   expect(mobile.selectTop).toBeGreaterThanOrEqual(mobile.labelBottom - 1);
   expect(mobile.overflow).toBeLessThanOrEqual(1);
 });

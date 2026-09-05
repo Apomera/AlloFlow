@@ -2518,6 +2518,12 @@ function ComprehensiveBlock(p) {
     label: "Cultural responsiveness"
   }));
 }
+function auditResourceFingerprint(resource) {
+  return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null;
+}
+function auditResourceSnapshot(resources) {
+  return window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {};
+}
 // Types the audit never scores; a new one of these does not make a report stale.
 var FRESHNESS_IGNORED_TYPES = {
   'alignment-report': true,
@@ -2536,12 +2542,29 @@ function computeAuditFreshness(generatedContent, history) {
   });
   var auditId = String(generatedContent.id || '');
   var present = {};
-  var added = [];
+  var added = [],
+    modified = [],
+    unverified = 0;
+  var fingerprints = comp.auditScope?.artifactFingerprints || {};
+  (comp.auditScope?.includedArtifacts || []).forEach(item => {
+    if (item.contentFingerprint && !fingerprints[item.id]) fingerprints = {
+      ...fingerprints,
+      [item.id]: item.contentFingerprint
+    };
+  });
   history.forEach(function (item) {
     if (!item || !item.type || FRESHNESS_IGNORED_TYPES[item.type]) return;
     var id = String(item.id || '');
     if (id) present[id] = true;
-    if (id && included[id]) return;
+    if (id && included[id]) {
+      if (fingerprints[id] && auditResourceFingerprint(item)) {
+        if (fingerprints[id] !== auditResourceFingerprint(item)) modified.push(item.title || item.type);
+      } else {
+        const changedAt = Date.parse(item.updatedAt || item.timestamp || '');
+        if (!isNaN(changedAt) && changedAt > generatedAt) modified.push(item.title || item.type);else unverified++;
+      }
+      return;
+    }
     if (id && id === auditId) return;
     var ts = item.timestamp ? Date.parse(item.timestamp) : NaN;
     if (!isNaN(ts) && ts > generatedAt) added.push(item.title || item.type);
@@ -2552,13 +2575,17 @@ function computeAuditFreshness(generatedContent, history) {
   return {
     added: added,
     removed: removed,
-    stale: added.length > 0 || removed > 0
+    modified: modified,
+    unverified: unverified,
+    stale: added.length > 0 || removed > 0 || modified.length > 0
   };
 }
 function AuditFreshnessNotice(p) {
   var f = p.freshness;
-  if (!f || !f.stale) return null;
+  if (!f || !f.stale && !f.unverified) return null;
   var parts = [];
+  if (f.modified?.length) parts.push(f.modified.length + ' audited resource(s) were edited (' + f.modified.slice(0, 4).join(', ') + ')');
+  if (f.unverified) parts.push('This older audit has no content version for ' + f.unverified + ' resource(s); re-run it to check for edits');
   if (f.added.length > 0) parts.push(f.added.length + (f.added.length === 1 ? ' resource was' : ' resources were') + ' created after this audit ran (' + f.added.slice(0, 4).join(', ') + (f.added.length > 4 ? ', …' : '') + ')');
   if (f.removed > 0) parts.push(f.removed + (f.removed === 1 ? ' audited resource is' : ' audited resources are') + ' no longer in this lesson');
   return /*#__PURE__*/React.createElement("div", {
@@ -2566,7 +2593,7 @@ function AuditFreshnessNotice(p) {
     className: "p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-950 flex-1 min-w-[16rem] m-0"
-  }, /*#__PURE__*/React.createElement("strong", null, "This audit may be out of date."), " ", parts.join('; '), ". Findings and the score do not reflect those changes."), typeof p.onRerunAudit === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("strong", null, f.stale ? 'This audit may be out of date.' : 'Verify this older audit.'), " ", parts.join('; '), ". ", f.stale ? 'Findings and the score do not reflect those changes.' : 'Content versions were not stored with this report.'), typeof p.onRerunAudit === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: p.onRerunAudit,
     disabled: !!p.isProcessing,
@@ -2632,5 +2659,6 @@ function AlignmentReportView(props) {
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AlignmentReportView = AlignmentReportView;
+  window.AlloModules.AuditResourceFreshness = { fingerprint: auditResourceFingerprint, snapshot: auditResourceSnapshot, compute: computeAuditFreshness };
   window.AlloModules.ViewAlignmentReportModule = true;
 })();

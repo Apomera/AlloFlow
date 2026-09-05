@@ -64,12 +64,31 @@
  * geometryProver. When a gate reports a count, check WHAT it counted: the
  * "N tool(s) rendered" line is the tell.
  *
+ * ★★★A HARNESS THAT RENDERS LONGER TEXT THAN THE APP INVENTS LAYOUT BUGS. The
+ * ctx stub's `t()` used to return the raw dotted key when a call site passed no
+ * English fallback, so galaxy's "First stars" (11 chars) rendered as
+ * "stem.galaxy.first_stars" (23) and two timeline markers 4 Gyr apart collided
+ * at 78%. The keys resolve fine in the app — the packs carry them NESTED under
+ * stem.galaxy.*, so a flat-key grep returns 0 and reads like they are missing.
+ * The stub now humanises the last segment. Any stub that can return a
+ * placeholder longer than the real value belongs on the false-positive list.
+ *
+ * ★A SINGLE-FILE --deep RUN AND A LAB-WIDE ONE DO NOT COVER THE SAME VIEWS.
+ * DEEP_CAP is 30 alone and 12 under --all, and the walk dedupes by control
+ * label, so neither pass is a superset of the other: the final sweep found live
+ * findings in decomposer and base10 views that per-tool runs had reported clean.
+ * Finish with --all --deep, not with a per-tool victory lap.
+ *
  * ★RUN IT IN BOTH THEMES. --dark is where the own-ground family lives, because
  * stem_lab renders every tool on a WHITE card in both themes. The first light
  * sweep found 154 findings; the first dark sweep found 517.
  *
- * As of 2026-09-04 every tool reads 0 in both themes except the three above and
- * the files another lane had in flight (anatomy, solarsystem, watercycle).
+ * As of 2026-09-04 the CONTRAST board is: 149 tools checked, ONE file with
+ * findings — moneyMath's 18 overlay-collisions on the stylised banknote, which
+ * is intentional. Zero dark-ink-on-contrast-surface lab-wide.
+ * ★solarSystem's 13 "watermark overlaps" and galaxy's timeline collision were
+ * BOTH the stub-t() artifact above, not tool defects. When two unrelated tools
+ * show the same odd finding, suspect the harness before the tools.
  */
 'use strict';
 
@@ -186,7 +205,20 @@ window.__mount = function (id, dark, state, contrast) {
       update: update, updateMulti: updateMulti, setLabToolData: pair[1],
       labToolData: pair[0],
       a11yClick: function (f) { return { onClick: f }; }, icons: Icons,
-      t: function (k, fb) { return fb != null ? fb : k; }, getXP: function () { return 0; } };
+      // ★ A missing fallback must not become a 26-character label. Returning the
+      // raw dotted key made galaxy's cosmic-timeline markers four times their
+      // real width, and two of them then "collided" at 78% — a geometry finding
+      // manufactured entirely by the stub. The keys resolve fine in the app
+      // (packs carry stem.galaxy.first_stars = "First stars"), so humanise the
+      // last segment instead: same order of magnitude as the real string.
+      t: function (k, fb) {
+        if (fb != null) return fb;
+        if (typeof k === 'string' && k.indexOf('.') > 0) {
+          var last = k.split('.').pop().replace(/_/g, ' ');
+          return last.charAt(0).toUpperCase() + last.slice(1);
+        }
+        return k;
+      }, getXP: function () { return 0; } };
     var rendered;
     try { rendered = cfg.render(ctx); } catch (e) { return React.createElement('div', null, 'threw: ' + e.message); }
     // Mirror the host's TWO layers: dark shell, white tool card. A harness that
@@ -443,6 +475,11 @@ const PROBE = function (CONTRAST) {
     // A DOM walk cannot model SVG painting. dev-tools/pixel_contrast_probe.cjs
     // samples real pixels and is the authority for anything inside an <svg>.
     if (el.namespaceURI === 'http://www.w3.org/2000/svg') return;
+    // ★ <canvas> child text is FALLBACK content for browsers that cannot render
+    // the element — it is never painted, so scoring its colour is meaningless.
+    // watercycle's cross-section description scored 1.05:1 as "invisible" while
+    // the canvas beside it draws perfectly. Same for <noscript>.
+    if (el.tagName === 'CANVAS' || el.closest('canvas, noscript')) return;
     // ★ WCAG 1.4.3 exempts INACTIVE controls, and authors dim them on purpose:
     // microbiology's gram-stain steps paint the not-yet-reachable ones #475569
     // at opacity 0.4, which is the affordance doing its job, not a defect.

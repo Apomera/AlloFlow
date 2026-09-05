@@ -30,7 +30,7 @@ function buildPdfPipelineTourSteps(kind, translate) {
   return kind === "results" ? [
     { helpKey: "pdf_audit_results_whatnow", title: t("ptour.whatnow_title") || "Start here", text: t("ptour.whatnow_text") || "This strip is your map: grab the recommended download, optionally compare before/after, and treat everything else on this screen as optional polish.\n**Why it matters:** this screen has over 300 elements \u2014 most are for digging deeper, not required. The strip names the one action that gets a usable document into students' hands." },
     { helpKey: "pdf_audit_dashboard_bar", title: t("ptour.dashboard_title") || "Your navigation bar", text: t("ptour.dashboard_text") || "This bar sticks to the top while you scroll. The score shows before \u2192 after; the chips jump straight to any section \u2014 Downloads is the one you'll use most.\n**Why it matters:** everything below is organized into sections (verification, recovered content, remaining issues, downloads, the tag inspector) \u2014 the chips mean you never scroll hunting for one." },
-    { helpKey: "pdf_audit_results_score_badge", title: t("ptour.score_title") || "The score, honestly", text: t("ptour.score_text") || "AlloFlow's own estimate: several independent AI reviews averaged, blended 50/50 with TWO deterministic rule engines (axe-core + IBM Equal Access \u2014 when they disagree, the lower score wins).\n**Why it matters:** it's honest but it's not a certification. For an official verdict, open the file in PAC 2024 (free) or send the report to your district accessibility coordinator \u2014 the report itself says how." },
+    { helpKey: "pdf_audit_results_score_badge", title: t("ptour.score_title") || "The score, honestly", text: t("ptour.score_text") || "AlloFlow's own estimate: several independent AI reviews averaged, blended 50/50 with TWO deterministic rule engines (axe-core + IBM Equal Access \u2014 when they disagree, the lower score wins).\n**Why it matters:** it's honest but it's not a certification. For independent checks, use PAC or veraPDF, then review reading order and meaning with a screen reader and an accessibility specialist." },
     { helpKey: "pdf_audit_results_tab_original_btn", title: t("ptour.tabs_title") || "Before and after", text: t("ptour.tabs_text") || 'Flip to the Original tab anytime to see what the document looked like before the fixes.\n**Why it matters:** when a parent, administrator, or IEP team asks "what actually changed?", the answer is one click \u2014 and the Compare view shows both versions side by side.' },
     { helpKey: "pdf_audit_view_report_menu_btn", title: t("ptour.report_title") || "Reports & records", text: t("ptour.report_text") || "Printable accessibility reports \u2014 for your records, an IEP file, or your district accessibility coordinator. There's also a tamper-evident signed version.\n**Why it matters:** public schools have legal accessibility obligations (ADA Title II). A dated report showing what was checked and fixed is the paper trail your district wants to have." },
     { helpKey: "pdf_audit_translate_doc_btn", title: t("ptour.translate_title") || "Any language, verified", text: t("ptour.translate_text") || "Translate the whole document for families \u2014 type ANY language. The structure is checked section by section, the copy gets compare/audio/tagged-PDF downloads of its own, and a review banner keeps it honest.\n**Why it matters:** IDEA requires parent-language access to key documents \u2014 districts pay per page for this." },
@@ -1962,7 +1962,7 @@ function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, ha
   const _contentPropAttr = _contentProps.length ? ' properties="' + Array.from(new Set(_contentProps)).join(" ") + '"' : "";
   const _has = (i) => !hasAudio || hasAudio[i];
   const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + "." + _ext + '" media-type="' + _mime + '"/>' : "").filter(Boolean).join("\n");
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + '\n</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang || "en") + '" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + '\n</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
 }
 function validateEpubStructure(files) {
   const issues = [];
@@ -2124,7 +2124,7 @@ function _buildEpubPackageFiles(html, opts) {
   if (/<svg\b/i.test(html)) props.push("svg");
   if (/<math\b/i.test(html)) props.push("mathml");
   const propAttr = props.length ? ' properties="' + props.join(" ") + '"' : "";
-  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine><itemref idref="content"/></spine>\n</package>';
+  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '">\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine><itemref idref="content"/></spine>\n</package>';
   const navEsc = (s) => _expXmlEsc(String(s == null ? "" : s));
   const headings = [...String(html).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
   const navItems = headings.length > 0 ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()) || "Section") + "</a></li>").join("\n") : '<li><a href="content.xhtml">Document</a></li>';
@@ -2133,7 +2133,7 @@ function _buildEpubPackageFiles(html, opts) {
     "META-INF/container.xml": '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
     "OEBPS/content.opf": opf,
     "OEBPS/content.xhtml": _altFmtXhtmlFromHtml(html),
-    "OEBPS/nav.xhtml": '<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">\n<head><title>Navigation</title></head>\n<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>' + navItems + "</ol></nav></body>\n</html>"
+    "OEBPS/nav.xhtml": '<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '">\n<head><title lang="en">Navigation</title></head>\n<body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Table of Contents</h1><ol>' + navItems + "</ol></nav></body>\n</html>"
   };
   let validation = { valid: true, issues: [] };
   try {
@@ -2773,15 +2773,25 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
   }
   return p.write({ outputType: "blob" });
 }
-function _audioReadyText(html) {
+function _audioReadyText(html, narrationOptions) {
+  const options = narrationOptions || {};
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const root = doc.body || doc.documentElement;
   if (!root) return "";
+  if (options.languageRuns) {
+    _narrationPrepareDocument(doc);
+    root.querySelectorAll("p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary").forEach((el) => el.appendChild(doc.createTextNode(". ")));
+    return _narrationMergeRuns(_narrationTextRuns(root, options.language), true);
+  }
   let _preamble = "";
+  let preambleRuns = [];
   const _note = root.querySelector("[data-allo-translation-note], [data-allo-plain-note]");
   if (_note) {
     const _nt = (_note.textContent || "").replace(/\s+/g, " ").trim();
-    if (_nt) _preamble = _nt + ". ";
+    if (_nt) {
+      _preamble = _nt + ". ";
+      if (options.languageRuns) preambleRuns = [..._narrationTextRuns(_note, options.language), { text: ". ", language: _narrationLanguageOf(_note, options.language) }];
+    }
   }
   root.querySelectorAll(".allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select").forEach((el) => el.remove());
   root.querySelectorAll("details > summary").forEach((el) => el.remove());
@@ -2789,26 +2799,39 @@ function _audioReadyText(html) {
     if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
   });
   root.querySelectorAll("annotation, annotation-xml, [data-allo-latex-src]").forEach((el) => el.remove());
+  const imageText = (node, caption, alt) => {
+    if (!options.languageRuns) return doc.createTextNode((caption ? caption.textContent.trim() : alt) ? "Image: " + (caption ? caption.textContent.trim() : alt) + ". " : "");
+    const span = doc.createElement("span");
+    span.lang = _narrationLanguageOf(caption || node, options.language);
+    if (caption) {
+      const clone = caption.cloneNode(true);
+      span.append(...Array.from(clone.childNodes));
+    } else span.textContent = alt;
+    if (span.textContent.trim()) span.append(doc.createTextNode(". "));
+    return span;
+  };
   root.querySelectorAll("figure").forEach((fig) => {
     const img = fig.querySelector("img");
     const cap = fig.querySelector("figcaption");
     if (fig.hasAttribute("data-img-placeholder") || fig.hasAttribute("data-img-idx") && !img) {
       const d = cap && cap.textContent.trim() || "";
-      fig.replaceWith(doc.createTextNode(d ? "Image: " + d + ". " : ""));
+      fig.replaceWith(options.languageRuns ? imageText(fig, cap, d) : doc.createTextNode(d ? "Image: " + d + ". " : ""));
       return;
     }
     if (img) {
       const alt = (img.getAttribute("alt") || "").trim();
       const isPres = img.getAttribute("role") === "presentation" || img.getAttribute("aria-hidden") === "true";
       const capText = cap ? cap.textContent.trim() : "";
-      if (cap) cap.remove();
       const say = capText || (isPres ? "" : alt);
-      img.replaceWith(doc.createTextNode(say ? "Image: " + say + ". " : ""));
+      const replacement = options.languageRuns ? imageText(img, capText ? cap : null, say) : doc.createTextNode(say ? "Image: " + say + ". " : "");
+      if (cap) cap.remove();
+      img.replaceWith(replacement);
     }
   });
   root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption").forEach((el) => {
     el.appendChild(doc.createTextNode(". "));
   });
+  if (options.languageRuns) return _narrationMergeRuns([...preambleRuns, ..._narrationTextRuns(root, options.language)], true);
   return _preamble + (root.textContent || "").replace(/\s+/g, " ").replace(/\s+([.,;:!?])/g, "$1").replace(/([.!?])\s*\.+/g, "$1").replace(/\.{2,}/g, ".").trim();
 }
 const _DOC_MODE_CSS_BASE = '.prose,main{font-family:"Times New Roman",Times,Georgia,serif;font-size:12pt;line-height:2}.allo-references>.allo-ref-entry,.allo-references li,.allo-footnotes li{padding-left:2.5em;text-indent:-2.5em}.allo-references{margin-top:2em}.allo-footnotes{margin-top:2em}.allo-footnotes hr{border:none;border-top:1px solid #000;width:30%;margin:1em 0}.allo-fn-ref{font-size:0.7em;vertical-align:super;line-height:0}';
@@ -3045,59 +3068,137 @@ function _alloRenumberFootnotes(doc) {
   } catch (_) {
   }
 }
-function _srStyleTextFromHtml(html) {
+function _narrationLanguageOf(node, fallback) {
+  let el = node.nodeType === 1 ? node : node.parentElement;
+  while (el) {
+    if (el.lang) return el.lang;
+    el = el.parentElement;
+  }
+  return fallback || "en";
+}
+function _narrationPrepareDocument(doc) {
+  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],#allo-reader-bar,#allo-reader-ruler,annotation,annotation-xml,[data-allo-latex-src]').forEach((node) => node.remove());
+  doc.querySelectorAll("[style]").forEach((node) => {
+    if (node.style.display === "none" || node.style.visibility === "hidden") node.remove();
+  });
+}
+function _narrationTextRuns(node, fallback) {
+  const runs = [];
+  const visit = (n) => {
+    const language = _narrationLanguageOf(n, fallback);
+    if (n.nodeType === 3) {
+      runs.push({ text: n.textContent, language });
+      return;
+    }
+    if (n.nodeType !== 1) return;
+    if (n.tagName.toLowerCase() === "img") {
+      const alt = (n.getAttribute("alt") || "").trim();
+      if (alt && n.getAttribute("role") !== "presentation" && n.getAttribute("role") !== "none" && n.getAttribute("aria-hidden") !== "true") runs.push({ text: alt + ". ", language });
+      return;
+    }
+    if (/^(math|svg)$/i.test(n.tagName)) {
+      const description = n.getAttribute("aria-label") || n.getAttribute("alttext") || (n.tagName.toLowerCase() === "svg" ? Array.from(n.querySelectorAll("title,desc")).map((el) => el.textContent.trim()).filter(Boolean).join(". ") : "");
+      if (description) {
+        runs.push({ text: description + ". ", language });
+        return;
+      }
+    }
+    Array.from(n.childNodes).forEach(visit);
+  };
+  visit(node);
+  if (runs.length) {
+    runs[0].text = runs[0].text.trimStart();
+    runs[runs.length - 1].text = runs[runs.length - 1].text.trimEnd();
+  }
+  return runs;
+}
+function _narrationMergeRuns(input, natural) {
+  const runs = [];
+  for (const item of input) {
+    if (!item.text) continue;
+    const previous = runs[runs.length - 1];
+    if (previous && (previous.language === item.language || !/[\p{L}\p{N}\p{S}]/u.test(item.text))) previous.text += item.text;
+    else runs.push({ ...item });
+  }
+  if (runs.length > 1 && !/[\p{L}\p{N}\p{S}]/u.test(runs[0].text)) {
+    runs[1].text = runs[0].text + runs[1].text;
+    runs.shift();
+  }
+  return runs.map((run) => ({ ...run, text: (natural ? run.text.replace(/\s+/g, " ").replace(/\s+([.,;:!?])/g, "$1").replace(/([.!?])\s*\.+/g, "$1").replace(/\.{2,}/g, ".") : run.text).trim() })).filter((run) => run.text);
+}
+function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
+  const options = narrationOptions || {};
+  const say = (node, key, fallback, n) => {
+    const local = options.languageRuns ? options.labelsByLanguage?.[_narrationLanguageOf(node, options.language).split("-")[0]] : spokenLabels;
+    const phrase = local && (Number(n) === 1 && local[key + "One"] || local[key]);
+    return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
+  };
   const doc = new DOMParser().parseFromString(html || "", "text/html");
-  const out = [];
+  if (options.languageRuns) _narrationPrepareDocument(doc);
+  const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!(node.textContent || "").trim();
+  const out = [], runs = [];
+  const add = (node, ...parts) => {
+    out.push(parts.map((part) => typeof part === "string" ? part : (part.textContent || "").trim()).join(""));
+    if (options.languageRuns) {
+      if (runs.length) runs.push({ text: "\n\n", language: _narrationLanguageOf(node, options.language) });
+      for (const part of parts) runs.push(...typeof part === "string" ? [{ text: part, language: _narrationLanguageOf(node, options.language) }] : _narrationTextRuns(part, options.language));
+    }
+  };
   const walk = (el) => {
-    for (const node of Array.from(el.children)) {
-      const tag = node.tagName.toLowerCase();
-      const txt = (node.textContent || "").trim();
+    for (const node of Array.from(el.childNodes)) {
+      if (node.nodeType !== 1) {
+        if (options.languageRuns && node.nodeType === 3 && node.textContent.trim()) add(el, node);
+        continue;
+      }
+      const tag = node.tagName.toLowerCase(), txt = readable(node);
       if (/^h[1-6]$/.test(tag)) {
-        if (txt) out.push("Heading level " + tag[1] + ". " + txt + ".");
+        if (txt) add(node, say(node, "heading", "Heading level " + tag[1], tag[1]) + ". ", node, ".");
         continue;
       }
       if (tag === "p" || tag === "blockquote" || tag === "figcaption") {
-        if (txt && !node.closest("table")) out.push(txt);
+        if (txt && !node.closest("table")) add(node, node);
         continue;
       }
       if (tag === "ul" || tag === "ol") {
         const items = Array.from(node.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
-        out.push((tag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s") + ".");
+        add(node, say(node, tag === "ul" ? "list" : "numbered", (tag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
         items.forEach((li, i) => {
-          const lt = (li.textContent || "").trim();
-          if (lt) out.push((tag === "ul" ? "Bullet. " : "Item " + (i + 1) + ". ") + lt + ".");
+          if (readable(li)) add(li, (tag === "ul" ? say(li, "bullet", "Bullet") : say(li, "item", "Item " + (i + 1), i + 1)) + ". ", li, ".");
         });
-        out.push("List end.");
+        add(node, say(node, "listEnd", "List end") + ".");
         continue;
       }
       if (tag === "table") {
-        const rows = Array.from(node.querySelectorAll("tr"));
-        const cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0;
-        const cap = node.querySelector("caption");
-        out.push("Table" + (cap && cap.textContent.trim() ? ", " + cap.textContent.trim() : "") + ", " + rows.length + " row" + (rows.length === 1 ? "" : "s") + ", " + cols + " column" + (cols === 1 ? "" : "s") + ".");
-        rows.forEach((r, ri) => {
-          const cells = Array.from(r.children).map((c) => (c.textContent || "").trim()).filter(Boolean);
-          if (cells.length) out.push("Row " + (ri + 1) + ". " + cells.join(". ") + ".");
+        const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0, cap = node.querySelector("caption");
+        add(node, say(node, "table", "Table"), ...cap && cap.textContent.trim() ? [", ", cap] : [], ", " + say(node, "rows", rows.length + " row" + (rows.length === 1 ? "" : "s"), rows.length) + ", " + say(node, "columns", cols + " column" + (cols === 1 ? "" : "s"), cols) + ".");
+        rows.forEach((row, i) => {
+          const cells = Array.from(row.children).filter((c) => readable(c));
+          if (cells.length) add(row, say(row, "row", "Row " + (i + 1), i + 1) + ". ", ...cells.flatMap((cell, index) => index ? [". ", cell] : [cell]), ".");
         });
-        out.push("Table end.");
+        add(node, say(node, "tableEnd", "Table end") + ".");
         continue;
       }
       if (tag === "img") {
         const alt = (node.getAttribute("alt") || "").trim();
-        if (node.getAttribute("role") !== "presentation" && alt) out.push("Image. " + alt + ".");
+        if (node.getAttribute("role") !== "presentation" && node.getAttribute("role") !== "none" && alt) add(node, say(node, "image", "Image") + ". " + alt + ".");
+        continue;
+      }
+      if (options.languageRuns && (tag === "math" || tag === "svg")) {
+        add(node, node);
         continue;
       }
       if (tag === "details") {
         const sum = node.querySelector("summary");
-        if (sum && sum.textContent.trim()) out.push("Disclosure section, " + sum.textContent.trim() + ".");
+        if (sum && sum.textContent.trim()) add(node, say(node, "disclosure", "Disclosure section") + ", ", sum, ".");
         walk(node);
         continue;
       }
+      if (tag === "summary" && node.parentElement?.tagName === "DETAILS") continue;
       walk(node);
     }
   };
   walk(doc.body || doc.documentElement);
-  return out.join("\n\n");
+  return options.languageRuns ? _narrationMergeRuns(runs, false) : out.join("\n\n");
 }
 async function _epubCoreAudioBlob(blob) {
   if (!blob || !blob.size) return null;
@@ -3803,6 +3904,33 @@ function PdfAuditView(props) {
     pdfConfirmResolveRef.current = null;
     if (resolve) resolve(false);
   }, []);
+  const _auditLifecycle = props.pdfAuditLifecycle || null;
+  const _auditInstanceRef = useRef(null);
+  if (!_auditInstanceRef.current) _auditInstanceRef.current = {
+    modalId: _auditLifecycle ? _auditLifecycle.nextId("modal") : null,
+    effectCycle: 0
+  };
+  const _auditLifecycleSnapshot = () => {
+    try {
+      return {
+        ..._auditLifecycle ? _auditLifecycle.readEpochs() : {},
+        modalId: _auditInstanceRef.current.modalId,
+        modalEffectCycle: _auditInstanceRef.current.effectCycle,
+        modalEpoch: pdfDocumentEpoch,
+        hasResult: !!pdfAuditResult,
+        loading: !!pdfAuditLoading
+      };
+    } catch (_) {
+      return {};
+    }
+  };
+  _auditInstanceRef.current.readSnapshot = _auditLifecycleSnapshot;
+  useEffect(() => {
+    if (!_auditLifecycle) return void 0;
+    _auditInstanceRef.current.effectCycle += 1;
+    _auditLifecycle.record("modal mounted", _auditInstanceRef.current.readSnapshot());
+    return () => _auditLifecycle.record("modal unmounted", _auditInstanceRef.current.readSnapshot());
+  }, []);
   useEffect(() => {
     remediationProgressOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };
     chunkTraceOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 };
@@ -3839,7 +3967,8 @@ function PdfAuditView(props) {
           _docPipeline.logHostDiagnostic("EpochGate", note, {
             runId: detail && detail.runId || null,
             documentEpoch: detail ? detail.documentEpoch : null,
-            modalDocumentEpoch: pdfDocumentEpoch
+            modalDocumentEpoch: pdfDocumentEpoch,
+            ..._auditLifecycleSnapshot()
           });
         } else {
           console.warn("[PdfAuditView][EpochGate] " + note);
@@ -4402,6 +4531,7 @@ function PdfAuditView(props) {
   };
   const _auditGateLog = (event, detail) => {
     try {
+      detail = { ..._auditLifecycleSnapshot(), ...detail || {} };
       if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
         let json = "";
         try {
@@ -4978,7 +5108,7 @@ function PdfAuditView(props) {
         if (summary.linksGenericText > 0) _qualityIssues.push(summary.linksGenericText + " link" + (summary.linksGenericText === 1 ? "" : "s") + " with generic text");
         if (_qualityIssues.length > 0) _rpt.push({ tone: "warn", text: "Worth fixing in the preview, then re-export: " + _qualityIssues.join(", ") + "." });
       }
-      _rpt.push({ tone: "info", text: "For an official compliance verdict: open the file in PAC 2024 (free checker), test it with a screen reader, or send this report to your district accessibility coordinator." });
+      _rpt.push({ tone: "info", text: "For further evaluation, check the file with PAC or veraPDF, test it with a screen reader, and review the findings with an accessibility specialist." });
       setLastTaggedReport({
         file: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf",
         when: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
@@ -5924,7 +6054,7 @@ function PdfAuditView(props) {
       if (/<svg\b/i.test(bodyHtml)) _moContentProperties.push("svg");
       if (/<math\b/i.test(bodyHtml)) _moContentProperties.push("mathml");
       const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties);
-      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>";
+      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(epubLang) + '" xml:lang="' + _expXmlEsc(epubLang) + '"><head><title lang="en">Navigation</title></head><body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>";
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", _containerXml);
       zip.file("OEBPS/content.xhtml", xhtml);
@@ -11189,7 +11319,7 @@ Return ONLY JSON:
           _AlloQualifier,
           {
             className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (fail ? "bg-red-100 text-red-700" : warnOnly ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"),
-            text: (t("pdf_audit.dashboard.pdfua_title") || "PDF/UA conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out, distinct from the content score.") + (indep ? "" : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')
+            text: (t("pdf_audit.dashboard.pdfua_title") || "PDF/UA conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out, distinct from the content score.") + (indep ? "" : ' Run "Independently validate with veraPDF" for machine-verifiable ISO 14289-1 checks.')
           },
           (fail ? "\u274C " : warnOnly ? "\u26A0\uFE0F " : "\u2705 ") + label
         );
@@ -18503,6 +18633,12 @@ window.AlloModules.AltFormatExports = {
   braille: _buildBrailleBrf,
   plainText: _altFmtHtmlToPlainText,
   validateEpub: validateEpubStructure,
+};
+// Shared narration semantics for the app and the MCP adapter.
+window.AlloModules.DocumentNarrationExports = {
+  naturalText: _audioReadyText, accessibleText: _srStyleTextFromHtml,
+  sanitize: _viewSanitizeMarkupForExport, concat: _concatAudioBlobs,
+  epubAudio: _epubCoreAudioBlob, smil: _buildMoSmil, opf: _buildMoOpf,
 };
 window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');

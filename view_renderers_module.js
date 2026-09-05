@@ -5961,8 +5961,96 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     t("memory_palace.recall_reveal") || "Reveal answer (no points)"
   ))), /* @__PURE__ */ React.createElement("p", { className: presenting ? "sr-only" : "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
 };
+const STYLE_POINTER_EVENTS_NONE = { pointerEvents: "none" };
+const renderFlowShape = (node, isSelected, deps) => {
+  const { isMapLocked, handleNodeMouseDown, handleNodeClick, isChallengeActive, isTeacherMode, handleDeleteNode, mapContainerRef, setConceptMapNodes, t } = deps;
+  const { type, x, y, text, id } = node;
+  const strokeColor = isSelected ? "#6366f1" : "#94a3b8";
+  const strokeWidth = isSelected ? 3 : 2;
+  const onMouseDown = (e) => !isMapLocked && handleNodeMouseDown(e, id);
+  const onClick = (e) => handleNodeClick(e, id);
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleNodeClick(e, id);
+      return;
+    }
+    if ((e.key === "Delete" || e.key === "Backspace") && !isChallengeActive && isTeacherMode && !isMapLocked) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleDeleteNode(id);
+      return;
+    }
+    const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!delta || isMapLocked) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = e.shiftKey ? 25 : 10;
+    const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+    const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+    setConceptMapNodes((nodes) => nodes.map((item) => item.id === id ? {
+      ...item,
+      x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
+      y: Math.max(0, Math.min(height, item.y + delta[1] * step))
+    } : item));
+  };
+  const gProps = {
+    transform: `translate(${x},${y})`,
+    role: "button",
+    tabIndex: 0,
+    focusable: "true",
+    "aria-label": text,
+    "aria-pressed": isSelected,
+    onMouseDown,
+    onClick,
+    onKeyDown,
+    className: `pointer-events-auto ${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`,
+    key: id
+  };
+  let shape;
+  switch (type) {
+    case "flow-start":
+    case "flow-end":
+      shape = /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "0", rx: "60", ry: "30", fill: "#f0f9ff", stroke: strokeColor, strokeWidth }), /* @__PURE__ */ React.createElement("text", { x: "0", y: "5", textAnchor: "middle", className: "text-xs font-bold pointer-events-none select-none fill-slate-700 font-sans uppercase tracking-wider" }, text));
+      break;
+    case "flow-decision":
+      shape = /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("polygon", { points: "0,-50 60,0 0,50 -60,0", fill: "#fefce8", stroke: strokeColor, strokeWidth }), /* @__PURE__ */ React.createElement("foreignObject", { x: "-40", y: "-20", width: "80", height: "40", style: STYLE_POINTER_EVENTS_NONE }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-center text-[11px] font-bold leading-tight select-none text-yellow-900 break-words px-1" }, text)));
+      break;
+    case "flow-note":
+      shape = /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M-50,-30 L35,-30 L50,-15 L50,30 L-50,30 Z", fill: "#fff7ed", stroke: strokeColor, strokeWidth: 1, strokeDasharray: "4 2" }), /* @__PURE__ */ React.createElement("path", { d: "M35,-30 L35,-15 L50,-15", fill: "none", stroke: strokeColor, strokeWidth: 1 }), /* @__PURE__ */ React.createElement("foreignObject", { x: "-45", y: "-25", width: "90", height: "50", style: STYLE_POINTER_EVENTS_NONE }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-center text-[11px] text-slate-600 italic select-none px-1" }, text)));
+      break;
+    case "flow-process":
+    default:
+      shape = /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "-75", y: "-30", width: "150", height: "60", rx: "6", fill: "white", stroke: strokeColor, strokeWidth }), /* @__PURE__ */ React.createElement("foreignObject", { x: "-70", y: "-25", width: "140", height: "50", style: STYLE_POINTER_EVENTS_NONE }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-center text-xs font-bold select-none px-1 text-indigo-900 break-words line-clamp-3" }, text)));
+  }
+  return /* @__PURE__ */ React.createElement("g", { ...gProps }, shape, !isChallengeActive && isTeacherMode && !isMapLocked && /* @__PURE__ */ React.createElement(
+    "g",
+    {
+      "aria-hidden": "true",
+      focusable: "false",
+      className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity cursor-pointer",
+      onClick: (e) => {
+        e.stopPropagation();
+        handleDeleteNode(id);
+      },
+      transform: "translate(45, -35)"
+    },
+    /* @__PURE__ */ React.createElement("title", null, t("concept_map.tooltips.delete_node")),
+    /* @__PURE__ */ React.createElement("circle", { r: "12", fill: "#ef4444", stroke: "white", strokeWidth: "1" }),
+    /* @__PURE__ */ React.createElement("text", { textAnchor: "middle", dy: "3", fill: "white", fontSize: "10", fontWeight: "bold" }, "\xD7")
+  ));
+};
+const getElbowPath = (sourceNode, targetNode) => {
+  if (!sourceNode || !targetNode) return "";
+  const startX = sourceNode.x;
+  const startY = sourceNode.y + (sourceNode.type === "flow-decision" ? 50 : 30);
+  const endX = targetNode.x;
+  const endY = targetNode.y - (targetNode.type === "flow-decision" ? 50 : 30);
+  const midY = (startY + endY) / 2;
+  return `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
+};
 const renderInteractiveMap = (deps) => {
-  const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
+  const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, setConceptMapNodes, t } = deps;
   const handleAccessibleNodeKeyDown = (e, node) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -6227,7 +6315,7 @@ const renderInteractiveMap = (deps) => {
     !isMapLocked && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-dot-pattern pointer-events-none z-0" }),
     generatedContent?.data?.structureType === "Cause and Effect" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-orange-300" }), "CAUSES")), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, "EFFECTS", /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-teal-300" }))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600" }, /* @__PURE__ */ React.createElement("svg", { width: "48", height: "48", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("path", { d: "M5 12h14" }), /* @__PURE__ */ React.createElement("path", { d: "m12 5 7 7-7 7" })))),
     generatedContent?.data?.structureType === "Problem Solution" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "10" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "8", x2: "12", y2: "12" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "16", x2: "12.01", y2: "16" })), "PROBLEM")), /* @__PURE__ */ React.createElement("div", { className: "flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45" }), "SOLUTIONS")), /* @__PURE__ */ React.createElement("div", { className: "h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("path", { d: "M22 11.08V12a10 10 0 1 1-5.93-9.14" }), /* @__PURE__ */ React.createElement("polyline", { points: "22 4 12 14.01 9 11.01" })), "OUTCOME"))),
-    /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 w-full h-full pointer-events-none z-0", "aria-hidden": "true" }, isVenn ? /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientA", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(244, 63, 94, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(244, 63, 94, 0.05)" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientB", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(59, 130, 246, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(59, 130, 246, 0.05)" })), /* @__PURE__ */ React.createElement("radialGradient", { id: "vennGradientShared", cx: "50%", cy: "50%", r: "50%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(168, 85, 247, 0.2)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(168, 85, 247, 0)" })), /* @__PURE__ */ React.createElement("filter", { id: "vennShadow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, /* @__PURE__ */ React.createElement("feDropShadow", { dx: "0", dy: "4", stdDeviation: "6", floodColor: "rgba(0,0,0,0.08)" }))), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 w-full h-full pointer-events-none z-0", "aria-hidden": isVenn ? true : void 0 }, isVenn ? /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientA", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(244, 63, 94, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(244, 63, 94, 0.05)" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientB", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(59, 130, 246, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(59, 130, 246, 0.05)" })), /* @__PURE__ */ React.createElement("radialGradient", { id: "vennGradientShared", cx: "50%", cy: "50%", r: "50%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(168, 85, 247, 0.2)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(168, 85, 247, 0)" })), /* @__PURE__ */ React.createElement("filter", { id: "vennShadow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, /* @__PURE__ */ React.createElement("feDropShadow", { dx: "0", dy: "4", stdDeviation: "6", floodColor: "rgba(0,0,0,0.08)" }))), /* @__PURE__ */ React.createElement(
       "circle",
       {
         cx: VENN_ZONES.A.x,
@@ -6322,7 +6410,7 @@ const renderInteractiveMap = (deps) => {
         )),
         !isChallengeActive && !isMapLocked && /* @__PURE__ */ React.createElement("g", { className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" }, /* @__PURE__ */ React.createElement("circle", { cx: (fromNode.x + toNode.x) / 2, cy: (fromNode.y + toNode.y) / 2, r: "8", fill: "#ef4444" }), /* @__PURE__ */ React.createElement("text", { x: (fromNode.x + toNode.x) / 2, y: (fromNode.y + toNode.y) / 2, dy: "3", textAnchor: "middle", fill: "white", fontSize: "10", fontWeight: "bold" }, "\xD7"))
       );
-    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("filter", { id: "vo-edge-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2" })), /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse motion-reduce:animate-none" })),
+    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("filter", { id: "vo-edge-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2" })), /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id, deps))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse motion-reduce:animate-none" })),
     (conceptMapNodes || []).filter((node) => !node.type || !node.type.startsWith("flow-")).map((node, _nodeIdx) => /* @__PURE__ */ React.createElement(
       "div",
       {

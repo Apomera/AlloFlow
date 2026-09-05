@@ -8543,6 +8543,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     category: 'Literacy',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The intro block paints no ground, so it sits on the HOST surface -
+      // white in light and dark, pure BLACK in the contrast theme, where the
+      // tool own title measured 1.84:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = window.React;
       var h = React.createElement;
       var data = ctx.toolData || {};
@@ -8635,8 +8640,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-6' },
-            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-900 mb-2' }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
-            h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
+            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-900 mb-2' + onHostInk }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
+            h('p', { className: 'text-sm text-slate-700 leading-relaxed' + onHostInk },
               __alloT('stem.assessmentliteracy.this_tool_doesn_t_measure_you_it_teach', 'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.')
             ),
             h('div', { className: 'mt-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-900' },

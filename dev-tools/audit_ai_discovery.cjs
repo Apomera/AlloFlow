@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
+const {release, stemFiles, stemTools, selTools} = require('./promo_site_facts.cjs').getPromoFacts();
 const canonicalBase = 'https://apomera.github.io/AlloFlow/';
 const shellPages = [
     'index.html', 'about.html', 'tools.html', 'features.html', 'remediation.html',
@@ -78,8 +79,8 @@ check(metaContent(about, 'robots') === 'index, follow', 'about.html: robots dire
 check(metaContent(about, 'og:url', 'property') === `${canonicalBase}about.html`, 'about.html: Open Graph URL is not canonical');
 check(about.includes('The canonical upstream repository is'), 'about.html: canonical-upstream explanation is missing');
 check(about.includes('Forks are independent snapshots and may lag current releases.'), 'about.html: fork staleness warning is missing');
-check(about.includes('Version 1.2'), 'about.html: current version is missing');
-check(about.includes('142 plugin files, 143 registered STEM tool IDs, and 70 SEL activities'), 'about.html: verified catalog counts are missing');
+check(about.includes('Version ' + release.version), 'about.html: current version is missing');
+check(about.includes(`${stemFiles} plugin files, ${stemTools} registered STEM tool IDs, and ${selTools} SEL activities`), 'about.html: verified catalog counts are missing');
 check(about.includes('https://github.com/Apomera/AlloFlow/releases'), 'about.html: official releases link is missing');
 check(about.includes('CITATION.cff'), 'about.html: citation record is missing');
 
@@ -99,15 +100,18 @@ const aboutPage = entities.find((entity) => entity['@type'] === 'AboutPage');
 const software = entities.find((entity) => entity['@type'] === 'SoftwareApplication');
 const faq = entities.find((entity) => entity['@type'] === 'FAQPage');
 check(aboutPage?.url === `${canonicalBase}about.html`, 'about.html: AboutPage URL is incorrect');
-check(aboutPage?.dateModified === '2026-08-20', 'about.html: AboutPage dateModified is stale');
+check(/^\d{4}-\d{2}-\d{2}$/.test(aboutPage?.dateModified || '') && about.includes('datetime="' + aboutPage.dateModified + '"') && Date.parse(aboutPage.dateModified) <= Date.now(), 'about.html: AboutPage dateModified is stale');
 check(aboutPage?.mainEntity?.['@id'] === `${canonicalBase}#software`, 'about.html: AboutPage does not identify the canonical software entity');
 check(software?.['@id'] === `${canonicalBase}#software`, 'about.html: SoftwareApplication identity does not match the homepage');
 check(software?.codeRepository === 'https://github.com/Apomera/AlloFlow', 'about.html: codeRepository is not canonical');
-check(software?.softwareVersion === '1.2', 'about.html: structured software version is stale');
+check(software?.softwareVersion === release.version, 'about.html: structured software version is stale');
 check(software?.license === 'https://www.gnu.org/licenses/agpl-3.0.html', 'about.html: structured license is incorrect');
 check(Array.isArray(software?.sameAs) && software.sameAs.includes('https://github.com/Apomera/AlloFlow'), 'about.html: official repository is absent from sameAs');
 check(Array.isArray(faq?.mainEntity) && faq.mainEntity.length >= 4, 'about.html: direct-answer structured data is incomplete');
 
+const homeSoftware = JSON.parse(read('index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'].find(entity => entity['@type'] === 'SoftwareApplication');
+check(homeSoftware?.softwareVersion === release.version, 'index.html: structured release differs from release.json');
+check(read('launch.html').includes('const FALLBACK_VERSION = "' + release.version + '"'), 'launch.html: offline release fallback is stale');
 const sitemap = read('sitemap.xml');
 const aboutLoc = `<loc>${canonicalBase}about.html</loc>`;
 check((sitemap.match(new RegExp(aboutLoc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length === 1,

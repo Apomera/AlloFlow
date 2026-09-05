@@ -41,7 +41,8 @@ test('explains source confidence and switches among scientific lenses', async ({
   await expect(trust).toContainText('Measured');
   await expect(trust).toContainText('Modeled');
   await expect(trust).toContainText('Hypothesis');
-  await expect(trust.locator('a')).toHaveCount(3);
+  await expect(trust.locator('a')).toHaveCount(4);
+  await expect(trust.locator('a[href="https://www.iau.org/static/resolutions/Resolution_GA26-5-6.pdf"]')).toBeVisible();
 
   const lenses = page.locator('[data-solarsystem-model-lenses]');
   const sizeLens = lenses.getByRole('button', { name: /Size scale/ });

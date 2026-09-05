@@ -1,8 +1,107 @@
 
+function projectStudentActivityResource(resource) {
+  if (!resource || resource.type !== 'brainstorm' || !Array.isArray(resource.data)) return null;
+  const text = value => typeof value === 'string' ? value : '';
+  const strings = values => (Array.isArray(values) ? values : []).filter(value => typeof value === 'string').slice();
+  const data = resource.data.filter(item => item && ['discussion', 'jigsaw'].includes(item.kind)).map(item => {
+    const projected = { kind: item.kind, title: text(item.title) };
+    if (item.kind === 'discussion') {
+      projected.protocol = text(item.protocol);
+      projected.grouping = text(item.grouping);
+      projected.openingQuestion = text(item.openingQuestion);
+      projected.questionSets = (Array.isArray(item.questionSets) ? item.questionSets : []).map(set => ({
+        depth: text(set && set.depth), questions: strings(set && set.questions)
+      }));
+      projected.talkStems = {};
+      ['agree', 'disagree', 'clarify', 'build'].forEach(category => { projected.talkStems[category] = strings(item.talkStems && item.talkStems[category]); });
+    } else {
+      projected.groupSize = Math.max(2, Math.min(6, Number(item.groupSize) || 4));
+      projected.chunks = (Array.isArray(item.chunks) ? item.chunks : []).map(chunk => ({
+        label: text(chunk && chunk.label), expertPacket: text(chunk && chunk.expertPacket),
+        teachBack: {
+          keyPoints: strings(chunk && chunk.teachBack && chunk.teachBack.keyPoints),
+          checkQuestions: strings(chunk && chunk.teachBack && chunk.teachBack.checkQuestions)
+        }
+      }));
+      projected.homeGroupTask = text(item.homeGroupTask);
+      projected.synthesisOrganizer = text(item.synthesisOrganizer);
+      projected.accountabilityCheck = (Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : []).map(check => ({ q: text(check && check.q) }));
+    }
+    return projected;
+  });
+  if (!data.length) return null;
+  const result = { type: 'brainstorm', data, studentProjection: true };
+  ['id', 'artifactInstanceId', 'unitId', 'sourceFingerprint', 'title', 'timestamp', 'language', 'gradeLevel', 'sourceTitle', 'sourceId', 'lessonId'].forEach(key => {
+    if (typeof resource[key] === 'string' || typeof resource[key] === 'number') result[key] = resource[key];
+  });
+  if (resource.config && typeof resource.config === 'object') {
+    const config = {};
+    ['language', 'grade', 'gradeLevel'].forEach(key => {
+      if (typeof resource.config[key] === 'string' || typeof resource.config[key] === 'number') config[key] = resource.config[key];
+    });
+    if (Object.keys(config).length) result.config = config;
+  }
+  return result;
+}
+
+function ActivityStructuredEditor(props) {
+  const item = props.item;
+  const change = props.onChange;
+  const fieldClass = 'w-full rounded-lg border border-slate-400 p-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500';
+  const label = (key, fallback) => {
+    const value = props.t && props.t(key);
+    return value && value !== key ? value : fallback;
+  };
+  const textField = (name, value, onChange, rows = 2) => <label className="block space-y-1"><span className="text-xs font-bold text-slate-700">{name}</span><textarea className={fieldClass} aria-label={name} rows={rows} value={typeof value === 'string' ? value : ''} onChange={event => onChange(event.target.value)} /></label>;
+  const listField = (name, values, onChange) => textField(name, (Array.isArray(values) ? values : []).join('\n'), value => onChange(value.split('\n')), 3);
+  const replaceAt = (values, index, value) => values.map((entry, i) => i === index ? value : entry);
+  const removeButton = (name, onClick) => <button type="button" className="text-xs font-bold text-red-700 border border-red-300 rounded px-2 py-1" aria-label={name} onClick={onClick}>{label('common.delete', 'Delete')}</button>;
+  const addButton = (name, onClick) => <button type="button" className="text-xs font-bold text-violet-700 border border-violet-300 rounded px-3 py-2" onClick={onClick}>{name}</button>;
+  const questionSets = Array.isArray(item.questionSets) ? item.questionSets : [];
+  const chunks = Array.isArray(item.chunks) ? item.chunks : [];
+  const checks = Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : [];
+  return <div className="space-y-4" role="group" aria-label={label('brainstorm.edit_activity', 'Edit activity')}>
+    {textField(label('brainstorm.placeholder_title', 'Activity title'), item.title, value => change('title', value), 1)}
+    {item.kind === 'discussion' ? <>
+      <label className="block space-y-1"><span className="text-xs font-bold text-slate-700">{label('brainstorm.protocol', 'Discussion protocol')}</span><select className={fieldClass} aria-label={label('brainstorm.protocol', 'Discussion protocol')} value={item.protocol || 'think-pair-share'} onChange={event => change('protocol', event.target.value)}>{['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'].map(value => <option key={value} value={value}>{label('brainstorm.protocol_' + value.replace(/-/g, '_'), value)}</option>)}</select></label>
+      {textField(label('brainstorm.grouping', 'Grouping instructions'), item.grouping, value => change('grouping', value))}
+      {textField(label('brainstorm.opening_question', 'Opening question'), item.openingQuestion, value => change('openingQuestion', value))}
+      {questionSets.map((set, index) => <fieldset key={index} className="border border-slate-300 rounded-lg p-3 space-y-2"><legend className="text-xs font-bold">{label('brainstorm.question_set', 'Question set')} {index + 1}</legend>
+        <label className="block text-xs font-bold">{label('brainstorm.question_depth', 'Question depth')}<select className={fieldClass} aria-label={label('brainstorm.question_depth', 'Question depth') + ' ' + (index + 1)} value={set.depth || 'literal'} onChange={event => change('questionSets', replaceAt(questionSets, index, { ...set, depth: event.target.value }))}>{['literal', 'inferential', 'evaluative'].map(depth => <option key={depth} value={depth}>{label('brainstorm.depth_' + depth, depth)}</option>)}</select></label>
+        {listField(label('brainstorm.questions', 'Questions (one per line)') + ' ' + (index + 1), set.questions, value => change('questionSets', replaceAt(questionSets, index, { ...set, questions: value })))}
+        {removeButton(label('brainstorm.remove_question_set', 'Delete question set') + ' ' + (index + 1), () => change('questionSets', questionSets.filter((_, i) => i !== index)))}
+      </fieldset>)}
+      {addButton(label('brainstorm.add_question_set', 'Add question set'), () => change('questionSets', [...questionSets, { depth: 'literal', questions: [''] }]))}
+      {['agree', 'disagree', 'clarify', 'build'].map(category => <div key={category}>{listField(label('brainstorm.stems_' + category, category) + ' — ' + label('brainstorm.talk_stems', 'Talk stems'), item.talkStems && item.talkStems[category], value => change('talkStems', { ...(item.talkStems || {}), [category]: value }))}</div>)}
+      {textField(label('brainstorm.facilitation_notes', 'Facilitation notes (teacher)'), item.facilitationNotes, value => change('facilitationNotes', value), 4)}
+      {listField(label('brainstorm.look_fors', 'Participation look-fors'), item.lookFors, value => change('lookFors', value))}
+    </> : <>
+      <label className="block space-y-1"><span className="text-xs font-bold">{label('brainstorm.group_size', 'Home-group size')}</span><input type="number" min="2" max="6" className={fieldClass} aria-label={label('brainstorm.group_size', 'Home-group size')} value={item.groupSize || 4} onChange={event => change('groupSize', Math.max(2, Math.min(6, Number(event.target.value) || 2)))} /></label>
+      {chunks.map((chunk, index) => <fieldset key={index} className="border border-emerald-300 rounded-lg p-3 space-y-2"><legend className="text-xs font-bold">{label('brainstorm.expert_group', 'Expert group')} {index + 1}</legend>
+        {textField(label('brainstorm.expert_group_label', 'Expert group label') + ' ' + (index + 1), chunk.label, value => change('chunks', replaceAt(chunks, index, { ...chunk, label: value })), 1)}
+        {textField(label('brainstorm.expert_packet', 'Expert packet') + ' ' + (index + 1), chunk.expertPacket, value => change('chunks', replaceAt(chunks, index, { ...chunk, expertPacket: value })), 5)}
+        {listField(label('brainstorm.teach_back_points', 'Teach-back points') + ' ' + (index + 1), chunk.teachBack && chunk.teachBack.keyPoints, value => change('chunks', replaceAt(chunks, index, { ...chunk, teachBack: { ...(chunk.teachBack || {}), keyPoints: value } })))}
+        {listField(label('brainstorm.teach_back_questions', 'Teach-back questions') + ' ' + (index + 1), chunk.teachBack && chunk.teachBack.checkQuestions, value => change('chunks', replaceAt(chunks, index, { ...chunk, teachBack: { ...(chunk.teachBack || {}), checkQuestions: value } })))}
+        {removeButton(label('brainstorm.remove_expert_group', 'Delete expert group') + ' ' + (index + 1), () => change('chunks', chunks.filter((_, i) => i !== index)))}
+      </fieldset>)}
+      {chunks.length < 6 && addButton(label('brainstorm.add_expert_group', 'Add expert group'), () => change('chunks', [...chunks, { label: '', expertPacket: '', teachBack: { keyPoints: [], checkQuestions: [] } }]))}
+      {textField(label('brainstorm.home_group_task', 'Home-group task'), item.homeGroupTask, value => change('homeGroupTask', value), 3)}
+      {textField(label('brainstorm.synthesis_organizer', 'Putting it together'), item.synthesisOrganizer, value => change('synthesisOrganizer', value), 3)}
+      {checks.map((check, index) => <fieldset key={index} className="border border-slate-300 rounded-lg p-3 space-y-2"><legend className="text-xs font-bold">{label('brainstorm.accountability_check', 'Show what you learned')} {index + 1}</legend>
+        {textField(label('brainstorm.check_question', 'Check question') + ' ' + (index + 1), check.q, value => change('accountabilityCheck', replaceAt(checks, index, { ...check, q: value })))}
+        {textField(label('brainstorm.answer_key', 'Answer key (teacher only)') + ' ' + (index + 1), check.answer, value => change('accountabilityCheck', replaceAt(checks, index, { ...check, answer: value })))}
+        {removeButton(label('brainstorm.remove_check_question', 'Delete check question') + ' ' + (index + 1), () => change('accountabilityCheck', checks.filter((_, i) => i !== index)))}
+      </fieldset>)}
+      {addButton(label('brainstorm.add_check_question', 'Add check question'), () => change('accountabilityCheck', [...checks, { q: '', answer: '' }]))}
+    </>}
+  </div>;
+}
+
+
 // ── Activity-kind bodies (2026-08-16 Activities redesign) ──────────────────
 // Brainstorm data items may carry an optional `kind`: absent/'idea' renders the
 // classic idea card; 'discussion' and 'jigsaw' render the structured bodies
-// below. Bodies are VIEW-ONLY in v1 (no inline editing — regenerate instead);
+// below. Teacher editing preserves the structured schema;
 // the shared ladder (guide/worksheet/rubric) still applies to every kind.
 // Shapes are pure data (docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4).
 
@@ -238,7 +337,7 @@ function BrainstormView(props) {
                   <div className="space-y-6" data-help-key="brainstorm_panel">
                       <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 mb-6 flex justify-between items-center gap-4">
                         <p className="text-sm text-yellow-800 flex-grow"><strong>UDL Goal:</strong> Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation.</p>
-                        <div className="flex gap-2">
+                        {isTeacherMode && <div className="flex gap-2">
                             <button
                                 aria-label={t('common.toggle_edit_brainstorm')}
                                 onClick={handleToggleIsEditingBrainstorm}
@@ -247,12 +346,14 @@ function BrainstormView(props) {
                                 {isEditingBrainstorm ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
                                 {isEditingBrainstorm ? t('common.done_editing') : t('brainstorm.edit')}
                             </button>
-                        </div>
+                        </div>}
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                          {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((idea, idx) => (
                              <div key={idx} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" data-help-key="brainstorm_card">
-                                 {idea.kind === 'discussion' ? (
+                                 {isTeacherMode && isEditingBrainstorm && ['discussion', 'jigsaw'].includes(idea.kind) ? (
+                                     <ActivityStructuredEditor item={idea} t={t} onChange={(field, value) => handleBrainstormChange(idx, field, value)} />
+                                 ) : idea.kind === 'discussion' ? (
                                      <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} />
                                  ) : idea.kind === 'jigsaw' ? (
                                      <JigsawBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} />
@@ -302,8 +403,8 @@ function BrainstormView(props) {
                                         </div>
                                      </>
                                  )}
-                                 <ActivityArtifactSummary item={idea} t={t} />
-                                 <div className="border-t border-slate-100 pt-3">
+                                 {isTeacherMode && <ActivityArtifactSummary item={idea} t={t} />}
+                                 {isTeacherMode && <div className="border-t border-slate-100 pt-3">
                                      {idea.guide ? (
                                          <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-400" data-help-key="brainstorm_guide">
                                              <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16}/> {t('brainstorm.teacher_guide')}</h5>
@@ -455,10 +556,12 @@ function BrainstormView(props) {
                                              {isGeneratingBrainstormRubric[idx] ? 'Creating rubric...' : 'Generate Activity Rubric'}
                                          </button>
                                      ) : null}
-                                 </div>
+                                 </div>}
                              </div>
                           ))}
                     </div>
                   </div>
   );
 }
+
+BrainstormView.projectStudentActivityResource = projectStudentActivityResource;

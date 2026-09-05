@@ -2667,7 +2667,7 @@ if (!safetyChecked) {
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back', "Back"),
       onClick: function() { setStemLabTool(null); },
       className: "text-xs font-bold transition-colors",
-      style: { color: '#155e75' }
+      style: { color: ctx.isContrast ? '#ffffff' : '#155e75' }
     }, __alloT('stem.titration.back_2', "\u2190 Back")),
 
     // ── Header ──

@@ -2335,13 +2335,14 @@
       if (d && d.grammar) items.push({ type: 'status', text: d.grammar.length + ' grammar suggestions.' });
       if (d && d.summary) items.push({ type: 'text', text: typeof d.summary === 'string' ? d.summary : JSON.stringify(d.summary) });
     } else if (activeView === 'sentence-frames' && generatedContent && generatedContent.type === 'sentence-frames') {
-      const frames = (generatedContent && generatedContent.data) || [];
-      items.push({ type: 'heading', text: 'Sentence frames. ' + (Array.isArray(frames) ? frames.length : 0) + ' frames generated.' });
-      if (Array.isArray(frames)) {
-        frames.forEach(function(f, i) {
-          items.push({ type: 'text', text: 'Frame ' + (i + 1) + ': ' + (typeof f === 'string' ? f : (f.frame || f.text || JSON.stringify(f))) });
-        });
-      }
+      const data = generatedContent.data || {};
+      const frames = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+      items.push({ type: 'heading', text: !Array.isArray(data) && data.mode !== 'list' && data.text ? 'Paragraph frame.' : 'Sentence frames. ' + frames.length + ' frames generated.' });
+      frames.forEach(function(frame, index) {
+        items.push({ type: 'text', text: 'Frame ' + (index + 1) + ': ' + (typeof frame === 'string' ? frame : (frame.text || frame.frame || '')) });
+      });
+      if (!Array.isArray(data) && data.text) items.push({ type: 'text', text: data.text });
+      if (!Array.isArray(data) && data.rubric) items.push({ type: 'text', text: data.rubric });
     } else {
       const main = (deps && deps.root) || document.getElementById('main-content');
       if (main) {

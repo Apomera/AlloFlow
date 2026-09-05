@@ -170,7 +170,8 @@ describe('Anatomy Clinical concept search', () => {
     expect(renderedSearch.getAttribute('aria-controls')).toBe(scroll.id);
     expect(scroll.getAttribute('role')).toBe('region');
     expect(scroll.getAttribute('aria-label')).toMatch(/Clinical Atlas concepts/i);
-    expect(scroll.tabIndex).toBe(0);
+    expect(scroll.tabIndex).toBe(-1);
+    expect(controls.filter((control) => control.tabIndex === 0)).toHaveLength(1);
     expect(results.getAttribute('role')).toBe('status');
     expect(results.getAttribute('aria-live')).toBe('polite');
     expect(controls).toHaveLength(6);
@@ -263,5 +264,61 @@ describe('Anatomy model-specific legends', () => {
     expect(root.querySelector('[data-anatomy-clinical-visual-key="true"]')).toBeNull();
     expect(root.querySelector('.anatomy-marker-legend')).not.toBeNull();
     expect(root.querySelector('[data-anatomy-circulatory-flow-legend="true"]')).not.toBeNull();
+  });
+});
+
+describe('Clinical Atlas stable list navigation', () => {
+  function list(root) { return root.querySelector('[data-anatomy-clinical-concept-scroll]'); }
+  function options(root) { return [...list(root).querySelectorAll('[data-anatomy-clinical-concept]')]; }
+  function order(root) { return options(root).map((node) => node.dataset.anatomyClinicalConcept); }
+
+  it.each(ANATOMY_PATHS)('keeps concept order stable when selection changes in %s', (filePath) => {
+    const first = parseMarkup(renderAnatomy(filePath, HEART_CLINICAL_STATE));
+    const second = parseMarkup(renderAnatomy(filePath, { ...HEART_CLINICAL_STATE, _clinicalAtlasConceptId: 'UBERON:0002137' }));
+    expect(order(second)).toEqual(order(first));
+    expect(options(second).filter((node) => node.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    expect(options(second).find((node) => node.getAttribute('aria-pressed') === 'true').dataset.anatomyClinicalConcept).toBe('UBERON:0002137');
+  });
+
+  it.each(ANATOMY_PATHS)('has one Tab stop and connected keyboard instructions in %s', (filePath) => {
+    const root = parseMarkup(renderAnatomy(filePath, HEART_CLINICAL_STATE));
+    expect(list(root).getAttribute('tabindex')).toBe('-1');
+    const stops = options(root).filter((node) => node.getAttribute('tabindex') === '0');
+    expect(stops).toHaveLength(1);
+    expect(stops[0].dataset.anatomyClinicalConcept).toBe(SELECTED_HEART_CONCEPT_ID);
+    for (const id of list(root).getAttribute('aria-describedby').split(' ')) expect([...root.querySelectorAll('[id]')].some((node) => node.id === id)).toBe(true);
+    expect(root.querySelector('[id^="anatomy-clinical-key-help-"]').textContent).toContain('Enter or Space selects');
+  });
+
+  it.each(ANATOMY_PATHS)('moves the Tab stop without selecting or changing the model in %s', (filePath) => {
+    const tool = loadTool(filePath, 'anatomy');
+    let data = { anatomy: { ...HEART_CLINICAL_STATE } };
+    const tree = tool.render(makeCtx({ toolData: data, setToolData: (updater) => { data = typeof updater === 'function' ? updater(data) : updater; } }));
+    const target = findElement(tree, (node) => node.props?.['data-anatomy-clinical-concept'] === 'UBERON:0002137');
+    target.props.onFocus();
+    expect(data.anatomy._clinicalAtlasConceptId).toBe(SELECTED_HEART_CONCEPT_ID);
+    expect(data.anatomy._clinicalConceptFocusId).toBe('UBERON:0002137');
+    const root = parseMarkup(renderTool('anatomy', data));
+    expect(options(root).filter((node) => node.getAttribute('tabindex') === '0').map((node) => node.dataset.anatomyClinicalConcept)).toEqual(['UBERON:0002137']);
+  });
+
+  it.each(ANATOMY_PATHS)('ignores a focus target from a different pack and retains an unmatched selection in %s', (filePath) => {
+    const root = parseMarkup(renderAnatomy(filePath, { ...HEART_CLINICAL_STATE, _clinicalConceptSearch: 'no-such-concept', _clinicalConceptFocusPackId: 'hra-kidney-female-left-v1.3', _clinicalConceptFocusId: 'UBERON:0001225' }));
+    expect(options(root)).toHaveLength(1);
+    expect(options(root)[0].getAttribute('tabindex')).toBe('0');
+    expect(options(root)[0].dataset.anatomyClinicalConcept).toBe(SELECTED_HEART_CONCEPT_ID);
+  });
+
+  it.each(ANATOMY_PATHS)('returns to the whole organ without clearing the query or study context in %s', (filePath) => {
+    const tool = loadTool(filePath, 'anatomy');
+    let data = { anatomy: { ...HEART_CLINICAL_STATE, _clinicalConceptSearch: 'valve', _structureNotes: { heart: 'My note' } } };
+    const tree = tool.render(makeCtx({ toolData: data, setToolData: (updater) => { data = typeof updater === 'function' ? updater(data) : updater; } }));
+    const reset = findElement(tree, (node) => node.props?.['data-anatomy-clinical-whole-organ'] === 'true');
+    expect(reset.props.disabled).toBe(false);
+    reset.props.onClick();
+    expect(data.anatomy).toMatchObject({ _clinicalAtlasConceptId: 'UBERON:0000948', _clinicalConceptSearch: 'valve', _structureNotes: { heart: 'My note' }, _body3dStyle: 'clinical' });
+    const root = parseMarkup(renderTool('anatomy', data));
+    expect(root.querySelector('[data-anatomy-clinical-whole-organ]').disabled).toBe(true);
+    expect(options(root)[0].dataset.anatomyClinicalConcept).toBe('UBERON:0000948');
   });
 });

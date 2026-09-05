@@ -137,6 +137,7 @@ violations, and they pass the tool's own unit tests.
 node dev-tools/check_stem_layout_defects.cjs stem_lab/stem_tool_pets.js          # one tool
 node dev-tools/check_stem_layout_defects.cjs stem_lab/stem_tool_pets.js --deep   # + walk its tabs/views
 node dev-tools/check_stem_layout_defects.cjs --all --deep --dark --json          # lab-wide (long)
+node dev-tools/check_stem_layout_defects.cjs --all --deep --contrast --json      # the third theme
 ```
 
 Five detectors, each reporting a measured number: `collapsed-percent-height` (a `height: N%`
@@ -148,11 +149,41 @@ nothing), `light-ink-on-host-card` (the own-ground family), `overlay-collision`,
 dark is where the own-ground family lives: the first light sweep found 154 findings, the first
 dark sweep found 517.
 
+**★★★ And in `--contrast`, where the failure INVERTS.** `contrast` deliberately keeps its
+pure-black surface (a light card "would fight it"), so an unpainted tool inherits BLACK and it
+is *dark* ink that disappears — kind `dark-ink-on-contrast-surface`. The first contrast sweep
+found **1853 findings across 57 tools**, including the Digital Accessibility Lab's own title at
+1.44:1 in the accessibility theme. Two traps that made whole tools fail at once: a
+`html:not(.theme-contrast)` guard never fires (the theme class is on `<main>`, never `<html>`),
+and a tool's own white card is *not* white here — `app_styles_module.js` rewrites inline light
+backgrounds to `#000 !important`, so `background:#fff` + a dark ink goes black-on-black.
+
+**★ Finish with `--all --deep`, not a per-tool victory lap.** `DEEP_CAP` is 30 for a single
+file and 12 under `--all`, and the walk dedupes by control label, so **neither pass is a superset
+of the other**: the final sweep found live findings in views that per-tool runs had called clean.
+
+**★ A stochastic tool needs repeat runs.** probability's birthday-match palette only lands when
+random birthdays actually collide — the gate fired on about one run in three.
+
 **★ Screenshot-verify a finding before fixing it.** Eleven distinct false-positive classes are
 documented in the file header and fixed in the detectors (emoji are a colour font; SVG text is
 painted by `fill` and sits on sibling rects; `getBBox()` is pre-transform; `sr-only` text is
 meant to be stacked; a mid-render style read can mix values across elements; …). The header
 also lists the three permanent KNOWN-INTENTIONAL findings so the board reads clean.
+
+### `stem_tool_shot.cjs` (NEW — Sep 4, chromium)
+Mounts ONE STEM tool in one theme and screenshots it. `check_stem_layout_defects` reports a
+ratio; this reports a picture, and every finding in that gate is a claim about what a student
+sees. It reuses the gate's own harness (same Tailwind cache, same extracted `--allo-stem-*`
+palette, same two-layer host mirror) so a shot and a finding describe the SAME pixels.
+
+```bash
+node dev-tools/stem_tool_shot.cjs stem_lab/stem_tool_arccity.js --contrast
+node dev-tools/stem_tool_shot.cjs stem_lab/stem_tool_molecule.js --contrast --click="🧱Build"
+```
+
+Flags: `--dark` | `--contrast` (default light), `--click=<button label prefix>`, `--state=<json>`,
+`--out=<png>`, `--full`.
 
 ### i18n checks (`check_lang_json.cjs` + `dev-tools/i18n/`)
 `check_lang_json.cjs` (`verify:lang-json`) validates all 63 mirrored `lang/*.js` pack files parse as JSON. The `dev-tools/i18n/` subtree holds the translation toolchain — see [`dev-tools/i18n/README.md`](i18n/README.md) (gap reports, key merging, `check_safety_string_spanglish.cjs` = `verify:spanglish`, `ingest_translation_feedback.cjs`).
@@ -163,7 +194,7 @@ also lists the three permanent KNOWN-INTENTIONAL findings so the board reads cle
 
 ### Galaxy Explorer harnesses (`galaxy_*.cjs`)
 
-Fourteen scripts, all headless chromium against the real
+Fifteen scripts, all headless chromium against the real
 `stem_lab/stem_tool_galaxy.js`. The tool is a 3-D scene plus six modes plus thirteen
 hand-drawn canvas branches, and almost none of that is reachable from Vitest: the smoke
 harness resolves `ensureThree()` with a promise that never settles, and the scene builder
@@ -182,6 +213,7 @@ node dev-tools/galaxy_stage_sheet.cjs        OUT        # all 13 Star Life branc
 node dev-tools/galaxy_responsive_sweep.cjs   OUT [--shots]   # overflow at 390-1024px
 node dev-tools/galaxy_keyboard_contract.cjs  OUT        # the keys the alt text promises
 node dev-tools/galaxy_mode_churn.cjs         OUT [cycles]    # WebGL context leaks
+node dev-tools/galaxy_interaction_sweep.cjs OUT        # click EVERY control, watch for throws
 node dev-tools/galaxy_panel_shot.cjs         OUT '<state-json>' '<selector>' NAME WIDTH [--open]
 ```
 
@@ -208,7 +240,8 @@ Baseline as of 2026-09-04: clipping/chroma steady across four morphologies, 0 su
 targets, 0 responsive overflow, 2-D fallback clean, reduced motion completely still,
 23/23 over-canvas labels above AA, 26/26 saved states render, 10/10 keyboard controls
 work, fullscreen OK on all four surfaces, and mode churn releases every WebGL context
-(made == lost).
+(made == lost). The interaction sweep drives all 316 controls: the tool's own 255 run
+clean; the 8 findings are inside Aladin Lite's injected panels.
 
 ## Architecture notes
 

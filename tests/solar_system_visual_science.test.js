@@ -298,7 +298,7 @@ describe('solar system visual science model', () => {
     expect(source).toContain('data-solar-planet-comparison');
     expect(source).toContain('shown on one shared diameter scale');
     expect(source).toContain('Bodies below 3 px use a visibility floor');
-    expect(source).toContain('Mass stays constant; weight force changes.');
+    expect(source).toContain('Mass stays constant; weight force depends on gravity.');
     expect(source).toContain('70 kg mass: weight force');
     expect(source).toContain("Math.round(70 * g1 * 9.80665).toLocaleString() + ' N'");
     expect(source).not.toContain("['\\uD83E\\uDDD1 70kg on'");

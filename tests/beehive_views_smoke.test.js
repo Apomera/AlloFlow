@@ -66,7 +66,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-hero="true"');
       expect(html).toContain('data-beehive-mode-switcher="true"');
       expect(html).toContain('data-beehive-mode-tab=');
-      expect(html).toContain('data-beehive-visual-version="45"');
+      expect(html).toContain('data-beehive-visual-version="46"');
       expect(html).toContain('data-beehive-theme=');
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
@@ -279,7 +279,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('All action points spent');
     expect(keeper).toContain('data-management-cost="1 AP"');
     expect(keeper).toContain('data-management-cost-badge="Feed"');
-    expect(keeper).toContain('+5 honey / +5 morale');
+    expect(keeper).toContain('+5 food stores / +5 stability');
     expect(keeper).toContain('data-conservation-impact="plant_wildflowers"');
     expect(keeper).toContain('data-conservation-preview="plant_wildflowers"');
     expect(keeper).toContain('Impact: Habitat +10 | Foraging +5');

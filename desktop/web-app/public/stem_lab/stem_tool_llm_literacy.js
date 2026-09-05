@@ -1432,6 +1432,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         text:     '#0f172a',
         subtext:  '#475569'
       };
+      // ★ This palette is fixed-light. In the contrast theme the host ground is
+      // black AND app_styles_module.js rewrites every inline light background
+      // (including this palette's #ffffff panels) to #000 !important - so the
+      // three ink entries were dark-on-black everywhere, 1.18-2.77:1.
+      if (ctx.isContrast) { COLORS.text = '#ffffff'; COLORS.muted = '#ffffff'; COLORS.subtext = '#ffffff'; }
       var tokenColors = {
         word:    { bg: '#dbeafe', fg: '#1e40af' },
         subword: { bg: '#fce7f3', fg: '#9d174d' },

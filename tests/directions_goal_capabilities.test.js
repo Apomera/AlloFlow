@@ -265,7 +265,7 @@ describe('wiring pins', () => {
     expect(anti).toContain("_alloStudentSafeResources(history).filter(it => it.type !== 'directions')");
   });
   it('the free-text goal is the FIRST path in the composer, before any auto-check', () => {
-    const composer = anti.slice(anti.indexOf('{showDirectionsComposer && ('));
+    const composer = read('view_directions_composer_source.jsx');
     const freeText = composer.indexOf('directions.goal_write_placeholder');
     const attach = composer.indexOf('directions.goal_attach');
     expect(freeText).toBeGreaterThan(-1);

@@ -1,254 +1,6 @@
-import { createHash, createHmac } from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
-import vm from 'node:vm';
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-
-const ROOT = path.resolve(process.cwd());
-const SOURCE = fs.readFileSync(path.join(ROOT, 'apps_script/school_rewards/Code.gs'), 'utf8');
-const DOMAIN = 'school.example';
-const ADMIN = `admin@${DOMAIN}`;
-const STAFF = `teacher@${DOMAIN}`;
-const CASHIER = `store@${DOMAIN}`;
-const STUDENT = `avery@${DOMAIN}`;
-
-function harness() {
-  let activeEmail = ADMIN;
-  let effectiveEmail = ADMIN;
-  let mailFailure = '';
-  let receiptUpdateFailure = '';
-  let mailOutboxUpdateFailure = '';
-  let mailQuota = 100;
-  let lockHeld = false;
-  let flushCount = 0;
-  let nextId = 1;
-  let nextTriggerId = 1;
-  let triggerCreateFailures = 0;
-  let triggerDeleteFailures = 0;
-  const properties = new Map();
-  const books = new Map();
-  const files = new Map();
-  const folders = new Map();
-  const mail = [];
-  const mailObservations = [];
-  const triggers = [];
-  const rangeReads = {};
-  const uuid = prefix => `${prefix}-${String(nextId++).padStart(12, '0')}`;
-  class Range {
-    constructor(sheet, row, col, rowCount = 1, colCount = 1) { Object.assign(this, { sheet, row, col, rowCount, colCount }); }
-    getValues() { return Array.from({ length: this.rowCount }, (_, r) => Array.from({ length: this.colCount }, (_, c) => (this.sheet.data[this.row - 1 + r] || [])[this.col - 1 + c] ?? '')); }
-    setValues(values) {
-      if (receiptUpdateFailure && this.sheet.name === 'Receipts' && this.row > 1) throw new Error(receiptUpdateFailure);
-      if (mailOutboxUpdateFailure && this.sheet.name === 'MailOutbox' && this.row > 1) throw new Error(mailOutboxUpdateFailure);
-      values.forEach((valuesRow, r) => { const index = this.row - 1 + r; this.sheet.data[index] ||= []; valuesRow.forEach((value, c) => { this.sheet.data[index][this.col - 1 + c] = value; }); }); return this;
-    }
-  }
-  class Sheet {
-    constructor(name) { this.name = name; this.data = []; this.maxColumns = 26; }
-    setName(name) { this.name = name; return this; }
-    getLastRow() { for (let i = this.data.length - 1; i >= 0; i -= 1) if ((this.data[i] || []).some(value => value !== '' && value != null)) return i + 1; return 0; }
-    getRange(row, col, rowCount = 1, colCount = 1) { if (col + colCount - 1 > this.maxColumns) throw new Error('Range exceeds grid limits'); rangeReads[this.name] = (rangeReads[this.name] || 0) + 1; return new Range(this, row, col, rowCount, colCount); }
-    getMaxColumns() { return this.maxColumns; }
-    insertColumnsAfter(after, count) { if (after !== this.maxColumns || count < 1) throw new Error('Invalid column expansion'); this.maxColumns += count; return this; }
-    appendRow(row) { if (row.length > this.maxColumns) throw new Error('Row exceeds grid limits'); this.data[this.getLastRow()] = [...row]; return this; }
-    clearContents() { this.data = []; return this; }
-    setFrozenRows() { return this; }
-  }
-  class Book {
-    constructor(id) { this.id = id; this.sheets = [new Sheet('Sheet1')]; }
-    getId() { return this.id; }
-    getSheets() { return this.sheets; }
-    getSheetByName(name) { return this.sheets.find(sheet => sheet.name === name) || null; }
-    insertSheet(name) { const sheet = new Sheet(name); this.sheets.push(sheet); return sheet; }
-  }
-  class Blob {
-    constructor(content = '', mimeType = '', name = '') { this.data = Buffer.isBuffer(content) ? Buffer.from(content) : Array.isArray(content) ? Buffer.from(content.map(value => (Number(value) + 256) % 256)) : Buffer.from(String(content)); this.mimeType = mimeType; this.name = name; }
-    getBytes() { return [...this.data]; }
-    getDataAsString() { return this.data.toString('utf8'); }
-    getName() { return this.name; }
-    getContentType() { return this.mimeType; }
-  }
-  class File {
-    constructor(id, name = '', content = '', mimeType = '') { Object.assign(this, { id, name, content: Buffer.isBuffer(content) ? Buffer.from(content) : Buffer.from(String(content)), mimeType }); }
-    getId() { return this.id; }
-    getBlob() { return new Blob(this.content, this.mimeType, this.name); }
-    moveTo() { return this; }
-    setSharing() { return this; }
-    setShareableByEditors() { return this; }
-  }
-  class Folder extends File {
-    createFolder(name) { const folder = new Folder(uuid('folder'), name); folders.set(folder.id, folder); return folder; }
-    createFile(nameOrBlob, content, mimeType) { const blob = nameOrBlob instanceof Blob ? nameOrBlob : new Blob(content, mimeType, nameOrBlob); const file = new File(uuid('file'), blob.getName(), blob.data, blob.getContentType()); files.set(file.id, file); return file; }
-  }
-  const props = {
-    getProperty: key => properties.get(key) ?? null,
-    setProperty: (key, value) => { properties.set(key, String(value)); return props; },
-    setProperties: values => { Object.entries(values).forEach(([key, value]) => properties.set(key, String(value))); return props; },
-  };
-  const output = content => { const result = { content: String(content), setMimeType: () => result, setTitle: () => result, getContent: () => result.content }; return result; };
-  const services = {
-    Date,
-    Session: { getActiveUser: () => ({ getEmail: () => activeEmail }), getEffectiveUser: () => ({ getEmail: () => effectiveEmail }) },
-    PropertiesService: { getScriptProperties: () => props },
-    SpreadsheetApp: {
-      create: () => { const id = uuid('spreadsheet'); const book = new Book(id); books.set(id, book); files.set(id, new File(id)); return book; },
-      openById: id => { if (!books.has(id)) throw new Error('Missing book'); return books.get(id); },
-      flush: () => { flushCount += 1; },
-    },
-    DriveApp: {
-      Access: { PRIVATE: 'PRIVATE' }, Permission: { NONE: 'NONE' },
-      createFolder: () => { const folder = new Folder(uuid('folder')); folders.set(folder.id, folder); return folder; },
-      getFolderById: id => { if (!folders.has(id)) throw new Error('Missing folder'); return folders.get(id); },
-      getFileById: id => files.get(id),
-    },
-    LockService: { getScriptLock: () => ({ tryLock: () => { lockHeld = true; return true; }, releaseLock() { lockHeld = false; } }) },
-    Utilities: {
-      DigestAlgorithm: { SHA_256: 'SHA_256' }, Charset: { UTF_8: 'UTF_8' },
-      getUuid: () => uuid('entity'),
-      computeDigest: (_algorithm, value) => [...createHash('sha256').update(Array.isArray(value) ? Buffer.from(value.map(byte => (Number(byte) + 256) % 256)) : String(value)).digest()],
-      computeHmacSha256Signature: (value, key) => [...createHmac('sha256', String(key)).update(String(value)).digest()],
-      base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
-      base64Decode: value => [...Buffer.from(String(value), 'base64')],
-      base64DecodeWebSafe: value => [...Buffer.from(String(value), 'base64url')],
-      newBlob: (bytes, mimeType, name) => new Blob(bytes, mimeType, name),
-    },
-    MailApp: {
-      getRemainingDailyQuota: () => mailQuota,
-      sendEmail: value => {
-        const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-        const outbox = book && book.getSheetByName('MailOutbox');
-        mailObservations.push({ lockHeld, flushCount, outbox: outbox ? outbox.data.map(row => [...row]) : [], triggers: triggers.map(trigger => ({ ...trigger.spec })) });
-        if (mailFailure) throw new Error(mailFailure);
-        mail.push(structuredClone(value));
-      },
-    },
-    ScriptApp: {
-      WeekDay: { MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5 },
-      getProjectTriggers: () => [...triggers],
-      deleteTrigger: trigger => { if (triggerDeleteFailures > 0) { triggerDeleteFailures--; throw new Error('Injected trigger delete failure'); } const index = triggers.indexOf(trigger); if (index >= 0) triggers.splice(index, 1); },
-      newTrigger: handler => {
-        const spec = { handler, uid: `trigger-${String(nextTriggerId++).padStart(6, '0')}`, afterMs: 0, weekday: '', hour: '', everyWeeks: 0, everyHours: 0 };
-        const chain = {
-          timeBased: () => chain, onWeekDay: value => { spec.weekday = value; return chain; },
-          atHour: value => { spec.hour = value; return chain; }, everyWeeks: value => { spec.everyWeeks = value; return chain; },
-          everyHours: value => { spec.everyHours = value; return chain; },
-          after: value => { spec.afterMs = value; return chain; },
-          create: () => { if (triggerCreateFailures > 0) { triggerCreateFailures--; throw new Error('Injected trigger create failure'); } const trigger = { spec, getHandlerFunction: () => handler, getUniqueId: () => spec.uid }; triggers.push(trigger); return trigger; },
-        };
-        return chain;
-      },
-    },
-    ContentService: { MimeType: { JSON: 'JSON' }, createTextOutput: output },
-    HtmlService: { createHtmlOutput: output, createHtmlOutputFromFile: () => output('<portal>'), createTemplateFromFile: () => ({ evaluate: () => output('<index>') }) },
-    console: { log() {}, warn() {}, error() {} },
-  };
-  const context = vm.createContext(services);
-  new vm.Script(SOURCE, { filename: 'apps_script/school_rewards/Code.gs' }).runInContext(context);
-  function call(name, argument) {
-    context.__arg = argument === undefined ? undefined : JSON.stringify(argument);
-    const expression = argument === undefined ? `${name}()` : `${name}(JSON.parse(__arg))`;
-    return JSON.parse(JSON.stringify(vm.runInContext(expression, context)));
-  }
-  function rows(name) { const book = books.get(properties.get('SR_SPREADSHEET_ID')); return book.getSheetByName(name).data.map(row => [...row]); }
-  function maxColumns(name) { const book = books.get(properties.get('SR_SPREADSHEET_ID')); return book.getSheetByName(name).getMaxColumns(); }
-  function simulateV3PrintRequests() { const book = books.get(properties.get('SR_SPREADSHEET_ID')); const sheet = book.getSheetByName('PrintRequests'); sheet.data[0] = sheet.data[0].slice(0, 31); sheet.maxColumns = 31; }
-  function simulateV4Inventory() {
-    const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-    const catalog = book.getSheetByName('Catalog');
-    catalog.data = catalog.data.map(row => row.slice(0, 10));
-    book.sheets = book.sheets.filter(sheet => sheet.name !== 'InventoryMovements');
-    const config = book.getSheetByName('Config');
-    const row = config.data.findIndex(values => values[0] === 'schemaVersion');
-    if (row >= 0) config.data[row][1] = '4';
-  }
-  return {
-    call, rows, maxColumns, simulateV3PrintRequests, simulateV4Inventory, mail, mailObservations,
-    flushCount: () => flushCount,
-    fileCount: () => files.size,
-    printLimits: () => ({
-      models: context.SR_MAX_PRINT_MODELS_PER_STUDENT,
-      assets: context.SR_MAX_PRINT_ASSETS_PER_STUDENT,
-      bytes: context.SR_MAX_PRINT_ASSET_BYTES_PER_STUDENT,
-      dailyUploads: context.SR_MAX_PRINT_ASSET_UPLOADS_PER_STUDENT_PER_DAY,
-    }),
-    setActive: email => { activeEmail = email; },
-    setEffective: email => { effectiveEmail = email; },
-    setMailFailure: message => { mailFailure = String(message || ''); },
-    setMailQuota: value => { mailQuota = Number(value); },
-    setNow: value => { context.now_ = () => String(value); },
-    failNextTriggerCreates: count => { triggerCreateFailures = count == null ? 1 : Number(count); },
-    failNextTriggerDeletes: count => { triggerDeleteFailures = count == null ? 1 : Number(count); },
-    setMailOutboxUpdateFailure: message => { mailOutboxUpdateFailure = String(message || ''); },
-    setReceiptUpdateFailure: message => { receiptUpdateFailure = String(message || ''); },
-    triggers: () => triggers.filter(trigger => trigger.getHandlerFunction() !== 'sweepSchoolRewardsMailRuns').map(trigger => ({ ...trigger.spec })),
-    allTriggers: () => triggers.map(trigger => ({ ...trigger.spec })),
-    removeTrigger: uid => { const index = triggers.findIndex(trigger => trigger.getUniqueId() === uid); if (index >= 0) triggers.splice(index, 1); },
-    setProperty: (key, value) => { properties.set(key, String(value)); },
-    getProperty: key => properties.get(key),
-    setCoreFault: stage => {
-      let armed = true;
-      context.SR_TEST_FAULT_HOOK = actual => {
-        if (armed && actual === stage) { armed = false; throw new Error(`Injected core fault at ${stage}`); }
-      };
-    },
-    clearCoreFault: () => { context.SR_TEST_FAULT_HOOK = null; },
-    signCoreJournal: (key, operation, journal) => context.coreJournalSignature_(key, operation, journal.kind, journal.intent, context.coreJournalSecret_(false)),
-    resignMailOutbox: dataRowIndex => {
-      const delivery = context.mailOutbox_(context.book_())[dataRowIndex];
-      const signature = context.mailOutboxSignature_(delivery, context.mailDeliverySecret_(false));
-      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-      book.getSheetByName('MailOutbox').data[dataRowIndex + 1][10] = signature;
-    },
-    installMailWorkerLease: (runId = 'external_worker') => {
-      const lease = { token: 'lease_test_external_worker', runId, expiresAt: Date.now() + 300000, signature: '' };
-      lease.signature = context.mailWorkerLeaseSignature_(lease, context.mailDeliverySecret_(false));
-      properties.set('SR_MAIL_WORKER_LEASE', JSON.stringify(lease));
-      return lease;
-    },
-    clearMailWorkerLease: () => { properties.set('SR_MAIL_WORKER_LEASE', ''); },
-    setDataCell: (name, dataRowIndex, columnIndex, value) => {
-      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-      const sheet = book.getSheetByName(name);
-      sheet.data[dataRowIndex + 1] ||= [];
-      sheet.data[dataRowIndex + 1][columnIndex] = value;
-    },
-    appendRaw: (name, row) => {
-      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-      book.getSheetByName(name).appendRow([...row]);
-    },
-    simulateV5Mail: () => {
-      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-      book.sheets = book.sheets.filter(sheet => !['MailRuns', 'MailOutbox'].includes(sheet.name));
-      const config = book.getSheetByName('Config');
-      const row = config.data.findIndex(values => values[0] === 'schemaVersion');
-      if (row >= 0) config.data[row][1] = '5';
-    },
-    rangeReads: name => rangeReads[name] || 0,
-    resetRangeReads: () => { Object.keys(rangeReads).forEach(name => { delete rangeReads[name]; }); },
-    configValue: key => {
-      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
-      const row = book.getSheetByName('Config').data.find(values => values[0] === key);
-      return row ? row[1] : undefined;
-    },
-  };
-}
-
-function setup(h) {
-  h.call('setupSchoolRewardsRepository', {
-    allowedDomain: DOMAIN,
-    schoolName: 'Pilot School',
-    members: [
-      { email: STAFF, displayName: 'Teacher', role: 'staff' },
-      { email: CASHIER, displayName: 'Store Team', role: 'cashier' },
-    ],
-    students: [{ firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', email: STUDENT }],
-  });
-  return h.call('getSchoolRewardsBootstrap').students[0];
-}
-
-function seededCategory(h) {
-  return h.call('getSchoolRewardsBootstrap').categories[0];
-}
+import { harness, setup, seededCategory, SOURCE, DOMAIN, ADMIN, STAFF, CASHIER, STUDENT } from './helpers/school_rewards_repository.js';
 
 function printAssetUploadFixture(h, suffix) {
   const student = setup(h); h.setActive(STUDENT);
@@ -342,6 +94,17 @@ describe('School Rewards Apps Script repository', () => {
     expect(h.call('getSchoolRewardsBootstrap').categories.find(item => item.id === category.id)).toMatchObject({ name: category.name, active: false });
     h.setActive(STUDENT);
     expect(h.call('getSchoolRewardsBootstrap').progress.find(item => item.categoryId === category.id)).toMatchObject({ name: category.name, active: false, points: 15 });
+  });
+
+  it('rejects duplicate cart lines exceeding the per-prize limit before recording a purchase', () => {
+    const h = harness(), student = setup(h), category = seededCategory(h);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 500, categoryId: category.id, reason: 'Recognition', idempotencyKey: 'award_cart_bounds' });
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Sticker', cost: 1, inventoryLimit: -1, idempotencyKey: 'catalog_cart_bounds' }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { status: 'OPEN' }).window;
+    h.setActive(CASHIER);
+    expect(() => h.call('checkoutSchoolRewardsOrder', { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: prize.id, quantity: 100 }, { catalogId: prize.id, quantity: 1 }], idempotencyKey: 'checkout_cart_bounds' })).toThrow(/Quantity/);
+    expect(h.rows('Orders')).toHaveLength(1);
+    expect(h.rows('Idempotency').some(row => row[0] === 'checkout_cart_bounds')).toBe(false);
   });
 
   it('checks live balance and inventory atomically at cashier checkout', () => {
@@ -2206,6 +1969,45 @@ describe('bootstrap cost at roster scale', () => {
 });
 
 describe('group awards', () => {
+
+  it('keeps each student distinct even with a maximum-length group retry key', () => {
+    const h = harness();
+    setup(h);
+    h.call('adminBulkUpsertRewardsStudents', [{ firstName: 'Blake', email: 'blake@' + DOMAIN }]);
+    const ids = h.call('getSchoolRewardsBootstrap').students.map(student => student.id);
+    const request = { studentIds: ids, amount: 3, categoryId: seededCategory(h).id, reason: 'Helped together', idempotencyKey: 'g'.repeat(120) };
+    h.setActive(STAFF);
+    expect(h.call('awardSchoolRewardsPointsBatch', request)).toMatchObject({ ok: true, recorded: 2 });
+    expect(h.call('awardSchoolRewardsPointsBatch', request)).toMatchObject({ ok: true, recorded: 2 });
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsBootstrap').students.map(student => student.balance)).toEqual([3, 3]);
+  });
+
+  it('recovers a legacy truncated group key without creating another award', () => {
+    const h = harness(), student = setup(h), category = seededCategory(h);
+    const key = 'legacy_'.repeat(17);
+    h.setActive(STAFF);
+    const award = { studentId: student.id, amount: 3, categoryId: category.id, reason: 'Saved before the update', idempotencyKey: (key + ':' + student.id).slice(0, 120) };
+    h.call('awardSchoolRewardsPoints', award);
+    const result = h.call('awardSchoolRewardsPointsBatch', { studentIds: [student.id], amount: award.amount, categoryId: category.id, reason: award.reason, idempotencyKey: key });
+    expect(result).toMatchObject({ ok: true, recorded: 1 });
+    expect(h.rows('Ledger').slice(1).filter(row => row[2] === 'EARN')).toHaveLength(1);
+  });
+
+  it('recovers a saved group after its category is deactivated without making new awards', () => {
+    const h = harness();
+    const student = setup(h), category = seededCategory(h);
+    const request = { studentIds: [student.id], amount: 3, categoryId: category.id, reason: 'Helped together', idempotencyKey: 'group_category_retry' };
+    h.setActive(STAFF);
+    expect(h.call('awardSchoolRewardsPointsBatch', request).recorded).toBe(1);
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsCategory', { ...category, active: false });
+    h.setActive(STAFF);
+    expect(h.call('awardSchoolRewardsPointsBatch', request)).toMatchObject({ ok: true, recorded: 1 });
+    expect(h.call('awardSchoolRewardsPointsBatch', { ...request, idempotencyKey: 'group_category_new' })).toMatchObject({ ok: false, recorded: 0, failed: 1 });
+    expect(h.rows('Ledger').slice(1).filter(row => row[2] === 'EARN')).toHaveLength(1);
+  });
+
   it('records one journaled award per student and is idempotent under an exact retry', () => {
     const h = harness();
     setup(h);
@@ -2644,4 +2446,145 @@ describe('capacity and retention (2026-09-04)', () => {
   });
 });
 
+
+
+describe('Private remix interruption recovery', () => {
+  function remixFixture() {
+    const h = harness(); setup(h); h.setActive(STUDENT);
+    const model = h.call('createSchoolRewardsPrintModel', { title: 'Shared bridge', sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0, 0], rotation: [0, 0, 0], color: '#2563eb' }] }, widthMm: 30, depthMm: 20, heightMm: 10, triangleCount: 12, idempotencyKey: 'recovery_remix_source' }).model;
+    const publication = h.call('submitSchoolRewardsPrintPublication', { modelId: model.id, catalogTitle: 'Bridge', reusePolicy: 'SCHOOL_REMIX_PRINT', consent: true, idempotencyKey: 'recovery_remix_publish' }).publication;
+    h.setActive(STAFF); h.call('reviewSchoolRewardsPrintPublication', { publicationId: publication.id, action: 'APPROVE', idempotencyKey: 'recovery_remix_approve' });
+    h.setActive(STUDENT);
+    return { h, request: { modelId: model.id, title: 'My remix', idempotencyKey: 'recovery_remix_request' } };
+  }
+  it.each(['print_remix_after_intent', 'print_remix_after_file', 'print_remix_after_model', 'print_remix_after_audit'])('recovers %s without another file, model, or audit event', stage => {
+    const { h, request } = remixFixture(), initialFiles = h.fileCount();
+    h.setCoreFault(stage);
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected core fault/);
+    const result = h.call('remixSchoolRewardsPrintModel', request);
+    expect(h.call('remixSchoolRewardsPrintModel', request)).toEqual(result);
+    expect(h.fileCount()).toBe(initialFiles + 1);
+    expect(h.rows('PrintModels').filter(row => row[0] === result.model.id)).toHaveLength(1);
+    expect(h.rows('Audit').filter(row => row[1] === 'PRINT_MODEL_REMIXED' && row[3] === result.model.id)).toHaveLength(1);
+  });
+  it('refuses a different payload or tampered recovery record', () => {
+    const { h, request } = remixFixture();
+    h.setCoreFault('print_remix_after_intent');
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    expect(() => h.call('remixSchoolRewardsPrintModel', { ...request, title: 'Substituted' })).toThrow(/already recorded/);
+    const index = h.rows('Idempotency').findIndex(row => row[0] === request.idempotencyKey) - 1;
+    const journal = JSON.parse(h.rows('Idempotency')[index + 1][2]); journal.intent.model.title = 'Tampered';
+    h.setDataCell('Idempotency', index, 2, JSON.stringify(journal));
+    const count = h.fileCount();
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/signature|recovery/i);
+    expect(h.fileCount()).toBe(count);
+  });
+
+  it.each(['print_remix_after_intent', 'print_remix_after_file', 'print_remix_after_model', 'print_remix_after_audit'])('lets an administrator resume %s while preserving student attribution', stage => {
+    const { h, request } = remixFixture(), initialFiles = h.fileCount();
+    h.setCoreFault(stage);
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsIntegrityReport')).toMatchObject({ ready: false, summary: { pendingOperations: 1 } });
+    const recovered = h.call('recoverSchoolRewardsPrintRemix', { idempotencyKey: request.idempotencyKey, title: 'Must be ignored', studentId: 'wrong-owner' });
+    expect(recovered).toMatchObject({ recovered: true, kind: 'print_remix', result: { model: { title: 'My remix', publicationStatus: 'PRIVATE' } } });
+    expect(h.call('recoverSchoolRewardsPrintRemix', request)).toMatchObject({ recovered: false, result: recovered.result });
+    expect(h.call('getSchoolRewardsIntegrityReport')).toMatchObject({ ready: true, summary: { pendingOperations: 0 } });
+    expect(h.fileCount()).toBe(initialFiles + 1);
+    const audits = h.rows('Audit');
+    const creation = audits.filter(row => row[1] === 'PRINT_MODEL_REMIXED' && row[3] === recovered.result.model.id);
+    expect(creation).toHaveLength(1); expect(creation[0].slice(5, 7)).toEqual([STUDENT, 'student']);
+    const adminEvents = audits.filter(row => ['PRINT_REMIX_ADMIN_RECOVERY_STARTED', 'PRINT_REMIX_ADMIN_RECOVERED'].includes(row[1]));
+    expect(adminEvents).toHaveLength(2);
+    expect(adminEvents.every(row => row[5] === ADMIN && row[6] === 'admin')).toBe(true);
+    h.setActive(STUDENT);
+    expect(h.call('remixSchoolRewardsPrintModel', request)).toEqual(recovered.result);
+  });
+
+  it('records administrator completion once after a lost recovery response', () => {
+    const { h, request } = remixFixture(), initialFiles = h.fileCount();
+    h.setCoreFault('print_remix_after_file'); expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    h.setActive(ADMIN); h.setCoreFault('print_remix_admin:after_complete');
+    expect(() => h.call('recoverSchoolRewardsPrintRemix', request)).toThrow(/Injected/);
+    expect(h.call('recoverSchoolRewardsPrintRemix', request)).toMatchObject({ recovered: false });
+    h.call('recoverSchoolRewardsPrintRemix', request);
+    expect(h.fileCount()).toBe(initialFiles + 1);
+    expect(h.rows('Audit').filter(row => row[1] === 'PRINT_REMIX_ADMIN_RECOVERED')).toHaveLength(1);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+  });
+
+  it.each([STUDENT, STAFF, CASHIER])('rejects remix recovery by %s without writes', email => {
+    const { h, request } = remixFixture();
+    h.setCoreFault('print_remix_after_intent'); expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    const before = JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() });
+    h.setActive(email);
+    expect(() => h.call('recoverSchoolRewardsPrintRemix', request)).toThrow(/role cannot perform/i);
+    expect(JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() })).toBe(before);
+  });
+
+  it.each(['signature', 'intent', 'version', 'missing-version', 'zero-version', 'duplicate'])('blocks administrator recovery for an invalid %s record', change => {
+    const { h, request } = remixFixture();
+    h.setCoreFault('print_remix_after_intent'); expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    const index = h.rows('Idempotency').findIndex(row => row[0] === request.idempotencyKey) - 1;
+    const row = h.rows('Idempotency')[index + 1], journal = JSON.parse(row[2]);
+    if (change === 'signature') journal.signature = 'invalid';
+    if (change === 'intent') journal.intent.model = null;
+    if (change === 'version') journal.printRemixVersion = 2;
+    if (change === 'missing-version') delete journal.printRemixVersion;
+    if (change === 'zero-version') journal.printRemixVersion = 0;
+    if (change === 'duplicate') h.appendRaw('Idempotency', row); else h.setDataCell('Idempotency', index, 2, JSON.stringify(journal));
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/signature|recovery|more than once/i);
+    h.setActive(ADMIN);
+    const before = JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() });
+    expect(() => h.call('recoverSchoolRewardsPrintRemix', request)).toThrow(/signature|duplicated/i);
+    expect(JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() })).toBe(before);
+    expect(h.call('getSchoolRewardsIntegrityReport').issues).toEqual(expect.arrayContaining([expect.objectContaining({ code: change === 'duplicate' ? 'DUPLICATE_PRIMARY_KEY' : 'PRINT_REMIX_SIGNATURE_INVALID' })]));
+  });
+
+  it.each(['missing', 'content', 'duplicate', 'model'])('leaves a %s conflict pending without replacing the file or model', conflict => {
+    const { h, request } = remixFixture();
+    h.setCoreFault(conflict === 'missing' ? 'print_remix_before_file' : conflict === 'model' ? 'print_remix_after_model' : 'print_remix_after_file');
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    const journal = JSON.parse(h.rows('Idempotency').find(row => row[0] === request.idempotencyKey)[2]);
+    if (conflict === 'content') h.fileByName(journal.intent.model.id + '.json').content = Buffer.from('changed recipe');
+    if (conflict === 'duplicate') h.duplicateFileByName(journal.intent.model.id + '.json');
+    if (conflict === 'model') h.setDataCell('PrintModels', h.rows('PrintModels').findIndex(row => row[0] === journal.intent.model.id) - 1, 7, 'Changed title');
+    h.setActive(ADMIN);
+    const models = h.rows('PrintModels'), count = h.fileCount();
+    expect(() => h.call('recoverSchoolRewardsPrintRemix', request)).toThrow(/unavailable|match|conflict/i);
+    expect(h.fileCount()).toBe(count); expect(h.rows('PrintModels')).toEqual(models);
+    expect(h.call('getSchoolRewardsIntegrityReport')).toMatchObject({ ready: false, summary: { pendingOperations: 1 } });
+  });
+
+
+  it('exposes only the original student’s remix settlement status without writing records', () => {
+    const { h, request } = remixFixture();
+    h.setCoreFault('print_remix_after_file'); expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    const before = JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() });
+    const pending = h.call('getSchoolRewardsPrintRemixStatus', request);
+    expect(pending).toEqual({ ok: true, state: 'FILE_CREATING', modelId: expect.any(String) });
+    expect(JSON.stringify({ requests: h.rows('Idempotency'), models: h.rows('PrintModels'), audit: h.rows('Audit'), files: h.fileCount() })).toBe(before);
+    for (const email of [STAFF, CASHIER, ADMIN]) {
+      h.setActive(email); expect(() => h.call('getSchoolRewardsPrintRemixStatus', request)).toThrow(/role cannot perform/i);
+    }
+    h.setActive(ADMIN); h.call('adminUpsertRewardsStudent', { firstName: 'Other', email: 'other@school.example' });
+    h.setActive('other@school.example'); expect(() => h.call('getSchoolRewardsPrintRemixStatus', request)).toThrow(/signature/i);
+    h.setActive(ADMIN); h.call('recoverSchoolRewardsPrintRemix', request);
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsPrintRemixStatus', request)).toEqual({ ...pending, state: 'COMPLETED' });
+  });
+
+  it('does not create another file when a prior file-creation attempt has no verifiable result', () => {
+    const { h, request } = remixFixture(), initialFiles = h.fileCount();
+    h.setCoreFault('print_remix_before_file');
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/Injected/);
+    expect(() => h.call('remixSchoolRewardsPrintModel', request)).toThrow(/file.*review|file.*unavailable/i);
+    expect(h.fileCount()).toBe(initialFiles);
+    h.setActive(ADMIN);
+    const index = h.rows('Idempotency').findIndex(row => row[0] === request.idempotencyKey) - 1;
+    h.setDataCell('Idempotency', index, 3, '2000-01-01T00:00:00.000Z');
+    expect(h.call('getSchoolRewardsCapacity').prunableRequestRecords).toBe(0);
+    expect(h.call('getSchoolRewardsIntegrityReport').issues.some(issue => issue.code === 'PRINT_REMIX_PENDING')).toBe(true);
+  });
+});
 

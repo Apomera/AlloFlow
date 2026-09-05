@@ -80,7 +80,7 @@ describe('Misc Panels dialog accessibility', () => {
     expect(source).toContain('role="dialog"');
     expect(source).toContain('aria-label={tourAccessibleTitle}');
     expect(source).toContain('onKeyDown={containTourFocus}');
-    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); closeTourOverlay();");
+    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeTourOverlay();");
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">{tourAccessibleTitle}. {tourAccessibleText}');
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
   });});

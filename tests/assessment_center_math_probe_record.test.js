@@ -114,7 +114,8 @@ describe('the record the sidebar writes', () => {
     expect(SAI.interpretProbeResult).toBeTypeOf('function');
     const out = SAI.interpretProbeResult('math_dcpm', rec.itemsPerMin, rec.grade, 'winter');
     expect(out).toBeTruthy();
-    expect(out.benchmark50).not.toBeNull();
+    expect(out.benchmark50).toBeNull();
+    expect(out.comparisonAvailable).toBe(false);
   });
 });
 
@@ -143,7 +144,7 @@ describe('what the handler refuses to record', () => {
   });
 });
 
-describe('the loop closes: written record comes back as a tier', () => {
+describe('the loop closes: written record remains descriptive', () => {
   beforeAll(() => {
     const rec = runHandler(completedRun).saved[0].record;
     localStorage.setItem('alloflow_probe_history', JSON.stringify({ Otter: [Object.assign({ timestamp: 1737385200000 }, rec)] }));
@@ -160,28 +161,22 @@ describe('the loop closes: written record comes back as a tier', () => {
     expect(summary.activities).toContain('math_dcpm');
   });
 
-  it('produces a real RTI tier, not "no norms available"', () => {
+  it('preserves the score without asserting unvalidated math norms', () => {
     const tier = meta.getRTITier('Otter');
     expect(tier).toBeTruthy();
     const math = tier.perProbe.find((p) => p.activity === 'math_dcpm');
     expect(math, 'math probe missing from the tier breakdown').toBeTruthy();
     // The score must survive the round trip unchanged.
     expect(math.score).toBe(28);
-    // tier 0 is the engine's "No norms available" sentinel, which is what a
-    // record it cannot read would produce.
-    expect(math.tier).toBeGreaterThanOrEqual(1);
-    expect(math.tier).toBeLessThanOrEqual(3);
-    // 28 against a winter grade-3 median of 35 is 80%, which this engine bands
-    // as Tier 1 "Approaching Benchmark" (its Tier 1/2 cut is 75% of median).
-    // Whatever the band, it must not read as at-or-above.
-    expect(math.status).not.toMatch(/At or Above/i);
+    expect(math.tier).toBe(0);
+    expect(math.comparisonAvailable).toBe(false);
+    expect(math.status).toBe('Reference comparison unavailable');
   });
 
-  it('the band tracks the score rather than being constant', () => {
+  it('does not invent norm bands for either high or low practice scores', () => {
     const strong = SAI.interpretProbeResult('math_dcpm', 60, '3', 'winter');
     const weak = SAI.interpretProbeResult('math_dcpm', 5, '3', 'winter');
-    expect(strong.tier).toBeLessThan(weak.tier);
-    expect(strong.status).toMatch(/At or Above/i);
-    expect(weak.tier).toBe(3);
+    expect(strong).toMatchObject({tier:0, benchmark50:null});
+    expect(weak).toMatchObject({tier:0, benchmark50:null});
   });
 });

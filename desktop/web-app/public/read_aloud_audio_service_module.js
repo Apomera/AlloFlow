@@ -798,7 +798,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
 
     function resourceTypeOf(resource) {
         const type = String(resource && resource.type || '').trim().toLowerCase();
-        return SUPPORTED_TYPES.has(type) ? type : null;
+        return SUPPORTED_TYPES.has(type) || (typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.supports(type)) ? type : null;
     }
 
     function cleanText(value, context) {
@@ -912,6 +912,8 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 return descriptorsFromList(enumerated, context);
             }
         }
+        const registry = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud;
+        if (registry?.supports(resourceType)) return descriptorsFromList(registry.enumerate(resource), context);
         if (resourceType === 'faq') return fallbackFaqSegments(resource, context);
         if (resourceType === 'glossary' && typeof enumerateGlossaryReadAloudSegments === 'function') {
             return descriptorsFromList(enumerateGlossaryReadAloudSegments(resource, context || {}), context);
@@ -960,7 +962,10 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             if (explicitKey) {
                 const exact = (availableByLocator.get(explicitKey) || [])
                     .find((descriptor) => !claimed.has(descriptor));
-                if (exact) return mergeSupplied(exact, suppliedDescriptor, index);
+                if (exact) {
+                    if (typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.supports(context.resourceType) && exact.spokenText !== spokenText) return null;
+                    return mergeSupplied(exact, suppliedDescriptor, index);
+                }
             }
 
             const matches = availableByText.get(spokenText);
@@ -978,6 +983,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             }
             // A sentence that is genuinely outside the resource has no stable
             // semantic locator; retain the legacy text-derived fallback.
+            if (typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.supports(context.resourceType)) return null;
             return Object.assign({}, suppliedDescriptor, { segmentId: 'text/' + textFingerprint(spokenText) });
         }).filter(Boolean);
     }

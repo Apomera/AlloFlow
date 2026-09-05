@@ -115,9 +115,20 @@ const outputCode = [
   '',
 ].join('\n');
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf8');
+if (process.argv.includes('--check')) {
+  const stale = [OUTPUT, PUBLIC].filter(file => !fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== outputCode);
+  if (stale.length) { console.error('[AppliedChallenge] Stale modules: ' + stale.join(', ')); process.exit(1); }
+  console.log('[AppliedChallenge] Source and generated modules are fresh.');
+  process.exit(0);
+}
+function writeGenerated(file) {
+  const temporary = file + '.next-build';
+  fs.writeFileSync(temporary, outputCode, 'utf8');
+  fs.renameSync(temporary, file);
+}
+writeGenerated(OUTPUT);
 fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });
-fs.writeFileSync(PUBLIC, outputCode, 'utf8');
+writeGenerated(PUBLIC);
 
 try {
   execFileSync(process.execPath, ['-c', OUTPUT], { stdio: 'pipe' });

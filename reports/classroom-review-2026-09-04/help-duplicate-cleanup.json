@@ -1,0 +1,146 @@
+{
+  "duplicates": [
+    {
+      "key": "header_tour_start",
+      "definitions": 2
+    },
+    {
+      "key": "xp_modal_trigger",
+      "definitions": 2
+    },
+    {
+      "key": "bot_settings_btn",
+      "definitions": 2
+    },
+    {
+      "key": "adventure_setup_chk_lowqual",
+      "definitions": 2
+    },
+    {
+      "key": "history_cancel_unit_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_create_unit_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_delete_unit_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_filter_unit_select",
+      "definitions": 2
+    },
+    {
+      "key": "history_item_drag",
+      "definitions": 2
+    },
+    {
+      "key": "history_move_down_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_move_to_unit_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_move_up_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_rename_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_save_unit_btn",
+      "definitions": 2
+    },
+    {
+      "key": "history_unit_name_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_back_results_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_content_next_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_find_standard_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_growth_goal_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_interest_add_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_interest_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_interest_remove_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_lang_add_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_lang_common_select",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_lang_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_lang_remove_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_region_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_search_result_link",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_search_result_select",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_std_manual_add_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_std_manual_input",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_std_mode_ai",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_std_mode_manual",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_std_remove_btn",
+      "definitions": 2
+    },
+    {
+      "key": "wizard_vocab_input",
+      "definitions": 2
+    }
+  ],
+  "removed": 35,
+  "preservedUnreviewedEffectiveValues": true
+}

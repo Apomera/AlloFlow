@@ -1,26 +1,5 @@
-// Logic-characterization tests for student_analytics_module.js — the CBM probe
-// interpretation engine + RTI tier classifier.
-//
-// WHY (highest clinical stakes in the suite): these outputs label real students
-// Tier 1/2/3 and print "Consider referral for comprehensive evaluation" into RTI
-// meeting summaries. Two live hazards from the 2026-06-07 coverage assessment:
-//   1. The only prior "coverage" is a hand-copied FORK (tests/extracted_logic/
-//      clinical_logic.js) that has DRIFTED from the live source — so a real-source
-//      regression stays green. These tests run the REAL shipped bytes.
-//   2. The module has TWO copies of CBM_NORMS + interpretProbeResult in one
-//      function scope. They are same-scope `var` redeclarations, so the SECOND
-//      (@1161/@1152) wins and is LIVE; the FIRST (@1041/@1033) is DEAD and has
-//      already drifted in its narrative/recommendations text. We pin the LIVE
-//      engine AND assert the two CBM_NORMS tables stay byte-identical, so a norm
-//      typo can never silently re-tier a student via the stale copy.
-//
-// The engine fns are component-local (defined inside StudentAnalyticsPanel,
-// referencing closure state). The module exposes them via a one-time test seam
-// (window.AlloModules.StudentAnalyticsInternals) captured during render; we SSR-
-// render the panel once to populate it (the capture sits before the JSX return,
-// so it populates even if the heavy panel render throws). interpretProbeResult
-// takes `season` as an explicit arg, so no Date freeze is needed.
-
+// Behavioral tests for the shipped assessment reference engine and review groups.
+// Norm compatibility, numeric validity, exports and educator-review boundaries.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -52,84 +31,92 @@ beforeAll(() => {
 // component's rtiThresholds state). Mirrors the in-source default object.
 const T = { quizTier3: 50, quizTier2: 80, wsTier3: 50, wsTier2: 75, engagementMin: 2, fluencyMin: 60, labelChallengeMin: 50 };
 
-describe('CBM_NORMS — pin the benchmark numbers (a typo re-tiers a student)', () => {
-  it('ORF 50th-percentile norms by grade/season', () => {
-    expect(SAI.CBM_NORMS.orf['3']).toEqual({ fall: 71, winter: 92, spring: 107 });
-    expect(SAI.CBM_NORMS.orf['1']).toEqual({ fall: 0, winter: 23, spring: 53 });
-    expect(SAI.CBM_NORMS.orf['6']).toEqual({ fall: 127, winter: 140, spring: 150 });
-  });
-  it('NWF_CLS, LNF, MATH_DCPM norms', () => {
-    expect(SAI.CBM_NORMS.nwf_cls.K).toEqual({ fall: 0, winter: 17, spring: 35 });
-    expect(SAI.CBM_NORMS.lnf.K).toEqual({ fall: 7, winter: 30, spring: 47 });
-    expect(SAI.CBM_NORMS.math_dcpm['3']).toEqual({ fall: 25, winter: 35, spring: 45 });
-  });
-  // (The dead duplicate CBM_NORMS copy was removed from the module 2026-06-07; a
-  //  single live norm table remains, pinned above.)
+const reviewedORF = (overrides = {}) => ({
+  activity: 'orf', grade: '3', timestamp: Date.parse('2026-01-20'),
+  benchmarkContext: {
+    referenceId: 'hasbrouck-tindal-2017-orf', measure: 'orf', unit: 'wcpm',
+    grade: '3', season: 'winter', language: 'en', durationSeconds: 60,
+    material: 'unpracticed-grade-level', scoring: 'standardized',
+    reviewedByEducator: true, formId: 'reviewed-external-form', ...overrides
+  }
 });
 
-describe('interpretProbeResult — tier cut points (ORF grade 3 winter, benchmark 92)', () => {
-  const ipr = (score) => SAI.interpretProbeResult('orf', score, '3', 'winter');
-  it('score at benchmark → pct 100, Tier 1 At/Above', () => {
-    expect(ipr(92)).toMatchObject({ tier: 1, status: 'At or Above Benchmark', statusColor: '#16a34a', benchmark50: 92, pctOfBenchmark: 100 });
+describe('reviewed ORF reference and conservative interpretation', () => {
+  it('uses the published 2017 medians and leaves first-grade fall unavailable', () => {
+    expect(SAI.CBM_NORMS.orf).toEqual({
+      '1': { fall: null, winter: 29, spring: 60 }, '2': { fall: 50, winter: 84, spring: 100 },
+      '3': { fall: 83, winter: 97, spring: 112 }, '4': { fall: 94, winter: 120, spring: 133 },
+      '5': { fall: 121, winter: 133, spring: 146 }, '6': { fall: 132, winter: 145, spring: 146 }
+    });
+    expect(Object.keys(SAI.CBM_NORMS)).toEqual(['orf']);
   });
-  it('pct in [75,100) → Tier 1 Approaching', () => {
-    expect(ipr(70)).toMatchObject({ tier: 1, status: 'Approaching Benchmark', statusColor: '#65a30d', pctOfBenchmark: 76 });
+  it.each(['math', 'math_dcpm', 'missing_number', 'quantity_discrimination', 'nwf', 'nwf_cls', 'lnf', 'orf_decodable', 'bogus', '__proto__'])('keeps %s descriptive without a validated compatible reference', type => {
+    expect(SAI.interpretProbeResult(type, 20, '3', 'winter', reviewedORF())).toMatchObject({ tier: 0, comparisonAvailable: false, benchmark50: null, reviewRequired: true });
   });
-  it('pct in [50,75) → Tier 2 Below', () => {
-    const r = ipr(55);
-    expect(r).toMatchObject({ tier: 2, status: 'Below Benchmark', statusColor: '#d97706', pctOfBenchmark: 60 });
-    expect(r.recommendations).toContain('Begin Tier 2 intervention.');
-    expect(r.recommendations).toContain('Implement repeated reading with corrective feedback.'); // ORF-specific, tier>=2
+  it('does not relabel missing-number, quantity or generic item scores as DCPM', () => {
+    for (const type of ['math', 'missing_number', 'quantity_discrimination']) expect(SAI.normTypeFor(type)).toBe(type);
   });
-  it('pct < 50 → Tier 3 Well Below, with the referral language', () => {
-    const r = ipr(40);
-    expect(r).toMatchObject({ tier: 3, status: 'Well Below Benchmark', statusColor: '#dc2626', pctOfBenchmark: 43 });
-    expect(r.recommendations).toContain('Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.');
+  it('requires record-level administration evidence even for a known reference', () => {
+    const r = SAI.interpretProbeResult('orf', 40, '3', 'winter');
+    expect(r).toMatchObject({ tier: 0, comparisonAvailable: false, benchmark50: null, reference: null });
+    expect(r.interpretation).toMatch(/descriptive practice data/);
   });
-});
-
-describe('interpretProbeResult — across probe types + edge cases', () => {
-  it('MATH_DCPM grade 3 winter (benchmark 35)', () => {
-    expect(SAI.interpretProbeResult('math_dcpm', 35, '3', 'winter')).toMatchObject({ tier: 1, benchmark50: 35, pctOfBenchmark: 100 });
-    const r = SAI.interpretProbeResult('math_dcpm', 20, '3', 'winter');
-    expect(r).toMatchObject({ tier: 2, pctOfBenchmark: 57 });
-    expect(r.recommendations.some((x) => /daily fact fluency/i.test(x))).toBe(true);
+  it.each([
+    { unit: 'items_correct' }, { referenceId: 'other-edition' }, { measure: 'nwf' },
+    { grade: '4' }, { season: 'spring' }, { language: 'es' }, { durationSeconds: 30 },
+    { material: 'decodable' }, { scoring: 'ai-estimate' }, { reviewedByEducator: false }, { formId: '' }
+  ])('rejects incompatible administration metadata %j', change => {
+    expect(SAI.interpretProbeResult('orf', 40, '3', 'winter', reviewedORF(change)).comparisonAvailable).toBe(false);
   });
-  it('NWF_CLS grade K winter (benchmark 17)', () => {
-    expect(SAI.interpretProbeResult('nwf_cls', 17, 'K', 'winter')).toMatchObject({ tier: 1, benchmark50: 17, pctOfBenchmark: 100 });
-    expect(SAI.interpretProbeResult('nwf_cls', 5, 'K', 'winter')).toMatchObject({ tier: 3, pctOfBenchmark: 29 });
+  it.each([NaN, Infinity, -1, null, undefined, '', '40'])('rejects invalid score %s', score => {
+    expect(SAI.interpretProbeResult('orf', score, '3', 'winter', reviewedORF()).benchmark50).toBeNull();
   });
-  it('unknown probe type → tier 0, "No norms available"', () => {
-    expect(SAI.interpretProbeResult('bogus', 50, '3', 'winter')).toMatchObject({ tier: 0, status: 'No norms available', benchmark50: null });
+  it.each([[null, 'winter'], ['3', null], ['9', 'winter'], ['__proto__', 'winter'], ['3', 'invalid'], ['1', 'fall']])('does not invent reference data for %s / %s', (grade, season) => {
+    expect(SAI.interpretProbeResult('orf', 0, grade, season, reviewedORF({grade,season}))).toMatchObject({ tier: 0, benchmark50: null, pctOfBenchmark: null });
   });
-  it('grade with no norm row → tier 0', () => {
-    expect(SAI.interpretProbeResult('orf', 50, '9', 'winter')).toMatchObject({ tier: 0, status: 'No norms available' });
+  it('compares a reviewed compatible record without assigning intervention tiers', () => {
+    const low = SAI.interpretProbeResult('orf', 40, '3', 'winter', reviewedORF());
+    const at = SAI.interpretProbeResult('orf', 97, '3', 'winter', reviewedORF());
+    expect(low).toMatchObject({ tier: 0, comparisonAvailable: true, benchmark50: 97, pctOfBenchmark: 41, comparisonBand: 'below-reference' });
+    expect(at).toMatchObject({ tier: 0, pctOfBenchmark: 100, comparisonBand: 'at-or-above-reference' });
+    expect(low.reference).toMatchObject({id: 'hasbrouck-tindal-2017-orf', unit: 'wcpm', grade: '3', season: 'winter'});
+    expect(low.interpretation).toMatch(/not a percentile rank or an intervention tier/);
+    expect(low.recommendations.join(' ')).not.toMatch(/Begin Tier|referral|immediately/);
   });
-  it('benchmark of 0 (ORF grade 1 fall): any positive score → pct 200 / Tier 1; zero → pct 0 / Tier 3', () => {
-    expect(SAI.interpretProbeResult('orf', 10, '1', 'fall')).toMatchObject({ tier: 1, benchmark50: 0, pctOfBenchmark: 200 });
-    expect(SAI.interpretProbeResult('orf', 0, '1', 'fall')).toMatchObject({ tier: 3, benchmark50: 0, pctOfBenchmark: 0 });
+  it('keeps a genuine zero score and rejects interrupted, decodable or mismatched records', () => {
+    expect(SAI.interpretProbeResult('orf', 0, '3', 'winter', reviewedORF())).toMatchObject({pctOfBenchmark:0, tier:0});
+    for(const change of [{validForComparison:false}, {activity:'orf_decodable'}, {wcpm:90}]) {
+      expect(SAI.interpretProbeResult('orf',40,'3','winter',{...reviewedORF(),...change}).comparisonAvailable).toBe(false);
+    }
+  });
+  it('renders the unavailable explanation instead of hiding it', () => {
+    const ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
+    const html=ReactDOMServer.renderToStaticMarkup(SAI.renderProbeInterpretation('nwf_cls',5,'K','winter'));
+    expect(html).toContain('Reference comparison unavailable');
+    expect(html).toContain('Descriptive result');
+    expect(html).not.toContain('null%');
   });
 });
 
 describe('classifyRTITier — RTI tier classification (real bytes, explicit thresholds)', () => {
   it('quizAvg below Tier-3 cut → Tier 3 Intensive', () => {
     const r = SAI.classifyRTITier({ quizAvg: 40, totalActivities: 5 }, T);
-    expect(r).toMatchObject({ tier: 3, label: 'Tier 3 — Intensive', color: '#dc2626', emoji: '🔴' });
+    expect(r).toMatchObject({ tier: 3, label: 'Review group 3 — priority review', color: '#dc2626', emoji: '🔴' });
   });
   it('quizAvg in instructional range → Tier 2 Strategic', () => {
     const r = SAI.classifyRTITier({ quizAvg: 70, totalActivities: 5 }, T);
-    expect(r).toMatchObject({ tier: 2, label: 'Tier 2 — Strategic', color: '#d97706', emoji: '🟡' });
+    expect(r).toMatchObject({ tier: 2, label: 'Review group 2 — check supports', color: '#d97706', emoji: '🟡' });
   });
   it('strong profile → Tier 1 On Track with strength reasons', () => {
     const r = SAI.classifyRTITier({ quizAvg: 90, wsAccuracy: 90, totalActivities: 5, fluencyWCPM: 100 }, T);
-    expect(r).toMatchObject({ tier: 1, label: 'Tier 1 — On Track', color: '#16a34a', emoji: '🟢' });
+    expect(r).toMatchObject({ tier: 1, label: 'Review group 1 — current supports', color: '#16a34a', emoji: '🟢' });
     expect(r.reasons).toContain('Strong quiz performance');
-    expect(r.reasons).toContain('Strong fluency');
+    expect(r.reasons).toContain('Fluency meets the practice review threshold');
   });
   it('critically low math fluency forces Tier 3', () => {
     const r = SAI.classifyRTITier({ quizAvg: 90, totalActivities: 5, mathDCPM: 10 }, T);
     expect(r.tier).toBe(3);
-    expect(r.reasons.some((x) => /Math fluency critically below/.test(x))).toBe(true);
+    expect(r.reasons.some((x) => /Math practice score below configured review threshold/.test(x))).toBe(true);
   });
   it('very low engagement escalates to at least Tier 2', () => {
     const r = SAI.classifyRTITier({ quizAvg: 90, totalActivities: 1 }, T);
@@ -142,6 +129,29 @@ describe('classifyRTITier — RTI tier classification (real bytes, explicit thre
     expect(r).toHaveProperty('border');
     expect(Array.isArray(r.reasons)).toBe(true);
     expect(Array.isArray(r.recommendations)).toBe(true);
+  });
+});
+
+describe('reference metadata follows real stored records into exports', () => {
+  it('preserves zero and correct-letter-sound scores across summaries and trends', () => {
+    const meta=window.AlloModules.StudentAnalytics._meta;
+    localStorage.setItem('alloflow_probe_history',JSON.stringify({Test:[
+      {activity:'orf',grade:'3',wcpm:0,correct:90,timestamp:2000},
+      {activity:'nwf',grade:'K',cls:0,correct:9,timestamp:2000},
+      {activity:'math_dcpm',grade:'3',dcpm:28,correct:8,timestamp:2000}
+    ]}));
+    const out=meta.getRTITier('Test');
+    expect(out.perProbe.map(p=>p.score)).toEqual([0,0,28]);
+    expect(meta.getTrendSeries('Test').map(s=>s.points[0].value)).toEqual([0,0,28]);
+    expect(meta.buildReportWriterExport('Test',{emit:false}).prePopulatedSections['RTI / CBM Screening & Benchmark Summary']).toContain('NWF: 0');
+  });
+  it('exposes a source-bound reference only on a matching reviewed record', () => {
+    const meta=window.AlloModules.StudentAnalytics._meta;
+    localStorage.setItem('alloflow_probe_history',JSON.stringify({Test:[{...reviewedORF(),wcpm:40}]}));
+    expect(meta.getTrendSeries('Test')[0].benchmark).toBe(97);
+    expect(meta.getRTITier('Test').perProbe[0].reference.id).toBe('hasbrouck-tindal-2017-orf');
+    localStorage.setItem('alloflow_probe_history',JSON.stringify({Test:[{...reviewedORF(),wcpm:40,timestamp:null}]}));
+    expect(meta.getTrendSeries('Test')[0].benchmark).toBeNull();
   });
 });
 
@@ -171,16 +181,17 @@ describe('_meta — reciprocal query surface (P3-1)', () => {
     expect(sum.byActivity.orf.wcpm).toBe(55); // latest by timestamp
     expect(sum.activities.slice().sort()).toEqual(['math', 'orf']);
   });
-  it('getRTITier interprets latest probes and returns the most concerning tier', () => {
-    // timestamp 2000ms → Jan 1970 → winter. ORF g3 winter bench 92: 40 → 43% → Tier 3.
-    // math_dcpm g3 winter bench 35: 35 → 100% → Tier 1. Worst across probes = 3.
+  it('getRTITier preserves legacy probe scores without inventing service placement', () => {
+    // Old records remain descriptive; a legacy numeric tier is never invented.
     localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: [
       { activity: 'orf', grade: '3', wcpm: 40, timestamp: 2000 },
       { activity: 'math_dcpm', grade: '3', itemsPerMin: 35, timestamp: 2000 }
     ] }));
     const rti = META().getRTITier('Robin');
     expect(rti).toBeTruthy();
-    expect(rti.tier).toBe(3);
+    expect(rti.tier).toBe(0);
+    expect(rti.reviewRequired).toBe(true);
+    expect(rti.perProbe.every(p => !p.comparisonAvailable)).toBe(true);
     expect(rti.perProbe.length).toBe(2);
   });
   it('buildReportWriterExport assembles a payload + fact chunks and emits it', () => {
@@ -192,7 +203,8 @@ describe('_meta — reciprocal query surface (P3-1)', () => {
     const payload = META().buildReportWriterExport('Robin');
     window.removeEventListener('alloRTIExportReady', handler);
     expect(payload).toMatchObject({ source: 'AssessmentCenter', student: 'Robin' });
-    expect(payload.rtiTier.tier).toBe(3);
+    expect(payload.rtiTier.tier).toBe(0);
+    expect(payload.factChunks.join(" ")).not.toMatch(/RTI screening tier|Tier 0/);
     // IEP contract the Report Writer ingest depends on (prePopulatedSections keys
     // must match the 'IEP-Ready Packet' blueprint section names).
     expect(payload.studentNickname).toBe('Robin');
@@ -205,7 +217,7 @@ describe('_meta — reciprocal query surface (P3-1)', () => {
     expect(Array.isArray(payload.trendSeries)).toBe(true);
     const orf = payload.trendSeries.find(s => s.activity === 'orf');
     expect(orf).toBeTruthy();
-    expect(orf.benchmark).toBe(92); // ORF grade 3 winter 50th-%ile
+    expect(orf.benchmark).toBeNull(); // Legacy records lack verified reference compatibility.
     expect(orf.points.length).toBe(1);
     expect(orf.points[0].value).toBe(40);
     expect(payload.factChunks.length).toBeGreaterThan(0);
@@ -230,7 +242,7 @@ describe('_meta — reciprocal query surface (P3-1)', () => {
     expect(Array.isArray(orf.aimline)).toBe(true);
     expect(orf.aimline.length).toBe(12);
     expect(orf.goal).toMatchObject({ baseline: 30, target: 90 });
-    expect(typeof orf.benchmark).toBe('number'); // ORF g3 winter benchmark
+    expect(orf.benchmark).toBeNull(); // Individual goals remain usable without a normative comparison.
   });
   it('getTrendSeries has no aimline when no goal is set', () => {
     try { localStorage.removeItem('alloflow_rti_goals'); } catch (e) {}

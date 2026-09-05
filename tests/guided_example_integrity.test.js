@@ -10,7 +10,7 @@ const banner = readFileSync(resolve(process.cwd(), 'view_guided_mode_banner_sour
 
 const DETAIL_STEP_IDS = [
   'source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline',
-  'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona',
+  'anchor-chart', 'memory-aid', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona',
   'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final',
 ];
 

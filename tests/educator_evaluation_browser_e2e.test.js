@@ -434,7 +434,7 @@ describe('Educator Evaluation — browser e2e', () => {
     ]);
     expect(preImportBackup.suggestedFilename()).toMatch(/^alloflow-before-import-\d{4}-\d{2}-\d{2}\.json$/);
     await importPage.getByRole('heading', { name: 'Evaluation overview', exact: true }).waitFor({ state: 'visible', timeout: 10000 });
-    await importPage.locator('.ae-operation-notice').filter({ hasText: 'Workspace replaced after review; the prior workspace was downloaded' }).waitFor({ state: 'visible', timeout: 10000 });
+    await importPage.locator('.ae-local-banner').getByText('Workspace replaced after review; the prior workspace was downloaded.', { exact: true }).waitFor({ state: 'visible', timeout: 10000 });
     await importPage.locator('.ae-save-state').filter({ hasText: 'Saved on this device' }).waitFor({ state: 'visible', timeout: 10000 });
 
     const restored = await importPage.evaluate(() => {
@@ -448,6 +448,51 @@ describe('Educator Evaluation — browser e2e', () => {
     expect(errors).toEqual([]);
     await importPage.close();
   }, 90000);
+
+  it('validates visit details without losing evidence and keeps saved visits assigned to their educator', async () => {
+    const { page, errors } = await openWorkspace();
+    try {
+      await selectTeacher(page, 'Teacher 03 · T-03');
+      await openTab(page, 'Walkthroughs');
+      await page.getByRole('button', { name: '+ Start walkthrough', exact: true }).click();
+      const form = page.locator('.ae-walk-form');
+      const evidence = 'Browser validation regression: witnessed discussion of two strategies.';
+      await form.locator('textarea').first().fill(evidence);
+      const duration = form.locator('input[type="number"]');
+      const date = form.locator('input[type="date"]');
+      await duration.fill('181');
+      await form.getByRole('button', { name: 'Save private draft', exact: true }).click();
+      await form.getByRole('alert').waitFor();
+      expect(await duration.getAttribute('aria-invalid')).toBe('true');
+      expect(await duration.evaluate(el => el === document.activeElement)).toBe(true);
+      expect(await form.locator('textarea').first().inputValue()).toBe(evidence);
+      await duration.fill('8');
+      await date.fill('');
+      await form.getByRole('button', { name: 'Save private draft', exact: true }).click();
+      expect(await date.evaluate(el => el === document.activeElement)).toBe(true);
+      await date.fill('2026-09-04');
+      const teacherId = await form.locator('select').first().inputValue();
+      await form.getByRole('button', { name: 'Save private draft', exact: true }).click();
+      await form.waitFor({ state: 'detached' });
+      await page.waitForFunction(text => {
+        const workspace = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1') || 'null');
+        return workspace && workspace.walkthroughs.some(record => record.evidence === text);
+      }, evidence);
+      await page.getByRole('button', { name: 'Edit draft', exact: true }).click();
+      expect(await form.locator('select').first().isDisabled()).toBe(true);
+      expect(await form.locator('select').first().inputValue()).toBe(teacherId);
+      expect(await form.getByRole('button', { name: '+ New educator', exact: true }).count()).toBe(0);
+      await form.locator('textarea').first().fill(evidence + ' Revised.');
+      await form.getByRole('button', { name: 'Save draft changes', exact: true }).click();
+      await page.waitForFunction(({ text, id }) => {
+        const workspace = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1') || 'null');
+        return workspace && workspace.walkthroughs.some(record => record.evidence === text && record.teacherId === id);
+      }, { text: evidence + ' Revised.', id: teacherId });
+      expect(errors).toEqual([]);
+    } finally {
+      await page.close();
+    }
+  }, 60000);
 
   it('dark scheme: the panel paints its own ground (no transparent-body inherit)', async () => {
     const { page, errors } = await openWorkspace({ colorScheme: 'dark' });

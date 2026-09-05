@@ -1,16 +1,31 @@
+// Keep the displayed picture, exported picture and accessibility description on one artifact.
+function replaceSingleImage(item, imageUrl) {
+  const data = item.data || {};
+  const originalImage = data.originalImage || {
+    imageUrl: data.imageUrl || '', altText: data.altText || '', altSource: data.altSource || '',
+    altHash: data.altHash || '', decorative: data.decorative === true, imageSource: data.imageSource || ''
+  };
+  return { ...item, data: { ...data, originalImage, imageUrl, imageSource: 'author-upload',
+    altText: '', altSource: '', altHash: '', decorative: false } };
+}
+function restoreSingleImage(item) {
+  const data = item.data || {};
+  if (!data.originalImage) return item;
+  const next = { ...data, ...data.originalImage };
+  delete next.originalImage;
+  return { ...item, data: next };
+}
 
 function ImageView(props) {
   var t = props.t;
   var leveledTextLanguage = props.leveledTextLanguage;
   var fillInTheBlank = props.fillInTheBlank;
   var generatedContent = props.generatedContent;
-  var singleImageOverride = props.singleImageOverride;
   var isTeacherMode = props.isTeacherMode;
   var imageRefinementInput = props.imageRefinementInput;
   var isProcessing = props.isProcessing;
   var singleImageFileRef = props.singleImageFileRef;
   var setLabelChallengeResults = props.setLabelChallengeResults;
-  var setSingleImageOverride = props.setSingleImageOverride;
   var setHistory = props.setHistory;
   var setGeneratedContent = props.setGeneratedContent;
   var setImageRefinementInput = props.setImageRefinementInput;
@@ -32,8 +47,34 @@ function ImageView(props) {
   var callGemini = props.callGemini;
   var addToast = props.addToast;
   var VisualPanelGrid = props.VisualPanelGrid;
+  const updateImageResource = (updater) => {
+    const id = generatedContent && generatedContent.id;
+    const patch = item => item && item.id === id && item.type === 'image' ? updater(item) : item;
+    if (typeof props.onUpdateResource === 'function') return props.onUpdateResource(id, patch);
+    setGeneratedContent(patch);
+    setHistory(items => items.map(patch));
+  };
+  const uploadImage = (event) => {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!/^image\/(png|jpeg|gif|webp|avif)$/i.test(file.type)) {
+      addToast(t('visuals.upload_format_error') || 'Choose a PNG, JPEG, GIF, WebP, or AVIF image.', 'warning');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) { addToast(t('toasts.image_too_large_10mb_alt'), 'warning'); return; }
+    const reader = new FileReader();
+    reader.onerror = () => addToast(t('visuals.upload_failed') || 'The image could not be read. Please try another file.', 'error');
+    reader.onload = event => {
+      const imageUrl = event.target && event.target.result;
+      if (typeof imageUrl !== 'string' || !imageUrl.startsWith('data:image/')) return;
+      updateImageResource(item => replaceSingleImage(item, imageUrl));
+    };
+    reader.readAsDataURL(file);
+  };
   return (
                   <div className="space-y-3">
+                    {isTeacherMode && <input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" ref={singleImageFileRef} className="hidden" aria-label={t('common.upload_replacement_image') || 'Upload replacement image'} onChange={uploadImage} />}
                     <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3">
                         <p className="text-sm text-purple-800"><strong>UDL Goal:</strong> Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.<span className="block mt-1 font-semibold">Language Target: {leveledTextLanguage} {fillInTheBlank ? "(Worksheet Mode)" : ""}</span></p>
                     </div>
@@ -75,43 +116,25 @@ function ImageView(props) {
                                     callGemini={callGemini}
                                     initialAnnotations={generatedContent?.data.annotations}
                                     onAnnotationsChange={(annotations) => {
-                                        setGeneratedContent(prev => prev ? {
-                                            ...prev,
-                                            data: { ...prev.data, annotations }
-                                        } : prev);
-                                        setHistory(prev => prev.map(item =>
-                                            item.id === generatedContent?.id
-                                                ? { ...item, data: { ...item.data, annotations } }
-                                                : item
-                                        ));
+                                        updateImageResource(item => ({ ...item, data: { ...item.data, annotations } }));
                                     }}
                                 />
                             ) : generatedContent?.data.imageUrl ? (
                                 <div style={{position:'relative'}}>
-                                <img src={singleImageOverride || generatedContent?.data.imageUrl} alt={generatedContent?.data.decorative ? '' : (generatedContent?.data.altText || '')} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
+                                <img src={generatedContent?.data.imageUrl} alt={generatedContent?.data.decorative ? '' : (generatedContent?.data.altText || '')} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
                                 {isTeacherMode && (
                                   <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',gap:'6px'}}>
-                                    <input type="file" accept="image/*" ref={singleImageFileRef} style={{display:'none'}} aria-label={t('common.upload_replacement_image') || 'Upload replacement image'}
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file || !file.type.startsWith('image/')) return;
-                                        if (file.size > 10 * 1024 * 1024) { addToast(t("toasts.image_too_large_10mb_alt"), 'warning'); return; }
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => setSingleImageOverride(ev.target.result);
-                                        reader.readAsDataURL(file);
-                                      }}
-                                    />
                                     <button
                                       aria-label={t('visuals.upload_image') || 'Upload your own image'}
                                       title={t('visuals.upload_image') || 'Upload your own image'}
                                       onClick={() => singleImageFileRef.current?.click()}
                                       className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
                                     >📷 {t('visuals.replace_image') || 'Replace'}</button>
-                                    {singleImageOverride && (
+                                    {generatedContent?.data?.originalImage && (
                                       <button
                                         aria-label={t('visuals.restore_ai_image') || 'Restore AI image'}
                                         title={t('visuals.restore_ai_image') || 'Restore AI image'}
-                                        onClick={() => setSingleImageOverride(null)}
+                                        onClick={() => updateImageResource(restoreSingleImage)}
                                         className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
                                       >↩️ {t('visuals.restore_original') || 'Restore'}</button>
                                     )}
@@ -120,12 +143,11 @@ function ImageView(props) {
                                 {isTeacherMode && window.AlloModules && window.AlloModules.ImageAltField && (() => {
                                     const A = window.AlloModules.AltText;
                                     const d = generatedContent?.data || {};
-                                    const currentUrl = singleImageOverride || d.imageUrl;
+                                    const currentUrl = d.imageUrl;
                                     const stale = !!(A && d.altHash && currentUrl && A.hashImage(currentUrl) !== d.altHash);
                                     const patch = (fields) => {
-                                        const updated = { ...generatedContent, data: { ...d, ...fields } };
-                                        setGeneratedContent(updated);
-                                        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+                                        updateImageResource(item => item.data.imageUrl === currentUrl
+                                            ? { ...item, data: { ...item.data, ...fields } } : item);
                                     };
                                     const regenerate = async () => {
                                         const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
@@ -221,3 +243,6 @@ function ImageView(props) {
                   </div>
   );
 }
+
+ImageView.replaceSingleImage = replaceSingleImage;
+ImageView.restoreSingleImage = restoreSingleImage;

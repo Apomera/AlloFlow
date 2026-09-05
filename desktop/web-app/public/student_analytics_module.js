@@ -312,7 +312,7 @@ try {
       { key: 'measurement_count', label: 'Measurements in window', type: 'number' }
     ],
     group_tier_counts: [
-      { key: 'tier_group', label: 'Screening tier group', type: 'category' },
+      { key: 'tier_group', label: 'Practice-data review group', type: 'category' },
       { key: 'learner_count', label: 'Learner count', type: 'number' },
       { key: 'count_status', label: 'Count status', type: 'category' },
       { key: 'minimum_group_size', label: 'Minimum reportable group size', type: 'number' },
@@ -329,8 +329,8 @@ try {
     nwf_cls: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
     lnf: { code: 'lnf', probeType: 'lnf', unit: 'letters_correct', scores: ['itemsPerMin', 'correct'] },
     ran: { code: 'ran', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
-    math: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
-    math_dcpm: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
+    math: { code: 'math_items', probeType: null, unit: 'items_correct', scores: ['correct', 'itemsPerMin'] },
+    math_dcpm: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin'] },
     math_fluency: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
     missing_number: { code: 'missing_number', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
     quantity_discrimination: { code: 'quantity_discrimination', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
@@ -382,7 +382,16 @@ try {
   }
 
   function saAlloSheetRecordMeasure(record) {
-    return saAlloSheetMeasure(record && (record.activity || record.type || record.metric));
+    var measure = saAlloSheetMeasure(record && (record.activity || record.type || record.metric));
+    if (!record) return measure;
+    if (measure.code === 'math_items' && saAlloSheetNumber(record.dcpm) !== null) return SA_ALLOSHEET_MEASURES.math_dcpm;
+    if (measure.code === 'math_dcpm' && saAlloSheetNumber(record.dcpm) === null && saAlloSheetNumber(record.itemsPerMin) === null) {
+      return { code: 'math_items', probeType: null, unit: 'items_correct', scores: ['correct'] };
+    }
+    if (measure.code === 'nwf_cls' && saAlloSheetNumber(record.cls) === null && saAlloSheetNumber(record.itemsPerMin) === null) {
+      return { code: 'nwf_words', probeType: null, unit: 'words_correct', scores: ['correctWords', 'correct'] };
+    }
+    return measure;
   }
 
   function saAlloSheetScore(record, measure) {
@@ -550,7 +559,8 @@ try {
         measure.probeType,
         score,
         grade,
-        saAlloSheetSeason(record && (record.timestamp || record.date || record.at))
+        saAlloSheetSeason(record && (record.timestamp || record.date || record.at)),
+        record
       );
       return saAlloSheetNumber(result && result.benchmark50);
     } catch (_) {
@@ -787,7 +797,7 @@ try {
         sourceCounts.groupTierCounts = 3;
         tables.push(adapter.table({
           id: 'group_tier_counts',
-          title: 'Group screening tier counts',
+          title: 'Practice-data review group counts',
           columns: saAlloSheetColumns(adapter, 'group_tier_counts'),
           rows: [1, 2, 3].map(function(tier) {
             return {
@@ -808,7 +818,7 @@ try {
         sourceCounts.groupTierCounts = 0;
         tables.push(adapter.table({
           id: 'group_tier_counts',
-          title: 'Group screening tier counts',
+          title: 'Practice-data review group counts',
           columns: saAlloSheetColumns(adapter, 'group_tier_counts'),
           rows: [],
           sourceRowCount: 0
@@ -841,7 +851,8 @@ try {
         measurementWindow: dateRange,
         scope: scope,
         sourceCounts: sourceCounts,
-        benchmarkBasis: 'student-analytics-1.0.0-current-cbm-norms',
+        benchmarkBasis: 'reviewed-orf-reference-policy-2026-09-04',
+        reviewGroupsAreServicePlacements: false,
         aimlineMethod: 'linear-baseline-target',
         pseudonymType: identifierIncluded ? 'random-transfer-local-opaque' : 'none',
         minimumReportableGroupSize: SA_ALLOSHEET_MIN_GROUP_SIZE,
@@ -2284,7 +2295,7 @@ try {
       }
       if (stats.fluencyWCPM > 0 && stats.fluencyWCPM < t3.fluencyMin) {
         tier = Math.max(tier, 2);
-        reasons.push(`Fluency below ${t3.fluencyMin} WCPM`);
+        reasons.push(`Fluency below configured practice review threshold (${t3.fluencyMin} WCPM)`);
         recs.push('Implement repeated reading with the fluency assessment tool; track WCPM trend weekly');
       }
       if (stats.labelChallengeAvg > 0 && stats.labelChallengeAvg < t3.labelChallengeMin) {
@@ -2294,7 +2305,7 @@ try {
       }
       if (stats.mathDCPM > 0 && stats.mathDCPM < (t3.mathDCPMTier3 || 20)) {
         tier = Math.max(tier, 3);
-        reasons.push(`Math fluency critically below ${t3.mathDCPMTier3 || 20} DCPM`);
+        reasons.push(`Math practice score below configured review threshold (${t3.mathDCPMTier3 || 20} DCPM)`);
         recs.push("Implement daily math fact practice with timed drills; focus on single-operation mastery");
       } else if (stats.mathDCPM > 0 && stats.mathDCPM < (t3.mathDCPMTier2 || 40)) {
         tier = Math.max(tier, 2);
@@ -2305,26 +2316,26 @@ try {
         if (stats.quizAvg >= t3.quizTier2) reasons.push('Strong quiz performance');
         if (stats.wsAccuracy >= t3.wsTier2) reasons.push('Solid phonemic accuracy');
         if (stats.totalActivities >= 5) reasons.push('Good engagement level');
-        if (stats.fluencyWCPM >= 100) reasons.push('Strong fluency');
+        if (stats.fluencyWCPM >= 100) reasons.push('Fluency meets the practice review threshold');
         recs.push('Ready for increased challenge, reduced scaffolding, or peer tutoring roles');
       }
       const tierLabels = {
         1: {
-          label: 'Tier 1 — On Track',
+          label: 'Review group 1 — current supports',
           color: '#16a34a',
           bg: '#dcfce7',
           border: '#86efac',
           emoji: '🟢'
         },
         2: {
-          label: 'Tier 2 — Strategic',
+          label: 'Review group 2 — check supports',
           color: '#d97706',
           bg: '#fef9c3',
           border: '#fcd34d',
           emoji: '🟡'
         },
         3: {
-          label: 'Tier 3 — Intensive',
+          label: 'Review group 3 — priority review',
           color: '#dc2626',
           bg: '#fee2e2',
           border: '#fca5a5',
@@ -2335,7 +2346,9 @@ try {
         tier,
         ...tierLabels[tier],
         reasons,
-        recommendations: recs
+        recommendations: ['These are configurable practice-data review groups, not validated screening tiers or service placements. Review multiple evidence sources with the educator team.'].concat(recs),
+        reviewRequired: true,
+        isServicePlacement: false
       };
     };
     // (A dead duplicate of CBM_NORMS / getSeason / interpretProbeResult was removed
@@ -2358,62 +2371,82 @@ try {
     // clinical reports, meeting summaries, screening reports
     // ═══════════════════════════════════════════════════════════════
 
-    // ── CBM Benchmark Norms ──
-    // Hasbrouck & Tindal (2017) for ORF, DIBELS 8th Ed for NWF/LNF, research consensus for math.
+    // Reviewed reference table: Hasbrouck & Tindal (2017), 50th percentile.
+    // https://www.readingrockets.org/topics/fluency/articles/fluency-norms-chart-2017-update
+    // Local/generated probes are descriptive practice data. A record must carry
+    // explicit educator-reviewed administration metadata before reference comparison.
+    // Legacy NWF/LNF and "research consensus" math tables are not validated for
+    // AlloFlow's forms and are deliberately excluded from the active reference set.
     var CBM_NORMS = {
-      orf: { '1': { fall: 0, winter: 23, spring: 53 }, '2': { fall: 51, winter: 72, spring: 89 }, '3': { fall: 71, winter: 92, spring: 107 }, '4': { fall: 94, winter: 112, spring: 123 }, '5': { fall: 110, winter: 127, spring: 139 }, '6': { fall: 127, winter: 140, spring: 150 } },
-      nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
-      lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
-      math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
+      orf: {
+        '1': { fall: null, winter: 29, spring: 60 },
+        '2': { fall: 50, winter: 84, spring: 100 },
+        '3': { fall: 83, winter: 97, spring: 112 },
+        '4': { fall: 94, winter: 120, spring: 133 },
+        '5': { fall: 121, winter: 133, spring: 146 },
+        '6': { fall: 132, winter: 145, spring: 146 }
+      }
     };
-    // Map a probe's activity/type to its CBM norm table. CRITICAL for integrity:
-    // phonological-awareness measures (segmentation, blending, isolation, rhyming,
-    // spelling, syllable_*, etc.) have NO published CBM benchmark here, so they must
-    // fall through to their raw type (which has no CBM_NORMS entry) -> interpretProbeResult
-    // returns tier 0 "No norms available" instead of silently scoring a PA probe against
-    // MATH fact-fluency norms (which would produce a clinically misleading benchmark).
     var normTypeFor = function(type) {
-      if (CBM_NORMS[type]) return type; // already a norm key (orf/nwf_cls/lnf/math_dcpm)
       if (type === 'orf' || type === 'fluency') return 'orf';
       if (type === 'nwf') return 'nwf_cls';
-      if (type === 'lnf') return 'lnf';
-      if (type === 'math' || type === 'missing_number' || type === 'quantity_discrimination' || type === 'dcpm') return 'math_dcpm';
-      return type; // PA / unknown -> no CBM norms -> tier 0 (accuracy-only)
+      if (type === 'dcpm') return 'math_dcpm';
+      return type; // Never reinterpret math items, missing numbers or quantities as digits.
     };
     var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
-
-    // ── Probe Interpretation Engine ──
-    var interpretProbeResult = function(probeType, score, grade, season) {
-      season = season || getSeason(); grade = String(grade || '1');
-      var norms = CBM_NORMS[probeType]; if (!norms || !norms[grade]) return { tier: 0, status: 'No norms available', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
-      var tier, status, statusColor, interpretation, recommendations;
-      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
-      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
-      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
-      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
-      if (probeType === 'orf' && tier >= 2) { recommendations.push('Implement repeated reading with corrective feedback.'); if (tier === 3) recommendations.push('Check decoding with NWF — if < 90% accuracy, fluency deficit may be driven by decoding problem.'); }
-      if (probeType === 'nwf_cls' && tier >= 2) { recommendations.push('Focus on phonics: CVC blending, vowel sounds, sound-symbol correspondence.'); if (tier === 3) recommendations.push('Assess letter-sound knowledge with LNF.'); }
-      if (probeType === 'lnf' && tier >= 2) { recommendations.push('Increase letter exposure through multisensory activities.'); if (tier === 3) recommendations.push('Prioritize high-frequency letters. Consider vision screening.'); }
-      if (probeType === 'math_dcpm' && tier >= 2) { recommendations.push('Short daily fact fluency practice (5-10 min) with corrective feedback.'); if (tier === 3) recommendations.push('Check conceptual understanding vs. automaticity.'); }
-      return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recommendations, season: season, grade: grade };
+    var interpretProbeResult = function(probeType, score, grade, season, record) {
+      var unavailable = function(reason) {
+        return { tier: 0, reviewRequired: true, comparisonAvailable: false,
+          status: 'Reference comparison unavailable', statusColor: '#64748b',
+          benchmark50: null, pctOfBenchmark: null, reference: null, reason: reason,
+          interpretation: reason + ' Keep this result as descriptive practice data; it does not assign an intervention tier.',
+          recommendations: ['Review the task, scoring, access supports and multiple evidence sources with the educator team before changing services.'] };
+      };
+      if (typeof score !== 'number' || !Number.isFinite(score) || score < 0) return unavailable('A finite, non-negative score is required.');
+      grade = String(grade == null ? '' : grade);
+      if (probeType !== 'orf') return unavailable('No validated reference is configured for this measure and its AlloFlow forms.');
+      if (!Object.prototype.hasOwnProperty.call(CBM_NORMS.orf, grade) || !['fall', 'winter', 'spring'].includes(season)) return unavailable('An explicit supported grade and assessment season are required.');
+      var benchmark = CBM_NORMS.orf[grade][season];
+      if (typeof benchmark !== 'number' || benchmark <= 0) return unavailable('No positive reference value is available for this grade and season.');
+      var context = record && record.benchmarkContext;
+      if (!context || context.referenceId !== 'hasbrouck-tindal-2017-orf'
+          || context.measure !== 'orf' || context.unit !== 'wcpm'
+          || context.grade !== grade || context.season !== season
+          || context.language !== 'en' || context.durationSeconds !== 60
+          || context.material !== 'unpracticed-grade-level' || context.scoring !== 'standardized'
+          || context.reviewedByEducator !== true || typeof context.formId !== 'string' || !context.formId.trim()
+          || record.validForComparison === false || record.activity === 'orf_decodable'
+          || (record.activity && record.activity !== 'orf')
+          || (record.wcpm != null && record.wcpm !== score)) {
+        return unavailable('Matching source, form, score unit and educator-reviewed administration details have not been established.');
+      }
+      var pct = Math.round(score / benchmark * 100);
+      var below = score < benchmark;
+      var reference = { id: context.referenceId, title: 'Hasbrouck & Tindal (2017) ORF, 50th percentile',
+        url: 'https://www.readingrockets.org/topics/fluency/articles/fluency-norms-chart-2017-update',
+        measure: 'orf', unit: 'wcpm', grade: grade, season: season, formId: context.formId };
+      return { tier: 0, reviewRequired: true, comparisonAvailable: true,
+        status: below ? 'Below reference median — educator review' : 'At or above reference median — educator review',
+        statusColor: below ? '#92400e' : '#334155', benchmark50: benchmark, pctOfBenchmark: pct,
+        comparisonBand: below ? 'below-reference' : 'at-or-above-reference', reference: reference,
+        season: season, grade: grade,
+        interpretation: score + ' WCPM compared with the ' + benchmark + ' WCPM reference median (Hasbrouck & Tindal, 2017; grade ' + grade + ', ' + season + '). Percentage of a median is not a percentile rank or an intervention tier.',
+        recommendations: ['Review comprehension, administration conditions, access needs, repeated measures and other evidence before making an instructional or service decision.'] };
     };
     // Test seam (read-only, one-time): the probe interpretation engine + RTI tier
     // classifier, pinned against real bytes by tests/student_analytics.test.js (the
     // tests/extracted_logic fork has drifted, so we test the shipped module directly).
-    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
+    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.normTypeFor = normTypeFor; _saiB.renderProbeInterpretation = function() { return renderProbeInterpretation.apply(null, arguments); }; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
 
     // ── Render Probe Interpretation UI ──
-    var renderProbeInterpretation = function(probeType, score, grade, season) {
-      var result = interpretProbeResult(probeType, score, grade, season);
-      if (result.tier === 0) return null;
+    var renderProbeInterpretation = function(probeType, score, grade, season, record) {
+      var result = interpretProbeResult(probeType, score, grade, season, record);
       return React.createElement("div", { className: "mt-3 rounded-lg border p-3", style: { borderColor: result.statusColor + '40', background: result.statusColor + '08' } },
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
           React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
-          React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
+          React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, result.comparisonAvailable ? result.pctOfBenchmark + "% of reference median (" + result.benchmark50 + ")" : "Descriptive result")
         ),
         React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
         result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
@@ -2436,7 +2469,7 @@ try {
       else if (probeType === 'orf') { primaryScore = results.wcpm; primaryLabel = 'Words Correct Per Minute (WCPM)'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Words Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.wordsAttempted + '</td></tr><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Errors</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.errors + '</td></tr>'; }
       else { primaryScore = results.correct || 0; primaryLabel = 'Items Correct'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.total || 0) + '</td></tr>'; }
       var normType = normTypeFor(probeType);
-      var interp = interpretProbeResult(normType, primaryScore, grade, season);
+      var interp = interpretProbeResult(normType, primaryScore, grade, season, results);
       var recsHtml = interp.recommendations.length > 0 ? '<h3 style="font-size:14px;font-weight:700;color:#1e3a5f;margin:20px 0 8px;border-left:4px solid ' + interp.statusColor + ';padding-left:8px">Recommendations</h3><ul style="margin:0;padding-left:20px">' + interp.recommendations.map(function(r) { return '<li style="font-size:12px;color:#334155;margin:4px 0;line-height:1.5">' + r + '</li>'; }).join('') + '</ul>' : '';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Probe Report - ' + probeLabel + '</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:0 auto;padding:2rem;color:#1e293b;line-height:1.6}h1{font-size:1.25rem;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:0.5rem;margin:0 0 4px}h2{font-size:1rem;color:#334155;margin:16px 0 8px}.meta{color:#64748b;font-size:12px;margin-bottom:16px}.score-box{text-align:center;padding:20px;border-radius:12px;margin:16px 0}.score-num{font-size:3rem;font-weight:900}.status-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:12px;margin-top:8px}table{width:100%;border-collapse:collapse;margin:8px 0}th{background:#f1f5f9;padding:6px 12px;border:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;text-align:left}.sig-line{margin-top:24px;display:flex;gap:24px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:4px;font-size:11px;color:#64748b}.footer{margin-top:24px;padding-top:12px;border-top:2px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}@media print{body{padding:0.5in}}</style></head><body>' +
         '<h1>' + probeLabel + ' \u2014 Probe Report</h1>' +
@@ -2445,7 +2478,7 @@ try {
         '<h2>Score Details</h2><table><thead><tr><th>Metric</th><th style="text-align:center;width:120px">Value</th></tr></thead><tbody><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#1e3a5f">' + primaryLabel + '</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center;color:' + interp.statusColor + '">' + primaryScore + '</td></tr>' + secondaryRows + '</tbody></table>' +
         '<h2>Interpretation</h2><p style="font-size:12px;color:#334155;background:' + interp.statusColor + '08;padding:10px 14px;border-radius:8px;border-left:4px solid ' + interp.statusColor + '">' + interp.interpretation + '</p>' + recsHtml +
         '<div class="sig-line"><div>Examiner Signature</div><div>Date</div><div>Title</div></div>' +
-        '<div class="footer"><p>Generated by AlloFlow Assessment Center \u2022 ' + dateStr + '</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed. This is a screening tool, not a comprehensive evaluation.</p></div></body></html>';
+        '<div class="footer"><p>Generated by AlloFlow Assessment Center \u2022 ' + dateStr + '</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned. This is a screening tool, not a comprehensive evaluation.</p></div></body></html>';
       var w = window.open('', '_blank');
       if (w) { w.document.write(html); w.document.close(); w.print(); }
     };
@@ -2531,10 +2564,10 @@ try {
       });
       var benchmarkRows = '', growthRows = '', interventionRows = '';
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
-      var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
-      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
+      var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (items)', math_dcpm: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
+      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = saAlloSheetScore(p, saAlloSheetRecordMeasure(p)); var normType = normTypeFor(type); var interp = interpretProbeResult(normType, score, p.grade, _seasonFromDate(p.timestamp), p); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
       interventions.forEach(function(intv) { interventionRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(intv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(intv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.startDate||'--')+'</td></tr>'; });
-      var recommendation = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Reassess at next screening window.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 intervention needed.</span> Begin evidence-based program, monitor bi-weekly.' : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive intervention.</span> Monitor weekly. Consider evaluation referral if insufficient growth.';
+      var recommendation = 'Educator review required. Consider task demands, access needs, repeated observations and independent assessment evidence before changing instruction or services. Practice-data review groups do not assign an intervention tier.';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary - ' + studentName + '</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}.tier-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.rec-box{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:12px}.sig-line{display:flex;gap:20px;margin-top:16px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in}}</style></head><body>' +
         '<h1>RTI Data Team Meeting Summary</h1><div style="color:#64748b;font-size:11px;margin-bottom:8px"><strong>Student:</strong> ' + studentName + ' &bull; <strong>Date:</strong> ' + dateStr + ' &bull; <strong>Season:</strong> ' + seasonLabel + '</div>' +
         '<div style="margin:8px 0 12px"><span class="tier-badge" style="background:' + (tierResult.bg||'#f1f5f9') + ';color:' + (tierResult.color||'#334155') + ';border:2px solid ' + (tierResult.border||'#cbd5e1') + '">' + (tierResult.emoji||'') + ' ' + (tierResult.label||'Not Classified') + '</span></div>' +
@@ -2544,7 +2577,7 @@ try {
         '<h2>Recommendation</h2><div class="rec-box" style="background:' + (tierResult.bg||'#f1f5f9') + ';border-left:4px solid ' + (tierResult.color||'#64748b') + '">' + recommendation + '</div>' +
         '<h2>Team Decision</h2><div style="font-size:11px;line-height:2"><label><input type="checkbox" style="margin-right:4px"> Continue current intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Modify intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Move to higher tier</label><br><label><input type="checkbox" style="margin-right:4px"> Refer for comprehensive evaluation</label><br><label><input type="checkbox" style="margin-right:4px"> Other: _______________</label></div>' +
         '<div class="sig-line"><div>Team Members Present</div><div>Date</div></div><div style="border-bottom:1px solid #e2e8f0;min-height:20px;margin-top:4px"></div>' +
-        '<div class="footer"><p>AlloFlow Assessment Center &bull; ' + dateStr + '</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed. Not a comprehensive evaluation.</p></div></body></html>';
+        '<div class="footer"><p>AlloFlow Assessment Center &bull; ' + dateStr + '</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned. Not a comprehensive evaluation.</p></div></body></html>';
       var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); w.print(); }
     };
 
@@ -2557,28 +2590,28 @@ try {
         var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
         var studentProbes = (probeHistory && probeHistory[name]) || []; var latestByType = {};
         studentProbes.forEach(function(p) { var type = p.type || p.activity || 'unknown'; if (!latestByType[type] || new Date(p.date) > new Date(latestByType[type].date)) latestByType[type] = p; });
-        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
+        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = saAlloSheetScore(p, saAlloSheetRecordMeasure(p)); var normType = normTypeFor(type); scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade, _seasonFromDate(p.timestamp), p) }; });
         return { name: name, tier: tier, scores: scores };
       });
       studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
       var tier3=studentData.filter(function(s){return s.tier.tier===3;}), tier2=studentData.filter(function(s){return s.tier.tier===2;}), tier1=studentData.filter(function(s){return s.tier.tier===1;}), n=studentData.length;
       var allRows = studentData.map(function(s) {
         var cells=['orf','fluency','nwf','lnf','math','missing_number','quantity_discrimination'].map(function(t){var d=s.scores[t];if(!d)return'<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;color:#cbd5e1;font-size:11px">\u2014</td>';return'<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:'+d.interp.statusColor+'">'+d.score+'</td>';}).join('');
-        return'<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+s.name+'</td><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:'+s.tier.bg+';color:'+s.tier.color+'">'+s.tier.emoji+' T'+s.tier.tier+'</span></td>'+cells+'</tr>';
+        return'<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+s.name+'</td><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:'+s.tier.bg+';color:'+s.tier.color+'">'+s.tier.emoji+' Review '+s.tier.tier+'</span></td>'+cells+'</tr>';
       }).join('');
       var html='<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Class Screening Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 8px;border:1px solid #e2e8f0;font-size:9px;text-transform:uppercase;color:#64748b;text-align:center}th:first-child{text-align:left}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.3in;font-size:10px}}</style></head><body>'+
         '<h1>\uD83C\uDFEB Class Screening Report \u2014 '+seasonLabel+'</h1>'+
         '<div style="color:#64748b;font-size:11px;margin-bottom:12px"><strong>Date:</strong> '+dateStr+' &bull; <strong>Students:</strong> '+n+'</div>'+
         '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">'+
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #86efac;background:#dcfce7"><div style="font-size:28px;font-weight:900;color:#16a34a">'+tier1.length+'</div><div style="font-size:10px;font-weight:700;color:#16a34a">\uD83D\uDFE2 Tier 1 ('+(n?Math.round(tier1.length/n*100):0)+'%)</div></div>'+
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:#fef9c3"><div style="font-size:28px;font-weight:900;color:#d97706">'+tier2.length+'</div><div style="font-size:10px;font-weight:700;color:#d97706">\uD83D\uDFE1 Tier 2 ('+(n?Math.round(tier2.length/n*100):0)+'%)</div></div>'+
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fca5a5;background:#fee2e2"><div style="font-size:28px;font-weight:900;color:#dc2626">'+tier3.length+'</div><div style="font-size:10px;font-weight:700;color:#dc2626">\uD83D\uDD34 Tier 3 ('+(n?Math.round(tier3.length/n*100):0)+'%)</div></div>'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #86efac;background:#dcfce7"><div style="font-size:28px;font-weight:900;color:#16a34a">'+tier1.length+'</div><div style="font-size:10px;font-weight:700;color:#16a34a">\uD83D\uDFE2 Review group 1 ('+(n?Math.round(tier1.length/n*100):0)+'%)</div></div>'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:#fef9c3"><div style="font-size:28px;font-weight:900;color:#d97706">'+tier2.length+'</div><div style="font-size:10px;font-weight:700;color:#d97706">\uD83D\uDFE1 Review group 2 ('+(n?Math.round(tier2.length/n*100):0)+'%)</div></div>'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fca5a5;background:#fee2e2"><div style="font-size:28px;font-weight:900;color:#dc2626">'+tier3.length+'</div><div style="font-size:10px;font-weight:700;color:#dc2626">\uD83D\uDD34 Review group 3 ('+(n?Math.round(tier3.length/n*100):0)+'%)</div></div>'+
         '</div>'+
-        '<h2>All Students by Measure</h2><table><thead><tr><th style="min-width:100px">Student</th><th>Tier</th><th>ORF</th><th>NWF</th><th>LNF</th><th>Math</th><th>MN</th><th>QD</th></tr></thead><tbody>'+allRows+'</tbody></table>'+
+        '<h2>All Students by Measure</h2><table><thead><tr><th style="min-width:100px">Student</th><th>Review group</th><th>ORF</th><th>NWF</th><th>LNF</th><th>Math</th><th>MN</th><th>QD</th></tr></thead><tbody>'+allRows+'</tbody></table>'+
         '<div style="margin-top:4px;font-size:9px;color:#94a3b8">Color: <span style="color:#16a34a;font-weight:700">green</span>=at/above, <span style="color:#d97706;font-weight:700">amber</span>=below, <span style="color:#dc2626;font-weight:700">red</span>=well below benchmark</div>'+
-        (tier3.length>0?'<h2>\uD83D\uDD34 Priority Students (Tier 3)</h2>'+tier3.map(function(s){return'<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+s.name+'</strong><span style="font-size:10px;color:#7f1d1d;margin-left:8px">'+s.tier.reasons.slice(0,2).join('; ')+'</span></div>';}).join(''):'')+
+        (tier3.length>0?'<h2>\uD83D\uDD34 Students for priority review</h2>'+tier3.map(function(s){return'<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+s.name+'</strong><span style="font-size:10px;color:#7f1d1d;margin-left:8px">'+s.tier.reasons.slice(0,2).join('; ')+'</span></div>';}).join(''):'')+
         '<h2>Notes</h2><div style="border:1px solid #e2e8f0;border-radius:8px;min-height:60px;padding:8px"></div>'+
-        '<div class="footer"><p>AlloFlow Assessment Center &bull; '+dateStr+'</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed.</p></div></body></html>';
+        '<div class="footer"><p>AlloFlow Assessment Center &bull; '+dateStr+'</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned.</p></div></body></html>';
       var w=window.open('','_blank'); if(w){w.document.write(html);w.document.close();w.print();}
     };
 
@@ -2666,12 +2699,12 @@ try {
     const generateRTICSV = async () => {
       if (!importedStudents || importedStudents.length === 0) return;
       // FERPA gate: this CSV lists students by REAL NAME with tiers/scores — confidential records.
-      if (!await askStudentAnalyticsConfirmation("This CSV lists students by real name with RTI tiers, scores, and recommendations. It contains confidential student records.\n\nSave it only to a school-approved location and handle it under your district's FERPA policy.", { title: 'Export confidential RTI report', confirmText: 'Export CSV' })) return;
-      const headers = ['Student', 'Date', 'RTI Tier', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
+      if (!await askStudentAnalyticsConfirmation("This CSV lists students by real name with practice review groups, scores, and recommendations. It contains confidential student records.\n\nSave it only to a school-approved location and handle it under your district's FERPA policy.", { title: 'Export confidential RTI report', confirmText: 'Export CSV' })) return;
+      const headers = ['Student', 'Date', 'Practice review group (not placement)', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
         const tot = s.data?.timeOnTask?.totalSessionMinutes || 0;
-        return [s.name, new Date().toLocaleDateString(), 'Tier ' + rti.tier, s.stats.quizAvg + '%', s.stats.wsAccuracy + '%', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), '"' + rti.recommendations.join('; ').replace(/"/g, "'") + '"'].join(',');
+        return [s.name, new Date().toLocaleDateString(), 'Review group ' + rti.tier, s.stats.quizAvg + '%', s.stats.wsAccuracy + '%', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), '"' + rti.recommendations.join('; ').replace(/"/g, "'") + '"'].join(',');
       });
       const csv = [headers.join(','), ...rows].join('\n');
       const blob = new Blob([csv], {
@@ -5254,19 +5287,19 @@ try {
           bg: '#dcfce7',
           color: '#16a34a',
           border: '#86efac',
-          label: 'On Track'
+          label: 'Current supports review'
         },
         2: {
           bg: '#fef9c3',
           color: '#d97706',
           border: '#fcd34d',
-          label: 'Strategic Support'
+          label: 'Check supports'
         },
         3: {
           bg: '#fee2e2',
           color: '#dc2626',
           border: '#fca5a5',
-          label: 'Intensive Support'
+          label: 'Priority educator review'
         }
       };
       const tc = tierColors[rti.tier] || tierColors[1];
@@ -5392,8 +5425,8 @@ try {
             <div class="tier-badge" style="background: ${tc.bg}; border: 2px solid ${tc.border};">
                 <span style="font-size: 28px;">${rti.emoji}</span>
                 <div>
-                    <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Tier ${rti.tier} — ${tc.label}</div>
-                    <div style="font-size: 11px; color: #64748b;">Suggested tier from in-app activity — confirm with screening data; final placement is a team decision.</div>
+                    <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Review group ${rti.tier} — ${tc.label}</div>
+                    <div style="font-size: 11px; color: #64748b;">Practice-data review group only, not a validated screening tier. Review independent evidence; service placement is a team decision.</div>
                 </div>
             </div>
             <div class="section-title">📊 Performance Summary</div>
@@ -5762,7 +5795,7 @@ try {
         {
           key: 'class-summary',
           label: 'Class summary (recommended)',
-          description: 'Only privacy-suppressed aggregate screening tier counts.',
+          description: 'Only privacy-suppressed aggregate practice review group counts; not service placements.',
           disabled: false
         },
         {
@@ -5782,7 +5815,7 @@ try {
         { key: 'probeTrends', table: 'probe_trends', label: 'Probe trends', individual: true },
         { key: 'interventionSummary', table: 'intervention_summary', label: 'Intervention summary', individual: true },
         { key: 'goalProgress', table: 'goal_progress', label: 'Goal and aimline progress', individual: true },
-        { key: 'groupTierCounts', table: 'group_tier_counts', label: 'Group screening tier counts', individual: false }
+        { key: 'groupTierCounts', table: 'group_tier_counts', label: 'Practice-data review group counts', individual: false }
       ];
       return ReactDOM.createPortal(e('div', {
         role: 'presentation',
@@ -6646,7 +6679,7 @@ try {
       className: "flex items-center justify-between mb-3"
     }, /*#__PURE__*/React.createElement("h3", {
       className: "font-bold text-slate-700 flex items-center gap-2"
-    }, "\uD83C\uDFAF RTI Tier Distribution"), /*#__PURE__*/React.createElement("div", {
+    }, "\uD83C\uDFAF Practice-data review groups"), React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Configurable groups for educator review, not validated screening tiers or service placements."), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
@@ -6661,21 +6694,21 @@ try {
       className: "grid grid-cols-3 gap-3 mb-3"
     }, [{
       tier: 1,
-      label: 'Tier 1 — On Track',
+      label: 'Review group 1 — current supports',
       emoji: '🟢',
       color: '#16a34a',
       bg: '#dcfce7',
       border: '#86efac'
     }, {
       tier: 2,
-      label: 'Tier 2 — Strategic',
+      label: 'Review group 2 — check supports',
       emoji: '🟡',
       color: '#d97706',
       bg: '#fef9c3',
       border: '#fcd34d'
     }, {
       tier: 3,
-      label: 'Tier 3 — Intensive',
+      label: 'Review group 3 — priority review',
       emoji: '🔴',
       color: '#dc2626',
       bg: '#fee2e2',
@@ -6800,7 +6833,7 @@ try {
       className: "space-y-4"
     }, [{
       key: 'quizTier3',
-      label: '🔴 Quiz — Tier 3 cutoff',
+      label: '🔴 Quiz — priority review threshold',
       desc: 'Below this → Intensive',
       unit: '%',
       min: 10,
@@ -6808,7 +6841,7 @@ try {
       step: 5
     }, {
       key: 'quizTier2',
-      label: '🟡 Quiz — Tier 2 cutoff',
+      label: '🟡 Quiz — support review threshold',
       desc: 'Below this → Strategic',
       unit: '%',
       min: 40,
@@ -6816,7 +6849,7 @@ try {
       step: 5
     }, {
       key: 'wsTier3',
-      label: '🔴 Word Sounds — Tier 3 cutoff',
+      label: '🔴 Word Sounds — priority review threshold',
       desc: 'Below this → Intensive',
       unit: '%',
       min: 10,
@@ -6824,7 +6857,7 @@ try {
       step: 5
     }, {
       key: 'wsTier2',
-      label: '🟡 Word Sounds — Tier 2 cutoff',
+      label: '🟡 Word Sounds — support review threshold',
       desc: 'Below this → Strategic',
       unit: '%',
       min: 30,
@@ -6964,16 +6997,11 @@ try {
             React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Naming speed: RAN"),
             React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Full battery: Benchmark Battery")
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-1.5 italic" }, "Low ORF + adequate NWF = fluency deficit (practice). Low ORF + low NWF = decoding deficit (phonics).")
+          React.createElement("p", { className: "text-[11px] text-slate-600 mt-1.5 italic" }, "Patterns across reading and letter-sound tasks can inform follow-up questions. These practice results do not establish a fluency or decoding diagnosis.")
         ),
         React.createElement("div", { className: "bg-slate-100 rounded-lg p-3" },
-          React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83D\uDCCA Quick Interpretation"),
-          React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
-            React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2 border border-emerald-200" }, React.createElement("div", { className: "text-[11px] font-bold text-emerald-700" }, "\u2265 75% of benchmark"), React.createElement("div", { className: "text-[11px] text-emerald-600" }, "Tier 1: On Track")),
-            React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, React.createElement("div", { className: "text-[11px] font-bold text-amber-700" }, "50\u201374% of benchmark"), React.createElement("div", { className: "text-[11px] text-amber-600" }, "Tier 2: Strategic")),
-            React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, React.createElement("div", { className: "text-[11px] font-bold text-red-700" }, "< 50% of benchmark"), React.createElement("div", { className: "text-[11px] text-red-600" }, "Tier 3: Intensive"))
-          ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 italic" }, "General guidelines \u2014 bands compare the score to the 50th-percentile benchmark (median), not a percentile rank. Use RTI Settings to customize for your district norms.")
+          React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "Interpretation requires educator review"),
+          React.createElement("p", { className: "text-xs text-slate-600" }, "AlloFlow practice forms are not standardized tests. Review the measure, scoring unit, form and administration before using a reference. Percentage of a reference median is not a percentile rank and does not assign Tier 1, 2 or 3 services. Combine repeated measures with independent evidence and the team's decision process.")
         )
       ) : null
     ),
@@ -7426,7 +7454,7 @@ try {
       },
       className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
-    renderProbeInterpretation('nwf_cls', nwfProbeResults.cls, nwfProbeGrade),
+    renderProbeInterpretation('nwf_cls', nwfProbeResults.cls, nwfProbeGrade, getSeason(), nwfProbeResults),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('nwf', nwfProbeResults, nwfProbeGrade, nwfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
@@ -7595,7 +7623,7 @@ try {
       },
       className: "w-full mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
-    renderProbeInterpretation('lnf', lnfProbeResults.correct, 'K'),
+    renderProbeInterpretation('lnf', lnfProbeResults.correct, 'K', getSeason(), lnfProbeResults),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('lnf', lnfProbeResults, 'K', lnfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
@@ -7987,7 +8015,7 @@ try {
     })(),
     orfProbeResults.decodable ? /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-2"
-    }, "\uD83D\uDCCF This score tracks progress on the taught patterns in this pack. Decodable-text WCPM is not comparable to grade-level ORF benchmarks \u2014 do not use it for screening or tier decisions.") : renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
+    }, "\uD83D\uDCCF This score tracks progress on the taught patterns in this pack. Decodable-text WCPM is not comparable to grade-level ORF benchmarks \u2014 do not use it for screening or tier decisions.") : renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade, getSeason(), orfProbeResults),
     !orfProbeResults.decodable && /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('orf', orfProbeResults, orfProbeGrade, mathProbeForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
@@ -8568,7 +8596,7 @@ try {
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md"
     }, "\uD83D\uDCCA Export RTI Report"), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
-    }, "Download CSV with tier classifications, metrics, and recommendations")), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    }, "Download CSV with practice review groups, metrics, and educator-review suggestions")), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
       className: "text-center py-12 text-slate-600"
     }, /*#__PURE__*/React.createElement(Users, {
       size: 48,
@@ -8658,7 +8686,7 @@ try {
           color: rti.color,
           border: `1px solid ${rti.border}`
         }
-      }, rti.emoji, " T", rti.tier);
+      }, rti.emoji, " Review ", rti.tier);
     })()), /*#__PURE__*/React.createElement("td", {
       className: "p-2 text-center"
     }, student.stats.quizAvg, "%"), /*#__PURE__*/React.createElement("td", {
@@ -9266,7 +9294,7 @@ try {
             borderRadius: '6px',
             border: '1px solid #fca5a5'
           }
-        }, "\uD83D\uDD34 ", aimline.detail, " \u2014 Consider a tier or intervention change"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDD34 ", aimline.detail, " \u2014 Educator team review of progress and supports"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -9316,7 +9344,7 @@ try {
         }
       }, "\u2699\uFE0F Decision Rule Settings"), /*#__PURE__*/React.createElement("div", {
         style: { fontSize: "10px", color: "#64748b", marginBottom: "6px", fontStyle: "italic" }
-      }, "Display reference. The progress-monitoring alert uses a fixed rule \u2014 4 consecutive points below the aimline (adjust intervention) / 6 (tier change) \u2014 and does not change with this selection."), /*#__PURE__*/React.createElement("div", {
+      }, "Display reference. The progress-monitoring alert uses a fixed rule \u2014 4 consecutive points below the aimline (review supports) / 6 (priority team review) \u2014 and does not change with this selection."), /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           gap: "8px",
@@ -10000,11 +10028,11 @@ try {
       classSummary && classSummary.rtiDistribution && React.createElement("div", {
         className: "mb-4 p-4 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl"
       },
-        React.createElement("h3", { className: "font-bold text-slate-700 flex items-center gap-2 mb-3" }, '\uD83C\uDFAF RTI Tier Distribution'),
+        React.createElement("h3", { className: "font-bold text-slate-700 flex items-center gap-2 mb-3" }, '\uD83C\uDFAF Practice-data review groups'),
         React.createElement("div", { className: "grid grid-cols-3 gap-3" },
-          [{ tier: 1, label: 'Tier 1', emoji: '\uD83D\uDFE2', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
-           { tier: 2, label: 'Tier 2', emoji: '\uD83D\uDFE1', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
-           { tier: 3, label: 'Tier 3', emoji: '\uD83D\uDD34', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
+          [{ tier: 1, label: 'Review group 1', emoji: '\uD83D\uDFE2', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
+           { tier: 2, label: 'Review group 2', emoji: '\uD83D\uDFE1', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
+           { tier: 3, label: 'Review group 3', emoji: '\uD83D\uDD34', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
           ].map(function(t) {
             var students = classSummary.rtiDistribution[t.tier] || [];
             return React.createElement("div", {
@@ -10223,7 +10251,7 @@ try {
         ),
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
-          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and RTI tier recommendations.")
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and practice-data review suggestions.")
         ),
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
@@ -10482,22 +10510,21 @@ try {
   };
   var _seasonFromDate = function(ts) {
     try {
-      var mo = (ts ? new Date(ts) : new Date()).getMonth(); // 0=Jan
+      if (ts == null || ts === '') return null;
+      var mo = new Date(ts).getMonth(); // Never infer a missing assessment date.
+      if (!Number.isFinite(mo)) return null;
       if (mo >= 7 && mo <= 10) return 'fall';     // Aug–Nov
       if (mo === 11 || mo <= 1) return 'winter';  // Dec–Feb
       return 'spring';                             // Mar–Jul
-    } catch (e) { return 'winter'; }
+    } catch (e) { return null; }
   };
   // Map a stored record to the (probeType, score) the engine expects; null for
   // activities we don't confidently interpret (never guess a clinical score).
   var _probeTypeAndScore = function(r) {
     if (!r || !r.activity) return null;
-    var a = String(r.activity).toLowerCase();
-    if (a === 'orf') return { probeType: 'orf', score: r.wcpm != null ? r.wcpm : r.itemsPerMin };
-    if (a === 'math' || a === 'math_dcpm' || a === 'math_fluency') return { probeType: 'math_dcpm', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
-    if (a === 'nwf' || a === 'nwf_cls') return { probeType: 'nwf_cls', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
-    if (a === 'lnf') return { probeType: 'lnf', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
-    return null;
+    var measure = saAlloSheetRecordMeasure(r);
+    var score = saAlloSheetScore(r, measure);
+    return score === null ? null : { probeType: measure.probeType || r.activity, score: score, unit: measure.unit };
   };
   var _internals = function() { return (window.AlloModules && window.AlloModules.StudentAnalyticsInternals) || {}; };
   var _saMeta = {
@@ -10527,16 +10554,16 @@ try {
       for (var i = 0; i < summary.activities.length; i++) {
         var r = summary.byActivity[summary.activities[i]];
         var ps = _probeTypeAndScore(r);
-        if (!ps || ps.score == null || r.grade == null) continue;
+        if (!ps || ps.score == null) continue;
         var out = null;
-        try { out = interp(ps.probeType, ps.score, r.grade, _seasonFromDate(r.timestamp)); } catch (e) { out = null; }
+        try { out = interp(ps.probeType, ps.score, r.grade, _seasonFromDate(r.timestamp), r); } catch (e) { out = null; }
         if (out && typeof out.tier === 'number') {
           any = true;
           if (out.tier > worst) worst = out.tier;
-          perProbe.push({ activity: r.activity, tier: out.tier, status: out.status, score: ps.score, grade: r.grade });
+          perProbe.push({ activity: r.activity, tier: out.tier, status: out.status, score: ps.score, unit: ps.unit, grade: r.grade, reference: out.reference, comparisonAvailable: out.comparisonAvailable, reviewRequired: true });
         }
       }
-      return any ? { student: nickname, tier: worst, perProbe: perProbe } : null;
+      return any ? { student: nickname, tier: worst, reviewRequired: true, isServicePlacement: false, perProbe: perProbe } : null;
     },
     getInterventionLogs: function(nickname) { return _readInterventionLogs(nickname); },
     // Per-measure chronological score series + 50th-%ile benchmark (from the latest
@@ -10551,7 +10578,7 @@ try {
       Object.keys(byActivity).forEach(function(a) {
         var recs = byActivity[a].slice().sort(function(x, y) { return (x.timestamp || 0) - (y.timestamp || 0); });
         var points = recs.map(function(r) {
-          var v = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
+          var v = saAlloSheetScore(r, saAlloSheetRecordMeasure(r));
           return { t: r.timestamp || 0, value: (typeof v === 'number' ? v : null) };
         }).filter(function(p) { return p.value != null; });
         if (!points.length) return;
@@ -10561,7 +10588,7 @@ try {
         var ps = _probeTypeAndScore(latest);
         var benchmark = null;
         if (ps && ps.score != null && latest.grade != null && typeof interp === 'function') {
-          try { var out = interp(ps.probeType, ps.score, latest.grade, _seasonFromDate(latest.timestamp)); if (out && typeof out.benchmark50 === 'number') benchmark = out.benchmark50; } catch (e) {}
+          try { var out = interp(ps.probeType, ps.score, latest.grade, _seasonFromDate(latest.timestamp), latest); if (out && typeof out.benchmark50 === 'number') benchmark = out.benchmark50; } catch (e) {}
         }
         // Aimline overlay: the student's individualized goal trajectory (baseline→
         // target). The RTI goal is a single per-student fluency goal, so it maps to
@@ -10580,7 +10607,7 @@ try {
             goalOut = { baseline: goal.baseline, target: goal.target, targetDate: goal.targetDate };
           } catch (e) { aimline = null; goalOut = null; }
         }
-        series.push({ activity: a, label: String(a).toUpperCase(), grade: latest.grade != null ? latest.grade : null, benchmark: benchmark, aimline: aimline, goal: goalOut, points: points });
+        series.push({ activity: a, label: String(a).toUpperCase(), grade: latest.grade != null ? latest.grade : null, benchmark: benchmark, reference: benchmark === null ? null : out.reference, reviewRequired: true, aimline: aimline, goal: goalOut, points: points });
       });
       return series;
     },
@@ -10601,11 +10628,11 @@ try {
         if (DA && DA._meta && typeof DA._meta.getSessionsByStudent === 'function') daSessions = DA._meta.getSessionsByStudent(nickname) || [];
       } catch (e) { daSessions = []; }
       var factChunks = [];
-      if (rtiTier) factChunks.push('RTI screening tier ' + rtiTier.tier + ' — most-concerning across ' + rtiTier.perProbe.length + ' CBM probe' + (rtiTier.perProbe.length === 1 ? '' : 's') + ' (screening, not an eligibility determination).');
+      if (rtiTier) factChunks.push('Educator review required for ' + rtiTier.perProbe.length + ' recorded measure(s). No intervention tier or eligibility determination is assigned.');
       screeningSummary.activities.forEach(function(a) {
         var r = screeningSummary.byActivity[a];
-        var score = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
-        if (score != null) factChunks.push('Latest ' + String(a).toUpperCase() + ' probe: ' + score + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + '.');
+        var score = saAlloSheetScore(r, saAlloSheetRecordMeasure(r));
+        if (score != null) factChunks.push('Latest ' + String(a).toUpperCase() + ' probe: ' + score + ' ' + saAlloSheetRecordMeasure(r).unit + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + '.');
       });
       if (interventionLogs.length) factChunks.push(interventionLogs.length + ' intervention' + (interventionLogs.length === 1 ? '' : 's') + ' on file: ' + interventionLogs.map(function(l) { return l && l.program; }).filter(Boolean).join(', ') + '.');
       if (daSessions.length) factChunks.push(daSessions.length + ' Dynamic Assessment session' + (daSessions.length === 1 ? '' : 's') + ' on file (clinical observations of learning behavior, not test scores).');
@@ -10618,15 +10645,15 @@ try {
       var prePopulatedSections = {};
       (function() {
         var lines = [];
-        if (rtiTier) lines.push('Universal screening tier (most-concerning across measures): Tier ' + rtiTier.tier + '.');
+        if (rtiTier) lines.push('Recorded results for educator review; no intervention tier is assigned.');
         screeningSummary.activities.forEach(function(a) {
           var r = screeningSummary.byActivity[a];
-          var score = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
+          var score = saAlloSheetScore(r, saAlloSheetRecordMeasure(r));
           var pp = ((rtiTier && rtiTier.perProbe) || []).filter(function(p) { return p.activity === a; })[0];
-          lines.push('• ' + String(a).toUpperCase() + ': ' + (score != null ? score : '—') + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + (pp ? ' — ' + pp.status : '') + (r.timestamp ? ' [' + _fmtDate(r.timestamp) + ']' : ''));
+          lines.push('• ' + String(a).toUpperCase() + ': ' + (score != null ? score : '—') + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + (pp ? ' — ' + pp.status + (pp.reference ? ' [' + pp.reference.title + '; ' + pp.reference.unit + '; ' + pp.reference.url + ']' : '') : '') + (r.timestamp ? ' [' + _fmtDate(r.timestamp) + ']' : ''));
         });
         if (!lines.length) lines.push('No CBM screening probes on file.');
-        prePopulatedSections['RTI / CBM Screening & Benchmark Summary'] = lines.join('\n') + '\n\nCBM screening interpreted against published benchmarks (Hasbrouck & Tindal 2017 for ORF; DIBELS 8th for NWF/LNF). Descriptive screening data, not an eligibility determination.';
+        prePopulatedSections['RTI / CBM Screening & Benchmark Summary'] = lines.join('\n') + '\n\nDescriptive practice data, not an eligibility determination. Reference comparisons require matching measure, form, unit and educator-reviewed administration metadata. A reference median does not assign an intervention tier.';
       })();
       prePopulatedSections['Progress Monitoring & Goal Progress'] = probeHistory.length
         ? (probeHistory.length + ' progress-monitoring data point' + (probeHistory.length === 1 ? '' : 's') + ' on file across ' + (_uniq(probeHistory.map(function(p) { return p.activity; })).join(', ') || 'multiple measures') + '. Interpret the trend against the student’s aimline; a change decision follows the team’s data-based decision rule.')

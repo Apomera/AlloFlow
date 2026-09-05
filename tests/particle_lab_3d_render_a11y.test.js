@@ -201,8 +201,8 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(host.querySelector('#particle-stage-status')?.textContent).toContain('Now: Predict');
     expect(host.querySelector('#particle-scene-key')?.getAttribute('role')).toBe('img');
     expect(host.querySelector('#particle-scene-key')?.getAttribute('aria-label')).toContain('cyan particles');
-    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('measured');
-    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('setpoint 300 K');
+    expect(host.querySelector('#particle-readouts')?.textContent).toContain('measured');
+    expect(host.querySelector('#particle-readouts')?.textContent).toContain('setpoint 300 K');
     expect(host.querySelector('#particle-stage-activity')?.textContent).toContain('Simulation paused');
     expect(host.querySelector('#particle-stage-activity')?.textContent).toContain('Press Run or Space to begin');
   });
@@ -239,7 +239,51 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     await act(async () => { top.click(); await settle(); });
     expect(hero.getAttribute('aria-pressed')).toBe('false');
     expect(top.getAttribute('aria-pressed')).toBe('true');
-    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('View Top-down');
+    expect(host.querySelector('#particle-readouts')?.textContent).toContain('View Top-down');
+  });
+
+
+  it('collapses readouts without replacing the canvas and restores focus to its toggle', async () => {
+    const canvas = host.querySelector('canvas');
+    // One collapse control only: the essential-bar toggle (the dock heading no longer duplicates it).
+    expect(host.querySelector('#particle-readouts [aria-label="Collapse chamber readouts"]')).toBeNull();
+    const collapse = buttonByText(host, 'Collapse readouts');
+    expect(collapse.getAttribute('aria-controls')).toBe('particle-readouts');
+    collapse.focus();
+    await act(async () => { collapse.click(); await settle(); });
+    expect(host.querySelector('#particle-readouts').hidden).toBe(true);
+    expect(document.activeElement?.textContent).toBe('Show readouts');
+    await act(async () => { document.activeElement.click(); await settle(); });
+    expect(host.querySelector('#particle-readouts').hidden).toBe(false);
+    expect(host.querySelector('canvas')).toBe(canvas);
+  });
+
+  it('toggles the readouts dock with D while the chamber has focus, and ignores D once the UI is hidden', async () => {
+    const canvas = host.querySelector('canvas');
+    await act(async () => { canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'd', bubbles: true })); await settle(); });
+    expect(host.querySelector('#particle-readouts').hidden).toBe(true);
+    expect(buttonByText(host, 'Show readouts').getAttribute('aria-expanded')).toBe('false');
+    await act(async () => { canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'D', bubbles: true })); await settle(); });
+    expect(host.querySelector('#particle-readouts').hidden).toBe(false);
+    await act(async () => { buttonByText(host, 'Hide UI').click(); await settle(); });
+    await act(async () => { canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'd', bubbles: true })); await settle(); });
+    expect(host.querySelector('#particle-readouts')).toBeNull();
+    await act(async () => { buttonByText(host, 'Show controls (H)').click(); await settle(); });
+    expect(host.querySelector('#particle-readouts').hidden).toBe(false);
+    expect(host.querySelector('canvas')).toBe(canvas);
+  });
+
+  it('hides all readouts and optional controls while keeping run, exit, and restore reachable', async () => {
+    const canvas = host.querySelector('canvas');
+    await act(async () => { buttonByText(host, 'Hide UI').click(); await settle(); });
+    expect(host.querySelector('#particle-readouts')).toBeNull();
+    expect(host.querySelector('#particle-secondary-controls')).toBeNull();
+    expect(host.querySelector('#particle-experiment-runway')).toBeNull();
+    expect(host.querySelector('#particle-essential-controls').textContent).toContain('Run');
+    expect(host.querySelector('[aria-label="Open fullscreen particle chamber"]')).not.toBeNull();
+    await act(async () => { buttonByText(host, 'Show controls (H)').click(); await settle(); });
+    expect(host.querySelector('#particle-readouts')).not.toBeNull();
+    expect(host.querySelector('canvas')).toBe(canvas);
   });
 
   it('renders no persistent seven, eight, or nine pixel utility text', () => {

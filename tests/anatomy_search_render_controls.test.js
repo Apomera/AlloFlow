@@ -263,3 +263,80 @@ describe('Anatomy explicit mobile 3D controls', () => {
     expect(source).toContain("canvas.setAttribute('data-anatomy-3d-input', coarsePointerOnly ? 'buttons' : 'orbit')");
   });
 });
+
+describe('Anatomy complete search and display transitions', () => {
+  function interactive(filePath, state) {
+    const tool = loadTool(filePath, 'anatomy');
+    let data = { anatomy: { ...BASE_STATE, ...state } };
+    return {
+      render() { return tool.render(makeCtx({ toolData: data, setToolData: (updater) => { data = typeof updater === 'function' ? updater(data) : updater; } })); },
+      state() { return data.anatomy; },
+    };
+  }
+  const input = (tree) => findElement(tree, (node) => node.props?.role === 'combobox');
+
+  it.each(ANATOMY_PATHS)('reveals matches beyond the first twelve and resets for a new query in %s', (filePath) => {
+    const session = interactive(filePath, { search: 'a' });
+    let tree = session.render();
+    const showAll = findElement(tree, (node) => node.props?.className === 'anatomy-global-search-more');
+    expect(showAll).not.toBeNull();
+    showAll.props.onClick();
+    tree = session.render();
+    expect(findElement(tree, (node) => node.props?.id === 'anatomy-global-search-option-12')).not.toBeNull();
+    expect(findElement(tree, (node) => node.props?.className === 'anatomy-global-search-more')).toBeNull();
+    input(tree).props.onChange({ target: { value: 'heart' } });
+    expect(session.state()).toMatchObject({ search: 'heart', _anatomySearchShowAll: false, _anatomySearchIndex: 0 });
+  });
+
+  it.each(ANATOMY_PATHS)('dismisses without erasing the query and reopens with arrow keys in %s', (filePath) => {
+    const session = interactive(filePath, { search: 'heart' });
+    input(session.render()).props.onKeyDown({ key: 'Escape', preventDefault: vi.fn(), stopPropagation: vi.fn() });
+    let tree = session.render();
+    expect(session.state().search).toBe('heart');
+    expect(input(tree).props['aria-expanded']).toBe('false');
+    expect(input(tree).props['aria-activedescendant']).toBeUndefined();
+    expect(findElement(tree, (node) => node.props?.role === 'listbox')).toBeNull();
+    input(tree).props.onKeyDown({ key: 'Enter', preventDefault: vi.fn() });
+    expect(session.state().selectedStructure).toBeUndefined();
+    input(tree).props.onKeyDown({ key: 'ArrowDown', preventDefault: vi.fn() });
+    tree = session.render();
+    expect(input(tree).props['aria-expanded']).toBe('true');
+    expect(input(tree).props['aria-activedescendant']).toBe('anatomy-global-search-option-0');
+  });
+
+  it.each(ANATOMY_PATHS)('provides a nearby no-match explanation without broken ARIA references in %s', (filePath) => {
+    const root = parseMarkup(renderAnatomy(filePath, { search: 'no-such-anatomy-xyz' }));
+    const search = root.querySelector('[role="combobox"]');
+    expect(root.querySelector('#' + search.getAttribute('aria-describedby')).textContent).toContain('No matching structures');
+    expect(search.getAttribute('aria-expanded')).toBe('false');
+    expect(search.hasAttribute('aria-controls')).toBe(false);
+    expect(search.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
+  it.each(ANATOMY_PATHS)('leaves an organ-only model and study filter when selecting a whole-body result in %s', (filePath) => {
+    const session = interactive(filePath, {
+      system: 'circulatory', _activeTab: 'flashcards', _bodyView3d: true,
+      _body3dStyle: 'clinical', _clinicalAtlasPackId: 'hra-heart-female-v1.3',
+      _clinicalAtlasConceptId: 'UBERON:0002084', _anatomyModelFocus: true, _studyFilter: 'mastered', search: 'collarbone',
+    });
+    const option = findElement(session.render(), (node) => node.props?.role === 'option' && /Clavicle/.test(textOf(node)));
+    expect(option).not.toBeNull();
+    option.props.onClick();
+    expect(session.state()).toMatchObject({ system: 'skeletal', selectedStructure: 'clavicle', _activeTab: 'explore', _anatomyModelFocus: false, _studyFilter: 'all', _body3dStyle: 'blueprint', _clinicalAtlasPackId: '', _clinicalAtlasConceptId: '', search: '' });
+  });
+
+  it.each(ANATOMY_PATHS)('keeps ontology results in their matching Clinical Atlas in %s', (filePath) => {
+    const session = interactive(filePath, { search: 'UBERON:0002084', _activeTab: 'flashcards' });
+    const option = findElement(session.render(), (node) => node.props?.role === 'option' && /UBERON:0002084/.test(textOf(node)));
+    expect(option).not.toBeNull();
+    option.props.onClick();
+    expect(session.state()).toMatchObject({ _activeTab: 'explore', _body3dStyle: 'clinical', _bodyView3d: true, _clinicalAtlasConceptId: 'UBERON:0002084', search: '' });
+  });
+
+  it.each(ANATOMY_PATHS)('does not select suggestions while an IME is composing in %s', (filePath) => {
+    const session = interactive(filePath, { search: 'heart' });
+    input(session.render()).props.onKeyDown({ key: 'Enter', nativeEvent: { isComposing: true }, preventDefault: vi.fn() });
+    expect(session.state().search).toBe('heart');
+    expect(session.state().selectedStructure).toBeUndefined();
+  });
+});

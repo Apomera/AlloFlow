@@ -35,7 +35,6 @@
 # 2026-09-03 - +2 released (verified in the 356-file pipeline baseline run AND again in isolation:
 #   2 files, 42 assertions, 0 failures): deep_dive_batch3_fixes, individual_remediation_polish.
 
-tests/plt_k6_5622_pack.test.js  # 5 failing as of 2026-08-17 (was 1 — GREW; the pack content moved under it) · registration/candour/diagnostic pins; needs a content-owner pass
 tests/stem_big_tools_golden.test.js  # 8 failing · big STEM tool render goldens (default state) renders + pins a digest for roadReady
 tests/stem_graph_tools_golden.test.js  # 10 failing · math/logic graph cluster render goldens (default state) renders + pins a digest for algebraCAS
 tests/stem_longtail_tools_golden.test.js  # 9 failing · career/nature long-tail render goldens (default state) renders + pins a digest for decomposer

@@ -73,6 +73,25 @@ function LessonPlanView(props) {
                              <div className="text-xs font-bold text-indigo-500 mb-4 bg-white/50 px-3 py-1.5 rounded-lg border border-indigo-100 inline-block">
                                  {t('lesson_plan.based_on')}: {history.find(h=>h&&h.type==='analysis') ? `${t('lesson_plan.analysis_lbl')}, ` : ''}{history.find(h=>h&&h.type==='simplified') ? `${t('lesson_plan.leveled_text_lbl')}, ` : ''}{history.find(h=>h&&h.type==='quiz') ? `${t('lesson_plan.quiz_lbl')}, ` : ''}{history.find(h=>h&&h.type==='glossary') ? t('lesson_plan.glossary_lbl') : t('lesson_plan.source_lbl')}
                              </div>
+                             {isTeacherMode && !isParentMode && !isIndependentMode && typeof props.onGenerateTeachingScript === 'function' && (
+                                 <div className="mb-6">
+                                     {window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
+                                         key: String(generatedContent.id), generatedContent,
+                                         history: props.teachingScriptMaterials || [], isTeacherMode, isParentMode, isIndependentMode, t,
+                                         capabilities: props.capabilities, defaultSettings: props.defaultSettings,
+                                         scriptRun: props.scriptRun,
+                                         onGenerateTeachingScript: props.onGenerateTeachingScript,
+                                         onCancelTeachingScript: props.onCancelTeachingScript,
+                                         onUpdateTeachingScript: props.onUpdateTeachingScript,
+                                         onOpenTeachingMaterial: props.onOpenTeachingMaterial
+                                     }) : (
+                                         <section className="rounded-xl border border-indigo-200 bg-white p-4" aria-label={t('lesson_script.title') || 'Teaching script'}>
+                                             <p role="status" className="text-sm text-slate-800">{props.teachingScriptLoadState === 'error' ? (t('lesson_script.load_error') || 'Teaching script tools could not load. Your lesson plan is still available.') : (t('lesson_script.loading') || 'Loading teaching script tools…')}</p>
+                                             {props.teachingScriptLoadState === 'error' && typeof props.onRetryTeachingScriptLoad === 'function' && <button type="button" onClick={props.onRetryTeachingScriptLoad} className="mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{t('lesson_script.retry_load') || 'Try loading again'}</button>}
+                                         </section>
+                                     )}
+                                 </div>
+                             )}
                              <div className="space-y-6">
                                  {(generatedContent?.data.materialsNeeded && generatedContent?.data.materialsNeeded.length > 0) && (
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">

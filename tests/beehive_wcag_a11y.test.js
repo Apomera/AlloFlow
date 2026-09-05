@@ -827,7 +827,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(capture.className).toContain('min-h-[44px]');
     await act(async () => { capture.click(); await Promise.resolve(); });
     expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
-    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Varroa 5%');
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Varroa 5 / 100');
     expect(document.getElementById('allo-live-beehive').textContent).toContain('evidence captured in the Science Notebook');
 
     let reviewInputs = Array.from(host.querySelectorAll('input[data-notebook-review]'));
@@ -1050,7 +1050,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.lastManagement.outcome).toMatchObject({
       varroaBefore: 8, varroaAfter: 0, reduction: 8, treatmentStrength: 12,
     });
-    expect(latest.beehive.lastManagement.summary).toContain('Varroa 8% to 0%');
+    expect(latest.beehive.lastManagement.summary).toContain('Varroa 8 / 100 to 0 / 100');
   });
   it('keeps locked Colony Network decisions keyboard-discoverable without applying them', async () => {
     await mount({

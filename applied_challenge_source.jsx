@@ -1070,6 +1070,12 @@ function appliedChallengeSubmissionResourceId(responses) {
 function appliedChallengeFromSubmission(baseData, responses, resourceId) {
   const data = normalizeAppliedChallengeData(baseData);
   const map = responses && typeof responses === 'object' && !Array.isArray(responses) ? responses : {};
+  const typed = map[resourceId]?.studio;
+  const api = typeof window !== 'undefined' && window.AlloModules?.StudioResponse;
+  if (typed && api) {
+    const safe = api.toSubmission({ id: resourceId, type: 'applied-challenge' }, typed).data;
+    return { matched: Object.values(safe.workspace || {}).filter(value => typeof value === 'string' && value.trim()).length || (safe.evidenceLedger || []).length || (safe.validationCycles || []).length || Object.keys(safe.criteriaCheck || {}).length, data: normalizeAppliedChallengeData({ ...data, ...safe }) };
+  }
   const prefix = String(resourceId || appliedChallengeSubmissionResourceId(map)) + ':applied:';
   const text = (value) => _apsString(typeof value === 'string' ? value : (value == null ? '' : String(value)), 12000);
   let matched = 0;
@@ -1199,11 +1205,28 @@ function AppliedChallengePanel(props) {
 }
 
 function AppliedChallengeView(props) {
-  const { generatedContent, isTeacherMode, isProcessing, handleNoteUpdate, callGemini: callGeminiProp, addToast: addToastProp, gradeLevel, t } = props;
+  const { generatedContent, isTeacherMode, isProcessing, handleNoteUpdate, callGemini: callGeminiProp, addToast: addToastProp, gradeLevel, t, allowRuntimeAi = true, learnerReadOnly = false, onPrint } = props;
+  const ReadAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.Controls;
+  const SharingCheck = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.SharingCheck;
+  const LocalReadAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.LocalText;
   const tx = (key, fallback) => _apsT(t, key, fallback);
   const [isEditing, setIsEditing] = React.useState(false);
   const [busy, setBusy] = React.useState('');
-  const [hintPhase, setHintPhase] = React.useState('workingQuestion');
+  const preferenceKey = 'allo-applied-focus:' + JSON.stringify([props.activeProfileId || 'session', generatedContent?.id]);
+  const readPreference = () => { try { const value = !props.previewMode ? JSON.parse(sessionStorage.getItem(preferenceKey) || '{}') : {}; return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; } catch (_) { return {}; } };
+  const [hintPhase, setHintPhase] = React.useState(() => readPreference().phase || 'workingQuestion');
+  const [focusMode, setFocusMode] = React.useState(() => !isTeacherMode && readPreference().focus !== false);
+  const [focusRequest, setFocusRequest] = React.useState(null);
+  const goToPhase = phase => { setHintPhase(phase); setFocusRequest({ phase }); };
+  React.useEffect(() => {
+    if (!focusRequest) return;
+    const target = document.getElementById('applied-workspace-' + focusRequest.phase);
+    if (target && !target.matches(':disabled')) target.focus();
+  }, [focusRequest, focusMode]);
+  React.useEffect(() => {
+    if (props.previewMode || isTeacherMode) return;
+    try { sessionStorage.setItem(preferenceKey, JSON.stringify({ phase: hintPhase, focus: focusMode })); } catch (_) {}
+  }, [preferenceKey, hintPhase, focusMode, props.previewMode, isTeacherMode]);
   const [openValidationCycleId, setOpenValidationCycleId] = React.useState('');
   const resourceActive = !!(generatedContent && generatedContent.type === 'applied-challenge');
   const resourceId = resourceActive ? _apsString(generatedContent.id, 160) : '';
@@ -1212,6 +1235,9 @@ function AppliedChallengeView(props) {
   const familyExample = appliedChallengeFamilyText(data.family, 'example', t);
   const familyStressFocus = appliedChallengeFamilyText(data.family, 'stressTestFocus', t);
   const visiblePhases = appliedChallengeVisiblePhases(data.scope);
+  const phaseIndex = Math.max(0, visiblePhases.findIndex(phase => phase.id === hintPhase));
+  const currentPhase = visiblePhases[phaseIndex]?.id;
+  React.useEffect(() => { if (currentPhase && currentPhase !== hintPhase) setHintPhase(currentPhase); }, [currentPhase, hintPhase]);
   const workspaceProgress = appliedChallengeWorkspaceProgress(data);
   const evidenceLedgerProgress = appliedChallengeEvidenceLedgerProgress(data.evidenceLedger);
   const validationCyclesProgress = appliedChallengeValidationCyclesProgress(data.validationCycles, data.family);
@@ -1240,7 +1266,7 @@ function AppliedChallengeView(props) {
   latestResourceIdRef.current = resourceId;
   latestGradeLevelRef.current = gradeLevel || data.lessonRef.gradeLevel;
   const addToast = typeof addToastProp === 'function' ? addToastProp : function () {};
-  const callGemini = callGeminiProp || (typeof window !== 'undefined' && window.callGemini);
+  const callGemini = allowRuntimeAi && !learnerReadOnly ? (callGeminiProp === undefined ? (typeof window !== 'undefined' && window.callGemini) : callGeminiProp) : null;
 
   const commitField = React.useCallback((key, value) => {
     if (!resourceActive || typeof handleNoteUpdate !== 'function') return;
@@ -1530,10 +1556,11 @@ function AppliedChallengeView(props) {
     const nearLimit = used >= limit * 0.85;
     return <article key={phase.id} className='applied-challenge-section rounded-2xl border border-slate-200 bg-slate-50/60 p-4' aria-labelledby={headingId}>
       <h3 id={headingId} className='text-sm font-black text-slate-900'>{label}</h3>
-      {isTeacherMode && isEditing
+      {isTeacherMode && isEditing && !learnerReadOnly
         ? <AcTextarea aria-label={_apsFill(tx('applied_challenge.workspace.teacher_prompt_aria', 'Teacher prompt for {label}'), { label })} value={data.supports.phasePrompts[phase.id]} onChange={(event) => updateSupports({ phasePrompts: Object.assign({}, data.supports.phasePrompts, { [phase.id]: event.target.value }) })} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-orange-50 px-3 py-2 text-xs text-slate-800' />
         : <p className='mt-1 text-xs leading-relaxed text-slate-600'>{data.supports.phasePrompts[phase.id]}</p>}
-      <AcTextarea id={'applied-workspace-' + phase.id} aria-labelledby={headingId} value={data.workspace[phase.id]} onChange={(event) => updateWorkspace(phase.id, event.target.value)} onFocus={() => setHintPhase(phase.id)} maxLength={limit} rows={phase.id === 'response' || phase.id === 'revision' ? 7 : 4} placeholder={tx('applied_challenge.workspace.placeholder', 'Write your thinking here...')} className='mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600' />
+      <AcTextarea readOnly={learnerReadOnly} id={'applied-workspace-' + phase.id} aria-labelledby={headingId} value={data.workspace[phase.id]} onChange={(event) => updateWorkspace(phase.id, event.target.value)} onFocus={() => setHintPhase(phase.id)} maxLength={limit} rows={phase.id === 'response' || phase.id === 'revision' ? 7 : 4} placeholder={tx('applied_challenge.workspace.placeholder', 'Write your thinking here...')} className='mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600' />
+      {LocalReadAloud && !learnerReadOnly && <LocalReadAloud text={data.workspace[phase.id]} t={t} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} />}
       {nearLimit && <p role='status' className='mt-1 text-[11px] font-bold text-amber-800'>{_apsFill(tx('applied_challenge.workspace.near_limit', '{remaining} characters left in this section.'), { remaining: Math.max(0, limit - used) })}</p>}
     </article>;
   };
@@ -1692,7 +1719,8 @@ function AppliedChallengeView(props) {
         '  body * { visibility:hidden; }',
         '  #applied-challenge-print-root, #applied-challenge-print-root * { visibility:visible; }',
         '  #applied-challenge-print-root { position:absolute; left:0; top:0; width:100%; max-width:none; padding:0; }',
-        '  .applied-challenge-no-print { display:none !important; }',
+        '  .applied-challenge-no-print, .studio-sharing { display:none !important; }',
+        '  .applied-phase-step[hidden] { display:block !important; }',
         '  .applied-challenge-root textarea { display:none !important; }',
         '  .applied-challenge-print-text { display:block; white-space:pre-wrap; min-height:2.5rem; margin-top:0.5rem; padding:0.5rem; border:1px solid #cbd5e1; border-radius:0.5rem; font-size:0.9rem; line-height:1.5; }',
         '  .applied-challenge-section { break-inside:avoid; box-shadow:none !important; }',
@@ -1701,7 +1729,7 @@ function AppliedChallengeView(props) {
         '}',
       ].join('\n')}</style>
       <header className='mb-5 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-5 shadow-sm'>
-        <div className='flex flex-wrap items-start justify-between gap-3'>
+        <div className='flex flex-col items-start justify-between gap-3 sm:flex-row'>
           <div className='min-w-0 flex-1'>
             <p className='mb-1 text-xs font-black uppercase tracking-[0.18em] text-orange-800'>{tx('applied_challenge.studio_title', 'Applied Challenge Studio')}</p>
             {isTeacherMode && isEditing
@@ -1713,7 +1741,8 @@ function AppliedChallengeView(props) {
           </div>
           <div className='applied-challenge-no-print flex flex-wrap gap-2'>
             {isTeacherMode && <button type='button' aria-pressed={isEditing} onClick={() => setIsEditing((value) => !value)} className='min-h-11 rounded-xl border border-orange-700 bg-white px-3 py-2 text-sm font-black text-orange-900'>{isEditing ? tx('applied_challenge.header.done_editing', 'Done editing') : tx('applied_challenge.header.edit', 'Edit challenge')}</button>}
-            <button type='button' onClick={() => { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); }} className='min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>{tx('applied_challenge.header.print', 'Print')}</button>
+            <button type='button' onClick={() => { if (typeof onPrint === 'function') onPrint(generatedContent, { worksheet: true, teacherKey: false }); else if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); }} className='min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>{tx('applied_challenge.header.preview_worksheet', 'Preview student worksheet')}</button>
+            {typeof onPrint === 'function' && <button type='button' onClick={() => onPrint(generatedContent, { worksheet: false, teacherKey: isTeacherMode })} className='min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>{isTeacherMode ? tx('applied_challenge.header.teacher_reference', 'Teacher reference') : tx('applied_challenge.header.portfolio', 'Completed portfolio')}</button>}
           </div>
         </div>
         <div className='mt-4 flex flex-wrap gap-2 text-xs font-bold'>
@@ -1724,7 +1753,9 @@ function AppliedChallengeView(props) {
         </div>
         {data.selectionMode === 'auto' && data.fitReason && <p className='mt-3 rounded-xl border border-orange-200 bg-white/80 p-3 text-sm text-slate-700'><strong className='text-orange-900'>{tx('applied_challenge.header.why_match', 'Why this match:')}</strong> {data.fitReason}</p>}
       </header>
-      <section className='applied-challenge-section mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm' aria-labelledby='challenge-brief-heading'>
+      {isTeacherMode && SharingCheck && <SharingCheck resource={props.referenceResource || generatedContent} t={t} onReview={() => setIsEditing(true)} />}
+      {ReadAloud && <ReadAloud resource={props.referenceResource || generatedContent} canPrepare={isTeacherMode && isEditing} allowRuntimeAi={allowRuntimeAi} t={t} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} onActiveSegment={segment => { if (segment.phaseId) goToPhase(segment.phaseId); }} />}
+      <section tabIndex={-1} data-studio-review='facts' className='applied-challenge-section mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm' aria-labelledby='challenge-brief-heading'>
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <h2 id='challenge-brief-heading' className='text-xl font-black text-slate-900'>{tx('applied_challenge.brief.heading', 'Challenge brief')}</h2>
           <span className='rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950'>{data.brief.factVerified ? tx('applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts') : tx('applied_challenge.brief.facts_need_review', 'Lesson facts need teacher review')}</span>
@@ -1824,7 +1855,16 @@ function AppliedChallengeView(props) {
           </article>}
         </div>
       </section>
+      {learnerReadOnly && isTeacherMode && isEditing && <section className='mb-5 rounded-3xl border border-orange-200 bg-white p-5'>
+        <div className='grid gap-4 sm:grid-cols-3'>
+          <label>{tx('applied_challenge.panel.family', 'Challenge family')}<select className='mt-1 min-h-11 w-full rounded-xl border px-3' value={data.family} onChange={event => commitField('family', event.target.value)}>{Object.keys(APPLIED_CHALLENGE_FAMILIES).map(key => <option key={key} value={key}>{appliedChallengeFamilyText(key, 'label', t)}</option>)}</select></label>
+          <label>{tx('applied_challenge.panel.ai_role', 'AI role')}<select className='mt-1 min-h-11 w-full rounded-xl border px-3' value={data.agencyMode} onChange={event => commitField('agencyMode', event.target.value)}>{Object.keys(APPLIED_CHALLENGE_AGENCY_MODES).map(key => <option key={key} value={key}>{appliedChallengeAgencyText(key, 'compactLabel', t)}</option>)}</select></label>
+          <label>{tx('applied_challenge.panel.depth', 'Challenge depth')}<select className='mt-1 min-h-11 w-full rounded-xl border px-3' value={data.scope} onChange={event => commitField('scope', event.target.value)}>{Object.keys(APPLIED_CHALLENGE_SCOPES).map(key => <option key={key} value={key}>{appliedChallengeScopeText(key, 'label', t)}</option>)}</select></label>
+        </div>
+        {visiblePhases.map(phase => <label key={phase.id} className='mt-4 block text-sm font-bold'>{_apsFill(tx('applied_challenge.workspace.teacher_prompt_aria', 'Teacher prompt for {label}'), { label: appliedChallengePhaseLabel(phase, data.family, t) })}<AcTextarea value={data.supports.phasePrompts[phase.id]} onChange={event => updateSupports({ phasePrompts: { ...data.supports.phasePrompts, [phase.id]: event.target.value } })} rows={2} className='mt-1 w-full rounded-xl border border-orange-300 px-3 py-2' /></label>)}
+      </section>}
       <section className='rounded-3xl border border-orange-200 bg-white p-5 shadow-sm' aria-labelledby='challenge-workspace-heading'>
+        <fieldset disabled={learnerReadOnly} className='min-w-0' aria-labelledby='challenge-workspace-heading'>
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div>
             <h2 id='challenge-workspace-heading' className='text-xl font-black text-slate-900'>{tx('applied_challenge.workspace.heading', 'Your problem-solving workspace')}</h2>
@@ -1839,7 +1879,7 @@ function AppliedChallengeView(props) {
           </div>
           <div className='applied-challenge-no-print flex flex-wrap items-end gap-2'>
             <label className='text-xs font-black text-slate-700'>{tx('applied_challenge.workspace.hint_phase', 'Hint for phase')}
-              <select value={hintPhase} onChange={(event) => setHintPhase(event.target.value)} className='mt-1 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium'>
+              <select value={hintPhase} onChange={(event) => goToPhase(event.target.value)} className='mt-1 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium'>
                 {visiblePhases.map((phase) => <option key={phase.id} value={phase.id}>{appliedChallengePhaseLabel(phase, data.family, t)}</option>)}
               </select>
             </label>
@@ -1894,9 +1934,20 @@ function AppliedChallengeView(props) {
           )}
           </div>
         </section>
-        <div className='mt-5 space-y-4'>
-          {draftPhases.map(renderWorkspacePhase)}
+        <div className='mt-4 flex flex-wrap items-center gap-2 applied-challenge-no-print'>
+          <button type='button' aria-pressed={focusMode} onClick={() => { setFocusMode(value => !value); goToPhase(currentPhase); }} className='min-h-11 rounded-xl border border-orange-400 bg-white px-3 py-2 text-sm font-bold focus-visible:ring-2'>{focusMode ? tx('applied_challenge.focus.show_all', 'Show all steps') : tx('applied_challenge.focus.one_step', 'Focus on one step')}</button>
+          <span role='status' className='text-sm text-slate-700'>{_apsFill(tx('applied_challenge.focus.progress', 'Step {current} of {total}'), { current: phaseIndex + 1, total: visiblePhases.length })}</span>
         </div>
+        <nav aria-label={tx('applied_challenge.workspace.navigation', 'Workspace sections')} className='mt-4 flex flex-wrap gap-2'>
+          {visiblePhases.map(phase => <button key={phase.id} type='button' aria-current={hintPhase === phase.id ? 'step' : undefined} className='min-h-11 rounded-xl border border-orange-300 bg-white px-3 py-2 text-xs font-bold focus-visible:ring-2 focus-visible:ring-orange-600' onClick={() => goToPhase(phase.id)}>{appliedChallengePhaseLabel(phase, data.family, t)}</button>)}
+        </nav>
+        <div className='mt-5 space-y-4'>
+          {(focusMode ? visiblePhases : draftPhases).map(phase => <div key={phase.id} className='applied-phase-step' hidden={focusMode && phase.id !== currentPhase}>{renderWorkspacePhase(phase)}</div>)}
+        </div>
+        {focusMode && <nav aria-label={tx('applied_challenge.focus.move', 'Move between steps')} className='mt-4 flex flex-wrap items-center gap-3 applied-challenge-no-print'>
+          <button type='button' disabled={phaseIndex === 0} onClick={() => goToPhase(visiblePhases[phaseIndex - 1].id)} className='min-h-11 rounded-xl border px-4 py-2 font-bold disabled:opacity-50 focus-visible:ring-2'>{tx('applied_challenge.focus.back', 'Back')}</button>
+          <button type='button' disabled={phaseIndex === visiblePhases.length - 1} onClick={() => goToPhase(visiblePhases[phaseIndex + 1].id)} className='min-h-11 rounded-xl border px-4 py-2 font-bold disabled:opacity-50 focus-visible:ring-2'>{tx('applied_challenge.focus.next', 'Next')}</button>
+        </nav>}
         {renderSelfCheck()}
         <section className='applied-challenge-section mt-5 rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4' aria-labelledby='challenge-stress-test-heading'>
           <div className='flex flex-wrap items-start justify-between gap-3'>
@@ -1944,7 +1995,7 @@ function AppliedChallengeView(props) {
           <p className='mt-3 text-xs text-slate-500'>{tx('applied_challenge.validation.footer', 'Plans, predictions, observations, and decisions stay visibly separate. Refreshing AI support never removes a saved check.')}</p>
           </div>
         </section>
-        {synthesisPhases.length > 0 && <section className='mt-5' aria-labelledby='challenge-synthesis-heading'>
+        {!focusMode && synthesisPhases.length > 0 && <section className='mt-5' aria-labelledby='challenge-synthesis-heading'>
           <h3 id='challenge-synthesis-heading' className='text-base font-black text-slate-900'>{tx('applied_challenge.synthesis.heading', 'Synthesize what you learned')}</h3>
           <p className='mt-1 text-xs text-slate-600'>{tx('applied_challenge.synthesis.note', 'Use the checks above to explain testing, revision, and transfer in your own words.')}</p>
           <div className='mt-4 space-y-4'>{synthesisPhases.map(renderWorkspacePhase)}</div>
@@ -1966,6 +2017,7 @@ function AppliedChallengeView(props) {
             {data.feedback.question && <div className='md:col-span-2'><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.question', 'Think about')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.question}</dd></div>}
           </dl>
         </section>}
+        </fieldset>
         {(isTeacherMode || data.teacherComment) && <section aria-labelledby='challenge-teacher-comment-heading' className='mt-5 rounded-2xl border border-orange-200 bg-orange-50/60 p-4'>
           <h3 id='challenge-teacher-comment-heading' className='text-sm font-black text-orange-950'>{tx('applied_challenge.teacher_comment.heading', 'Teacher comment')}</h3>
           {isTeacherMode

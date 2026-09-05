@@ -3,3 +3,8 @@
 .tool-access-label {
     color: #4338ca;
 }
+
+/* Outcome-first homepage, with the canonical acronym retained as supporting copy. */
+.promo-home-heading { font-size:clamp(2.35rem,5.4vw,4rem); font-weight:900; line-height:1.12; letter-spacing:-0.035em; color:#0f172a; margin:18px 0 20px; }
+.promo-home-lede { font-size:1.15rem; color:#475569; max-width:720px; margin:0 auto 20px; line-height:1.72; }
+.promo-home-hero .promo-home-acronym { font-size:clamp(0.85rem,1.5vw,1rem); font-weight:600; line-height:1.6; margin:0 auto 24px; letter-spacing:normal; }

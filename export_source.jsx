@@ -1572,8 +1572,9 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportSlides ───────────────────────────────────────────
-    const handleExportSlides = async () => {
-        const { history, sourceTopic, gradeLevel, addToast, t } = liveRef.current;
+    const handleExportSlides = async (options = {}) => {
+        const { sourceTopic, gradeLevel, addToast, t } = liveRef.current;
+        const history = Object.prototype.hasOwnProperty.call(options, 'history') ? (Array.isArray(options.history) ? options.history : []) : liveRef.current.history;
         if (!window.PptxGenJS) {
             addToast(t('export_status.ppt_lib_loading'), "error");
             return false;

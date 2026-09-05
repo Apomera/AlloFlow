@@ -23,9 +23,10 @@ const loopEnd = src.indexOf('const saveProjectToFile = React.useCallback');
 const saveStart = loopEnd;
 const saveEnd = src.indexOf('// pdfFixResult effect', saveStart);
 const saveBlock = src.slice(saveStart, saveEnd);
-const loaderStart = src.indexOf('const _savedProject = JSON.parse(ev.target.result);');
-const loaderEnd = src.indexOf("reader.readAsText(file); e.target.value = '';", loaderStart);
-const loaderBlock = src.slice(loaderStart, loaderEnd);
+const loaderSource = readFileSync(resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8');
+const loaderStart = loaderSource.indexOf('const _savedProject = JSON.parse(ev.target.result);');
+const loaderEnd = loaderSource.indexOf('                     </label>', loaderStart);
+const loaderBlock = loaderSource.slice(loaderStart, loaderEnd);
 
 const readyForSuccess = (state) => !!(
   state &&
@@ -177,7 +178,7 @@ describe('auto-continue canonical verification', () => {
   });
 
   it('rehydrates loaded projects asynchronously and never trusts a serialized snapshot', () => {
-    expect(src).toContain('reader.onload = async (ev) => {');
+    expect(loaderSource).toContain('reader.onload = async (ev) => {');
     expect(loaderBlock).toContain('const _sanitizedImport = _projectSanitizer(_savedProject);');
     expect(loaderBlock).toContain('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);');
     expect(loaderBlock).toContain('const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);');
@@ -190,8 +191,8 @@ describe('auto-continue canonical verification', () => {
   });
 
   it('lets only the most recently selected project publish asynchronously loaded state', () => {
-    const projectLoader = src.slice(
-      src.lastIndexOf('const file = e.target.files?.[0]; if (!file) return;', loaderStart),
+    const projectLoader = loaderSource.slice(
+      loaderSource.lastIndexOf('const file = e.target.files?.[0]; if (!file) return;', loaderStart),
       loaderEnd,
     );
     expect(src).toContain('const pdfProjectLoadEpochRef = useRef(0);');
@@ -317,8 +318,8 @@ describe('auto-continue canonical verification', () => {
     ]) {
       expect(src).toContain(field);
     }
-    expect(src).toContain('const _derivedProjectVerification = deriveVerificationState({');
-    expect(src).toContain('verificationCoverage: _loadedVerificationCoverage');
-    expect(src).toContain('verificationState: _loadedVerificationState');
+    expect(loaderSource).toContain('const _derivedProjectVerification = deriveVerificationState({');
+    expect(loaderSource).toContain('verificationCoverage: _loadedVerificationCoverage');
+    expect(loaderSource).toContain('verificationState: _loadedVerificationState');
   });
 });

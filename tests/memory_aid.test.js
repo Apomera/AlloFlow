@@ -1023,8 +1023,8 @@ describe('Memory Aid Studio schema', () => {
 
   it('receives the shared image and TTS primitives from the main host', () => {
     const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    const start = source.indexOf('window.AlloModules.MemoryAidView && React.createElement');
-    const wiring = source.slice(start, start + 900);
+    const start = source.indexOf('window.AlloModules.MemoryAidView && window.AlloModules.StudioResponse && React.createElement');
+    const wiring = source.slice(start, start + 1800);
     expect(start).toBeGreaterThan(-1);
     expect(wiring).toContain('callImagen');
     expect(wiring).toContain('callGeminiImageEdit');
@@ -1393,7 +1393,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(host.querySelectorAll('article')).toHaveLength(1);
     expect(host.textContent).not.toContain('SIBLING HEADER ANSWER SENTINEL');
     expect(host.textContent).not.toContain('SECOND CARD PRIVATE HISTORY SENTINEL');
-    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Print')).toBeUndefined();
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Preview student worksheet')).toBeUndefined();
 
     const response = host.querySelector('[aria-label="Recall response for States of matter"]');
     await act(async () => {
@@ -1417,7 +1417,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     });
     expect(Array.from(host.querySelectorAll('.memory-aid-practice-content')).every(item => item.hidden === false)).toBe(true);
     expect(host.querySelectorAll('article')).toHaveLength(2);
-    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Print')).toBeTruthy();
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Preview student worksheet')).toBeTruthy();
     expect(host.textContent).toContain('SIBLING HEADER ANSWER SENTINEL');
     expect(host.textContent).toContain('SECOND CARD PRIVATE HISTORY SENTINEL');
     expect(document.activeElement.id).toBe(Array.from(articles[0].querySelectorAll('button')).find(item => item.textContent === 'Start recall practice').id);
@@ -2618,6 +2618,8 @@ describe('Memory Aid Studio interaction integrity', () => {
       visualReview: { status: 'unreviewed', note: '' },
     };
     await renderMemoryAid({ ...baseData, cards: [visualCard] }, { isTeacherMode: true, handleNoteUpdate });
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Approve visual')).toBeUndefined();
+    await act(async () => Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Edit resource').click());
     const description = host.querySelector('[aria-label^="Image description for"]');
     const help = host.querySelector('#' + description.getAttribute('aria-describedby'));
     expect(help.textContent).toContain('specific description of visible details');
@@ -2645,6 +2647,8 @@ describe('Memory Aid Studio interaction integrity', () => {
       },
     };
     await renderMemoryAid({ ...baseData, cards: [visualCard] }, { isTeacherMode: true, handleNoteUpdate });
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Approve visual')).toBeUndefined();
+    await act(async () => Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Edit resource').click());
     expect(host.textContent).toContain('AI visual check');
     expect(host.textContent).toContain('This feedback does not replace teacher approval.');
     const approve = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Approve visual');

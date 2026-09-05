@@ -136,7 +136,9 @@ describe('MCP verifier byte binding and cancellation', () => {
 });
 
 describe('MCPB vendor and tool-registry release contracts', () => {
-  it('canonicalizes only manifest-declared LF text before hashing and staging', () => {
+  // 60 s: verifyVendorBundle() hashes the 35 MB EPUBCheck distribution on first call, which exceeds
+  // the 5 s default on an emulated or OneDrive-backed host.
+  it('canonicalizes only manifest-declared LF text before hashing and staging', { timeout: 60000 }, () => {
     const root = join(scratch, 'vendor-normalization');
     mkdirSync(root, { recursive: true });
     const canonical = Buffer.from('one\ntwo\n', 'utf8');
@@ -151,7 +153,9 @@ describe('MCPB vendor and tool-registry release contracts', () => {
     expect(Driver.normalizeVendorAssetBytes(entry, crlf)).toEqual(canonical);
     expect(Builder.materializeAndVerifyVendorBundle(root)).toMatchObject({ files: 1 });
     expect(readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'))).toEqual(canonical);
-    expect(Driver.verifyVendorBundle()).toMatchObject({ present: true, hashVerified: true, files: 12 });
+    // Count-agnostic: the vendor manifest grew from 12 to 59 entries when EPUBCheck was bundled.
+    const declaredVendorFiles = JSON.parse(readFileSync(resolve('desktop/mcp/vendor/manifest.json'), 'utf8')).files.length;
+    expect(Driver.verifyVendorBundle()).toMatchObject({ present: true, hashVerified: true, files: declaredVendorFiles });
   });
 
   it('uses unique manifest/server tool-name parity instead of a stale fixed count', () => {

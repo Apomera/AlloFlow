@@ -477,7 +477,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     await expect(overlay).toContainText('A = 20.28 u²');
     const areaProfile = sliceExplorer.locator('[data-geo-sculpt-slice-profile="true"]');
     await expect(areaProfile).toBeVisible();
-    await expect(areaProfile.locator('title')).toHaveText('Cross-sectional area by height');
+    await expect(areaProfile.locator('title')).toHaveText('Cross-sectional area by height (local Y)');
     await expect(areaProfile).toHaveAttribute('aria-label', /32-slice volume estimate/);
     const sliceVolume = sliceExplorer.locator('[data-geo-sculpt-slice-volume="true"]');
     await expect(sliceVolume).toContainText('32 slices × Δh');
@@ -538,7 +538,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     }, handlePoint);
     await page.waitForFunction(() => (window as any).__toolData.geoSandbox.sculptRecipe.parts[0].position[0] > 0);
     await expect(overlay).toContainText('Recent transformations');
-    await expect(overlay).toContainText('Moved X +0.2');
+    await expect(overlay).toContainText('Moved X +1.00 u');
     if (process.env.GEO_VISUAL_CAPTURE) await page.screenshot({ path: process.env.GEO_VISUAL_CAPTURE, fullPage: true });
   });
 

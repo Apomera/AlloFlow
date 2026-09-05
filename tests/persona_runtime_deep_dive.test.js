@@ -8,6 +8,7 @@ const root = process.cwd();
 const require = createRequire(import.meta.url);
 const React = require(path.resolve(root, 'desktop/web-app/node_modules/react'));
 const appSource = fs.readFileSync(path.join(root, 'AlloFlowANTI.txt'), 'utf8');
+const workspaceSource = fs.readFileSync(path.join(root, 'view_persona_workspace_source.jsx'), 'utf8');
 const phaseKSource = fs.readFileSync(path.join(root, 'phase_k_helpers_source.jsx'), 'utf8');
 const personaCoreSource = fs.readFileSync(path.join(root, 'personas_source.jsx'), 'utf8');
 const artifactSource = fs.readFileSync(path.join(root, 'persona_session_artifact_source.jsx'), 'utf8');
@@ -298,9 +299,9 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
     expect(appSource).toContain('{ ...prev.selectedCharacter, ...nextPersona }');
     expect(appSource).toContain('character?.name === currentPersona.name');
-    const candidateStart = appSource.indexOf("{activeView === 'persona' && (");
-    const candidateEnd = appSource.indexOf('{isTeacherMode && personaTeacherEditor && (', candidateStart);
-    const candidateScreen = appSource.slice(candidateStart, candidateEnd);
+    const candidateStart = workspaceSource.indexOf('<ErrorBoundary');
+    const candidateEnd = workspaceSource.indexOf('{isTeacherMode && personaTeacherEditor && (', candidateStart);
+    const candidateScreen = workspaceSource.slice(candidateStart, candidateEnd);
     expect(candidateScreen).toContain('aria-busy={isProcessing || isGeneratingPersona}');
     expect(candidateScreen).toContain('disabled={isProcessing || isGeneratingPersona}');
     expect(candidateScreen).toContain('if (isProcessing || isGeneratingPersona) return;');
@@ -312,11 +313,11 @@ describe('Persona runtime deep-dive fixes', () => {
   it('normalizes retention and validates teacher-edit voice and quest difficulty', () => {
     expect(appSource).toContain("if (value == null || String(value).trim() === '') return 14");
     expect(appSource).toContain('Number.isFinite(parsed) && [0, 7, 14, 30].includes(parsed) ? parsed : 14');
-    expect(appSource).toContain("normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))");
+    expect(workspaceSource).toContain("normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))");
     expect(appSource).toContain('const voiceOptions = getPersonaVoiceOptions()');
     expect(appSource).toContain('voiceOptions.find(voice => voice.toLowerCase() === requestedVoice)');
     expect(appSource).toContain("|| String(currentPersona.voice || '').trim().slice(0, 100)");
-    expect(appSource).toContain('<option value={personaTeacherEditor.voice}>');
+    expect(workspaceSource).toContain('<option value={personaTeacherEditor.voice}>');
     expect(appSource).toContain("persona?.guardrailsSource === 'teacher'");
     expect(appSource).toContain("guardrailsSource: 'teacher'");
     expect(appSource).toContain('Math.max(0, Math.min(100, Math.round(parsedDifficulty)))');
@@ -342,19 +343,19 @@ describe('Persona runtime deep-dive fixes', () => {
   });
 
   it('renders only bounded http(s) grounding links with safe external-link attributes', () => {
-    expect(appSource).toContain('const sourceBinding = generatedContent?.config?.personaSource');
-    expect(appSource).toContain('const groundingMetadata = sourceBinding?.groundingMetadata');
-    expect(appSource).toContain('?? generatedContent?.config?.groundingMetadata');
-    expect(appSource).toContain("const sourceExcerpt = String(sourceBinding?.excerpt || '').trim().slice(0, 800)");
-    expect(appSource).toContain('grounding.links.length + grounding.queries.length + (sourceBinding ? 1 : 0)');
-    expect(appSource).toContain("t('persona.source_fingerprint')");
-    expect(appSource).toContain("t('persona.bound_source_excerpt')");
+    expect(workspaceSource).toContain('const sourceBinding = generatedContent?.config?.personaSource');
+    expect(workspaceSource).toContain('const groundingMetadata = sourceBinding?.groundingMetadata');
+    expect(workspaceSource).toContain('?? generatedContent?.config?.groundingMetadata');
+    expect(workspaceSource).toContain("const sourceExcerpt = String(sourceBinding?.excerpt || '').trim().slice(0, 800)");
+    expect(workspaceSource).toContain('grounding.links.length + grounding.queries.length + (sourceBinding ? 1 : 0)');
+    expect(workspaceSource).toContain("t('persona.source_fingerprint')");
+    expect(workspaceSource).toContain("t('persona.bound_source_excerpt')");
     expect(uiStringsSource).toContain('"source_fingerprint": "Source fingerprint"');
     expect(uiStringsSource).toContain('"bound_source_excerpt": "Bound lesson source excerpt"');
     expect(appSource).toContain("typeof rawUrl === 'string' && /^https?:\\/\\//i.test(rawUrl.trim())");
     expect(appSource).toContain("parsed.protocol === 'https:' || parsed.protocol === 'http:'");
     expect(appSource).toContain('links.length < 12 || queries.length < 10');
-    expect(appSource).toContain('target="_blank" rel="noopener noreferrer"');
+    expect(workspaceSource).toContain('target="_blank" rel="noopener noreferrer"');
     expect(personaCoreSource).toContain('const personaSource = createPersonaSourceBinding(');
     expect(personaCoreSource).toContain('config: {\n                        personaSource,');
     expect(personaCoreSource).toContain('personaSource: sourceBinding');

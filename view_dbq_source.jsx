@@ -1,3 +1,28 @@
+// Only the deadline is a learner artifact. Browser handles and display ticks
+// belong to the mounted timer, so navigation never writes old DBQ responses.
+function DbqTimer(props) {
+  const deadline = Number(props.deadline) || 0;
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    setNow(Date.now());
+    if (!deadline || deadline <= Date.now()) return undefined;
+    const interval = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= deadline) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [props.resourceId, deadline]);
+  const remaining = Math.max(0, Math.ceil((deadline - now) / 1000));
+  const active = deadline > 0 && remaining > 0;
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  return <>
+    {!deadline && <div className="flex items-center gap-1">{[15, 30, 45, 60].map(minutes => <button key={minutes} onClick={() => props.onDeadlineChange(Date.now() + minutes * 60000)} className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-400" aria-label={'Start ' + minutes + ' minute timer'}>⏱️ {minutes}m</button>)}</div>}
+    {active && <div className="flex items-center gap-2"><span className={'font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ' + (remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300')} role="timer" aria-live="off" aria-label={mins + ' minutes ' + secs + ' seconds remaining'}>{mins}:{secs < 10 ? '0' : ''}{secs}</span><button onClick={() => props.onDeadlineChange(null)} className="text-[11px] text-slate-600 hover:text-red-600" aria-label={props.t('a11y.cancel_timer')}>✕</button></div>}
+    {!!deadline && !active && <div className="flex items-center gap-2"><span role="status" className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200">⏰ Time's up!</span><button onClick={() => props.onDeadlineChange(null)} className="text-[11px] text-slate-600 hover:text-slate-700" aria-label={props.t('a11y.dismiss_timer')}>{props.t('ui_common.dismiss')}</button></div>}
+  </>;
+}
 function DbqView(props) {
     var generatedContent = props.generatedContent;
     var studentResponses = props.studentResponses;
@@ -205,28 +230,7 @@ function DbqView(props) {
               ps.textContent = '@media print{#pb{display:none!important}}';
               w.document.head.appendChild(ps);
             }
-          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ Print DBQ Packet</button>{(() => {
-            const timerActive = r._dbqTimerEnd && Date.now() < r._dbqTimerEnd;
-            const timerDone = r._dbqTimerEnd && Date.now() >= r._dbqTimerEnd;
-            const remaining = timerActive ? Math.max(0, Math.ceil((r._dbqTimerEnd - Date.now()) / 1000)) : 0;
-            const mins = Math.floor(remaining / 60);
-            const secs = remaining % 60;
-            if (timerActive && !r._dbqTimerInterval) {
-              const iv = setInterval(() => setDbq('_dbqTimerTick', Date.now()), 1000);
-              setDbq('_dbqTimerInterval', iv);
-            }
-            if (!timerActive && r._dbqTimerInterval) {
-              clearInterval(r._dbqTimerInterval);
-              setDbq('_dbqTimerInterval', null);
-            }
-            return <>{!timerActive && !timerDone && <div className="flex items-center gap-1">{[15, 30, 45, 60].map(m => <button key={m} onClick={() => setDbq('_dbqTimerEnd', Date.now() + m * 60 * 1000)} className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-400" aria-label={`Start ${m} minute timer`}>⏱️ {m}m</button>)}</div>}{timerActive && <div className="flex items-center gap-2"><span className={`font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ${remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'}`} role="timer" aria-live="polite" aria-label={`${mins} minutes ${secs} seconds remaining`}>{mins}:{secs < 10 ? '0' : ''}{secs}</span><button onClick={() => {
-                  if (r._dbqTimerInterval) clearInterval(r._dbqTimerInterval);
-                  setDbq('_dbqTimerEnd', null);
-                  setDbq('_dbqTimerInterval', null);
-                }} className="text-[11px] text-slate-600 hover:text-red-600" aria-label={t("a11y.cancel_timer")}>✕</button></div>}{timerDone && <div className="flex items-center gap-2"><span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse motion-reduce:animate-none">⏰ Time's up!</span><button onClick={() => {
-                  setDbq('_dbqTimerEnd', null);
-                }} className="text-[11px] text-slate-600 hover:text-slate-700" aria-label={t("a11y.dismiss_timer")}>{t("ui_common.dismiss")}</button></div>}</>;
-          })()}</div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{
+          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ Print DBQ Packet</button>{<DbqTimer resourceId={resId} deadline={r._dbqTimerEnd} onDeadlineChange={value => setDbq('_dbqTimerEnd', value)} t={t} />}</div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{
           ...tabBtnStyle(id),
           whiteSpace: 'nowrap',
           fontSize: '12px'
@@ -438,7 +442,7 @@ Provide analysis as JSON:
 ${isE ? 'Use simple, encouraging language. Praise their attempt to think critically even if their assessment differs from yours.' : isM ? 'Use clear language. Acknowledge their reasoning before suggesting alternatives.' : 'Use academic language. Push toward nuanced evaluation of source limitations and historiographical context.'}`, true);
                   const parsed = JSON.parse(cleanJson(result));
                   setDbq(`_reliabilityAI_${activeDoc.id}`, parsed);
-                  handleScoreUpdate(15, `DBQ Source Reliability (Doc ${activeDoc.id})`, `dbq-reliability-${activeDoc.id}`);
+                  handleScoreUpdate(15, `DBQ Source Reliability (Doc ${activeDoc.id})`, `dbq-reliability-${resId}-${activeDoc.id}`);
                   addToast && addToast(t("toasts.reliability_complete"));
                 } catch (e) {
                   setDbq(`_reliabilityAI_${activeDoc.id}`, {
@@ -516,7 +520,7 @@ Rules:
                     setDbq(`_docFeedback_${activeDoc.id}`, parsed);
                     addToast && addToast(t("toasts.feedback_received"));
                     const xpAmount = parsed.overallRating === 'exemplary' ? 30 : parsed.overallRating === 'proficient' ? 20 : 10;
-                    handleScoreUpdate(xpAmount, `DBQ Source Analysis (Doc ${activeDoc.id})`, `dbq-analysis-${activeDoc.id}`);
+                    handleScoreUpdate(xpAmount, `DBQ Source Analysis (Doc ${activeDoc.id})`, `dbq-analysis-${resId}-${activeDoc.id}`);
                   } catch (e) {
                     setDbq(`_docFeedback_${activeDoc.id}`, {
                       error: 'Could not generate feedback. Try again.'

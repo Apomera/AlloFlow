@@ -276,10 +276,20 @@ describe('Applied Challenge Studio host wiring', () => {
     const source = readFileSync('applied_challenge_source.jsx', 'utf8');
     expect(host).toContain("const [appliedChallengeFamily, setAppliedChallengeFamily] = useState('decide');");
     expect(host).toContain('appliedChallengeFamily, setAppliedChallengeFamily,');
-    expect(host).toMatch(/AppliedChallengeView, \{\s*generatedContent, isTeacherMode, isProcessing,\s*handleNoteUpdate, callGemini, addToast, gradeLevel, t,/);
+    expect(host).toContain('View: window.AlloModules.AppliedChallengeView, studentResponses, studentWorkStatus,');
+    expect(host).toContain('handleNoteUpdate, callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, gradeLevel, t,');
     expect(dispatcher).toContain("_acAmbient(appliedChallengeFamily, 'decide')");
     expect(dispatcher).toContain("_acAmbient(appliedChallengeScope, 'standard')");
     expect(source).toContain('props.setAppliedChallengeFamily');
     expect(source).toContain('#applied-challenge-print-root');
   });
+});
+
+it('honors studio export toggles in both resource rendering and the table of contents', () => {
+  const applied = render(challenge(), true, { includeAppliedChallenge: false });
+  expect(applied).not.toContain('Which design best balances access and cost?');
+  expect(new DOMParser().parseFromString(applied, 'text/html').querySelector('[id*="ac-export-1"], a[href*="ac-export-1"]')).toBeNull();
+  const memory = render({ id: 'memory-excluded', type: 'memory-aid', title: 'Excluded memory target', data: { cards: [{ id: 'card', target: 'UNIQUE MEMORY TARGET', essentialFacts: ['A fact'] }] } }, true, { includeMemoryAid: false });
+  expect(memory).not.toContain('UNIQUE MEMORY TARGET');
+  expect(new DOMParser().parseFromString(memory, 'text/html').querySelector('[id*="memory-excluded"], a[href*="memory-excluded"]')).toBeNull();
 });

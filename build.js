@@ -175,6 +175,8 @@ const CLOUDFLARE_CDN_BASE = 'https://alloflow-cdn.pages.dev';
 // ── Module definitions ──────────────────────────────────────────
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
+    { name: 'DirectionsComposer', filename: 'view_directions_composer_module.js', cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow' },
+    { name: 'PersonaWorkspace', filename: 'view_persona_workspace_module.js', cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow' },
     {
         name: 'EducatorEvaluation',
         filename: 'educator_evaluation_module.js',
@@ -394,6 +396,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AlloQuestContract',
+        filename: 'allo_quest_contract_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'MiscHandlersModule',
         filename: 'misc_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -506,6 +513,26 @@ const MODULES = [
     {
         name: 'ViewMathModule',
         filename: 'view_math_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LessonTeachingScriptModule',
+        filename: 'lesson_teaching_script_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LessonTeachingResearchModule',
+        filename: 'lesson_teaching_research_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LessonTeachingScriptHostModule',
+        filename: 'lesson_teaching_script_host_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewLessonTeachingScriptModule',
+        filename: 'view_lesson_teaching_script_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -1243,6 +1270,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ResourceReadAloudModule',
+        filename: 'resource_read_aloud_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudioResponseModule',
+        filename: 'studio_response_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AppliedChallengeModule',
         filename: 'applied_challenge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1612,6 +1649,49 @@ function simplePureCompilePair(name, fileBase, guardKey) {
 
 const COMPILE_PAIRS = [
     {
+        name: 'LessonTeachingScript',
+        srcPath: path.join(ROOT, 'lesson_teaching_script_source.jsx'),
+        modPath: path.join(ROOT, 'lesson_teaching_script_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/lesson_teaching_script_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_lesson_teaching_script_module.js')], { cwd: ROOT, stdio: 'inherit' });
+            return fs.readFileSync(path.join(ROOT, 'lesson_teaching_script_module.js'), 'utf8');
+        },
+    },
+    {
+        name: 'LessonTeachingScriptView',
+        srcPath: path.join(ROOT, 'view_lesson_teaching_script_source.jsx'),
+        modPath: path.join(ROOT, 'view_lesson_teaching_script_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_lesson_teaching_script_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_view_lesson_teaching_script_module.js')], { cwd: ROOT, stdio: 'inherit' });
+            return fs.readFileSync(path.join(ROOT, 'view_lesson_teaching_script_module.js'), 'utf8');
+        },
+    },
+    {
+        name: 'SidebarPanels',
+        srcPath: path.join(ROOT, 'view_sidebar_panels_source.jsx'),
+        modPath: path.join(ROOT, 'view_sidebar_panels_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_sidebar_panels_module.js'),
+        wrap(src) { return require('./_build_view_sidebar_panels_module.js').buildSidebarPanelsModule(src); },
+    },
+    {
+        name: 'PersonaWorkspace',
+        srcPath: path.join(ROOT, 'view_persona_workspace_source.jsx'),
+        modPath: path.join(ROOT, 'view_persona_workspace_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_persona_workspace_module.js'),
+        wrap(src) { return require('./_build_view_persona_workspace_module.js').buildPersonaWorkspaceModule(src); },
+    },
+    {
+        name: 'DirectionsComposer',
+        srcPath: path.join(ROOT, 'view_directions_composer_source.jsx'),
+        modPath: path.join(ROOT, 'view_directions_composer_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_directions_composer_module.js'),
+        wrap() {
+            return require('./_build_view_directions_composer_module.js').build();
+        },
+    },
+    {
         name: 'EducatorEvaluation',
         srcPath: path.join(ROOT, 'educator_evaluation_source.jsx'),
         modPath: path.join(ROOT, 'educator_evaluation_module.js'),
@@ -1685,6 +1765,16 @@ const COMPILE_PAIRS = [
                 stdio: 'inherit',
             });
             return fs.readFileSync(path.join(ROOT, 'memory_aid_module.js'), 'utf8');
+        },
+    },
+    {
+        name: 'AppliedChallenge',
+        srcPath: path.join(ROOT, 'applied_challenge_source.jsx'),
+        modPath: path.join(ROOT, 'applied_challenge_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'applied_challenge_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_applied_challenge_module.js')], { cwd: ROOT, stdio: 'inherit' });
+            return fs.readFileSync(path.join(ROOT, 'applied_challenge_module.js'), 'utf8');
         },
     },
     simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),

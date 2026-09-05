@@ -898,3 +898,77 @@ describe('The seismogram is readable at its own default', () => {
     expect(text).toMatch(/use this one for the ORDER and the TIMING/);
   });
 });
+
+describe('Phone legibility — figures drawn in a fixed space', () => {
+  // Four panels draw in fixed coordinates and scale to fit, so on a 340 px
+  // screen their 10-11 px labels came out at 4-6 px. Each got a different
+  // remedy; these pin that the remedy is still wired, not how it is spelled.
+  it('toggles the stacked figure layouts and the scroll frame from CSS, so the hidden variant leaves the a11y tree', () => {
+    const text = src();
+    expect(text).toMatch(/\.pt-stress-narrow,\.pt-casc-narrow,\.pt-casc-key,\.pt-tl-legend,\.pt-tect-swipe\{display:none\}/);
+    expect(text).toMatch(/@media\(max-width:520px\)\{\.pt-stress-wide,\.pt-casc-wide\{display:none\}\.pt-stress-narrow,\.pt-casc-narrow\{display:block\}\.pt-casc-key\{display:grid\}\}/);
+    expect(text).toMatch(/@media\(max-width:560px\)\{\.pt-tect-frame\{overflow-x:auto[^}]*\}\.pt-tect-frame>canvas\[data-tect-section\]\{min-width:540px\}/);
+    expect(text).toMatch(/@media\(max-width:640px\)\{\.pt-tl-lbl\{display:none\}\.pt-tl-legend\{display:flex\}\}/);
+  });
+
+  it('builds the stress diagram twice and scales the fault block up as a group in the stacked one', () => {
+    const text = src();
+    const start = text.indexOf('var buildStress = function (narrow)');
+    expect(start).toBeGreaterThan(0);
+    const body = text.slice(start, start + 9000);
+    expect(body).toMatch(/var W = narrow \? 380 : 760/);
+    expect(body).toMatch(/var blockKids = kids\.splice\(blockStart\);\s*kids\.push\(h\('g', \{ key: 'blk', transform: 'scale\(1\.4\)' \}, blockKids\)\)/);
+    expect(body).toMatch(/var meterX = narrow \? 16 : 330, meterW = narrow \? 348 : 400/);
+    expect(body).toMatch(/return h\(React\.Fragment, null, buildStress\(false\), buildStress\(true\)\)/);
+    // both variants keep the outcome hook the stress-lab test reads
+    expect(body.match(/'data-pt-stress-diagram': failure/g)).toHaveLength(1);
+    expect(body).toMatch(/'data-pt-stress-layout': narrow \? 'narrow' : 'wide'/);
+  });
+
+  it('gives the Cascadia section numbered markers plus an HTML key on phones, with the SVG text dropped', () => {
+    const text = src();
+    const start = text.indexOf('var CASC_KEY = [');
+    expect(start).toBeGreaterThan(0);
+    const body = text.slice(start, start + 9000);
+    const entries = body.slice(0, body.indexOf('];')).match(/\{ n: \d, at: \[/g) || [];
+    expect(entries).toHaveLength(7);
+    expect(body).toMatch(/var geom = kids\.filter\(function \(k\) \{ return k && k\.type !== 'text'; \}\)/);
+    expect(body).toMatch(/e\('g', \{ key: 'geom', transform: 'scale\(0\.5\)' \}, geom\)/);
+    expect(body).toMatch(/var mx = m\.at\[0\] \* 0\.5, my = m\.at\[1\] \* 0\.5/);
+    expect(body).toMatch(/buildCasc\(false\), buildCasc\(true\),\s*e\('ol', \{ className: 'pt-casc-key/);
+    expect(body).toMatch(/CASC_KEY\.map\(function \(m\)/);
+  });
+
+  it('keeps the boundary widget at 540 px inside a sideways-scrolling frame with a swipe hint', () => {
+    const text = src();
+    expect(text).toMatch(/className: 'pt-tect-frame md:col-span-2 rounded-xl overflow-hidden border relative /);
+    expect(text).toMatch(/className: 'pt-tect-swipe text-\[11px\][^']*' \+ \(isDark[\s\S]{0,200}style: \{ position: 'sticky', left: 0 \}/);
+  });
+
+  it('scales the epicenter map text and readings box by the canvas shrink, and redraws when that changes', () => {
+    const text = src();
+    const start = text.indexOf('function draw(ctx, cur) {');
+    const body = text.slice(start, start + 7000);
+    expect(body).toMatch(/var ui = Math\.max\(1, Math\.min\(1\.7, W_CANVAS \/ \(\(cvNode && cvNode\.clientWidth\) \|\| W_CANVAS\)\)\)/);
+    // the HUD grows with its text: width, height, row step and x all follow ui
+    expect(body).toMatch(/var rowH = 14 \* ui, hudW = 170 \* ui, hudX = W_CANVAS - 8 - hudW/);
+    expect(body).toMatch(/ctx\.fillRect\(hudX, 8, hudW, hudH\)/);
+    // every label font in the map reads ui
+    const fonts = body.match(/ctx\.font = [^;]+;/g) || [];
+    expect(fonts.length).toBeGreaterThanOrEqual(7);
+    fonts.forEach((f) => expect(f).toMatch(/\* ui\)/));
+    // a resize alone must trigger a repaint: the width is part of the signature
+    const sig = text.slice(text.indexOf('var sig = JSON.stringify(sRef.current)'), text.indexOf('var sig = JSON.stringify(sRef.current)') + 260);
+    expect(sig).toMatch(/\+ '\|' \+ canvas\.clientWidth;/);
+  });
+
+  it('moves the deep-time era names out of the bar and into a legend on phones', () => {
+    const text = src();
+    const start = text.indexOf("'data-pt-deeptime-zoom': 'true'");
+    const body = text.slice(start, start + 4000);
+    expect(body).toMatch(/className: 'pt-tl-lbl text-\[10px\] font-bold whitespace-nowrap/);
+    const legend = body.indexOf("'data-pt-deeptime-legend': 'true'");
+    expect(legend).toBeGreaterThan(0);
+    expect(body.slice(legend, legend + 700)).toMatch(/tail\.map\(function \(sp\)[\s\S]*ERAS\[sp\.i\]\.name/);
+  });
+});

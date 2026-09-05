@@ -236,7 +236,10 @@ describe('SharedActivity extraction contract', () => {
       expect(shell, file).toContain('Shared activity tools are still loading.');
       expect(shell, file).toContain('Retry loading');
       expect(shell, file).toContain('api.buildAssignmentPackEncoded(options, {');
-      expect(shell, file).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
+      const binding = shell.match(/serializeResourceForStudentPack:\s*(item\s*=>\s*_alloSerializeResourceForStudentPack\(item,\s*'qr'\))/);
+      expect(binding, file).not.toBeNull();
+      const serialize = new Function('_alloSerializeResourceForStudentPack', 'return (' + binding[1] + ')')((...args) => args);
+      expect(serialize({ id: 'studio', type: 'memory-aid' })).toEqual([{ id: 'studio', type: 'memory-aid' }, 'qr']);
       expect(shell, file).not.toContain('const AlloQuestionBoardPanel = React.memo(');
       expect(shell, file).not.toContain('const callStudentUpdate = React.useCallback(');
       expect(shell, file).not.toContain('function alloNormalizeCredentialStore(');

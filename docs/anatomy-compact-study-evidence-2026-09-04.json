@@ -1,0 +1,50 @@
+[
+  {
+    "mode": "explore",
+    "layout": {
+      "pageWidth": 390,
+      "pageHeight": 3528,
+      "viewportHeight": 844,
+      "panelTop": 1913.1875,
+      "panelHeight": 1256.953125,
+      "controlsBeforePanel": 63,
+      "totalVisibleControls": 85
+    },
+    "axe": {
+      "violations": [],
+      "incompleteCount": 2
+    }
+  },
+  {
+    "mode": "quiz",
+    "layout": {
+      "pageWidth": 390,
+      "pageHeight": 2239,
+      "viewportHeight": 844,
+      "panelTop": 446,
+      "panelHeight": 465.25,
+      "controlsBeforePanel": 17,
+      "totalVisibleControls": 42
+    },
+    "axe": {
+      "violations": [],
+      "incompleteCount": 2
+    }
+  },
+  {
+    "mode": "flashcards",
+    "layout": {
+      "pageWidth": 390,
+      "pageHeight": 2789,
+      "viewportHeight": 844,
+      "panelTop": 446,
+      "panelHeight": 1015.625,
+      "controlsBeforePanel": 17,
+      "totalVisibleControls": 49
+    },
+    "axe": {
+      "violations": [],
+      "incompleteCount": 2
+    }
+  }
+]

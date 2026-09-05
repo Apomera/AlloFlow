@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// Mounts the real tool; two of three tests already carry SCENE_TIMEOUT, the third
+// ran on the 5s default. A file-level budget covers all three the same way.
+vi.setConfig({ testTimeout: 30000 });
 import {
   React,
   ReactDOMClient,

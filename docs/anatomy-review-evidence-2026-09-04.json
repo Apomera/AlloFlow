@@ -1,0 +1,168 @@
+{
+  "reviewDate": "2026-09-04",
+  "source": "stem_lab/stem_tool_anatomy.js",
+  "sourceSha256": "77fcecbbb492b44600ba639c929060d8f8896213fd675ecb70971f15c412c482",
+  "applicationCodeModified": false,
+  "state": {
+    "quiz": {
+      "beforePrompt": "The ▁▁▁ is made of 22 bones fused together. It protects the brain and gives your face its shape.",
+      "beforeOptions": [
+        "hyoid",
+        "scaphoid_bone",
+        "skull",
+        "mandible"
+      ],
+      "afterPrompt": "Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.",
+      "afterOptions": [
+        "metatarsals",
+        "skull",
+        "mandible",
+        "clavicle"
+      ],
+      "storedFeedback": {
+        "chosen": "skull",
+        "correct": true
+      },
+      "displayedFeedback": "❌ The answer was: MandibleYou chose the Skull (Cranium): The skull is made of 22 bones fused together. It protects the brain and gives your face its shape.The Mandible: Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.⚠ Clinical: TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.",
+      "score": 1,
+      "attempts": 1,
+      "answerButtonsEnabled": 0
+    },
+    "reviewClock": {
+      "before": 1787694465143,
+      "after": 1787694465143,
+      "confidence": "learning",
+      "score": 1
+    },
+    "cardAnnouncements": {
+      "onOpen": [
+        "Ribs (1-12). You have 12 pairs of ribs that form a protective cage around your chest organs. They move when you breathe."
+      ],
+      "answerHidden": true,
+      "onNext": [
+        "Skull (Cranium). The skull is made of 22 bones fused together. It protects the brain and gives your face its shape."
+      ]
+    },
+    "savedResume": {
+      "before": {
+        "selected": "mandible",
+        "index": 1,
+        "flipped": true
+      },
+      "after": {
+        "selected": "skull",
+        "index": 0,
+        "flipped": false
+      }
+    }
+  },
+  "browser": [
+    {
+      "mode": "explore",
+      "layout": {
+        "pageWidth": 390,
+        "pageHeight": 3528,
+        "viewportHeight": 844,
+        "panelTop": 1913.1875,
+        "panelHeight": 1256.953125,
+        "controlsBeforePanel": 63,
+        "totalVisibleControls": 85
+      },
+      "axe": {
+        "violations": [],
+        "incompleteCount": 2
+      }
+    },
+    {
+      "mode": "quiz",
+      "layout": {
+        "pageWidth": 390,
+        "pageHeight": 2736,
+        "viewportHeight": 844,
+        "panelTop": 942.84375,
+        "panelHeight": 465.25,
+        "controlsBeforePanel": 47,
+        "totalVisibleControls": 77
+      },
+      "axe": {
+        "violations": [],
+        "incompleteCount": 2
+      }
+    },
+    {
+      "mode": "flashcards",
+      "layout": {
+        "pageWidth": 390,
+        "pageHeight": 3286,
+        "viewportHeight": 844,
+        "panelTop": 942.84375,
+        "panelHeight": 1015.625,
+        "controlsBeforePanel": 47,
+        "totalVisibleControls": 84
+      },
+      "axe": {
+        "violations": [],
+        "incompleteCount": 2
+      }
+    }
+  ],
+  "quizBrowser": {
+    "before": "The ▁▁▁ is made of 22 bones fused together. It protects the brain and gives your face its shape.",
+    "after": "Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.",
+    "feedback": "❌ The answer was: Mandible\n\nYou chose the Skull (Cranium): The skull is made of 22 bones fused together. It protects the brain and gives your face its shape.\n\nThe Mandible: Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.\n\n⚠ Clinical: TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.",
+    "saved": {
+      "score": 1,
+      "feedback": {
+        "chosen": "skull",
+        "correct": true
+      }
+    }
+  },
+  "translations": {
+    "referencedKeys": 1040,
+    "catalogs": [
+      {
+        "file": "lang/french.js",
+        "existingKeys": 580,
+        "missingReferenced": 489,
+        "recentMissing": [
+          "flashcard_due",
+          "flashcard_round_help",
+          "flashcard_key_help",
+          "locate_flashcard",
+          "own_words_label",
+          "card_note_hint",
+          "note_empty"
+        ]
+      },
+      {
+        "file": "lang/spanish_latin_america.js",
+        "existingKeys": 580,
+        "missingReferenced": 489,
+        "recentMissing": [
+          "flashcard_due",
+          "flashcard_round_help",
+          "flashcard_key_help",
+          "locate_flashcard",
+          "own_words_label",
+          "card_note_hint",
+          "note_empty"
+        ]
+      },
+      {
+        "file": "lang/arabic.js",
+        "existingKeys": 580,
+        "missingReferenced": 489,
+        "recentMissing": [
+          "flashcard_due",
+          "flashcard_round_help",
+          "flashcard_key_help",
+          "locate_flashcard",
+          "own_words_label",
+          "card_note_hint",
+          "note_empty"
+        ]
+      }
+    ]
+  }
+}

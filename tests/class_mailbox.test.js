@@ -674,6 +674,17 @@ describe('resilience helpers', () => {
         expect(H._alloCollectResChunk(store, { kind: 'student' })).toBe(null);
     });
 
+    it('rejects malformed and conflicting resource chunks without losing the valid stream', () => {
+        const H = buildClientHelpers({}), store = { parts: {}, applied: new Set() };
+        const chunk = (part, of, data, rid = 'r1') => ({kind: 'res', rid, part, of, data});
+        expect(H._alloCollectResChunk(store, chunk(2, 2, 'BB'))).toBeNull();
+        for (const invalid of [chunk(99, 2, 'BAD'), chunk(1.5, 2, 'BAD'), chunk('1', 2, 'BAD'), chunk(1, 3, 'BAD'), chunk(2, 2, 'CHANGED'), chunk(1, 2, {})]) expect(H._alloCollectResChunk(store, invalid)).toBeNull();
+        expect(store.applied.size).toBe(0);
+        expect(H._alloCollectResChunk(store, chunk(1, 2, 'AA'))).toBe('AABB');
+        expect(H._alloCollectResChunk(store, chunk(1, 1, 'SAFE', '__proto__'))).toBe('SAFE');
+        expect(Object.prototype.got).toBeUndefined();
+    });
+
     it('ICE-complete wait resolves on completion and on timeout', async () => {
         const H = buildClientHelpers({});
         let listener = null;
@@ -885,11 +896,18 @@ describe('student-pack serialization (full-fidelity)', () => {
         expect(anti).not.toContain('meta: it.meta, data: it.data');
         const uses = anti.split('_alloSerializeResourceForStudentPack').length - 1;
         expect(uses).toBeGreaterThanOrEqual(7); // 1 definition + 6 call sites
-        const wrapperStart = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
+        const wrapperStart = anti.indexOf("const _alloSerializeResourceForStudentPack = (item, audioChannel = 'live') => {");
         const wrapperEnd = anti.indexOf('const describeSavedFollowUpLiveFailure', wrapperStart);
         const wrapper = anti.slice(wrapperStart, wrapperEnd);
-        expect(wrapper).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined })');
+        expect(wrapper).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel })');
         expect(wrapper).not.toContain('safePortableTtsAssets');
+        const calls = [];
+        const serialize = new Function('_alloLiveAacModule', 'sanitizeHistoryForCloud', 'stripUndefined', wrapper + '; return _alloSerializeResourceForStudentPack;')(
+            () => ({ serializeResourceForStudentPack: (item, deps) => { calls.push(deps); return item; } }), value => value, value => value);
+        const item = { id: 'channel-check' };
+        expect(serialize(item)).toBe(item);
+        expect(serialize(item, 'qr')).toBe(item);
+        expect(calls.map(deps => deps.audioChannel)).toEqual(['live', 'qr']);
         expect(liveAacSource).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
         expect(liveAacSource).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
     });

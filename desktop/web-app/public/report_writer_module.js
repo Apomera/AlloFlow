@@ -3622,7 +3622,7 @@ Return ONLY valid JSON:
                             'Assessment Center RTI data ready for an IEP packet'),
                         h('div', { className: 'text-xs text-emerald-800 leading-relaxed' },
                             (rtiExportPayload.factChunks ? rtiExportPayload.factChunks.length : 0) + ' fact chunks',
-                            rtiExportPayload.rtiTier ? ' · RTI tier ' + rtiExportPayload.rtiTier.tier : '',
+                            rtiExportPayload.rtiTier ? (rtiExportPayload.rtiTier.reviewRequired ? ' · Educator review required' : ' · RTI tier ' + rtiExportPayload.rtiTier.tier) : '',
                             rtiExportPayload.studentNickname ? ' · ' + rtiExportPayload.studentNickname : ''),
                         h('div', { className: 'text-[11px] text-emerald-700 italic mt-1' },
                             'Ingest switches this report to the IEP-Ready Packet blueprint and pre-drafts the RTI/CBM, progress-monitoring, intervention, and DA sections (all editable). Screening data — not an eligibility determination.')

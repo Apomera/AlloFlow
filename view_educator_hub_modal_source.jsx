@@ -830,8 +830,8 @@ function EducatorHubModal(props) {
               }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100">
                 <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
-                  <h3 className="font-bold text-teal-800">{t('educator_hub.pdf_accessibility_title') || 'PDF Accessibility'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.pdf_accessibility_desc') || 'Audit and remediate PDFs for accessibility, then verify the result with axe-core.'}</p>
+                  <h3 className="font-bold text-teal-800">{t('educator_hub.document_accessibility_title') || 'Document accessibility'}</h3>
+                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</p>
                 </div>
               </button>
 

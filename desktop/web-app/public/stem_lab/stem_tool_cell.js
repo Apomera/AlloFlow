@@ -1234,6 +1234,11 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The header row paints no ground, so it sits on the HOST surface -
+      // white in light and dark, pure BLACK in the contrast theme, where the
+      // tool own title measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? " text-white" : "";
       // Aliases - maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -23364,13 +23369,13 @@ var d = labToolData.cell || {};
 
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83D\uDD2C Cell Simulator"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83D\uDD2C Cell Simulator"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[11px] font-bold rounded-full" }, "CELL v3"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" + onHostInk }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
 
 
               (function() {

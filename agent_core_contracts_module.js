@@ -96,7 +96,8 @@
 
   var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential/i;
   var UNSAFE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/;
-  var MAX_SCAN_DEPTH = 8;
+  // 10, not 8: a real AlloPack nests envelope > data > history[i] > data > visualPlan > panels[i] > labels[i] (9 levels).
+  var MAX_SCAN_DEPTH = 10;
 
   // ── small helpers ──────────────────────────────────────────────────────
 

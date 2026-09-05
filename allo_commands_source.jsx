@@ -5457,11 +5457,12 @@ const AlloCommandPalette = ({ ctx }) => {
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
 
-  const commands = useMemo(() => (ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === 'teacher' }) : []), [ctx]);
+  const commands = useMemo(() => (open && ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === 'teacher' }) : []), [open, ctx]);
   // Slice 3: rows = a FLAT array of {kind:'header'|'cmd'} so `sel` stays one integer index and
   // arrow-nav keeps working; selection skips headers. Search view = scored + context-tie-broken
   // flat cmds; browse view = a promoted "Here —" block (<=6, context-relevant) + grouped sections.
   const rows = useMemo(() => {
+    if (!open) return [];
     const out = [];
     if (query) {
       const acts = _activeContexts(ctx);
@@ -5523,7 +5524,7 @@ const AlloCommandPalette = ({ ctx }) => {
       cmdCount += take.length;
     }
     return out;
-  }, [commands, query, ctx, t, recentCommandIds, favoriteCommandIds, usageVersion]);
+  }, [open, commands, query, ctx, t, recentCommandIds, favoriteCommandIds, usageVersion]);
   const selectable = useMemo(() => { const a = []; rows.forEach((r, i) => { if (r.kind === 'cmd' && r.c.available !== false) a.push(i); }); return a; }, [rows]);
   const commandRowCount = useMemo(() => rows.filter((row) => row.kind === 'cmd').length, [rows]);
   const selectedCommand = rows[sel] && rows[sel].kind === 'cmd' ? rows[sel].c : null;

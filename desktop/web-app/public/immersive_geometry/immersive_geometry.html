@@ -202,6 +202,27 @@
     #hud, button.act, button.q, .dimchips span, .kbd kbd { border: 1px solid CanvasText; }
     button.act:focus-visible, button.q:focus-visible { outline: 3px solid Highlight; box-shadow: none; }
   }
+  /* Keep mathematics and controls together without covering the model. */
+  #hud { padding: 0; overflow: hidden; width: min(370px, calc(100vw - 28px)); }
+  .hud-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border-bottom:1px solid var(--line); }
+  #hud .hud-header h1 { margin:0; font-size:17px; }
+  #hudBody { padding:12px; overflow:auto; max-height:calc(100dvh - 98px); }
+  #hudBody[hidden] { display:none; }
+  #hud button { min-height:36px; font-size:12px; }
+  .hud-primary { padding-bottom:8px; }
+  .hud-primary .axisrange { margin:8px 0; }
+  .hud-section { border-top:1px solid var(--line); padding-top:8px; margin-top:8px; }
+  .hud-section summary { cursor:pointer; min-height:36px; font-size:13px; font-weight:750; padding:6px 0; }
+  .hud-section summary:focus-visible { outline:3px solid var(--focus); }
+  .hud-section .mission,.hud-section .guidebox,.hud-section .showcasebox { margin-top:8px; }
+  @media(max-width:760px) {
+    #hud { left:8px; right:8px; top:auto; bottom:8px; width:auto; max-height:46dvh; padding:0; }
+    #hudBody { max-height:calc(46dvh - 58px); padding:8px 12px; }
+    #hud .hud-header { min-height:50px; }
+    #hud .sub { display:none; }
+    #hud .stateline { margin-top:0; }
+    .a-enter-vr,.a-enter-ar { bottom:auto !important; top:12px; }
+  }
 </style>
 </head>
 <body>
@@ -214,12 +235,46 @@
 
 <!-- Flatscreen HUD (also fully keyboard-operable). Hidden during an immersive VR session. -->
 <div id="hud">
-  <h1>Stretch Lab</h1>
-  <div class="sub">Make geometry by pulling it up through the dimensions.</div>
+  <div class="hud-header"><h1>Stretch Lab</h1><button id="uiHudToggle" class="q" type="button" aria-expanded="true" aria-controls="hudBody">Hide controls</button></div>
+  <div id="hudBody">
+  <div class="sub">Stretch changes geometry. View scale changes only its presentation.</div>
+  <section class="hud-primary" aria-label="Shape and editing controls">
+  <p class="stateline" id="stateline">A point.</p>
+  <div id="measure">Zero dimensions. Press <b>Stretch ▲</b> to pull it into a line.</div>
+  <div id="boundaryMeasure" hidden></div>
+  <label class="measuretoggle"><input id="uiBoundary" type="checkbox"> Show perimeter / surface area</label>
+  <div id="axisline">No editable axis yet.</div>
+
+  <label class="axisrange" for="uiAxisValue">
+    <span id="axisSliderLabel">Selected axis size</span><output id="axisValueOut" for="uiAxisValue">0</output>
+    <span class="axistarget" id="axisTargetOut">Mission target: —</span>
+    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" aria-describedby="axisValueOut axisTargetOut" disabled>
+    <datalist id="axisTargetTicks"><option id="axisTargetTick" value="2.1"></option></datalist>
+  </label>
+
+  <div class="btnrow">
+    <button class="act" id="uiStretch" aria-label="Stretch up one dimension">Stretch ▲</button>
+    <button class="q" id="uiCollapse" aria-label="Collapse down one dimension">▼</button>
+  </div>
+
+  <div class="btnrow">
+    <button class="q" id="uiGrow" aria-label="Grow the selected dimension">＋ longer</button>
+    <button class="q" id="uiShrink" aria-label="Shrink the selected dimension">－ shorter</button>
+  </div>
+
+  <div class="btnrow">
+    <button class="q" id="uiAxis" aria-label="Cycle the editable axis">Axis</button>
+    <button class="q" id="uiUndo" aria-label="Undo the last geometry change">↶ undo</button>
+    <button class="q" id="uiRedo" aria-label="Redo the last undone geometry change">↷ redo</button>
+    <button class="q" id="uiReset" aria-label="Reset to a point">↺ reset</button>
+  </div>
+  <div class="btnrow"><button id="uiViewLeft" class="q" type="button" aria-label="Turn view left">← Look</button><button id="uiRecenter" class="q" type="button">Center view</button><button id="uiViewRight" class="q" type="button" aria-label="Turn view right">Look →</button></div>
+  </section>
 
   <div class="dimchips" aria-hidden="true">
     <span id="chip0">Point</span><span id="chip1">Line</span><span id="chip2">Plane</span><span id="chip3">Solid</span>
   </div>
+  <details class="hud-section"><summary>Build missions</summary>
   <section class="mission" id="missionBox" aria-labelledby="missionTitle">
     <div class="missionhead"><strong id="missionTitle">Stretch mission</strong><span class="missionactions"><button class="q" id="uiMission" type="button">New target</button><button class="q" id="uiFresh" type="button">Start over</button></span></div>
     <div class="missiongoal" id="missionGoal">Make a segment with L = 2.1 units.</div>
@@ -234,6 +289,8 @@
   </section>
 
 
+  </details>
+  <details class="hud-section" open><summary>Guided exploration</summary>
   <section class="guidebox" id="guideBox" aria-labelledby="guideTitle">
     <div class="guidehead"><strong id="guideTitle">Guided exploration</strong><span class="guideprogress" id="guideProgress">Step 1 of 4</span></div>
     <div class="guidetrack" id="guideTrack" role="list" aria-label="Dimension learning path">
@@ -250,6 +307,8 @@
     <div class="guidewhy" id="guideWhy" hidden></div>
     <div id="guideStatus" class="sr-only" role="status" aria-live="polite"></div>
   </section>
+  </details>
+  <details class="hud-section"><summary>Story, comparison and settings</summary>
   <section class="showcasebox" id="showcaseBox" aria-labelledby="showcaseTitle">
     <div class="showcasehead"><strong id="showcaseTitle">Dimension story</strong><span class="showcaseprogress" id="showcaseProgress">Ready</span></div>
     <div class="showcasecaption" id="showcaseCaption" aria-live="polite">Play a short, non-destructive tour from point to solid.</div>
@@ -259,11 +318,6 @@
     </div>
     <div id="showcaseHelp" class="historynote">The story previews the dimension ladder without changing your geometry or undo history.</div>
   </section>
-  <p class="stateline" id="stateline">A point.</p>
-  <div id="measure">Zero dimensions. Press <b>Stretch ▲</b> to pull it into a line.</div>
-  <div id="boundaryMeasure" hidden></div>
-  <label class="measuretoggle"><input id="uiBoundary" type="checkbox"> Show perimeter / surface area</label>
-  <div id="axisline">No editable axis yet.</div>
   <div id="invariantNotice" class="invariantnote" role="status" aria-live="polite">Notice: change one dimension and watch what stays invariant.</div>
   <section id="sliceExplainer" class="sliceexplainer" aria-labelledby="sliceExplainerTitle" hidden>
     <div class="slicehead"><strong id="sliceExplainerTitle">Slice microscope</strong><button class="q" id="uiExplainSlice" type="button" aria-describedby="sliceExplainHelp" disabled>Explain selected slice</button></div>
@@ -325,29 +379,7 @@
     <input id="uiHistoryScrub" type="range" min="0" max="0" value="0" step="1" disabled aria-describedby="historyValue historyHelp" aria-valuetext="No saved geometry steps">
     <button class="q" id="uiHistoryRestore" type="button" disabled>Return to current shape</button>
   </div>
-  <label class="axisrange" for="uiAxisValue">
-    <span id="axisSliderLabel">Selected axis size</span><output id="axisValueOut" for="uiAxisValue">0</output>
-    <span class="axistarget" id="axisTargetOut">Mission target: —</span>
-    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" aria-describedby="axisValueOut axisTargetOut" disabled>
-    <datalist id="axisTargetTicks"><option id="axisTargetTick" value="2.1"></option></datalist>
-  </label>
 
-  <div class="btnrow">
-    <button class="act" id="uiStretch" aria-label="Stretch up one dimension">Stretch ▲</button>
-    <button class="q" id="uiCollapse" aria-label="Collapse down one dimension">▼</button>
-  </div>
-
-  <div class="btnrow">
-    <button class="q" id="uiGrow" aria-label="Grow the selected dimension">＋ longer</button>
-    <button class="q" id="uiShrink" aria-label="Shrink the selected dimension">－ shorter</button>
-  </div>
-
-  <div class="btnrow">
-    <button class="q" id="uiAxis" aria-label="Cycle the editable axis">Axis</button>
-    <button class="q" id="uiUndo" aria-label="Undo the last geometry change">↶ undo</button>
-    <button class="q" id="uiRedo" aria-label="Redo the last undone geometry change">↷ redo</button>
-    <button class="q" id="uiReset" aria-label="Reset to a point">↺ reset</button>
-  </div>
 
 
   <div class="kbd">
@@ -358,8 +390,9 @@
     Paradigm inspired by <b>HandWaver</b> (Dimmel &amp; Bock, IMRE Lab, University of Maine). Web-native accessible re-implementation.
   </div>
 
+</details>
 </div>
-
+</div>
 <!-- Screen-reader live narration of every state change (the accessibility path through the paradigm). -->
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
 <div id="sceneDescription" class="sr-only">Interactive 3D stretch lab. Use the desktop controls or enter immersive mode to pull labeled X, Z, and Y handles. The formula card explains how length, area, and volume change. Click the highlighted plan or cross-section to hear its slice formula. Press T or Play story for a non-destructive dimension tour.</div>
@@ -644,6 +677,14 @@ function loadLaunchState() {
 }
 var LAUNCH_STATE = loadLaunchState();
 var SAVED_STATE = LAUNCH_STATE || loadSavedState();
+// A lesson payload initializes this visit once; refresh resumes autosaved work.
+if (LAUNCH_STATE) {
+  try {
+    var resumeUrl = new URL(window.location.href);
+    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
+    window.history.replaceState(window.history.state, '', resumeUrl.pathname + resumeUrl.search + resumeUrl.hash);
+  } catch (ignore) { /* Some embedded browsers cannot replace history. */ }
+}
 var MATH_PRECISION = SAVED_STATE && SAVED_STATE.precision ? SAVED_STATE.precision : 2;
 
 function r1(n) { var factor = Math.pow(10, MATH_PRECISION); return Math.round(n * factor) / factor; /* legacy: Math.round(n * 100) / 100 */ }
@@ -2104,7 +2145,7 @@ window.addEventListener('load', function () {
     explain: 'Explain shows the floor plan, unit lattice, active slices, and the math link from the selected handle.',
     compare: 'Compare keeps the blue before outline and change explanation visible while simplifying the construction view.'
   };
-  var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 };
+  var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0, viewX: 0, viewZ: -1 };
   if (uiGhost) uiGhost.checked = showTarget;
   if (uiBoundary) uiBoundary.checked = showBoundary;
   if (uiFocusMode) uiFocusMode.value = focusMode;
@@ -2651,34 +2692,105 @@ window.addEventListener('load', function () {
     }
   }
 
-  function positionDesktopWorkspace(s) {
-    if (!s || !window.THREE) return;
-    var presentationScale = viewScaleDef().scale;
-    var length = (s.d >= 1 ? s.dimensions.L : THIN) * presentationScale;
-    var depth = (s.d >= 2 ? s.dimensions.W : THIN) * presentationScale;
-    var yaw = THREE.MathUtils.degToRad(-18);
-    var centerX = 0.65, centerZ = -3.2;
-    var halfX = length / 2, halfZ = depth / 2;
-    var offsetX = Math.cos(yaw) * halfX + Math.sin(yaw) * halfZ;
-    var offsetZ = -Math.sin(yaw) * halfX + Math.cos(yaw) * halfZ;
-    workspacePose.centerX = centerX; workspacePose.centerZ = centerZ;
-    workspacePose.x = centerX - offsetX; workspacePose.z = centerZ - offsetZ;
-    workspacePose.baseY = 1.05; workspacePose.yaw = yaw;
-    figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z);
-    figure.object3D.rotation.set(0, yaw, 0);
-    positionMeasurePanel(s, MISSIONS[missionIndex]);
-  }
-
-  function positionMeasurePanel(s, mission) {
-    if (!labelWrap || !s) return;
+  // Flat (non-XR) framing. Desktop keeps the original fixed pose (3.2 m ahead, 0.65 m right,
+  // base 1.05 m) so the workspace never moves under a mouse user. Compact/portrait viewports
+  // solve the distance and height from the camera FOV, the viewport aspect and the band of
+  // screen left visible above a bottom-anchored HUD, so the figure and its measure card fit.
+  var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -18 };
+  var MEASURE_CARD_WIDTH = 3.25;
+  function measurePanelLift(s, mission) {
     var presentationScale = viewScaleDef().scale;
     var currentHeight = (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale;
     var targetHeight = (showTarget && mission && mission.d >= 3 ? mission.H : THIN) * presentationScale;
     var boundaryLines = showBoundary ? (s.boundary ? 1 : 0) + (mission && mission.d >= 2 ? 1 : 0) : 0;
     var component = comp(), comparing = !!(component && component.comparisonState);
-    var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32;
-    var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance);
-    var y = workspacePose.baseY + defaultY - 1.1;
+    var cardHeight = measureCardHeight(boundaryLines, comparing);
+    var clearance = cardHeight / 2 + 0.32;
+    return { lift: Math.max(1.4, Math.max(currentHeight, targetHeight) + clearance), cardHeight: cardHeight, cardWidth: MEASURE_CARD_WIDTH };
+  }
+  function compactViewport() {
+    var w = window.innerWidth || 0, h = window.innerHeight || 0;
+    return w > 0 && h > 0 && (w <= 760 || w < h);
+  }
+  function flatCameraObject() {
+    var el = cameraEl || document.getElementById('camera');
+    return el && (el.getObject3D('camera') || el.object3D);
+  }
+  function flatFramingMetrics() {
+    var cameraObject = flatCameraObject();
+    var fov = cameraObject && cameraObject.isPerspectiveCamera ? cameraObject.fov : 80;
+    var w = window.innerWidth || 1, h = window.innerHeight || 1;
+    var tanV = Math.tan(THREE.MathUtils.degToRad(fov) / 2), tanH = tanV * (w / h);
+    var eyeY = 1.6;
+    if (cameraObject) { var eye = new THREE.Vector3(); cameraObject.getWorldPosition(eye); if (eye.y > 0.2) eyeY = eye.y; }
+    // Visible band in NDC y (1 = top of screen, -1 = bottom). A bottom-anchored HUD hides the low band.
+    var bottomNdc = -1;
+    var hudEl = hud || document.getElementById('hud');
+    if (hudEl && hudEl.style.display !== 'none') {
+      var rect = hudEl.getBoundingClientRect();
+      if (rect.height > 0 && rect.width > w * 0.6 && rect.top > h * 0.4) {
+        // Round to 5% of the screen so small HUD content changes do not shuffle the scene.
+        bottomNdc = Math.max(-1, Math.min(0.6, Math.round((1 - 2 * (rect.top / h)) * 20) / 20));
+      }
+    }
+    return { tanV: tanV, tanH: tanH, eyeY: eyeY, bottomNdc: bottomNdc };
+  }
+  function positionDesktopWorkspace(s, viewDir) {
+    if (!s || !window.THREE) return;
+    if (viewDir) { workspacePose.viewX = viewDir.x; workspacePose.viewZ = viewDir.z; }
+    var view = new THREE.Vector3(workspacePose.viewX || 0, 0, workspacePose.viewZ == null ? -1 : workspacePose.viewZ);
+    if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize();
+    var right = new THREE.Vector3().crossVectors(view, new THREE.Vector3(0, 1, 0)).normalize();
+    var presentationScale = viewScaleDef().scale;
+    var length = (s.d >= 1 ? s.dimensions.L : THIN) * presentationScale;
+    var depth = (s.d >= 2 ? s.dimensions.W : THIN) * presentationScale;
+    var localYaw = THREE.MathUtils.degToRad(FLAT_DESKTOP_POSE.yawDeg);
+    var forward = FLAT_DESKTOP_POSE.forward, lateral = FLAT_DESKTOP_POSE.lateral, baseY = FLAT_DESKTOP_POSE.baseY;
+    var compact = compactViewport();
+    if (compact) {
+      var m = flatFramingMetrics();
+      var panel = measurePanelLift(s, MISSIONS[missionIndex]);
+      var footprintHalf = (Math.abs(Math.cos(localYaw)) * length + Math.abs(Math.sin(localYaw)) * depth) / 2;
+      var halfWidth = Math.max(footprintHalf, panel.cardWidth / 2) + 0.15;
+      var contentBottom = -0.12, contentTop = panel.lift + panel.cardHeight / 2;
+      var contentHeight = contentTop - contentBottom;
+      var band = Math.max(0.3, 1 - m.bottomNdc), fill = 0.86;
+      var distance = Math.max(forward, halfWidth / (m.tanH * fill) + depth / 2, contentHeight / (m.tanV * band * fill));
+      forward = Math.min(distance, 14);
+      lateral = 0;
+      var midNdc = (1 + m.bottomNdc) / 2;
+      var contentMid = m.eyeY + midNdc * forward * m.tanV;
+      // Keep the view angle to the workspace gentle (at most ~20 degrees up) so the figure is not seen from far beneath.
+      contentMid = Math.min(contentMid, m.eyeY + forward * Math.tan(THREE.MathUtils.degToRad(20)));
+      baseY = Math.max(0.3, contentMid - (contentTop + contentBottom) / 2);
+    }
+    var yaw = Math.atan2(-view.x, -view.z) + localYaw;
+    var centerX = view.x * forward + right.x * lateral, centerZ = view.z * forward + right.z * lateral;
+    var halfX = length / 2, halfZ = depth / 2;
+    var offsetX = Math.cos(yaw) * halfX + Math.sin(yaw) * halfZ;
+    var offsetZ = -Math.sin(yaw) * halfX + Math.cos(yaw) * halfZ;
+    workspacePose.centerX = centerX; workspacePose.centerZ = centerZ;
+    workspacePose.x = centerX - offsetX; workspacePose.z = centerZ - offsetZ;
+    workspacePose.baseY = baseY; workspacePose.yaw = yaw; workspacePose.compact = compact;
+    figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z);
+    figure.object3D.rotation.set(0, yaw, 0);
+    positionMeasurePanel(s, MISSIONS[missionIndex]);
+  }
+  var flatReframeHandle = 0;
+  function scheduleFlatReframe() {
+    if (flatReframeHandle) return;
+    flatReframeHandle = requestAnimationFrame(function () {
+      flatReframeHandle = 0;
+      if (!immersiveActive && lastMissionState) positionDesktopWorkspace(lastMissionState);
+    });
+  }
+  window.addEventListener('resize', scheduleFlatReframe);
+  window.addEventListener('orientationchange', scheduleFlatReframe);
+
+  function positionMeasurePanel(s, mission) {
+    if (!labelWrap || !s) return;
+    var panel = measurePanelLift(s, mission);
+    var y = workspacePose.baseY + panel.lift;
     labelWrap.object3D.position.set(workspacePose.centerX == null ? workspacePose.x : workspacePose.centerX, y, workspacePose.centerZ == null ? workspacePose.z : workspacePose.centerZ);
     labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0);
   }
@@ -2800,6 +2912,7 @@ window.addEventListener('load', function () {
   }
 
   function focusMissionStep() {
+    var missionDetails = document.getElementById("missionBox").closest("details"); if (missionDetails) missionDetails.open = true;
     var action = currentMissionAction, c = comp(), control = null, label = '';
     if (!action || !c) return;
     if (action.kind === 'stretch') { control = uiStretch; label = 'Stretch'; }
@@ -3003,6 +3116,8 @@ window.addEventListener('load', function () {
       if (lc.pitchObject) lc.pitchObject.rotation.x = 0;
       if (lc.yawObject) lc.yawObject.rotation.y = 0;
     }
+    workspacePose.viewX = 0; workspacePose.viewZ = -1;
+    if (!immersiveActive && lastMissionState) positionDesktopWorkspace(lastMissionState);
     if (live) live.textContent = 'View reset to the starting position.';
   }
 
@@ -3015,6 +3130,7 @@ window.addEventListener('load', function () {
       if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); e.stopPropagation(); return; }
       if (shortcut === 'y') { doRedo(); e.preventDefault(); e.stopPropagation(); return; }
     }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     var handled = true;
     switch (e.key) {
       case 'ArrowUp':    doStretch();  break;
@@ -3120,6 +3236,11 @@ window.addEventListener('load', function () {
   // Coordinate focus and pending input while an immersive session owns the display.
   var scene = document.querySelector('a-scene');
   var hud = document.getElementById('hud');
+  var hudToggle = document.getElementById('uiHudToggle'), hudBody = document.getElementById('hudBody');
+  hudToggle.addEventListener('click', function() { var open = hudToggle.getAttribute('aria-expanded') !== 'true'; hudToggle.setAttribute('aria-expanded', String(open)); hudToggle.textContent = open ? 'Hide controls' : 'Show controls'; hudBody.hidden = !open; scheduleFlatReframe(); });
+  document.getElementById('uiViewLeft').addEventListener('click', function() { turnRig(-1); });
+  document.getElementById('uiViewRight').addEventListener('click', function() { turnRig(1); });
+  document.getElementById('uiRecenter').addEventListener('click', function() { resetView(); recenterSpatialPanel(true); });
   var spatialPanel = document.getElementById('panel'), cameraEl = document.getElementById('camera');
   var lastHudFocus = null;
   function recenterSpatialPanel(announce) {
@@ -3130,6 +3251,11 @@ window.addEventListener('load', function () {
     view.y = 0;
     if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize();
     var yaw = Math.atan2(-view.x, -view.z);
+    if (!immersiveActive) {
+      if (lastMissionState) positionDesktopWorkspace(lastMissionState, view);
+      if (announce) live.textContent = 'Workspace centered in front of you.';
+      return;
+    }
     var state = lastMissionState, dims = state && state.dimensions;
     var presentationScale = viewScaleDef().scale;
     var length = (state && state.d >= 1 ? dims.L : THIN) * presentationScale;

@@ -18,9 +18,9 @@ describe('Solar System SVG accessible names', () => {
   it('gives every SVG declaration an accessible name', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const svgLines = lines.filter((line) => /h\(\s*['"]svg['"]|createElement\(\s*['"]svg['"]/.test(line));
-    expect(svgLines).toHaveLength(72);
-    expect(svgLines.filter((line) => line.includes('aria-label'))).toHaveLength(72);
-    expect(svgLines.filter((line) => line.includes("role: 'group'"))).toHaveLength(65);
+    expect(svgLines).toHaveLength(74);
+    expect(svgLines.filter((line) => line.includes('aria-label'))).toHaveLength(74);
+    expect(svgLines.filter((line) => line.includes("role: 'group'"))).toHaveLength(64);
   });
 
   it('reuses visible localized mini-tool titles instead of generic names', () => {

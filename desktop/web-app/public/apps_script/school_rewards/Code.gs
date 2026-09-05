@@ -504,23 +504,104 @@ function reviewSchoolRewardsPrintPublication(request) {
   });
 }
 
+
+function savePrintRemixJournal_(book, key, operation, journal) {
+  journal.signature = coreJournalSignature_(key, operation, 'print_remix', { intent: journal.intent, state: journal.state, fileId: journal.fileId || '', result: journal.result || null }, coreJournalSecret_(true));
+  var json = JSON.stringify(journal);
+  if (json.length > 45000) throw srError_('remix_recovery', 'The remix recovery record is too large. Ask staff to review the source model.');
+  upsert_(sheet_(book, 'Idempotency'), 4, key, safeRow_([key, operation, json, now_()]));
+  SpreadsheetApp.flush();
+}
+function validatePrintRemixJournal_(key, operation, journal, actor) {
+  var secret = coreJournalSecret_(false), intent = journal && journal.intent;
+  if (!secret || !intent || !intent.model || journal.printRemixVersion !== 1 || !actor || !secureTextEqual_(journal.signature, coreJournalSignature_(key, operation, 'print_remix', { intent: intent, state: journal.state, fileId: journal.fileId || '', result: journal.result || null }, secret)) ||
+      ['INTENT', 'FILE_CREATING', 'FILE_READY', 'COMPLETED'].indexOf(journal.state) < 0 ||
+      !intent.actorEmail || !intent.studentId || intent.actorEmail !== actor.email || intent.studentId !== actor.studentId ||
+      operation.indexOf('print_model_remix:' + hash_(intent.actorEmail).slice(0, 12) + ':') !== 0 ||
+      intent.model.ownerStudentId !== intent.studentId || intent.model.sourceFormat !== 'RECIPE' || intent.model.publicationStatus !== 'PRIVATE' ||
+      typeof intent.recipeJson !== 'string' || !intent.recipeJson || intent.model.id !== operationEntityId_('remix', key)) {
+    throw srError_('remix_recovery', 'The remix recovery signature is invalid. No recovery writes were performed.');
+  }
+}
+function resumePrintRemix_(book, key, operation, journal, actor) {
+  validatePrintRemixJournal_(key, operation, journal, actor);
+  if (journal.state === 'COMPLETED') return journal.result;
+  var intent = journal.intent, model = object_(JSON.parse(JSON.stringify(intent.model))), folder = printFolder_(), file;
+  if (journal.state === 'INTENT') {
+    journal.state = 'FILE_CREATING'; savePrintRemixJournal_(book, key, operation, journal);
+    coreFault_('print_remix_before_file');
+    file = folder.createFile(model.id + '.json', intent.recipeJson, 'application/json');
+    coreFault_('print_remix_after_file');
+  } else {
+    var matches = folder.getFilesByName(model.id + '.json');
+    if (!matches.hasNext()) throw srError_('remix_recovery', 'The prior remix file result is unavailable. Ask an administrator to review it before retrying.');
+    file = matches.next();
+    if (matches.hasNext()) throw srError_('remix_recovery', 'More than one remix file matches this request. Ask an administrator to review it.');
+  }
+  if ((journal.fileId && file.getId() !== journal.fileId) || file.getBlob().getDataAsString('UTF-8') !== intent.recipeJson) throw srError_('remix_recovery', 'The remix file does not match its recovery record. No model was overwritten.');
+  setPrivate_(file);
+  journal.fileId = file.getId(); journal.state = 'FILE_READY'; savePrintRemixJournal_(book, key, operation, journal);
+  model.originalFileId = journal.fileId;
+  var matches = printModels_(book).filter(function(row) { return row.id === model.id; });
+  if (matches.length > 1 || (matches.length && stableJson_(matches[0]) !== stableJson_(model))) throw srError_('remix_recovery', 'The saved remix model conflicts with its recovery record. No model was overwritten.');
+  if (!matches.length) upsertPrintModelRow_(book, model);
+  coreFault_('print_remix_after_model');
+  appendAuditOnce_({ event: 'PRINT_MODEL_REMIXED', type: 'print_model', id: model.id, summary: 'Private recipe remix created from a moderated catalog model' }, actor);
+  coreFault_('print_remix_after_audit');
+  journal.result = { ok: true, model: printModelDto_(model, 'owner') };
+  journal.state = 'COMPLETED'; savePrintRemixJournal_(book, key, operation, journal);
+  return journal.result;
+}
+
+/** Read-only settlement check for the original student's saved retry key. */
+function getSchoolRewardsPrintRemixStatus(request) {
+  var actor = requireRole_(['student']); request = object_(request);
+  var key = idemKey_(request.idempotencyKey), records = idemRecords_(book_(), key);
+  if (records.length !== 1) throw srError_('remix_recovery', 'The remix request record is missing or duplicated. No recovery writes were performed.');
+  var journal = parseIdemPayload_(records[0][2]);
+  validatePrintRemixJournal_(key, String(records[0][1]), journal, actor);
+  return { ok: true, state: journal.state, modelId: journal.intent.model.id };
+}
+
+/** Resumes only the original signed student intent; administrator input cannot replace it. */
+function recoverSchoolRewardsPrintRemix(request) {
+  var recoveryActor = requireRole_(['admin']); request = object_(request);
+  var key = idemKey_(request.idempotencyKey);
+  return locked_(function() {
+    var book = book_(), records = idemRecords_(book, key);
+    if (records.length !== 1) throw srError_('remix_recovery', 'The remix request record is missing or duplicated. No recovery writes were performed.');
+    var operation = String(records[0][1]), journal = parseIdemPayload_(records[0][2]), intent = journal && journal.intent;
+    var originalActor = { role: 'student', email: intent && intent.actorEmail, studentId: intent && intent.studentId };
+    validatePrintRemixJournal_(key, operation, journal, originalActor);
+    var wasCompleted = journal.state === 'COMPLETED', recoveryId = hash_(key).slice(0, 20);
+    if (!wasCompleted) appendAuditOnce_({ event: 'PRINT_REMIX_ADMIN_RECOVERY_STARTED', type: 'idempotency', id: recoveryId, summary: 'Administrator started recovery of a signed private remix' }, recoveryActor);
+    var result = resumePrintRemix_(book, key, operation, journal, originalActor);
+    coreFault_('print_remix_admin:after_complete');
+    if (!wasCompleted || auditEventExists_('PRINT_REMIX_ADMIN_RECOVERY_STARTED', recoveryId)) appendAuditOnce_({ event: 'PRINT_REMIX_ADMIN_RECOVERED', type: 'idempotency', id: recoveryId, summary: 'Administrator verified completion of the original private remix' }, recoveryActor);
+    return { ok: true, recovered: !wasCompleted, kind: 'print_remix', keyHash: recoveryId, result: result };
+  });
+}
+
 function remixSchoolRewardsPrintModel(request) {
   var actor = requireRole_(['student']); request = object_(request);
   var sourceModelId = id_(request.modelId, 'print model'), key = idemKey_(request.idempotencyKey);
   var payload = { modelId: sourceModelId, title: text_(request.title, 120, ''), description: text_(request.description, 1000, ''), aiUse: text_(request.aiUse, 20, 'NONE').toUpperCase(), aiDisclosure: text_(request.aiDisclosure, 500, '') };
   var operation = printIdemOperation_('print_model_remix', actor, payload);
   return locked_(function() {
-    var prior = idemResult_(key, operation); if (prior) return prior;
-    var book = book_(), source = requirePrintModel_(book, sourceModelId);
+    var book = book_(), records = idemRecords_(book, key);
+    if (records.length > 1) throw srError_('idempotency_corrupt', 'That request key appears more than once. Review the integrity report.');
+    if (records.length && String(records[0][1]) !== operation) throw srError_('idempotency_conflict', 'This action was already recorded once. Refresh to see it; nothing was done twice.');
+    if (records.length) { var saved = parseIdemPayload_(records[0][2]); if (saved && saved.ok === true && saved.model && saved.printRemixVersion == null && !saved.intent && !saved.state) return saved; return resumePrintRemix_(book, key, operation, saved, actor); }
+    var source = requirePrintModel_(book, sourceModelId);
     if (source.publicationStatus !== 'PUBLISHED' || source.sourceFormat !== 'RECIPE' || source.reusePolicy !== 'SCHOOL_REMIX_PRINT') throw srError_('remix_denied', 'Only published recipe models that permit school remixing can be remixed.');
     var recipe = loadPrintRecipe_(source), normalized = normalizePrintModelInput_(book, { title: payload.title || ('Remix of ' + (source.catalogTitle || source.title)), description: payload.description || source.catalogDescription || source.description, sourceFormat: 'RECIPE', recipe: recipe, remixOfModelId: source.id, widthMm: source.widthMm, depthMm: source.depthMm, heightMm: source.heightMm, triangleCount: source.triangleCount, unitDeclaration: source.unitDeclaration, clientPreflightStatus: source.clientPreflightStatus, clientPreflightJson: source.clientPreflightJson, aiUse: payload.aiUse, aiDisclosure: payload.aiDisclosure }, actor.studentId);
-    var modelId = uuid_(), at = now_(), sourceFileId = storePrintRecipe_(modelId, normalized.recipeJson);
-    var model = { id: modelId, ownerStudentId: actor.studentId, familyId: modelId, version: 1, previousVersionId: '', remixOfModelId: source.id, title: normalized.title, description: normalized.description, sourceFormat: 'RECIPE', originalFileId: sourceFileId, previewFileId: '', printableFileId: '', contentHash: normalized.contentHash, byteSize: normalized.byteSize, triangleCount: normalized.triangleCount, widthMm: normalized.widthMm, depthMm: normalized.depthMm, heightMm: normalized.heightMm, unitDeclaration: normalized.unitDeclaration, clientPreflightStatus: normalized.clientPreflightStatus, clientPreflightJson: normalized.clientPreflightJson, aiUse: normalized.aiUse, aiDisclosure: normalized.aiDisclosure, publicationStatus: 'PRIVATE', catalogTitle: '', catalogDescription: '', creatorLabel: 'School community creator', reusePolicy: 'SCHOOL_VIEW_PRINT', moderationReason: '', createdAt: at, updatedAt: at };
-    upsertPrintModelRow_(book, model);
-    var result = { ok: true, model: printModelDto_(model, 'owner') };
-    rememberIdem_(key, operation, result);
-    appendAudit_({ event: 'PRINT_MODEL_REMIXED', type: 'print_model', id: model.id, summary: 'Private recipe remix created from a moderated catalog model' }, actor);
-    return result;
+    var modelId = operationEntityId_('remix', key), at = now_();
+    if (printModelById_(book, modelId)) throw srError_('remix_recovery', 'This remix already exists but its request record is unavailable. Ask staff to review it.');
+    var model = { id: modelId, ownerStudentId: actor.studentId, familyId: modelId, version: 1, previousVersionId: '', remixOfModelId: source.id, title: normalized.title, description: normalized.description, sourceFormat: 'RECIPE', originalFileId: '', previewFileId: '', printableFileId: '', contentHash: normalized.contentHash, byteSize: normalized.byteSize, triangleCount: normalized.triangleCount, widthMm: normalized.widthMm, depthMm: normalized.depthMm, heightMm: normalized.heightMm, unitDeclaration: normalized.unitDeclaration, clientPreflightStatus: normalized.clientPreflightStatus, clientPreflightJson: normalized.clientPreflightJson, aiUse: normalized.aiUse, aiDisclosure: normalized.aiDisclosure, publicationStatus: 'PRIVATE', catalogTitle: '', catalogDescription: '', creatorLabel: 'School community creator', reusePolicy: 'SCHOOL_VIEW_PRINT', moderationReason: '', createdAt: at, updatedAt: at };
+    var journal = { printRemixVersion: 1, state: 'INTENT', fileId: '', intent: { actorEmail: actor.email, studentId: actor.studentId, model: model, recipeJson: normalized.recipeJson } };
+    savePrintRemixJournal_(book, key, operation, journal);
+    coreFault_('print_remix_after_intent');
+    return resumePrintRemix_(book, key, operation, journal, actor);
   });
 }
 
@@ -1050,7 +1131,7 @@ function prunableIdempotencyRows_(book, cutoff) {
     var raw = String(cell_(rows[i][2])), journal = null;
     try { journal = JSON.parse(raw); } catch (_) { journal = null; }
     // Keep anything still in flight: recovery needs it.
-    if (journal && journal.journalVersion && journal.state !== 'COMPLETED') continue;
+    if (journal && (journal.journalVersion || journal.printRemixVersion) && journal.state !== 'COMPLETED') continue;
     out.push(i);
   }
   return out;
@@ -1236,7 +1317,7 @@ function awardSchoolRewardsPointsBatch(request) {
   if (studentIds.length > SR_MAX_GROUP_AWARD) throw srError_('bad_award', 'Award to ' + SR_MAX_GROUP_AWARD + ' students or fewer at a time.');
   var amount = integer_(request.amount, 1, SR_MAX_POINTS, 'Points'), reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), key = idemKey_(request.idempotencyKey);
   if (!reason) throw srError_('bad_award', 'Describe what the students did to earn these points.');
-  requireCategory_(book_(), categoryId);
+  // Validate active categories inside each new award, keeping saved awards recoverable.
   var seen = {}, results = [], recorded = 0, failed = 0;
   studentIds.forEach(function(rawId) {
     var studentId;
@@ -1246,7 +1327,7 @@ function awardSchoolRewardsPointsBatch(request) {
     try {
       // Each student is an ordinary journaled award under a key derived from the
       // group key, so a lost response and an exact retry record nothing twice.
-      awardSchoolRewardsPoints({ studentId: studentId, amount: amount, reason: reason, categoryId: categoryId, idempotencyKey: (key + ':' + studentId).slice(0, 120) });
+      awardSchoolRewardsPoints({ studentId: studentId, amount: amount, reason: reason, categoryId: categoryId, idempotencyKey: groupAwardStudentKey_(key, studentId) });
       results.push({ studentId: studentId, ok: true }); recorded++;
     } catch (err) {
       var failure = publicError_(err);
@@ -1255,6 +1336,15 @@ function awardSchoolRewardsPointsBatch(request) {
   });
   locked_(function() { appendAudit_({ event: 'GROUP_AWARD', type: 'award', id: key, summary: 'Group award: ' + recorded + ' recorded, ' + failed + ' failed' }, actor); });
   return { ok: failed === 0, recorded: recorded, failed: failed, results: results };
+}
+function groupAwardStudentKey_(key, studentId) {
+  var fullKey = key + ':' + studentId;
+  if (fullKey.length <= 120) return fullKey;
+  // Keep old truncated journals recoverable. A legacy collision still fails
+  // closed through the payload check rather than minting a duplicate award.
+  var legacyKey = fullKey.slice(0, 120);
+  if (idemRecords_(book_(), legacyKey).length) return legacyKey;
+  return 'group_' + hash_(stableJson_([key, studentId]));
 }
 function reverseSchoolRewardsEntry(request) {
   // Administrators correct any award. The awarding staff member may undo their
@@ -1299,6 +1389,9 @@ function checkoutSchoolRewardsOrder(request) {
     var book = book_(), state = loadCoreOperation_(book, key, operation, 'checkout');
     if (state && state.result) return state.result;
     if (!state) {
+      // Apply the per-prize bound after combining duplicate lines. Saved
+      // historical operations keep their original replay semantics.
+      lines.forEach(function(line) { integer_(line.quantity, 1, 100, 'Quantity'); });
       requireStudent_(book, studentId);
       requireOpenWindowNow_(windowById_(book, windowId), 'Checkout');
       var items = catalog_(book), byId = {}; items.forEach(function(item) { byId[item.id] = item; });
@@ -4071,6 +4164,15 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
     var key = String(row[0] || ''), saved;
     try { saved = JSON.parse(String(row[2] || '{}')); }
     catch (_) { issue('ERROR', 'IDEMPOTENCY_JSON_INVALID', 'idempotency', key, 'Saved request result is not valid JSON.'); return; }
+    if ((saved && saved.printRemixVersion != null) || (String(row[1] || '').indexOf('print_model_remix:') === 0 && !(saved && saved.ok === true && saved.model && !saved.intent && !saved.state))) {
+      if (!saved || saved.state !== 'COMPLETED') {
+        pendingOperations++;
+        issue('ERROR', 'PRINT_REMIX_PENDING', 'idempotency', key, 'A private remix is pending at stage ' + text_(saved && saved.state, 30, 'UNKNOWN') + '. Resume only its original signed intent after reviewing the school records.');
+      }
+      try { validatePrintRemixJournal_(key, String(row[1] || ''), saved, { email: saved.intent && saved.intent.actorEmail, studentId: saved.intent && saved.intent.studentId }); }
+      catch (_) { issue('ERROR', 'PRINT_REMIX_SIGNATURE_INVALID', 'idempotency', key, 'Private remix signature or intent validation failed. Do not resume this request.'); }
+      return;
+    }
     if (!saved || saved.journalVersion !== 1) return;
     if (['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0 || !saved.kind || !saved.intent) issue('ERROR', 'JOURNAL_ENVELOPE_INVALID', 'idempotency', key, 'Core operation journal envelope is incomplete or invalid.');
     if (saved.state !== 'COMPLETED') {

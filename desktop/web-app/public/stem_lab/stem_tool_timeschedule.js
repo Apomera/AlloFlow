@@ -382,14 +382,14 @@
         '.time-schedule-lab--dark *{color:#f8fafc!important;border-color:#64748b!important;background-color:#0f172a!important;background-image:none!important}',
         '.time-schedule-lab--dark input,.time-schedule-lab--dark select{background:#020617!important;color:#f8fafc!important}',
         '.time-schedule-lab--dark [aria-selected="true"],.time-schedule-lab--dark [aria-pressed="true"]{background:#1d4ed8!important;color:#fff!important;border-color:#93c5fd!important}',
-        '.time-schedule-lab--dark svg{background:#fff;border-radius:12px}',
+        '.time-schedule-lab--dark svg{background:#fff!important;border-radius:12px}',
         '.time-schedule-lab--contrast{background:#000;color:#fff}',
         '.time-schedule-lab--contrast [class*="bg-"],.time-schedule-lab--contrast header,.time-schedule-lab--contrast main,.time-schedule-lab--contrast footer{background:#000!important;background-image:none!important}',
         '.time-schedule-lab--contrast *{color:#fff!important;border-color:#fff!important;background-color:#000!important;background-image:none!important;box-shadow:none!important}',
         '.time-schedule-lab--contrast input,.time-schedule-lab--contrast select{background:#000!important;color:#fff!important;border:2px solid #fff!important}',
         '.time-schedule-lab--contrast [aria-selected="true"],.time-schedule-lab--contrast [aria-pressed="true"]{background:#fff!important;color:#000!important;outline:3px solid #ff0!important}',
         '.time-schedule-lab--contrast :focus-visible{outline:3px solid #ff0!important;outline-offset:3px!important}',
-        '.time-schedule-lab--contrast svg{background:#fff;border:2px solid #fff;border-radius:12px}'
+        '.time-schedule-lab--contrast svg{background:#fff!important;border:2px solid #fff;border-radius:12px}'
       ].join('');
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var award = typeof ctx.awardXP === 'function' ? ctx.awardXP : function () {};
@@ -494,6 +494,9 @@
           var signatures = Object.assign({}, current.elapsedModelSignatures || {});
           if (changed) signatures[elapsedModelSignature(nextStart, nextAmount, nextDirection)] = true;
           return Object.assign({}, changes, {
+            elapsedStep: changed ? 0 : current.elapsedStep,
+            elapsedPrediction: changed ? '' : current.elapsedPrediction,
+            elapsedStepKey: changed ? null : current.elapsedStepKey,
             elapsedModelSignatures: signatures,
             elapsedModels: Object.keys(signatures).length
           });
@@ -547,6 +550,7 @@
             h('circle', { cx: 160, cy: 160, r: 148, fill: 'url(#' + id + '-face)',
               stroke: '#0369a1', strokeWidth: 7 }),
             ticks, labels,
+            d.showMinuteLabels && !compact && Array.from({length:12},function(_,i){var angle=i*Math.PI/6;return h('text',{key:'minute-'+i,x:160+87*Math.sin(angle),y:164-87*Math.cos(angle),textAnchor:'middle',fontSize:12,fontWeight:700,fill:'#075985'},i*5);}),
             h('line', { x1: 160, y1: 160, x2: 160 + 72 * Math.sin(ha),
               y2: 160 - 72 * Math.cos(ha), stroke: '#0f172a', strokeWidth: 10,
               strokeLinecap: 'round' }),
@@ -555,7 +559,7 @@
               strokeLinecap: 'round' }),
             h('circle', { cx: 160, cy: 160, r: 11, fill: '#f97316',
               stroke: '#fff', strokeWidth: 3 })),
-          h('figcaption', { className: 'mt-1 text-center text-xs text-slate-600' }, readable)
+          h('figcaption', { className: 'mt-1 text-center text-xs text-slate-600' }, readable + (d.showMinuteLabels && !compact ? ' ' + t('stem.timeschedule.hour_moves_gradually','The short hour hand moves gradually between hours as the long minute hand moves.') : ''))
         );
       }
       function heading(id, title, body) {
@@ -571,6 +575,7 @@
           t('stem.timeschedule.for_am_times_the_hour_stays_the_same', "For AM times, the hour stays the same.");
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-clock-heading' },
+          h('label',{className:'flex items-center gap-2 text-sm text-slate-700'},h('input',{type:'checkbox',checked:!!d.showMinuteLabels,onChange:function(e){upd({showMinuteLabels:e.target.checked});}}),t('stem.timeschedule.show_minute_numbers','Show minute numbers (0–55)')),
           heading('ts-clock-heading', t('stem.timeschedule.clock_link', "Clock Link"),
             t('stem.timeschedule.move_one_representation_and_watch_anal', "Move one representation and watch analog, 12-hour, and 24-hour time stay linked.")),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
@@ -595,7 +600,7 @@
                     return h('button', { key: delta, type: 'button',
                       onClick: function () { setClock(clock + delta); },
                       className: 'rounded-lg border border-sky-200 bg-sky-50 px-2 py-2 text-xs font-black text-sky-800 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600' },
-                      (delta > 0 ? '+' : '−') + Math.abs(delta) +
+                      (delta > 0 ? '+' : '−') + (Math.abs(delta) === 60 ? 1 : Math.abs(delta)) +
                       (Math.abs(delta) === 60 ? t('stem.timeschedule.hr', " hr") : t('stem.timeschedule.min', " min")));
                   })),
                 h('label', { className: 'block text-xs font-bold text-slate-600' },
@@ -621,6 +626,14 @@
           total += jump.amount;
           points.push({ time: jump.to, total: total, amount: jump.amount });
         });
+        var guided = !!d.elapsedStepMode;
+        var signature = start + ':' + amount + ':' + direction;
+        var step = d.elapsedStepKey === signature ? Math.max(0, Math.min(jumps.length, Number(d.elapsedStep) || 0)) : 0;
+        var complete = !guided || step === jumps.length;
+        var shownJumps = guided ? jumps.slice(0, step) : jumps;
+        var shownPoints = guided ? points.slice(0, step + 1) : points;
+        var covered = shownJumps.reduce(function(sum, jump) { return sum + jump.amount; }, 0);
+        var guess = d.elapsedStepKey === signature ? d.elapsedPrediction || '' : '';
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-elapsed-heading' },
           heading('ts-elapsed-heading', t('stem.timeschedule.elapsed_time_timeline', "Elapsed-Time Timeline"),
@@ -653,24 +666,48 @@
                     onChange: function (e) { markElapsed({ elapsedDuration: Math.floor(amount / 60) * 60 +
                       clamp(e.target.value, 0, 59) }); },
                     className: 'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-bold' }))),
+              h('button', { type: 'button', 'aria-pressed': guided, className: 'w-full rounded-lg border border-slate-400 bg-white text-slate-800 p-3 text-sm font-bold',
+                onClick: function() { upd({ elapsedStepMode: !guided, elapsedStepKey: signature, elapsedStep: 0, elapsedPrediction: '' }); } }, t('stem.timeschedule.predict_step', 'Predict, then step through')),
+              guided && h('div', { className: 'space-y-3' },
+                h('label', { className: 'block text-sm font-bold text-slate-700' }, t('stem.timeschedule.your_time_prediction', 'Your predicted time (optional)'),
+                  h('input', { type: 'time', value: guess, disabled: complete, className: 'mt-1 w-full rounded-lg border border-slate-300 p-2', onChange: function(e) { upd({ elapsedStepKey: signature, elapsedPrediction: e.target.value }); } })),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { type: 'button', disabled: complete, className: 'rounded-lg bg-sky-800 text-white px-3 py-2 font-bold disabled:opacity-50',
+                    onClick: function() { upd({ elapsedStepKey: signature, elapsedStep: step + 1 }); } }, t('stem.timeschedule.next_jump', 'Show next jump')),
+                  h('button', { type: 'button', className: 'rounded-lg border border-slate-400 bg-white text-slate-800 px-3 py-2 font-bold',
+                    onClick: function() { upd({ elapsedStepKey: signature, elapsedStep: 0, elapsedPrediction: '' }); } }, t('stem.timeschedule.restart_jumps', 'Restart jumps'))),
+                h('p', { role: 'status', className: 'text-sm text-slate-700', 'data-jump-progress': true }, step + '/' + jumps.length + ' ' + t('stem.timeschedule.jumps_shown', 'jumps shown') + '. ' + covered + ' / ' + amount + t('stem.timeschedule.minutes', ' minutes') +
+                  (step > 0 ? '. ' + showTime(shownPoints[shownPoints.length - 1].time, use24) : '') +
+                  (complete && guess ? '. ' + (parseInputTime(guess) === end ? t('stem.timeschedule.prediction_matches', 'Your prediction matches the endpoint.') : t('stem.timeschedule.prediction_revisit', 'Compare your prediction with the jumps. Which jump changes your thinking?')) : ''))),
               h('div', { className: 'rounded-xl bg-slate-950 text-white p-4 text-center' },
                 h('p', { className: 'text-[10px] uppercase tracking-widest text-slate-400 font-bold' },
                   direction > 0 ? t('stem.timeschedule.ending_time', "Ending time") : t('stem.timeschedule.earlier_starting_time', "Earlier starting time")),
                 h('p', { className: 'text-3xl font-black font-mono text-cyan-300 mt-1',
-                  'aria-live': 'polite' }, showTime(end, use24)),
+                  'aria-live': 'polite', 'data-elapsed-result': true }, complete ? showTime(end, use24) : '?'),
                 h('p', { className: 'text-xs text-slate-400 mt-1' },
-                  (rawEnd >= DAY ? t('stem.timeschedule.next_day', "next day") : rawEnd < 0 ? t('stem.timeschedule.previous_day', "previous day") : t('stem.timeschedule.same_day', "same day")) +
+                  (complete ? (rawEnd >= DAY ? t('stem.timeschedule.next_day', "next day") : rawEnd < 0 ? t('stem.timeschedule.previous_day', "previous day") : t('stem.timeschedule.same_day', "same day")) : t('stem.timeschedule.follow_jumps', 'Follow the jumps to find the time')) +
                   ' · ' + durationText(amount)))),
             h('div', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-b from-cyan-50 to-white p-3 sm:p-5 overflow-hidden' },
-              h('svg', { viewBox: '0 0 720 190', className: 'w-full h-auto min-h-[170px]',
+              h('p', { className: 'text-xs text-slate-700 mb-2' }, t('stem.timeschedule.scroll_timeline', 'Scroll the timeline to follow the jumps. Each jump is also written below.')),
+              h('div', { role: 'region', tabIndex: 0, 'aria-label': t('stem.timeschedule.scrollable_timeline', 'Scrollable elapsed-time timeline'),
+                style: { overflowX: 'auto', borderRadius: 12 },
+                ref: function(el) {
+                  var viewKey = signature + ':' + guided + ':' + step;
+                  if (!el || el.getAttribute('data-jump-view') === viewKey) return;
+                  el.setAttribute('data-jump-view', viewKey);
+                  var progress = guided && amount ? covered / amount : 0;
+                  var x = direction > 0 ? 55 + progress * 610 : 665 - progress * 610;
+                  el.scrollLeft = Math.max(0, x * el.scrollWidth / 720 - el.clientWidth / 2);
+                } },
+              h('svg', { viewBox: '0 0 720 190', className: 'w-full h-auto', style: { minWidth: 720, display: 'block' },
                 role: 'img', 'aria-labelledby': 'ts-jump-title ts-jump-desc' },
                 h('title', { id: 'ts-jump-title' }, t('stem.timeschedule.elapsed_time_jump_timeline', "Elapsed-time jump timeline")),
-                h('desc', { id: 'ts-jump-desc' }, t('stem.timeschedule.from', "From ") + time12(start) + t('stem.timeschedule.count', ", count ") +
-                  (direction > 0 ? t('stem.timeschedule.forward', "forward ") : t('stem.timeschedule.backward', "backward ")) + durationText(amount) + t('stem.timeschedule.to', " to ") +
-                  time12(end) + t('stem.timeschedule.jumps', ". Jumps: ") + jumps.map(function (j) { return j.amount + t('stem.timeschedule.minutes', " minutes"); }).join(', ') + '.'),
+                h('desc', { id: 'ts-jump-desc' }, t('stem.timeschedule.from', 'From ') + showTime(start, use24) + '. ' +
+                  (direction > 0 ? t('stem.timeschedule.forward', 'forward ') : t('stem.timeschedule.backward', 'backward ')) + durationText(amount) + '. ' +
+                  (complete ? t('stem.timeschedule.ending_time', 'Ending time') + ': ' + showTime(end, use24) : t('stem.timeschedule.endpoint_hidden', 'The endpoint is hidden until all jumps are shown.'))),
                 h('line', { x1: 55, y1: 105, x2: 665, y2: 105,
                   stroke: '#0f172a', strokeWidth: 5, strokeLinecap: 'round' }),
-                points.map(function (point, i) {
+                shownPoints.map(function (point, i) {
                   var progress = amount ? point.total / amount : 0;
                   var priorProgress = i && amount ? (point.total - point.amount) / amount : progress;
                   var x = direction > 0 ? 55 + progress * 610 : 665 - progress * 610;
@@ -689,21 +726,21 @@
                       stroke: '#0f172a', strokeWidth: 3 }),
                     h('text', { x: x, y: 138 + i % 2 * 22, textAnchor: 'middle',
                       fill: '#0f172a', fontSize: 14, fontWeight: '800' }, showTime(point.time, use24)));
-                })),
+                }))),
               h('div', { className: 'rounded-xl border border-cyan-200 bg-white p-3' },
                 h('h4', { className: 'text-xs font-black uppercase tracking-wide text-cyan-800' },
                   t('stem.timeschedule.text_alternative_jump_strategy', "Text alternative: jump strategy")),
-                jumps.length ? h('ol', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2' },
-                  jumps.map(function (jump, i) {
+                shownJumps.length ? h('ol', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                  shownJumps.map(function (jump, i) {
                     return h('li', { key: i, className: 'rounded-lg bg-cyan-50 px-3 py-2 text-xs text-slate-700' },
                       h('strong', { className: 'text-cyan-800' }, t('stem.timeschedule.jump', "Jump ") + (i + 1) + ': '),
                       showTime(jump.from, use24) + ' → ' + showTime(jump.to, use24) +
                       ' (' + jump.amount + t('stem.timeschedule.min_2', " min)"));
                   })) : h('p', { className: 'text-xs text-slate-600 mt-2' },
-                    t('stem.timeschedule.the_interval_is_zero_so_start_and_end_', "The interval is zero, so start and end are the same.")),
+                    amount === 0 ? t('stem.timeschedule.the_interval_is_zero_so_start_and_end_', 'The interval is zero, so start and end are the same.') : t('stem.timeschedule.first_jump_prompt', 'Predict the next landing time, then show one jump to check.')),
                 h('p', { className: 'text-sm font-black border-t border-cyan-100 mt-3 pt-3' },
-                  jumps.map(function (j) { return j.amount; }).join(' + ') +
-                  (jumps.length ? ' = ' : '') + amount + t('stem.timeschedule.minutes', " minutes"))))));
+                  shownJumps.map(function (j) { return j.amount; }).join(' + ') +
+                  (shownJumps.length ? ' = ' : '') + covered + t('stem.timeschedule.minutes', " minutes"))))));
       }
       function scheduleView() {
         var events = schedule.events, timeline = scheduleTimeline(events);
@@ -970,7 +1007,7 @@
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-challenge-heading' },
           heading('ts-challenge-heading', t('stem.timeschedule.challenge_lab', "Challenge Lab"),
-            t('stem.timeschedule.a_stable_deterministic_practice_set_wi', "A stable, deterministic practice set with difficulty bands and a focused retry-missed queue.")),
+            t('stem.timeschedule.practice_with_support', "Choose a level, work at your own pace, and revisit problems you want to practice.")),
           h('div', { className: 'rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3 flex flex-col md:flex-row md:items-end gap-3' },
             h('label', { className: 'block text-xs font-black text-indigo-950 flex-1' },
               t('stem.timeschedule.difficulty', "Difficulty"),

@@ -6697,7 +6697,10 @@ window.StemLab = window.StemLab || {
                   h('rect', { x: 10 + Math.min(300, iq.needsPct * 3), y: 20, width: Math.max(0, Math.min(300 - iq.needsPct * 3, iq.wantsPct * 3)), height: 25, fill: '#f59e0b' }),
                   h('rect', { x: 10 + Math.min(300, (iq.needsPct + iq.wantsPct) * 3), y: 20, width: Math.max(0, Math.min(300 - (iq.needsPct + iq.wantsPct) * 3, iq.savesPct * 3)), height: 25, fill: '#059669' }),
                   h('line', { x1: 160, y1: 15, x2: 160, y2: 50, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-                  h('text', { x: 160, y: 60, fontSize: 9, fill: '#475569', textAnchor: 'middle' }, __alloT('stem.lifeskills.50_reference', '50% reference'))
+                  // y was 60 in a viewBox only 60 tall, so the baseline sat ON the bottom
+                  // edge and the label was clipped by 2 units. The bar ends at y=45,
+                  // so 57 clears it and still fits inside the canvas.
+                  h('text', { x: 160, y: 57, fontSize: 9, fill: '#475569', textAnchor: 'middle' }, __alloT('stem.lifeskills.50_reference', '50% reference'))
                 )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -7490,7 +7493,7 @@ window.StemLab = window.StemLab || {
 
         // Footer
         h('div', { className: 'text-center' },
-          h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.lifeskills.tax_calculations_are_simplified_estima', 'Tax calculations are simplified estimates for educational purposes.'))
+          h('p', { className: 'text-[11px] text-slate-600' + (ctx.isContrast ? ' text-white' : '') }, __alloT('stem.lifeskills.tax_calculations_are_simplified_estima', 'Tax calculations are simplified estimates for educational purposes.'))
         )
       );
     }

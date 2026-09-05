@@ -266,15 +266,24 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
   it('keeps all 63 locale packs and both UI registries mirrored with every saved-view key', async () => {
     const localeFiles = readdirSync('lang').filter((file) => file.endsWith('.js')).sort();
     expect(localeFiles).toHaveLength(63);
-    const localePairs = await Promise.all(localeFiles.map(async (file) => {
-      const [canonical, deployed] = await Promise.all([
-        readFile('lang/' + file, 'utf8'),
-        readFile('desktop/web-app/public/lang/' + file, 'utf8'),
-      ]);
-      return { canonical, deployed };
-    }));
-    localePairs.forEach(({ canonical, deployed }) => {
-      expect(sha256(deployed)).toBe(sha256(canonical));
+    // This is 63 locale packs averaging 7.8 MB - 870 MB of text per run - read from an
+    // OneDrive-backed volume. Measured outside vitest on 2026-09-04: 202s to read, 78s
+    // to sha256 in JS, 24s of splits; the same read ran ~10x faster earlier the same
+    // day, so the I/O cost is the sync layer's mood, not the code's. Three things keep
+    // this gate honest without pretending the work is small:
+    //  - synchronous reads: the async variants intermittently returned STALE content
+    //    (this assertion failed one run in three while a direct check of every pair
+    //    reported zero differences), and sync reads never have;
+    //  - Buffer.equals for the mirror check instead of decode-both-sides-and-hash,
+    //    which is the same comparison and removes ~80s of CPU;
+    //  - only the canonical side is decoded to a string, for the key checks below.
+    const localePairs = localeFiles.map((file) => {
+      const canonicalBuf = readFileSync('lang/' + file);
+      const deployedBuf = readFileSync('desktop/web-app/public/lang/' + file);
+      return { file, mirrored: canonicalBuf.equals(deployedBuf), canonical: canonicalBuf.toString('utf8') };
+    });
+    localePairs.forEach(({ file, mirrored, canonical }) => {
+      expect(mirrored, file + ' deploy mirror is byte-identical').toBe(true);
       expect(canonical).not.toContain(',\\n{');
       [REAL_SKY_SAVED_VIEW_STRINGS, REAL_SKY_VIEWPORT_CONTROL_STRINGS].forEach((strings) => {
         Object.keys(strings).forEach((key) => {
@@ -294,8 +303,7 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
         expect(canonicalUi.split('"' + key + '"')).toHaveLength(2);
       });
     });
-  }, 30000);
-
+  }, 600000);
   it('keeps current-view link strings exact and placeholder-safe in the Galaxy catalog', () => {
     const catalog = JSON.parse(readFileSync('dev-tools/i18n/stem_galaxy_en.json', 'utf8'));
     const actual = Object.fromEntries(Object.keys(REAL_SKY_SHARE_STRINGS).map((key) => [key, catalog[key]]));

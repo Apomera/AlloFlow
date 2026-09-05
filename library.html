@@ -5,15 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Library | AlloFlow</title>
-    <meta name="description"
-        content="Download free, curated lesson packs for AlloFlow. Standards-aligned content for ELA, STEM, Social Studies, SEL, and more.">
+    <meta name="description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/library.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AlloFlow">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/library.html">
     <meta property="og:title" content="AlloFlow Lesson Library">
-    <meta property="og:description" content="Download free, curated lesson packs for AlloFlow across ELA, STEM, Social Studies, SEL, and classroom accessibility workflows.">
+    <meta property="og:description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
@@ -22,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/library.html">
     <meta name="twitter:title" content="AlloFlow Lesson Library">
-    <meta name="twitter:description" content="Free curated lesson packs for the open-source AlloFlow AI classroom assistant.">
+    <meta name="twitter:description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
     <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
@@ -132,7 +131,9 @@
         .download-btn:hover {
             background: #4338ca;
         }
-    </style>
+
+        #filters[hidden], .lesson-card[hidden] { display: none !important; }
+</style>
 </head>
 
 <body>
@@ -188,28 +189,25 @@
         style="background:linear-gradient(135deg,#eff6ff,#eef2ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #dbeafe">
         <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">📚 Lesson <span
                 class="gradient-text">Library</span></h1>
-        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Download free, standards-aligned
-            lesson packs. Load any JSON file into AlloFlow to instantly explore the content.</p>
-        <div
-            style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#475569">
+        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Explore three downloadable sample projects. Open a pack with <strong>Load Project</strong>, inspect the saved resources, and adapt it to your learning goal.</p>
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#475569">
             <i data-lucide="info" style="width:14px;height:14px;color:var(--indigo)"></i>
             <span>Download a <strong>.json</strong> file → Open AlloFlow → Click <strong>"Load Project"</strong> →
                 Select the file</span>
         </div>
+        <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:20px auto 0">These packs contain AI-generated examples. Grade labels and alignment reports inside a pack are planning suggestions; verify content, answer keys, accessibility, and standards before teaching. <a href="guide/saving-and-storage.html">How to save and load a project</a>.</p>
     </header>
 
     <!-- Filters -->
     <section class="section" style="padding-top:32px;padding-bottom:0">
         <div class="section-inner" style="text-align:center">
-            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters">
-                <button type="button" class="filter-btn active" onclick="filterCards('all', this)">All</button>
-                <button type="button" class="filter-btn" onclick="filterCards('ela', this)">📖 ELA</button>
-                <button type="button" class="filter-btn" onclick="filterCards('stem', this)">🔬 STEM</button>
-                <button type="button" class="filter-btn" onclick="filterCards('social', this)">🌎 Social Studies</button>
-                <button type="button" class="filter-btn" onclick="filterCards('math', this)">🧮 Math</button>
-                <button type="button" class="filter-btn" onclick="filterCards('sel', this)">💛 SEL</button>
-                <button type="button" class="filter-btn" onclick="filterCards('cte', this)">🔧 CTE</button>
-            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters" role="group" aria-label="Filter lesson packs by subject" hidden>
+<button type="button" class="filter-btn active" data-category="all" aria-pressed="true">All</button>
+<button type="button" class="filter-btn" data-category="ela" aria-pressed="false">ELA</button>
+<button type="button" class="filter-btn" data-category="stem" aria-pressed="false">STEM</button>
+<button type="button" class="filter-btn" data-category="social" aria-pressed="false">Social Studies</button>
+</div>
+<p id="library-results" role="status" aria-live="polite" aria-atomic="true" style="color:#475569;margin:16px 0 0">Showing all 3 lesson packs.</p>
         </div>
     </section>
 
@@ -221,35 +219,29 @@
                 <!-- ELA Lessons -->
                 <div class="lesson-card" data-category="ela">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-ela">ELA</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 2-3</span></div>
+                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
                     <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌊 The Water Cycle</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">How rain forms,
-                        evaporates, and returns to the sky. Cross-curricular with NGSS.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">CCSS.ELA-LITERACY.RI.3.1, RI.3.3</p>
-                    <a href="./examples/water_cycle.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore evaporation, condensation, and precipitation through reading and classroom activities.</p>
+                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">10 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
+                    <a href="./examples/water_cycle.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
                 <div class="lesson-card" data-category="social">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grade 5</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">⚔️ The American Revolution</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Causes and key events
-                        with timeline organizer and multiple perspectives.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">C3 D2.His.1.3-5, CCSS.RI.5.6</p>
-                    <a href="./examples/civil_war.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
+                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
+                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">The American Civil War</h2>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore slavery, secession, the war, and Reconstruction through reading and guided responses.</p>
+                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">8 saved resources · Includes a glossary, visual organizer, quiz, and lesson plan.</p>
+                    <a href="./examples/civil_war.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
                 <div class="lesson-card" data-category="stem">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-stem">STEM</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grade 5</span></div>
+                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
                     <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌱 Photosynthesis</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">How plants convert
-                        sunlight into energy. Visual organizers and vocabulary.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">NGSS 5-LS1-1</p>
-                    <a href="./examples/photosynthesis.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore how plants use light, water, and carbon dioxide to make sugars.</p>
+                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">8 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
+                    <a href="./examples/photosynthesis.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
 
@@ -295,30 +287,30 @@
     </button>
 
     <script>
-        lucide.createIcons();
-
-        function filterCards(category, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            document.querySelectorAll('.lesson-card').forEach((card, i) => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'flex';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(12px)';
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, i * 50);
-                } else {
-                    card.style.display = 'none';
-                }
+        if (window.lucide) window.lucide.createIcons();
+        const filterBar = document.getElementById('filters');
+        const lessonCards = Array.from(document.querySelectorAll('.lesson-card'));
+        filterBar.hidden = false;
+        filterBar.addEventListener('click', function (event) {
+            const button = event.target.closest('button[data-category]');
+            if (!button || !filterBar.contains(button)) return;
+            const category = button.dataset.category;
+            filterBar.querySelectorAll('button').forEach(function (candidate) {
+                const active = candidate === button;
+                candidate.classList.toggle('active', active);
+                candidate.setAttribute('aria-pressed', String(active));
             });
-        }
-
-        // Back to Top Button
+            let shown = 0;
+            lessonCards.forEach(function (card) {
+                card.hidden = category !== 'all' && card.dataset.category !== category;
+                if (!card.hidden) shown++;
+            });
+            document.getElementById('library-results').textContent = category === 'all'
+                ? 'Showing all ' + shown + ' lesson packs.'
+                : 'Showing ' + shown + ' of ' + lessonCards.length + ' lesson packs for ' + button.textContent.trim() + '.';
+        });
         const backBtn = document.querySelector('.back-to-top');
-        window.addEventListener('scroll', () => {
+        window.addEventListener('scroll', function () {
             backBtn.classList.toggle('visible', window.scrollY > 400);
         }, { passive: true });
     </script>

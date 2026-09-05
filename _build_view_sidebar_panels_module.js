@@ -14,16 +14,11 @@ const SOURCE = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_sidebar_panels_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
 
-if (!fs.existsSync(SOURCE)) { console.error('[ViewSidebarPanels] Source not found'); process.exit(1); }
-
-console.log('[ViewSidebarPanels] Compiling with esbuild...');
-let compiled = '';
-try {
-    compiled = transformSync('/* global React */\n' + fs.readFileSync(SOURCE, 'utf-8'), {
-        loader: 'jsx', format: 'esm', jsxFactory: 'React.createElement',
-        jsxFragment: 'React.Fragment', target: 'es2020',
-    }).code.replace(/\/\*.*global.*\*\/\n/g, '').trim();
-} catch (e) { console.error('[ViewSidebarPanels] esbuild failed'); console.error(e && e.message ? e.message : e); process.exit(1); }
+function buildSidebarPanelsModule(source) {
+  const compiled = transformSync('/* global React */\n' + source, {
+    loader: 'jsx', format: 'esm', jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment', target: 'es2020',
+  }).code.replace(/\/\*.*global.*\*\/\n/g, '').trim();
 
 const outputCode = `(function() {
 'use strict';
@@ -104,11 +99,17 @@ window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefi
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
-window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
+window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView };  // truthy legacy registration plus host views
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();
 `;
 
+return outputCode;
+}
+
+module.exports = { buildSidebarPanelsModule };
+if (require.main === module) {
+const outputCode = buildSidebarPanelsModule(fs.readFileSync(SOURCE, 'utf8'));
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
@@ -121,3 +122,5 @@ catch (e) { console.error('[ViewSidebarPanels] Syntax check failed:', (e.stderr 
 const lineCount = outputCode.split('\n').length;
 console.log('[ViewSidebarPanels] Built ' + OUTPUT + ' (' + lineCount + ' lines)');
 console.log('[ViewSidebarPanels] Synced to ' + DEPLOY_OUT);
+
+}

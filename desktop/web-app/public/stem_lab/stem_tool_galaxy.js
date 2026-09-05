@@ -237,6 +237,9 @@ window.StemLab = window.StemLab || {
       { id: 'rotation_modes', label: 'Compare 2 galaxy rotation models', icon: '🌀', check: function(d) { return Object.keys(d.rotTried || {}).length >= 2; }, progress: function(d) { return Object.keys(d.rotTried || {}).length + '/2'; } }
     ],
     render: function(ctx) {
+      // The title sits on the HOST surface - white in light and dark, pure
+      // BLACK in the contrast theme, where slate-900 measured 1.18:1.
+      var isContrast = !!ctx.isContrast;
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -896,7 +899,9 @@ if (!window._galaxyHasLoadedOnce) {
           }
           var previousObserveKey = d.previousObserveMode && d.previousObserveMode !== observeMode ? d.previousObserveMode : null;
           var previousObserve = previousObserveKey ? (OBSERVE_MODES.find(function (m) { return m.key === previousObserveKey; }) || null) : null;
-          var observeHistory = Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode];
+          var observeHistory = (Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode])
+            .filter(function (mode) { return OBSERVE_MODES.some(function (m) { return m.key === mode; }); });
+          if (!observeHistory.length) observeHistory = [observeMode];
           var galaxyEvidenceNote = d.galaxyEvidenceNote || '';
 
           var DOPPLER_PRESETS = [
@@ -1967,12 +1972,12 @@ if (!window._galaxyHasLoadedOnce) {
                 }
                 var trailArray=new Float32Array(96*3), trailGeo=new THREE.BufferGeometry(); trailGeo.setAttribute('position',new THREE.BufferAttribute(trailArray,3)); trailGeo.setDrawRange(0,0);
                 var trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:massMode==='stellar'?0xff9b55:0x77bfff,transparent:true,opacity:.52,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(group); scene.add(trail);
-                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.42+Math.random()*.62,lift:.45+Math.random()*.35,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?'Astronaut':type==='star'?'Star':'Probe'}; fallingObjects.push(item);
+                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?'Astronaut':type==='star'?'Star':'Probe'}; fallingObjects.push(item);
                 var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width='100%';signalBar.style.backgroundColor='#38bdf8';}if(signalLabel)signalLabel.textContent='Distant received signal: 100%'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=item.label+(paused?' is ready to fall. Start animation to begin.':' released. Watch radial stretching and sideways compression increase toward the horizon.');
               };
               updateFalling=function(dt){
                 for(var fi=fallingObjects.length-1;fi>=0;fi--){
-                  var item=fallingObjects[fi]; item.progress=Math.min(1,item.progress+dt*.19); var p=item.progress, eased=1-Math.pow(1-p,1.55), radius=2.65-2.36*eased, angle=item.launchAngle+p*2.55;
+                  var item=fallingObjects[fi]; item.progress=Math.min(1,item.progress+dt*.19); var p=item.progress, eased=1-Math.pow(1-p,1.55), radius=1.6-1.31*eased, angle=item.launchAngle+p*2.55;
                   item.group.position.set(Math.cos(angle)*radius,item.lift*(1-p),Math.sin(angle)*radius); item.group.lookAt(0,0,0);
                   var close=Math.max(0,(1.55-radius)/1.18), stretch=1+item.strength*close*close*10; item.group.scale.set(1/Math.sqrt(stretch),1/Math.sqrt(stretch),stretch);
                   var fade=Math.max(0,Math.min(1,(radius-.3)/.34)); item.group.traverse(function(node){if(node.material){node.material.opacity=Math.min(node.material.opacity,fade);}});
@@ -8060,7 +8065,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("button", { onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { id: "galaxy-tool-title", className: "text-xl font-black text-slate-900" }, "\uD83C\uDF0C " + __alloT('stem.galaxy.header_title', 'Galaxy Explorer')),
+              React.createElement("h3", { id: "galaxy-tool-title", className: "text-xl font-black text-slate-900" + (isContrast ? " text-white" : "") }, "\uD83C\uDF0C " + __alloT('stem.galaxy.header_title', 'Galaxy Explorer')),
 
               React.createElement("div", { className: "ml-auto grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 sm:grid-cols-3 xl:flex xl:w-auto", role: "group", "aria-label": __alloT('stem.galaxy.mode_switcher_label', 'Galaxy Explorer modes') },
 
@@ -11872,8 +11877,11 @@ if (!window._galaxyHasLoadedOnce) {
                         }),
                         h('text', { key: 'xl', x: padL + plotW / 2, y: CH - 3, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' },
                           __alloT('stem.galaxy.mh_chart_x_axis', 'Gyr after the Big Bang (when the star formed)')),
-                        h('text', { key: 'yl', x: 8, y: axisY, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8',
-                          transform: 'rotate(-90 8 ' + axisY + ')' }, 'Z / Z\u2609'),
+                        // x was 8: once rotated -90 the glyph ascent becomes horizontal extent,
+                        // which pushed this label 1.2px off the left edge of its own
+                        // canvas. 12 clears it, and the rotation origin moves with it.
+                        h('text', { key: 'yl', x: 12, y: axisY, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8',
+                          transform: 'rotate(-90 12 ' + axisY + ')' }, 'Z / Z\u2609'),
                         h('line', { key: 'drop', x1: starX, y1: starY, x2: starX, y2: padT + plotH, stroke: chemistryFits ? '#34d399' : '#fbbf24', strokeWidth: 1, strokeDasharray: '2 2' }),
                         h('circle', { key: 'star', cx: starX, cy: starY, r: 5, fill: chemistryFits ? '#34d399' : '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 })
                       ],

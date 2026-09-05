@@ -26,6 +26,12 @@ toolbar_css = r'''
   .practice-bar label{max-width:100%;flex-wrap:wrap}
   .practice-bar select{max-width:100%;min-width:0}
   @media (max-width:420px){.practice-bar label{width:100%}.practice-bar select{flex:1 1 auto;width:auto}}
+  .practice-welcome{max-width:1132px;margin:18px auto 0;padding:16px 18px;background:#fff;border:1px solid #dce2eb;border-left:4px solid #6046b6;border-radius:14px;scroll-margin-top:var(--sr-section-offset,16px)}
+  .practice-welcome h2{margin:4px 0;font-size:clamp(20px,3vw,27px)}.practice-welcome p{margin:6px 0;line-height:1.5}
+  .practice-welcome summary{cursor:pointer;font-weight:850;color:#4d3598;padding:10px 0;min-height:44px}.practice-welcome li{margin:8px 0;line-height:1.5}
+  @media(max-width:1180px){.practice-welcome{margin-left:15px;margin-right:15px}}
+  @media(max-width:760px){.practice-bar{position:static}body .tour-box{bottom:calc(var(--practice-nav-height,80px) + 12px);max-height:calc(100dvh - var(--practice-nav-height,80px) - 24px);overflow:auto}}
+  @media(prefers-color-scheme:dark){.practice-welcome{background:#161e2e;border-color:#3a4760;border-left-color:#a78bfa}.practice-welcome summary{color:#c4b5fd}}
   .practice-panel{background:#fff;border-bottom:1px solid #ccd4e2;padding:12px 14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));font-size:13px}
   .practice-panel label{display:block;font-size:12px;font-weight:850;color:#455269}
   .practice-panel textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
@@ -68,10 +74,31 @@ toolbar_html = r'''
   <label>Scenario <select id="practice-scenario"></select></label>
   <button type="button" id="practice-customize" aria-expanded="false" aria-controls="practice-panel">Customize</button>
   <button type="button" id="practice-tour" class="primary">Start the tour</button>
+  <button type="button" id="practice-guide" aria-controls="practice-demo-guide">Demo guide</button>
   <button type="button" id="practice-reset">Reset data</button>
   <span class="spacer"></span>
   <a href="https://alloflow-cdn.pages.dev/school-rewards-manual" target="_blank" rel="noopener noreferrer">Manual</a>
 </div>
+
+<section id="practice-welcome" class="practice-welcome" aria-labelledby="practice-welcome-title">
+  <p class="eyebrow">School rewards · Guided demo</p>
+  <h2 id="practice-welcome-title">Recognize effort. Build progress. Shop with points.</h2>
+  <p>Staff recognize students with points and feedback. Students follow their progress and choose a prize. Cashiers handle checkout; administrators manage access, prizes, and shopping windows. The <strong>Help</strong> button at the top right of the portal opens short answers for whichever role is signed in.</p>
+  <details id="practice-demo-guide">
+    <summary>Five-minute administrator demo</summary>
+    <p>Use the same student throughout. Switching roles keeps your practice awards and orders. Changing the scenario or resetting data starts a fresh fictional ledger.</p>
+    <ol>
+      <li><strong>Prepare:</strong> choose <strong>Shopping day</strong> in Scenario to open the store.</li>
+      <li><strong>Orient:</strong> press <strong>Help</strong> in the portal header to show the two kinds of points and who does what, then close it.</li>
+      <li><strong>Staff → Award points:</strong> choose Avery, award 20 points, and add specific feedback such as “Included a classmate in the group.”</li>
+      <li><strong>Student → Overview:</strong> show Avery’s updated balance, then open Progress &amp; activity for recognition and growth. Open Store to browse prizes.</li>
+      <li><strong>Cashier → Store:</strong> select Avery in the student dropdown, select one Front-of-line pass (15 points), and complete checkout. Show the new balance and order.</li>
+      <li><strong>Administrator → Admin setup:</strong> show the first-week checklist, then use the section links to explain members, prizes, and shopping windows.</li>
+    </ol>
+    <p><strong>Demo scope:</strong> fictional rewards and store workflows in this browser. Email and receipts are simulated; nothing is sent or printed. Live sign-in, school data, email delivery, and Print Lab require a configured school deployment and separate checks.</p>
+  </details>
+</section>
+
 <div id="practice-panel" class="practice-panel" hidden>
   <p class="practice-note full"><strong>You do not need this panel to practise.</strong> Pick a scenario in the bar above and press Start the tour. Open this panel only to make the practice school look like yours: its name, size, prizes, and the words the tour uses.</p>
   <label>School name<input id="practice-school" value="Practice Elementary"></label>
@@ -192,6 +219,9 @@ tour_js = r'''
   var P=window.srPractice;if(!P)return;
   function $(id){return document.getElementById(id)}
   function readTour(){try{var t=JSON.parse(localStorage.getItem(P.tourKey)||'null');if(Array.isArray(t)&&t.length)return t}catch(e){}return P.defaultTour}
+  $('practice-guide').onclick=function(){var guide=$('practice-demo-guide');guide.open=true;guide.querySelector('summary').focus({preventScroll:true});if(typeof $('practice-welcome').scrollIntoView==='function')$('practice-welcome').scrollIntoView({block:'start'})};
+  function updateLayoutOffsets(){var mobile=window.innerWidth<=760,bar=document.querySelector('.practice-bar'),nav=document.querySelector('.tabs');document.documentElement.style.setProperty('--sr-section-offset',mobile?'16px':((bar?bar.getBoundingClientRect().height:0)+16)+'px');document.documentElement.style.setProperty('--practice-nav-height',(mobile&&nav?nav.getBoundingClientRect().height:0)+'px')}
+  updateLayoutOffsets();window.addEventListener('resize',updateLayoutOffsets);if(typeof ResizeObserver==='function'){var layoutObserver=new ResizeObserver(updateLayoutOffsets);layoutObserver.observe(document.querySelector('.practice-bar'));layoutObserver.observe(document.querySelector('.tabs'))}
   var roleSel=$('practice-role'),scnSel=$('practice-scenario'),s=P.settings();
   Object.keys(P.scenarios).forEach(function(key){var o=document.createElement('option');o.value=key;o.textContent=P.scenarios[key].label;scnSel.appendChild(o)});
   var custom=document.createElement('option');custom.value='custom';custom.textContent='Custom (from the panel below)';scnSel.appendChild(custom);
@@ -240,15 +270,14 @@ tour_js = r'''
   $('practice-export').onclick=function(){var blob=new Blob([JSON.stringify({kind:'alloflow-school-rewards-practice',version:1,settings:collect(),tour:readTour()},null,2)],{type:'application/json'});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='school-rewards-practice-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000)};
   $('practice-import').onchange=function(){var file=this.files&&this.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(){try{var data=JSON.parse(String(reader.result||''));if(data&&data.settings)P.saveSettings(Object.assign({},data.settings,{custom:true}));if(data&&Array.isArray(data.tour))localStorage.setItem(P.tourKey,JSON.stringify(data.tour));P.reset();location.reload()}catch(e){status('That file could not be read as practice settings. Export a file from this panel to see the expected shape.')}};reader.readAsText(file)};
   // Tour: steps carry a role; the tour for the current role runs, in order.
-  var steps=readTour().filter(function(st){return !st.role||st.role===P.role()}),index=-1,box=null,target=null;
+  var steps=readTour().filter(function(st){return !st.role||st.role===P.role()}),index=-1,box=null,target=null,stepTimer=null,stepGeneration=0;
   function clearTarget(){if(target){target.classList.remove('tour-target');target=null}}
-  function showStep(i){clearTarget();if(i<0||i>=steps.length){endTour();return}index=i;var st=steps[i];var tab=document.querySelector('[data-tab="'+st.tab+'"]');if(tab&&!tab.hidden)tab.click();setTimeout(function(){var el=st.target?document.querySelector(st.target):null;if(el){target=el;el.classList.add('tour-target');try{el.scrollIntoView({block:'center'})}catch(e){}}if(!box){box=document.createElement('div');box.className='tour-box';box.setAttribute('role','dialog');box.setAttribute('aria-live','polite');box.setAttribute('aria-label','Practice tour');document.body.appendChild(box)}box.innerHTML='<div class="kicker">Practice tour · '+(i+1)+' of '+steps.length+'</div><h2></h2><p></p><div class="row"><button type="button" data-tour="back"'+(i===0?' disabled':'')+'>Back</button><button type="button" class="primary" data-tour="next">'+(i===steps.length-1?'Finish':'Next')+'</button><button type="button" data-tour="exit">Exit tour</button></div>';box.querySelector('h2').textContent=st.title||'';box.querySelector('p').textContent=st.text||'';box.querySelector('[data-tour="back"]').onclick=function(){showStep(index-1)};box.querySelector('[data-tour="next"]').onclick=function(){showStep(index+1)};box.querySelector('[data-tour="exit"]').onclick=endTour;box.querySelector('[data-tour="next"]').focus()},350)}
-  function endTour(){clearTarget();if(box){box.remove();box=null}index=-1;$('practice-tour').focus()}
+  function showStep(i){clearTimeout(stepTimer);stepTimer=null;var generation=++stepGeneration;clearTarget();if(i<0||i>=steps.length){endTour();return}index=i;var st=steps[i];var tab=document.querySelector('[data-tab="'+st.tab+'"]');if(tab&&!tab.hidden)tab.click();stepTimer=setTimeout(function(){if(generation!==stepGeneration)return;stepTimer=null;var el=st.target?document.querySelector(st.target):null;if(el){target=el;el.classList.add('tour-target');try{el.scrollIntoView({block:'center'})}catch(e){}}if(!box){box=document.createElement('div');box.className='tour-box';box.setAttribute('role','dialog');box.setAttribute('aria-live','polite');box.setAttribute('aria-label','Practice tour');document.body.appendChild(box)}box.innerHTML='<div class="kicker">Practice tour · '+(i+1)+' of '+steps.length+'</div><h2></h2><p></p><div class="row"><button type="button" data-tour="back"'+(i===0?' disabled':'')+'>Back</button><button type="button" class="primary" data-tour="next">'+(i===steps.length-1?'Finish':'Next')+'</button><button type="button" data-tour="exit">Exit tour</button></div>';box.querySelector('h2').textContent=st.title||'';box.querySelector('p').textContent=st.text||'';box.querySelector('[data-tour="back"]').onclick=function(){showStep(index-1)};box.querySelector('[data-tour="next"]').onclick=function(){showStep(index+1)};box.querySelector('[data-tour="exit"]').onclick=endTour;box.querySelector('[data-tour="next"]').focus()},350)}
+  function endTour(){clearTimeout(stepTimer);stepTimer=null;stepGeneration++;clearTarget();if(box){box.remove();box=null}index=-1;$('practice-tour').focus()}
   $('practice-tour').onclick=function(){if(!steps.length){$('practice-panel').hidden=false;$('practice-customize').setAttribute('aria-expanded','true');status('The tour has no steps for the '+P.role()+' role yet. Add a step below and choose that role, or use the built-in tour.');$('practice-add-step').focus();return}showStep(0)};
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&box)endTour()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&index>=0)endTour()});
   window.srPracticeTour={steps:function(){return steps},show:showStep,end:endTour};
-  // First visit: the tour starts by itself once, so nobody has to find the button.
-  try{if(steps.length&&!localStorage.getItem('alloflow_school_rewards_practice_toured')){localStorage.setItem('alloflow_school_rewards_practice_toured','1');setTimeout(function(){if(!box)showStep(0)},900)}}catch(e){}
+  // Start only on request so the introduction stays in place for the presenter.
 })();
 /* SR_PRACTICE_UI_END */
 </script>
@@ -261,5 +290,12 @@ last = page.rfind('</script>') + len('</script>')
 page = page[:last] + tour_js + page[last:]
 page += '\n</body>\n</html>\n'
 for p in ['school-rewards-practice.html', 'desktop/web-app/public/school-rewards-practice.html']:
-    io.open(p, 'w', encoding='utf-8', newline='').write(page)
+    # Avoid truncating a synced file before writing, and keep UTF-8 bytes unchanged on Windows.
+    try:
+        output = io.open(p, 'r+b')
+    except FileNotFoundError:
+        output = io.open(p, 'wb')
+    with output:
+        output.write(page.encode('utf-8'))
+        output.truncate()
     print('wrote', p, len(page))

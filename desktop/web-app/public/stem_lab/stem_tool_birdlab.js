@@ -11765,6 +11765,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     desc: 'Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab\'s free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The module finder and the footer sit on the HOST surface - white in
+      // light and dark, pure BLACK in the contrast theme, where the search
+      // label measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -13610,7 +13615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('section', { className: 'mb-6', 'aria-labelledby': 'birdlab-module-finder-title' },
             h('div', { className: 'flex items-end gap-3 flex-wrap' },
               h('div', { className: 'flex-1 min-w-[220px]' },
-                h('label', { id: 'birdlab-module-finder-title', htmlFor: 'birdlab-module-search', className: 'block text-sm font-black text-slate-800 mb-1' },
+                h('label', { id: 'birdlab-module-finder-title', htmlFor: 'birdlab-module-search', className: 'block text-sm font-black text-slate-800 mb-1' + onHostInk },
                   __alloT('stem.birdlab.find_a_module', 'Find a BirdLab module')),
                 h('div', { className: 'relative' },
                   h('input', {
@@ -13632,7 +13637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   }, '×')
                 )
               ),
-              h('div', { id: 'birdlab-module-search-status', role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-slate-700 pb-2' },
+              h('div', { id: 'birdlab-module-search-status', role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-slate-700 pb-2' + onHostInk },
                 normalizedMenuQuery
                   ? visibleMenuCount + (visibleMenuCount === 1 ? ' module found' : ' modules found')
                   : totalMenuCount + ' modules available')
@@ -13661,11 +13666,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { id: 'birdlab-module-results' },
-            visibleBigCards.length > 0 && h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.birdlab.core_tools', 'Core Tools')),
+            visibleBigCards.length > 0 && h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' + onHostInk }, __alloT('stem.birdlab.core_tools', 'Core Tools')),
             visibleBigCards.length > 0 && h('div', { className: 'birdlab-menu-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
               visibleBigCards.map(function(c) { return renderCard(c, true); })
             ),
-            visibleMiniCards.length > 0 && h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.birdlab.quick_labs', 'Quick Labs')),
+            visibleMiniCards.length > 0 && h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' + onHostInk }, __alloT('stem.birdlab.quick_labs', 'Quick Labs')),
             visibleMiniCards.length > 0 && h('div', { className: 'birdlab-menu-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
               visibleMiniCards.map(function(c) { return renderCard(c, false); })
             ),
@@ -13676,7 +13681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 __alloT('stem.birdlab.show_all_modules', 'Show all modules'))
             )
           ),
-          h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
+          h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' + onHostInk },
             __alloT('stem.birdlab.birdlab_v1_complete_all_modules_live_f', 'BirdLab v1 complete — all modules live. From I-Spy across 5 habitats to Maine Birds, Migration, Citizen Science, and Conservation & Careers. Pair with Cornell\'s free Merlin Bird ID for real audio + photos.'))
         );
       }

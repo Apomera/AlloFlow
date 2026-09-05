@@ -44,6 +44,7 @@ const moduleSrc = `/**
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AlignmentReportView = AlignmentReportView;
+  window.AlloModules.AuditResourceFreshness = { fingerprint: auditResourceFingerprint, snapshot: auditResourceSnapshot, compute: computeAuditFreshness };
   window.AlloModules.ViewAlignmentReportModule = true;
 })();
 `;

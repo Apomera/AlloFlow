@@ -868,7 +868,7 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
         // runMailboxPackCycle (unit-tested in tests/session_transport.test.js);
         // the host injects the push primitive + error hook.
         NEW_COPIES.forEach(source => {
-            expect(source).toContain("pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true })");
+            expect(source.includes("pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true, isCurrent })")).toBe(true);
             expect(source).toContain("onItemError: (item, itemErr) => warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message)");
             expect(source).toContain('typeof _stMb.runMailboxPackCycle === ');
         });

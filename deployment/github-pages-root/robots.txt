@@ -1,0 +1,41 @@
+# Install at https://apomera.github.io/robots.txt; generated from AlloFlow/robots.txt.
+# AI search and user-directed retrieval are welcome.
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Training-specific controls are declined where providers offer a separate token.
+User-agent: GPTBot
+Disallow: /AlloFlow/
+Disallow: /AlloFlow$
+
+User-agent: ClaudeBot
+Disallow: /AlloFlow/
+Disallow: /AlloFlow$
+
+User-agent: Applebot-Extended
+Disallow: /AlloFlow/
+Disallow: /AlloFlow$
+
+# Standard search engines, including Googlebot and Bingbot, remain crawlable.
+User-agent: *
+Allow: /
+
+Sitemap: https://apomera.github.io/AlloFlow/sitemap.xml

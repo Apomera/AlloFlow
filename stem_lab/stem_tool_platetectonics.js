@@ -255,6 +255,16 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       '@media(max-width:640px){.pt-tb-shell{aspect-ratio:16/21}}',
       '.pt-eq-shell{aspect-ratio:16/5.6}',
       '@media(max-width:620px){.pt-eq-shell{aspect-ratio:16/13}}',
+      // Phone legibility. These panels are drawn in a fixed coordinate space
+      // and scaled to fit, so on a 340 px screen their 10-11 px labels came
+      // out at 4-5 px. The stress and Cascadia figures ship a second, stacked
+      // layout (display toggled here, so the hidden one leaves the a11y tree);
+      // the boundary widget keeps its 540 px drawing and scrolls sideways; the
+      // deep-time strip moves its era names into a legend under the bar.
+      '.pt-stress-narrow,.pt-casc-narrow,.pt-casc-key,.pt-tl-legend,.pt-tect-swipe{display:none}',
+      '@media(max-width:520px){.pt-stress-wide,.pt-casc-wide{display:none}.pt-stress-narrow,.pt-casc-narrow{display:block}.pt-casc-key{display:grid}}',
+      '@media(max-width:560px){.pt-tect-frame{overflow-x:auto;-webkit-overflow-scrolling:touch}.pt-tect-frame>canvas[data-tect-section]{min-width:540px}.pt-tect-swipe{display:block}}',
+      '@media(max-width:640px){.pt-tl-lbl{display:none}.pt-tl-legend{display:flex}}',
       '@media(max-width:860px){.pt-mission-grid{grid-template-columns:1fr}.pt-metric-grid{grid-template-columns:1fr}.pt-control-grid{grid-template-columns:1fr}.pt-canvas-shell{padding:6px}.pt-primary-canvas{min-height:320px}.pt-canvas-toolbar{align-items:flex-start}}'
     ].join('');
     document.head.appendChild(st);
@@ -380,7 +390,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       var _lastSig = null;
       function frame() {
         if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
-        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDarkRef.current + '|' + isContrastRef.current;
+        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDarkRef.current + '|' + isContrastRef.current + '|' + canvas.clientWidth;
         if (sig !== _lastSig) { _lastSig = sig; (drawRef.current || draw)(ctx, sRef.current); }
         if (!prefersReduced) animRef.current = requestAnimationFrame(frame);
       }
@@ -389,6 +399,12 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     }, []);
 
     function draw(ctx, cur) {
+      // `ui` lifts the text and the readings table when the 540-unit map is
+      // shown narrower than that: on a 340 px phone every label was 6 px. The
+      // map itself (grid, circles, positions) is untouched, so a drag still
+      // lands where the finger is.
+      var cvNode = canvasRef.current;
+      var ui = Math.max(1, Math.min(1.7, W_CANVAS / ((cvNode && cvNode.clientWidth) || W_CANVAS)));
       // Map background -- soft topographic look
       var bg = ctx.createLinearGradient(0, 0, 0, H_CANVAS);
       if (isContrast) {
@@ -416,7 +432,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       }
       // Scale bar
       ctx.fillStyle = isContrast ? palette.text : (isDark ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.7)');
-      ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+      ctx.font = 'bold ' + (9 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('100 km', 12, H_CANVAS - 10);
       ctx.strokeStyle = isContrast ? palette.border : (isDark ? '#e2e8f0' : '#0f172a'); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(50, H_CANVAS - 14); ctx.lineTo(50 + stepPx, H_CANVAS - 14); ctx.stroke();
@@ -465,8 +481,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           ctx.stroke();
           ctx.globalAlpha = 1;
           ctx.fillStyle = isDark ? '#22d3ee' : '#0e7490';
-          ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
-          ctx.fillText('triangulated', fit.x + 12, fit.y - 6);
+          ctx.font = 'bold ' + (9 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
+          // Below-right of the fit, not above: 'epicenter (drag)' sits above the
+          // marker, and once both grow for a phone they ran into each other.
+          ctx.fillText('triangulated', fit.x + 12, fit.y + 6 + 10 * ui);
         }
       }
 
@@ -484,10 +502,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.fill(); ctx.stroke();
         // Label
         ctx.fillStyle = isDark ? '#e2e8f0' : '#0f172a';
-        ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(stn.id, stn.x, stn.y + 20);
-        ctx.font = '9px sans-serif';
-        ctx.fillText(stn.name, stn.x, stn.y + 31);
+        ctx.font = 'bold ' + (10 * ui) + 'px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(stn.id, stn.x, stn.y + 10 + 10 * ui);
+        ctx.font = (9 * ui) + 'px sans-serif';
+        ctx.fillText(stn.name, stn.x, stn.y + 10 + 21 * ui);
       });
 
       // True epicenter (draggable)
@@ -501,24 +519,26 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.beginPath(); ctx.arc(ex, ey, 3, 0, Math.PI * 2); ctx.fill();
       // Label
       ctx.fillStyle = isDark ? '#fecaca' : '#7f1d1d';
-      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.font = 'bold ' + (10 * ui) + 'px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('epicenter (drag)', ex, ey - 14);
 
-      // HUD: readings table
-      var hudH = 16 + stations.length * 14;
+      // HUD: readings table (every dimension follows `ui`, so the box grows
+      // with its text instead of the rows spilling out of it on a phone)
+      var rowH = 14 * ui, hudW = 170 * ui, hudX = W_CANVAS - 8 - hudW;
+      var hudH = 16 * ui + stations.length * rowH;
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
-      ctx.fillRect(W_CANVAS - 178, 8, 170, hudH);
+      ctx.fillRect(hudX, 8, hudW, hudH);
       ctx.fillStyle = '#fde047';
-      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('Station   S-P     distance', W_CANVAS - 172, 20);
-      ctx.font = 'bold 10px monospace'; ctx.fillStyle = 'white';
+      ctx.font = 'bold ' + (10 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('Station   S-P     distance', hudX + 6, 8 + 12 * ui);
+      ctx.font = 'bold ' + (10 * ui) + 'px monospace'; ctx.fillStyle = 'white';
       stations.forEach(function(stn, i) {
         var sp = spTime(stn, cur.epicenter);
         var d = sp * KM_PER_SP;
         ctx.fillStyle = stn.color;
-        ctx.fillRect(W_CANVAS - 172, 26 + i * 14, 6, 6);
+        ctx.fillRect(hudX + 6, 8 + 18 * ui + i * rowH, 6 * ui, 6 * ui);
         ctx.fillStyle = 'white';
-        ctx.fillText(stn.id + '   ' + sp.toFixed(1) + 's   ' + d.toFixed(0) + ' km', W_CANVAS - 162, 32 + i * 14);
+        ctx.fillText(stn.id + '   ' + sp.toFixed(1) + 's   ' + d.toFixed(0) + ' km', hudX + 16 * ui, 8 + 24 * ui + i * rowH);
       });
     }
 
@@ -2884,7 +2904,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       h('span', { className: subtitleClass }, '- pick a boundary type and watch geology happen in fast-forward')
     ),
     h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
-      h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+      // `pt-tect-frame`: below 560 px the 540-unit drawing keeps its size and the
+      // frame scrolls sideways instead of shrinking its 10 px HUD to 6 px.
+      h('div', { className: 'pt-tect-frame md:col-span-2 rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
         // 2D cross-section — always rendered, and the guaranteed floor. Hidden
         // (not unmounted) while the block view is live so its rAF loop, HUD and
         // aria-label stay intact and one toggle brings it straight back.
@@ -2953,6 +2975,8 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         view3d.on && !tectGlLive && h('div', {
           className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-200/80'
         }, 'Loading 3D block…'),
+        h('div', { className: 'pt-tect-swipe text-[11px] font-bold px-2 py-1 ' + (isDark ? 'text-orange-200 bg-slate-900' : 'text-orange-900 bg-orange-50'), style: { position: 'sticky', left: 0 }, 'aria-hidden': 'true' },
+          '\u2194 Swipe the section sideways to see all of it'),
         h('p', { id: 'tect-gl-description', className: 'sr-only' },
           'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.')
       ),
@@ -8251,6 +8275,24 @@ var d = labToolData.plateTectonics || {};
               var showConvection = live.showConvection !== false;
               var isDark = !!live.isDark;
 
+              // Resize the view, not the experiment: retain each plate's relative
+              // position and all event counters when the available width changes.
+              var viewWidth = Math.round(canvasEl.clientWidth);
+              if (viewWidth > 0 && Math.abs(viewWidth - cW) > 1) {
+                var viewScale = viewWidth / cW;
+                plates.forEach(function (p) { p.x *= viewScale; p.w *= viewScale; });
+                [quakeParticles, volcanoParticles, convectionDots, eruptState.lavaFlows, eruptState.ashParticles].forEach(function (items) {
+                  items.forEach(function (p) { p.x *= viewScale; });
+                });
+                eruptState.coneX *= viewScale;
+                dragStartX *= viewScale;
+                dragPlateStartX *= viewScale;
+                if (canvasEl._ptLastQuake) canvasEl._ptLastQuake.x *= viewScale;
+                cW = viewWidth;
+                canvasEl.width = cW * 2;
+                canvasEl._stippleCache = null;
+              }
+
               tick++;
               // Ambient phase, separate from the frame counter. Clouds, stars,
               // waves and the convection markers all move purely for atmosphere;
@@ -8317,14 +8359,14 @@ var d = labToolData.plateTectonics || {};
               // drawing them at their real share of the radius left the plate
               // boundaries a sliver too small to teach on.
               var icGrad = ctx.createLinearGradient(0, cH * 0.93, 0, cH);
-              icGrad.addColorStop(0, '#ffcc22');
-              icGrad.addColorStop(1, '#ff8800');
+              icGrad.addColorStop(0, '#f8d67e');
+              icGrad.addColorStop(1, '#e9a54c');
               ctx.fillStyle = icGrad;
               ctx.fillRect(0, cH * 0.93, cW, cH * 0.07);
 
               var ocGrad = ctx.createLinearGradient(0, cH * 0.845, 0, cH * 0.93);
-              ocGrad.addColorStop(0, '#a54508');
-              ocGrad.addColorStop(1, '#d4650d');
+              ocGrad.addColorStop(0, '#a65128');
+              ocGrad.addColorStop(1, '#bc6a2a');
               ctx.fillStyle = ocGrad;
               ctx.fillRect(0, cH * 0.845, cW, cH * 0.085);
 
@@ -8333,8 +8375,8 @@ var d = labToolData.plateTectonics || {};
                 lmGrad.addColorStop(0, '#1c1917');
                 lmGrad.addColorStop(1, '#450a0a');
               } else {
-                lmGrad.addColorStop(0, '#7a2000');
-                lmGrad.addColorStop(1, '#a03000');
+                lmGrad.addColorStop(0, '#452733');
+                lmGrad.addColorStop(1, '#713324');
               }
               ctx.fillStyle = lmGrad;
               ctx.fillRect(0, deepTop, cW, cH * 0.845 - deepTop);
@@ -8346,9 +8388,9 @@ var d = labToolData.plateTectonics || {};
                 umGrad.addColorStop(0.45, '#292524');
                 umGrad.addColorStop(1, '#1c1917');
               } else {
-                umGrad.addColorStop(0, '#8a5a34');
-                umGrad.addColorStop(0.45, '#7a3f22');
-                umGrad.addColorStop(1, '#68301a');
+                umGrad.addColorStop(0, '#7b5945');
+                umGrad.addColorStop(0.45, '#654939');
+                umGrad.addColorStop(1, '#4c3540');
               }
               ctx.fillStyle = umGrad;
               ctx.fillRect(0, seaY, cW, zoneBot - seaY);
@@ -8437,6 +8479,10 @@ var d = labToolData.plateTectonics || {};
                     ctx.fillStyle = 'rgba(253,186,116,0.85)';
                     ctx.font = 'bold 11px system-ui';
                     ctx.textAlign = 'center';
+                    var cellLabelW = ctx.measureText('convection cell').width;
+                    ctx.fillStyle = '#2b2630';
+                    ctx.fillRect(ccx - cellLabelW / 2 - 5, cellCy - 9, cellLabelW + 10, 18);
+                    ctx.fillStyle = '#fed7aa';
                     ctx.fillText('convection cell', ccx, cellCy + 4);
                   }
                 }
@@ -8508,7 +8554,7 @@ var d = labToolData.plateTectonics || {};
                     ctx.fillStyle = node.up ? '#fca5a5' : '#bae6fd';
                     ctx.font = 'bold 12px system-ui';
                     ctx.textAlign = 'center';
-                    ctx.fillText(node.up ? 'hot rock rises' : 'cool rock sinks', node.x, zoneBot - 26);
+                    ctx.fillText(node.up ? 'hot rock rises' : 'cool rock sinks', node.x, zoneBot - (cW < 720 ? 52 : 26));
                   }
                 }
               }
@@ -8827,8 +8873,9 @@ var d = labToolData.plateTectonics || {};
 
                 var baseColor = pl.color;   // same identity colour in both themes; labels sit on chips
                 var pGrad = ctx.createLinearGradient(pl.x, pTop, pl.x, pBase);
-                pGrad.addColorStop(0, baseColor);
-                pGrad.addColorStop(0.35, baseColor);
+                pGrad.addColorStop(0, isCont ? '#9b9870' : '#509cae');
+                pGrad.addColorStop(0.07, baseColor);
+                pGrad.addColorStop(0.35, isCont ? '#675447' : '#23485f');
                 // The lower two thirds of a plate is MANTLE lithosphere, not
                 // crust. Shading it distinctly is the difference between "the
                 // plate is the crust" — the commonest misconception this tab
@@ -8838,6 +8885,25 @@ var d = labToolData.plateTectonics || {};
                 pGrad.addColorStop(1, isDark ? '#0c0a09' : '#2f2117');
                 ctx.fillStyle = pGrad;
                 ctx.fillRect(pl.x + 1, pTop, pl.w - 2, pThick);
+
+                // Quiet rock fabric follows its plate, so it never swims or flickers.
+                // Texture is illustrative; the dashed Moho below remains the layer boundary.
+                ctx.save();
+                ctx.beginPath(); ctx.rect(pl.x + 2, pTop + 2, pl.w - 4, pThick - 4); ctx.clip();
+                ctx.lineWidth = 1;
+                for (var rockRow = 0; rockRow < 6; rockRow++) {
+                  var rockY = pTop + pThick * (0.08 + rockRow * 0.046);
+                  ctx.strokeStyle = rockRow % 2 ? 'rgba(6,24,34,0.22)' : 'rgba(255,235,189,0.22)';
+                  ctx.beginPath(); ctx.moveTo(pl.x, rockY);
+                  ctx.bezierCurveTo(pl.x + pl.w * 0.3, rockY + 2, pl.x + pl.w * 0.7, rockY - 2, pl.x + pl.w, rockY + 1); ctx.stroke();
+                }
+                for (var grain = 0; grain < 28; grain++) {
+                  var grainX = pl.x + ((grain * 0.618033 + pi * 0.13) % 1) * pl.w;
+                  var grainY = pTop + pThick * (0.43 + ((grain * 0.754877) % 1) * 0.52);
+                  ctx.fillStyle = 'rgba(222,211,192,0.16)';
+                  ctx.fillRect(grainX, grainY, 2, 1);
+                }
+                ctx.restore();
 
                 // Crust / mantle-lithosphere divide, drawn as a line so the two
                 // parts of the plate are countable rather than implied by a
@@ -8850,9 +8916,15 @@ var d = labToolData.plateTectonics || {};
                 ctx.setLineDash([]);
 
                 // Plate outline, typed by colour and keyed to the legend.
-                ctx.strokeStyle = isCont ? 'rgba(250,204,21,0.85)' : 'rgba(56,189,248,0.85)';
-                ctx.lineWidth = 2;
+                var plateSelected = (live.d || {}).selectedPlate === pl.name;
+                ctx.strokeStyle = plateSelected ? '#f8fafc' : (isCont ? 'rgba(253,230,138,0.56)' : 'rgba(125,211,252,0.64)');
+                ctx.lineWidth = plateSelected ? 2.5 : 1;
                 ctx.strokeRect(pl.x + 1, pTop, pl.w - 2, pThick);
+                // A steady rim identifies the active plate without adding motion.
+                if (plateSelected) {
+                  ctx.fillStyle = isCont ? '#fde68a' : '#7dd3fc';
+                  ctx.fillRect(pl.x + 1, pTop - 2, pl.w - 2, 3);
+                }
 
                 if (isCont) {
                   // Mountains, sized to how hard this plate is actually being
@@ -8881,6 +8953,12 @@ var d = labToolData.plateTectonics || {};
                     ctx.lineTo(mx2 + mw, pTop);
                     ctx.closePath();
                     ctx.fill();
+                    // A lit face and a cool shadow give the growing range depth.
+                    ctx.fillStyle = isDark ? 'rgba(15,23,42,0.48)' : 'rgba(33,51,55,0.40)';
+                    ctx.beginPath(); ctx.moveTo(mx2, pTop - mh);
+                    ctx.lineTo(mx2 + mw, pTop); ctx.lineTo(mx2 - mw * 0.12, pTop); ctx.closePath(); ctx.fill();
+                    ctx.strokeStyle = 'rgba(226,232,240,0.45)'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(mx2 - mw, pTop); ctx.lineTo(mx2, pTop - mh); ctx.stroke();
                     // Snow only on peaks that have actually been pushed up: the
                     // cue that a range GREW is the range changing, so a white cap
                     // on every hill at every moment would hide exactly that.
@@ -8974,36 +9052,6 @@ var d = labToolData.plateTectonics || {};
                 // offset between the two is the whole point of the geometry.
                 if (!canvasEl._ptArcX) canvasEl._ptArcX = {};
                 canvasEl._ptArcX[B.index] = arcX;
-              }
-
-              // Plate names, in their own pass. Drawn inside the plate loop they
-              // were painted before the slab, so a descending slab crossing the
-              // overriding plate covered the name of the plate it was crossing.
-              if (showLabels) {
-                for (var li = 0; li < plates.length; li++) {
-                  var lpl = plates[li];
-                  if (lpl.w <= 46) continue;
-                  var lblY = GEO.top(lpl) + GEO.thick(lpl) * 0.64;
-                  ctx.font = 'bold ' + (cW > 900 ? '15' : '12') + 'px system-ui';
-                  ctx.textAlign = 'center';
-                  var lw = ctx.measureText(lpl.name).width;
-                  // Deep collisions (drift piles plates up at the edges) put two
-                  // name chips on the same spot; drop a chip a row when it would
-                  // land on one already drawn this frame, and keep it on-canvas.
-                  var lblRects = canvasEl._plateLabelTick === tick ? canvasEl._plateLabelRects : (canvasEl._plateLabelRects = []);
-                  canvasEl._plateLabelTick = tick;
-                  var lcx = Math.max(lw / 2 + 8, Math.min(cW - lw / 2 - 8, lpl.x + lpl.w / 2));
-                  var lrect = { x: lcx - lw / 2 - 6, y: lblY - 13, w: lw + 12, h: 20 };
-                  for (var lr = 0; lr < lblRects.length; lr++) {
-                    var o = lblRects[lr];
-                    if (lrect.x < o.x + o.w && lrect.x + lrect.w > o.x && lrect.y < o.y + o.h && lrect.y + lrect.h > o.y) { lrect.y += 22; lblY += 22; lr = -1; }
-                  }
-                  lblRects.push(lrect);
-                  ctx.fillStyle = 'rgba(2,6,23,0.86)';
-                  ctx.fillRect(lrect.x, lrect.y, lrect.w, lrect.h);
-                  ctx.fillStyle = lpl.type === 'continental' ? '#fde68a' : '#bae6fd';
-                  ctx.fillText(lpl.name, lcx, lblY + 2);
-                }
               }
 
               // ── Surface expression + boundary captions ───────────────────────
@@ -9138,7 +9186,8 @@ var d = labToolData.plateTectonics || {};
                 } else if (showLabels) {
                   ctx.font = 'bold 14px system-ui';
                   ctx.textAlign = 'center';
-                  var cwid = ctx.measureText(C.label).width;
+                  var boundaryCaption = cW < 720 ? (C.kind === 'collision' ? 'Continents collide' : C.kind === 'subduction' ? 'Subduction' : 'Plates separate') : C.label;
+                  var cwid = ctx.measureText(boundaryCaption).width;
                   // Hang the chip off the trench on the side AWAY from the volcanic
                   // arc (which stands back from the trench on the over-riding plate),
                   // so the cone and its eruption glow never rise through the words.
@@ -9152,7 +9201,7 @@ var d = labToolData.plateTectonics || {};
                   ctx.lineWidth = 2;
                   ctx.strokeRect(chx - cwid / 2 - 9, chy - 15, cwid + 18, 23);
                   ctx.fillStyle = capColor;
-                  ctx.fillText(C.label, chx, chy + 1);
+                  ctx.fillText(boundaryCaption, chx, chy + 1);
                   ctx.strokeStyle = capColor;
                   ctx.lineWidth = 1.5;
                   ctx.setLineDash([4, 4]);
@@ -9181,6 +9230,7 @@ var d = labToolData.plateTectonics || {};
                 ctx.moveTo(0, ry2);
                 ctx.lineTo(km === 0 ? cW : 74, ry2);
                 ctx.stroke();
+                if (km === 0) { ctx.fillStyle = '#152335'; ctx.fillRect(2, ry2 - 19, 69, 18); }
                 ctx.fillStyle = '#e2e8f0';
                 ctx.font = 'bold 12px system-ui';
                 ctx.fillText(km === 0 ? 'sea level' : km + ' km', 6, ry2 - 5);
@@ -9207,14 +9257,22 @@ var d = labToolData.plateTectonics || {};
                 ctx.font = 'bold 13px system-ui';
                 ctx.fillText('Lower mantle', cW / 2, (deepTop + cH * 0.845) / 2);
                 ctx.fillText('Outer core (liquid)', cW / 2, cH * 0.892);
+                ctx.fillStyle = '#422006';
                 ctx.fillText('Inner core (solid)', cW / 2, cH * 0.968);
                 ctx.fillStyle = isDark ? 'rgba(253,186,116,0.95)' : 'rgba(255,237,213,0.95)';
                 ctx.font = 'bold 11px system-ui';
-                ctx.fillText('scale break — everything below is squeezed to fit', cW / 2, (breakY + deepTop) / 2 + 4);
+                var scaleNote = cW < 720 ? 'Scale break · deeper layers compressed' : 'scale break — everything below is squeezed to fit';
+                var scaleNoteW = ctx.measureText(scaleNote).width;
+                var scaleNoteY = (breakY + deepTop) / 2 + 4;
+                ctx.fillStyle = '#201a20';
+                ctx.fillRect(cW / 2 - scaleNoteW / 2 - 7, scaleNoteY - 11, scaleNoteW + 14, 15);
+                ctx.fillStyle = '#ffedd5';
+                ctx.fillText(scaleNote, cW / 2, scaleNoteY);
                 ctx.textAlign = 'left';
                 ctx.fillStyle = 'rgba(226,232,240,0.85)';
                 ctx.font = '11px system-ui';
-                ctx.fillText('Depths to scale above the break. Surface heights exaggerated.', 82, zoneBot - 12);
+                ctx.fillText(cW < 720 ? '0–400 km to scale' : 'Depths to scale above the break. Surface heights exaggerated.', 82, zoneBot - (cW < 720 ? 23 : 12));
+                if (cW < 720) ctx.fillText('Surface heights exaggerated', 82, zoneBot - 9);
                 // The outline colours mean something, so say what — in the SKY,
                 // on a chip. Sitting at seaY + 16 put the legend inside the ocean
                 // and on top of the first plate, which is the one place on this
@@ -9224,7 +9282,7 @@ var d = labToolData.plateTectonics || {};
                 // 38 px legend box put the caption chip straight through it.
                 ctx.font = 'bold 11.5px system-ui';
                 var legY = cH * 0.030;
-                var legA = '▬ continental — thick, buoyant, stands high', legB = '▬ oceanic — thin, dense, sinks first';
+                var legA = '▬ Continental', legB = '▬ Oceanic';
                 var legAW = ctx.measureText(legA).width, legBW = ctx.measureText(legB).width;
                 ctx.fillStyle = 'rgba(2,6,23,0.8)';
                 ctx.fillRect(8, legY - 12, legAW + legBW + 34, 20);
@@ -9235,6 +9293,38 @@ var d = labToolData.plateTectonics || {};
               }
 
 
+
+              // Plate chips sit above slab and ruler shading. Compact markers
+              // occupy the crust on phones, clear of the 70 and 100 km depth ticks.
+              if (showLabels) {
+                for (var li = 0; li < plates.length; li++) {
+                  var lpl = plates[li];
+                  var plateLabel = cW < 720 ? String(li + 1) : lpl.name;
+                  var lblY = GEO.top(lpl) + (cW < 720 ? 10 : GEO.thick(lpl) * 0.64);
+                  ctx.font = 'bold ' + (cW > 900 ? '15' : '12') + 'px system-ui';
+                  ctx.textAlign = 'center';
+                  var lw = Math.max(cW < 720 ? 10 : 0, ctx.measureText(plateLabel).width);
+                  // Deep collisions (drift piles plates up at the edges) put two
+                  // name chips on the same spot; drop a chip a row when it would
+                  // land on one already drawn this frame, and keep it on-canvas.
+                  var lblRects = canvasEl._plateLabelTick === tick ? canvasEl._plateLabelRects : (canvasEl._plateLabelRects = []);
+                  canvasEl._plateLabelTick = tick;
+                  var lcx = Math.max(lw / 2 + 8, Math.min(cW - lw / 2 - 8, lpl.x + lpl.w / 2));
+                  var lrect = { x: lcx - lw / 2 - 6, y: lblY - 13, w: lw + 12, h: 20 };
+                  for (var lr = 0; lr < lblRects.length; lr++) {
+                    var o = lblRects[lr];
+                    if (lrect.x < o.x + o.w && lrect.x + lrect.w > o.x && lrect.y < o.y + o.h && lrect.y + lrect.h > o.y) { lrect.y += 22; lblY += 22; lr = -1; }
+                  }
+                  lblRects.push(lrect);
+                  var labelSelected = (live.d || {}).selectedPlate === lpl.name;
+                  ctx.fillStyle = labelSelected ? '#f8fafc' : '#152335';
+                  ctx.beginPath(); ctx.roundRect(lrect.x, lrect.y, lrect.w, lrect.h, 6); ctx.fill();
+                  ctx.strokeStyle = labelSelected ? '#ffffff' : (lpl.type === 'continental' ? '#a49461' : '#558fa6');
+                  ctx.lineWidth = 1; ctx.stroke();
+                  ctx.fillStyle = labelSelected ? '#0f172a' : (lpl.type === 'continental' ? '#fde68a' : '#bae6fd');
+                  ctx.fillText(plateLabel, lcx, lblY + 2);
+                }
+              }
 
               // ── Earthquake particles ──
 
@@ -9541,7 +9631,7 @@ var d = labToolData.plateTectonics || {};
 
               // ── Drag hint ──
 
-              if (tick < 300) {
+              if (tick < 300 && !(cW < 720 && focusB && showLabels)) {
 
                 // Names BOTH routes. The hint used to advertise dragging only, so
                 // the keyboard path was undiscoverable even once it existed.
@@ -9549,13 +9639,13 @@ var d = labToolData.plateTectonics || {};
                 // On a CHIP, not bare white text: it used to be drawn straight
                 // over the sky, and a white cloud drifting behind it made the one
                 // instruction a first-time student needs disappear.
-                var hintTxt = '⬅ Drag a plate, or press ↑↓ to pick one and ←→ to move it ➡';
+                var hintTxt = cW < 720 ? 'Drag plates · ↑↓ pick · ←→ move' : 'Drag a plate · ↑↓ select · ←→ move';
                 var hAlpha = tick > 240 ? Math.max(0, (300 - tick) / 60) : 1;
-                ctx.font = 'bold 14px system-ui';
+                ctx.font = 'bold 12px system-ui';
                 ctx.textAlign = 'center';
                 var hw = ctx.measureText(hintTxt).width;
-                var hy = cH * 0.030;
-                var hx = cW - hw / 2 - 20;                      // right-aligned: the legend owns the left of this band
+                var hy = cH * 0.030 + (cW < 720 ? 26 : 0);
+                var hx = cW < 720 ? cW / 2 : cW - hw / 2 - 20;                      // right-aligned: the legend owns the left of this band
                 ctx.fillStyle = 'rgba(2,6,23,' + (0.85 * hAlpha) + ')';
                 ctx.fillRect(hx - hw / 2 - 12, hy - 12, hw + 24, 22);
                 ctx.strokeStyle = 'rgba(250,204,21,' + (0.9 * hAlpha) + ')';
@@ -10406,6 +10496,19 @@ var d = labToolData.plateTectonics || {};
 
               ),
 
+              showLabels && !ptVent3D && React.createElement('div', {
+                className: 'pt-plate-key', role: 'group', 'aria-label': 'Plate identification key',
+                style: { display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 2px', color: isDark ? '#e2e8f0' : '#334155' }
+              }, PLATES.map(function (p, i) {
+                var active = d.selectedPlate === p.name;
+                return React.createElement('span', {
+                  key: p.id, 'data-pt-plate-key': p.id, 'data-selected': active ? 'true' : 'false',
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 8, fontSize: 12,
+                    background: isDark ? '#152335' : '#f8fafc', border: '1px solid ' + (active ? (isDark ? '#f8fafc' : '#475569') : (isDark ? '#334155' : '#cbd5e1')), fontWeight: active ? 800 : 500 }
+                }, React.createElement('span', { 'aria-hidden': 'true', style: { display: 'inline-grid', placeItems: 'center', minWidth: 20, height: 20, borderRadius: 5, background: p.type === 'continental' ? '#fde68a' : '#bae6fd', color: '#152335', fontWeight: 800 } }, i + 1),
+                  p.name, React.createElement('span', { style: { fontSize: 11, color: isDark ? '#cbd5e1' : '#475569' } }, '· ' + p.type), active && React.createElement('span', { className: 'sr-only' }, ' (selected)'));
+              })),
+
               // ── Live boundary explainer ──────────────────────────────────────
               // The canvas can show a slab descending and quakes deepening along
               // it, but it cannot say WHY in words, and the old tab never did:
@@ -10635,7 +10738,7 @@ var d = labToolData.plateTectonics || {};
                     // chain, which means the host card — white in BOTH themes. The
                     // dark branch put slate-300 on white at 1.48:1 and lost the one
                     // line that connects the three mountains to their composition.
-                    React.createElement("span", { className: "text-[11px] leading-snug text-slate-600" },
+                    React.createElement("span", { className: "text-[11px] leading-snug text-slate-600" + (ctx.isContrast ? " text-white" : "") },
                       cur.silica + ' → ' + cur.visc.toLowerCase() + ', ' + cur.gas.toLowerCase() +
                       ' → ' + cur.landform.toLowerCase() + '. e.g. ' + cur.example + '.')
                   );
@@ -11204,7 +11307,7 @@ var d = labToolData.plateTectonics || {};
                               }
                             },
                               React.createElement('span', {
-                                className: 'text-[10px] font-bold whitespace-nowrap px-1 rounded',
+                                className: 'pt-tl-lbl text-[10px] font-bold whitespace-nowrap px-1 rounded',
                                 style: {
                                   color: '#ffffff',
                                   background: 'rgba(12,10,9,0.55)',
@@ -11213,7 +11316,17 @@ var d = labToolData.plateTectonics || {};
                               }, ERAS[sp.i].name)
                             );
                           })
-                        )
+                        ),
+                        // On a phone the 50 Ma slivers are ~34 px wide, so
+                        // "Cretaceous" and "Cenozoic" clipped to fragments inside
+                        // them. Below 640 px the names come out of the bar and
+                        // into this legend, in the same colours and order.
+                        React.createElement('div', { className: 'pt-tl-legend flex-wrap gap-x-3 gap-y-1 mt-1', 'aria-hidden': 'true', 'data-pt-deeptime-legend': 'true' },
+                          tail.map(function (sp) {
+                            return React.createElement('span', { key: sp.i, className: 'inline-flex items-center gap-1 text-[10px] font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') },
+                              React.createElement('span', { style: { width: 10, height: 10, borderRadius: 2, background: fade(COLORS[sp.i] || COLORS[0], 1), display: 'inline-block' } }),
+                              ERAS[sp.i].name);
+                          }))
                       );
                     })(),
                     React.createElement('p', {
@@ -16338,7 +16451,20 @@ var d = labToolData.plateTectonics || {};
                 // west→east so every card's noun points at something.
                 (function () {
                   var e = React.createElement, dk = !!isDark;
-                  var W = 760, H = 250;
+                  // Wide: the labelled section. Narrow (phones): the same drawing at
+                  // half size with NUMBERED markers, and the labels as real HTML text
+                  // in a key underneath — 11-unit SVG text scaled into 340 px was 5 px.
+                  var CASC_KEY = [
+                    { n: 1, at: [150, 111], color: '#1e40af', text: 'Juan de Fuca plate: thin and dense, sliding east under North America at about 4 cm a year' },
+                    { n: 2, at: [300, 100], color: '#1e3a8a', text: 'Trench, offshore: where the plate starts down' },
+                    { n: 3, at: [367, 121], color: '#dc2626', text: 'Locked zone: stuck for about 500 years, then breaks as a magnitude 9' },
+                    { n: 4, at: [490, 164], color: '#d97706', text: 'Slow-slip and tremor: the deeper contact creeps every ~14 months' },
+                    { n: 5, at: [622, 168], color: '#ea580c', text: 'Water driven off the slab melts the mantle above it' },
+                    { n: 6, at: [645, 50], color: '#57534e', text: 'Cascade volcanoes (Rainier, St Helens), fed by that melt' },
+                    { n: 7, at: [458, 60], color: '#475569', text: 'Coast, then Seattle and Portland further east' }
+                  ];
+                  var buildCasc = function (narrow) {
+                  var W = narrow ? 380 : 760, H = narrow ? 142 : 250;
                   var ink = dk ? '#f1f5f9' : '#0f172a', muted = dk ? '#cbd5e1' : '#334155';
                   var kids = [];
                   kids.push(e('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: dk ? '#0b1220' : '#eff6ff' }));
@@ -16379,9 +16505,36 @@ var d = labToolData.plateTectonics || {};
                   kids.push(e('text', { key: 'wl', x: 8, y: 244, fontSize: 10, fill: muted, fontWeight: 700 }, 'WEST'));
                   kids.push(e('text', { key: 'el', x: W - 8, y: 244, fontSize: 10, fill: muted, fontWeight: 700, textAnchor: 'end' }, 'EAST'));
                   kids.push(e('text', { key: 'note', x: W / 2, y: 244, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'schematic — depths and slope exaggerated'));
+                  if (narrow) {
+                    // Everything but the background, minus its text, at half size;
+                    // then the markers on top at full size so they stay legible.
+                    var bgEl = kids.shift();
+                    var geom = kids.filter(function (k) { return k && k.type !== 'text'; });
+                    kids = [e('rect', { key: 'bgN', x: 0, y: 0, width: W, height: H, fill: dk ? '#0b1220' : '#eff6ff' }),
+                      e('g', { key: 'geom', transform: 'scale(0.5)' }, geom)];
+                    CASC_KEY.forEach(function (m) {
+                      var mx = m.at[0] * 0.5, my = m.at[1] * 0.5;
+                      kids.push(e('circle', { key: 'mk' + m.n, cx: mx, cy: my, r: 9, fill: m.color, stroke: '#ffffff', strokeWidth: 1.5 }));
+                      kids.push(e('text', { key: 'mt' + m.n, x: mx, y: my + 4, fontSize: 11, fill: '#ffffff', fontWeight: 800, textAnchor: 'middle' }, String(m.n)));
+                    });
+                    kids.push(e('text', { key: 'wlN', x: 8, y: H - 6, fontSize: 10, fill: muted, fontWeight: 700 }, 'WEST'));
+                    kids.push(e('text', { key: 'elN', x: W - 8, y: H - 6, fontSize: 10, fill: muted, fontWeight: 700, textAnchor: 'end' }, 'EAST'));
+                    kids.push(e('text', { key: 'noteN', x: W / 2, y: H - 6, fontSize: 9, fill: muted, textAnchor: 'middle' }, 'schematic — see the key below'));
+                    void bgEl;
+                  }
+                  return e('svg', { key: narrow ? 'narrow' : 'wide', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+                      className: narrow ? 'pt-casc-narrow' : 'pt-casc-wide', 'data-pt-cascadia-layout': narrow ? 'narrow' : 'wide',
+                      'aria-label': 'Cross-section of the Cascadia subduction zone from west to east: the Juan de Fuca plate slides under North America at about 4 centimetres a year. The shallow part of the contact, from the offshore trench to the coast, is locked and releases as a magnitude 9 earthquake every roughly 500 years. Deeper, under the coast ranges, the contact creeps in slow-slip and tremor episodes. Where the plate reaches about 100 kilometres, water drives melting that feeds the Cascade volcanoes.' }, kids);
+                  };
                   return e('div', { className: 'mb-3 rounded-xl overflow-hidden border ' + (dk ? 'border-blue-900' : 'border-blue-200'), 'data-pt-cascadia-section': 'true' },
-                    e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                      'aria-label': 'Cross-section of the Cascadia subduction zone from west to east: the Juan de Fuca plate slides under North America at about 4 centimetres a year. The shallow part of the contact, from the offshore trench to the coast, is locked and releases as a magnitude 9 earthquake every roughly 500 years. Deeper, under the coast ranges, the contact creeps in slow-slip and tremor episodes. Where the plate reaches about 100 kilometres, water drives melting that feeds the Cascade volcanoes.' }, kids));
+                    buildCasc(false), buildCasc(true),
+                    e('ol', { className: 'pt-casc-key gap-1 p-2 text-[11px] leading-snug', 'aria-hidden': 'true',
+                      style: { gridTemplateColumns: '1fr', margin: 0, listStyle: 'none', background: dk ? '#0b1220' : '#eff6ff', color: dk ? '#e2e8f0' : '#1e293b' } },
+                      CASC_KEY.map(function (m) {
+                        return e('li', { key: m.n, className: 'flex items-start gap-2' },
+                          e('span', { style: { flex: '0 0 18px', height: 18, borderRadius: 9, background: m.color, color: '#fff', fontSize: 10, fontWeight: 800, display: 'inline-grid', placeItems: 'center' } }, String(m.n)),
+                          e('span', null, m.text));
+                      })));
                 })(),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-blue-200' },
@@ -26386,18 +26539,24 @@ var d = labToolData.plateTectonics || {};
                 // failure threshold — so the hypothesis the student is asked to write
                 // ("when does friction make a fault stable?") is something they can SEE.
                 (function () {
+                  // Built twice: the wide layout (block left, meter right) and a
+                  // stacked one for phones, where the 760-unit drawing squeezed
+                  // into 340 px put every label at 4 px. CSS shows one at a time.
+                  var buildStress = function (narrow) {
                   var dk = !!isDark;
-                  var W = 760, H = 170, gy = 112;
+                  var W = narrow ? 380 : 760, H = narrow ? 372 : 170, gy = 112;
                   var rock = dk ? '#57534e' : '#a8a29e', rockEdge = dk ? '#292524' : '#78716c';
                   var ink = dk ? '#f1f5f9' : '#1e293b', muted = dk ? '#cbd5e1' : '#475569';
                   var failed = failure !== 'stable';
                   var arrowLen = 18 + iq.force * 0.9;               // 18..108 px
                   var lockSize = 8 + iq.friction * 0.16;             // 8..24 px
                   var meterMax = 100, netClamped = Math.max(0, Math.min(meterMax, netStress));
-                  var meterX = 330, meterW = 400, meterY = 26;
+                  var meterX = narrow ? 16 : 330, meterW = narrow ? 348 : 400, meterY = narrow ? 262 : 26;
+                  var mf = narrow ? 1.2 : 1;                         // meter text, viewBox units
                   var kids = [];
                   // ground / sky
                   kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: dk ? '#0f172a' : '#f8fafc' }));
+                  var blockStart = kids.length;
                   kids.push(h('line', { key: 'ground', x1: 0, y1: gy, x2: 270, y2: gy, stroke: rockEdge, strokeWidth: 1 }));
                   if (iq.btype === 'transform') {
                     // map view: two blocks side by side, slip is along the fault trace
@@ -26434,19 +26593,29 @@ var d = labToolData.plateTectonics || {};
                   kids.push(h('rect', { key: 'lock', x: lx - lockSize / 2, y: ly - lockSize / 2, width: lockSize, height: lockSize, rx: 3, fill: failed ? (dk ? '#7f1d1d' : '#fecaca') : (dk ? '#14532d' : '#bbf7d0'), stroke: failed ? '#dc2626' : '#16a34a', strokeWidth: 2 }));
                   kids.push(h('text', { key: 'lockT', x: lx, y: ly + 4, fontSize: Math.max(8, lockSize * 0.6), textAnchor: 'middle', fill: ink }, failed ? '✕' : '🔒'));
                   kids.push(h('text', { key: 'lockL', x: lx, y: 164, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'friction ' + iq.friction + '%'));
+                  if (narrow) {
+                    // The block keeps its own coordinates and is scaled up as a
+                    // group: 270 x 170 -> 378 x 238, which lifts its 10-unit
+                    // labels to 14 (about 12 px on a 340 px phone).
+                    var blockKids = kids.splice(blockStart);
+                    kids.push(h('g', { key: 'blk', transform: 'scale(1.4)' }, blockKids));
+                  }
                   // meter: net stress vs failure threshold
-                  kids.push(h('text', { key: 'mT', x: meterX, y: meterY - 8, fontSize: 11, fill: ink, fontWeight: 800 }, 'Net stress vs failure line'));
+                  kids.push(h('text', { key: 'mT', x: meterX, y: meterY - 8, fontSize: 11 * mf, fill: ink, fontWeight: 800 }, 'Net stress vs failure line'));
                   kids.push(h('rect', { key: 'mBg', x: meterX, y: meterY, width: meterW, height: 16, rx: 4, fill: dk ? '#1e293b' : '#e2e8f0', stroke: dk ? '#475569' : '#94a3b8' }));
                   kids.push(h('rect', { key: 'mFill', x: meterX, y: meterY, width: meterW * netClamped / meterMax, height: 16, rx: 4, fill: failed ? '#dc2626' : '#16a34a' }));
                   var thX = meterX + meterW * Math.min(meterMax, threshold) / meterMax;
                   kids.push(h('line', { key: 'th', x1: thX, y1: meterY - 5, x2: thX, y2: meterY + 21, stroke: dk ? '#fbbf24' : '#b45309', strokeWidth: 2, strokeDasharray: '3 2' }));
-                  kids.push(h('text', { key: 'thL', x: thX, y: meterY + 34, fontSize: 10, fill: dk ? '#fbbf24' : '#b45309', textAnchor: 'middle', fontWeight: 700 }, 'fails past ' + threshold));
-                  kids.push(h('text', { key: 'eq', x: meterX, y: meterY + 56, fontSize: 10.5, fill: muted }, 'net = stress ' + iq.force + ' − 0.6 × friction ' + iq.friction + ' = ' + Math.round(netStress)));
-                  kids.push(h('text', { key: 'why', x: meterX, y: meterY + 74, fontSize: 10.5, fill: muted }, iq.btype === 'convergent' ? 'Thrusts need the most stress to break.' : iq.btype === 'transform' ? 'Sideways (transform) faults break at a middle stress.' : 'Normal faults break at the least stress.'));
-                  kids.push(h('text', { key: 'st', x: meterX, y: meterY + 98, fontSize: 12, fill: fMeta.color, fontWeight: 900 }, failed ? 'SLIPPING — the fault gave way' : 'LOCKED — friction is winning'));
-                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-pt-stress-diagram': failure, 'data-pt-stress-net': String(Math.round(netStress)),
+                  kids.push(h('text', { key: 'thL', x: thX, y: meterY + 34, fontSize: 10 * mf, fill: dk ? '#fbbf24' : '#b45309', textAnchor: narrow ? 'start' : 'middle', fontWeight: 700 }, 'fails past ' + threshold));
+                  kids.push(h('text', { key: 'eq', x: meterX, y: meterY + 56, fontSize: 10.5 * mf, fill: muted }, 'net = stress ' + iq.force + ' − 0.6 × friction ' + iq.friction + ' = ' + Math.round(netStress)));
+                  kids.push(h('text', { key: 'why', x: meterX, y: meterY + 74, fontSize: 10.5 * mf, fill: muted }, iq.btype === 'convergent' ? 'Thrusts need the most stress to break.' : iq.btype === 'transform' ? 'Sideways (transform) faults break at a middle stress.' : 'Normal faults break at the least stress.'));
+                  kids.push(h('text', { key: 'st', x: meterX, y: meterY + 98, fontSize: 12 * mf, fill: fMeta.color, fontWeight: 900 }, failed ? 'SLIPPING — the fault gave way' : 'LOCKED — friction is winning'));
+                  return h('svg', { key: narrow ? 'narrow' : 'wide', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-pt-stress-diagram': failure, 'data-pt-stress-net': String(Math.round(netStress)),
+                    'data-pt-stress-layout': narrow ? 'narrow' : 'wide',
                     'aria-label': 'Fault diagram for a ' + iq.btype + ' boundary. Net stress ' + Math.round(netStress) + ' against a failure line of ' + threshold + ': the fault is ' + (failed ? 'slipping' : 'locked') + '.',
-                    className: 'rounded-lg border ' + (dk ? 'border-slate-700' : 'border-slate-300'), style: { background: dk ? '#0f172a' : '#f8fafc', maxHeight: 220 } }, kids);
+                    className: (narrow ? 'pt-stress-narrow ' : 'pt-stress-wide ') + 'rounded-lg border ' + (dk ? 'border-slate-700' : 'border-slate-300'), style: { background: dk ? '#0f172a' : '#f8fafc', maxHeight: narrow ? 400 : 220 } }, kids);
+                  };
+                  return h(React.Fragment, null, buildStress(false), buildStress(true));
                 })(),
                 h('div', { className: 'flex gap-2 flex-wrap' },
                   ['convergent', 'divergent', 'transform'].map(function(bt) {

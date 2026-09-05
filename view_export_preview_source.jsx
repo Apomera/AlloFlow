@@ -3601,6 +3601,7 @@ function ExportPreviewView(props) {
     t, theme,
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
+    builderResourceIds = null,
     onExportSuccess,
     builderWorkspaceMode = 'author',
     setBuilderWorkspaceMode,
@@ -7639,6 +7640,7 @@ function ExportPreviewView(props) {
     const source = Array.isArray(history) ? history : [];
     const toggleForType = {
       analysis: 'includeAnalysis', simplified: 'includeSimplified', glossary: 'includeGlossary', quiz: 'includeQuiz',
+      'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
       outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
       math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
       brainstorm: 'includeBrainstorm',
@@ -7712,7 +7714,7 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div data-help-key="doc_builder_document" ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {editingCitationId && (
                 <form ref={citationEditorRef} id="builder-citation-editor" data-builder-citation-editor="1" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-citation-editor-title" aria-describedby="builder-citation-editor-help" onSubmit={saveCitationEdit} className="absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
                   <div className="flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2">
@@ -7779,6 +7781,7 @@ function ExportPreviewView(props) {
                     <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
                   </div>
                 </div>
+                {Array.isArray(builderResourceIds) && exportPreviewSource === 'history' && <p role="status" className="rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950">{(t('guided.export_scope_label') || 'Current lesson: {count} selected resources.').replace('{count}', builderResourceIds.length)}{history.length === 0 && <span className="block">{t('guided.export_resources_missing') || 'This lesson has no available resources, or some are missing. Review History before opening its package.'}</span>}</p>}
                 {exportPreviewSource === 'remediation' && (
                   <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1" role="group" aria-label="Document Builder workspace">
                     <button type="button" onClick={() => setBuilderWorkspaceMode?.('author')} aria-pressed={!isAdvancedReview} className={`min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Standard</button>
@@ -7919,7 +7922,7 @@ function ExportPreviewView(props) {
                   {/* attribute order matters here: tests/document_builder_ui_a11y.test.js
                       asserts on the literal `aria-label="Export format" onKeyDown={...}`
                       substring, so aria-describedby goes after, not between. */}
-                  <div className="flex gap-1" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
+                  <div className="flex gap-1" data-help-key="doc_builder_format" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
                       <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
@@ -8238,6 +8241,8 @@ function ExportPreviewView(props) {
                         ['includeQuiz', '❓ Quiz', 'quiz'],
                         ['includeOutline', '🗂️ Graphic Organizer', 'outline'],
                         ['includeFaq', '💬 FAQ', 'faq'],
+                        ['includeMemoryAid', t('sidebar.tool_memory_aid') || 'Memory Aid Studio', 'memory-aid'],
+                        ['includeAppliedChallenge', t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio', 'applied-challenge'],
                         ['includeSentenceFrames', '✍️ Sentence Frames', 'sentence-frames'],
                         ['includeImage', '🎨 Visual Support', 'image'],
                         ['includeMath', '🔢 Math', 'math'],
@@ -8266,7 +8271,7 @@ function ExportPreviewView(props) {
                         return (
                           <React.Fragment key={key}>
                           <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
-                            <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
+                            <input type="checkbox" checked={['includeMemoryAid', 'includeAppliedChallenge'].includes(key) ? exportConfig[key] !== false : exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
                             <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
                           </label>
                           {showCloze && (
@@ -8939,7 +8944,7 @@ function ExportPreviewView(props) {
                     <div className="w-px h-5 bg-slate-200"></div>
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
 <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
-                    <button onClick={runExportFromPreview}
+                    <button data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
                       disabled={exportActionBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
                       aria-busy={exportActionBusy}
                       aria-label={exportActionBusy ? 'Export in progress' : undefined}

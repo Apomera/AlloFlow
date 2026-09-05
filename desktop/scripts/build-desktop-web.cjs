@@ -203,7 +203,7 @@ function patchDesktopHtml(rootDir) {
   let html = fs.readFileSync(indexPath, 'utf8');
   html = html
     .replace(/serviceWorker\.register\(["']\/sw\.js["']/g, 'serviceWorker.register("./sw.js"')
-    .replace(/(<script\s+src=["'])\/ai_backend_module\.js(["']\s*><\/script>)/g, '$1./ai_backend_module.js$2');
+    .replace(/(<script\b[^>]*\bsrc=["'])\/ai_backend_module\.js(["'])/gi, '$1./ai_backend_module.js$2');
   fs.writeFileSync(indexPath, html, 'utf8');
 }
 
@@ -398,5 +398,6 @@ module.exports = {
   computeBuildInputFingerprint,
   readPublishedFingerprint,
   shouldFingerprintPath,
+  patchDesktopHtml,
   stageDesktopAppBuild,
 };

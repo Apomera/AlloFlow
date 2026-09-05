@@ -47,6 +47,13 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-topbar-back{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-button);color:var(--ba-button-text);}',
     '.brainatlas-topbar-back:hover{border-color:var(--ba-purple);}',
     '.brainatlas-topbar-copy{min-width:0;}',
+    '.brainatlas-myth-verdict{border-left:4px solid var(--ba-purple);padding:6px 10px;border-radius:0 10px 10px 0;background:var(--ba-subpanel);}',
+    // ★ The four accent inks below are hardcoded literals, not var() bound to
+    // --allo-stem-*, so they survived into the contrast theme unchanged and sat
+    // deep-purple on that theme's black ground (2.96:1). Every --ba-* surface
+    // token IS bound to the palette and goes black there, so the accents follow
+    // the theme's own ink. Mirrors the .theme-dark rules further down.
+    '.theme-contrast .brainatlas-tool-shell{--ba-purple-ink:var(--allo-stem-text,#ffff00);--ba-sky-ink:var(--allo-stem-text,#ffff00);--ba-teal-ink:var(--allo-stem-text,#ffff00);--ba-amber-ink:var(--allo-stem-text,#ffff00);}',
     '.brainatlas-topbar-eyebrow{margin:0 0 2px;color:var(--ba-purple-ink);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}',
     '.brainatlas-topbar-title{margin:0;color:var(--ba-text);font-size:20px;line-height:1.3;font-weight:750;}',
     '.brainatlas-topbar-subtitle{margin:3px 0 0;color:var(--ba-muted);font-size:13px;line-height:1.5;overflow-wrap:anywhere;}',
@@ -1144,6 +1151,52 @@ var d = labToolData.brainAtlas || {};
                 { id: 'adolescent_remodel', name: t('stem.brainatlas.adolescent_remodeling', 'Adolescent remodeling'), x: 0.70, y: 0.55, w: 0.08, fn: 'Adolescence is a second window of large-scale remodeling: prefrontal pruning and myelination plus changes in the dopamine system. The limbic/reward system matures EARLIER than prefrontal control, a normal developmental gap (not a deficit) linked to greater risk-taking, novelty-seeking, and sensitivity to peers. This is typical maturation, not damage.', conditions: 'Many psychiatric conditions first emerge in adolescence as these circuits remodel; this is an association, not a simple cause.' }
               ]
             },
+            neuromyths: {
+              name: t('stem.brainatlas.neuromyths_view', '\uD83E\uDDE0 Neuromyths & Neurodiversity'), desc: t('stem.brainatlas.neuromyths_view_desc', 'Popular brain claims checked against the evidence: what is debunked, what is oversimplified, what is real but small, and what is promising but not proven'),
+              isNeuromyths: true,
+              regions: [
+                { id: 'myth_learning_styles', name: t('stem.brainatlas.myth_learning_styles', 'Learning styles (VAK matching)'), short: 'Learning styles', x: 0.14, y: 0.66, w: 0.08, verdict: 'debunked', belief: 93,
+                  claim: 'Each student is a visual, auditory, or kinesthetic learner and learns best when lessons are matched to that style.',
+                  fn: 'People do report preferences, but the "meshing hypothesis" (teaching in a matched style improves learning) has not survived controlled tests. Pashler, McDaniel, Rohrer and Bjork (2008) found no adequate evidence for it, and later experiments that assigned students to matched or mismatched instruction (Rogowsky et al. 2015; Husmann and O\'Loughlin 2019) found no benefit from matching. In Dekker et al. (2012), 93% of surveyed UK teachers endorsed the claim, making it one of the most widely believed neuromyths.',
+                  instead: 'Pick the format that fits the CONTENT (a map for geography, a demonstration for a lab skill), offer multiple representations to everyone (the UDL principle), and use retrieval practice and spacing, which have strong evidence.',
+                  source: 'Pashler et al. 2008, Psychological Science in the Public Interest; Dekker et al. 2012, Frontiers in Psychology', sourceUrl: 'https://doi.org/10.1111/j.1539-6053.2009.01038.x' },
+                { id: 'myth_left_right_brain', name: t('stem.brainatlas.myth_left_right_brain', 'Left-brained vs right-brained people'), short: 'Left/right brain', x: 0.38, y: 0.66, w: 0.08, verdict: 'oversimplified', belief: 91,
+                  claim: 'Logical people are "left-brained" and creative people are "right-brained", and teaching should target the dominant side.',
+                  fn: 'Real lateralization exists: language is usually left-dominant and some spatial-attention functions lean right (see the Cross-Lateral view). But the idea that a PERSON has a globally dominant hemisphere is not supported. Nielsen et al. (2013) analysed resting-state scans from 1,011 people and found no evidence that individuals have a stronger left- or right-sided network overall; nearly every task uses both hemispheres working together through the corpus callosum.',
+                  instead: 'Teach lateralization as a fact about FUNCTIONS (language, spatial attention), not about personality types. Creativity and logic both recruit widely distributed networks in both hemispheres.',
+                  source: 'Nielsen et al. 2013, PLoS ONE', sourceUrl: 'https://doi.org/10.1371/journal.pone.0071275' },
+                { id: 'myth_ten_percent', name: t('stem.brainatlas.myth_ten_percent', 'We only use 10% of our brain'), short: '10% of the brain', x: 0.62, y: 0.66, w: 0.08, verdict: 'debunked', belief: 48,
+                  claim: 'Most of the brain sits idle, and unlocking the unused 90% would give people extraordinary abilities.',
+                  fn: 'Functional imaging shows activity across virtually every brain region over the course of a normal day, and damage to almost any area produces a measurable deficit. The brain is about 2% of body mass but consumes roughly 20% of resting energy; evolution does not preserve costly tissue that does nothing. The claim likely grew from misquoted early-20th-century remarks about untapped potential, not from any measurement.',
+                  instead: 'Use the Stimulation Lab and Stroke Territories views: small lesions in "quiet" association cortex still change planning, attention, or language, which is the direct evidence against the myth.',
+                  source: 'Boyd 2008, Scientific American; Jarrett 2014, Great Myths of the Brain', sourceUrl: 'https://www.scientificamerican.com/article/do-people-only-use-10-percent-of-their-brains/' },
+                { id: 'myth_first_three_years', name: t('stem.brainatlas.myth_first_three_years', 'The window closes at age 3'), short: 'Closing windows', x: 0.86, y: 0.66, w: 0.08, verdict: 'oversimplified',
+                  claim: 'Brain development is essentially finished by age three, so children need special enrichment products (classical music, flashcards) before the window shuts.',
+                  fn: 'True critical periods exist for basic sensory functions, such as binocular vision and native-language sound categories (see the Synapse & Development view). Most learning, though, relies on sensitive periods that remain partly open for life, and the prefrontal cortex keeps remodelling into the mid-20s. The "Mozart effect" came from one small 1993 study of a brief spatial-task boost in adults; a 2010 meta-analysis (Pietschnig et al.) found little support for it, and no commercial enrichment product has evidence of lasting cognitive gains.',
+                  instead: 'What early brains reliably need is ordinary responsive caregiving, rich back-and-forth language, sleep, play, and safety. Later learning is not locked out.',
+                  source: 'Bruer 1999, The Myth of the First Three Years; Pietschnig et al. 2010, Intelligence', sourceUrl: 'https://doi.org/10.1016/j.intell.2010.03.001' },
+                { id: 'myth_brain_training', name: t('stem.brainatlas.myth_brain_training', 'Brain-training apps raise intelligence'), short: 'Brain training', x: 0.14, y: 0.84, w: 0.08, verdict: 'oversimplified',
+                  claim: 'A few minutes a day on a brain-training app improves memory, attention, and intelligence in general.',
+                  fn: 'Practice reliably improves the trained task, and sometimes very similar tasks, but "far transfer" to school work, reasoning, or everyday memory has not held up. A 2016 review by Simons and colleagues found the strongest claims rested on weak designs, and the US Federal Trade Commission fined Lumosity the same year for unsupported advertising. Plasticity is real (see Neuroplasticity in the Synapse view) but bounded.',
+                  instead: 'Practise the actual skill you want to improve. Aerobic exercise and adequate sleep have modest but real evidence for attention and memory.',
+                  source: 'Simons et al. 2016, Psychological Science in the Public Interest', sourceUrl: 'https://doi.org/10.1177/1529100616661983' },
+                { id: 'myth_adhd_brain', name: t('stem.brainatlas.myth_adhd_brain', 'ADHD brain differences'), short: 'ADHD brains', x: 0.38, y: 0.84, w: 0.08, verdict: 'real_small',
+                  claim: 'Either "ADHD brains are visibly different, so a scan can diagnose it" or, from the other side, "there is no brain test, so ADHD is not real".',
+                  fn: 'Both extremes are wrong. The ENIGMA-ADHD consortium (Hoogman et al. 2017) compared 1,713 people with ADHD and 1,529 without and found slightly smaller volumes in several subcortical structures (accumbens, amygdala, caudate, hippocampus, putamen) and total brain volume, most evident in children. The effects were small (roughly d = 0.1 to 0.2), so the two groups overlap almost completely and no scan can sort an individual. Likewise the EEG theta/beta ratio was proposed as a marker but is not diagnostically reliable (Arns et al. 2013). Differences are real at the GROUP level, dimensional, heterogeneous, and shaped by development and environment.',
+                  instead: 'Diagnosis stays clinical: developmental history, ratings from several settings, and functional impairment. Support follows function, not a scan. The SEL Hub Advocacy tool covers accommodations and self-advocacy.',
+                  source: 'Hoogman et al. 2017, Lancet Psychiatry (ENIGMA-ADHD); Arns et al. 2013, Journal of Attention Disorders', sourceUrl: 'https://doi.org/10.1016/S2215-0366(17)30049-4' },
+                { id: 'myth_autism_brain', name: t('stem.brainatlas.myth_autism_brain', 'The "autistic brain"'), short: 'Autism brains', x: 0.62, y: 0.84, w: 0.08, verdict: 'real_small',
+                  claim: 'There is a single recognisable autistic brain, or autism is simply a broken version of a typical brain.',
+                  fn: 'Group-level differences exist but are small and varied. ENIGMA-ASD (van Rooij et al. 2018) compared 1,571 autistic people with 1,651 controls and found modest differences in subcortical volumes and in cortical thickness, mostly frontal and temporal, with effect sizes around d = 0.1 to 0.2 and near-total overlap between groups. Some autistic children show early brain overgrowth; others do not. Heterogeneity is the main finding: autism describes many developmental paths, not one anatomy, which is why a neurodiversity framing (differences, strengths, and needs along dimensions) fits the data better than a deficit model.',
+                  instead: 'Describe autism as a spectrum of real neurological differences with a wide range of profiles. Support and accommodations should follow the individual, not a scan or a stereotype.',
+                  source: 'van Rooij et al. 2018, American Journal of Psychiatry (ENIGMA-ASD)', sourceUrl: 'https://doi.org/10.1176/appi.ajp.2017.17010100' },
+                { id: 'myth_retina_screening', name: t('stem.brainatlas.myth_retina_screening', 'An eye photo can diagnose ADHD'), short: 'Retina AI screen', x: 0.86, y: 0.84, w: 0.08, verdict: 'promising',
+                  claim: 'A deep-learning model can diagnose ADHD from a photograph of the retina with about 96% accuracy.',
+                  fn: 'A 2025 Korean study (Choi et al., npj Digital Medicine) trained a model on retinal fundus photographs and reported an AUROC of roughly 0.96 for telling children with ADHD from matched controls. That is a genuinely interesting result because the retina develops from the same tissue as the brain. But it was a matched case-control design, which inflates accuracy compared with a real clinic where ADHD is one of many possibilities; it has not been validated in an outside population; and it cannot separate ADHD from conditions that were not in the sample. At best it could one day help decide who gets a full assessment. It is not a diagnostic test.',
+                  instead: 'Teach students to ask three questions about any headline: who was in the sample, was it tested on new people, and does "accuracy" mean the same thing in a real screening population. This is what "promising, not proven" looks like.',
+                  source: 'Choi et al. 2025, npj Digital Medicine', sourceUrl: 'https://www.nature.com/npjdigitalmed/' }
+              ]
+            },
             stimulate: {
               name: t('stem.brainatlas.stimulation_lab', '\u26A1 Stimulation Lab'), desc: t('stem.brainatlas.predict_what_stimulating_each_region_d', 'Predict what stimulating each region does (how Penfield mapped the brain)'), 
               isStim: true,
@@ -1365,6 +1418,12 @@ var d = labToolData.brainAtlas || {};
 
           var activeSim = SIM_SCENARIOS.find(function (s) { return s.id === simScenario; }) || SIM_SCENARIOS[0];
 
+          var BRAIN_ATLAS_MYTH_VERDICTS = {
+            debunked: { color: '#be123c', label: t('stem.brainatlas.verdict_debunked', 'Debunked'), meaning: t('stem.brainatlas.verdict_debunked_meaning', 'Tested directly and not supported. Still widely taught, which is why it is worth naming.') },
+            oversimplified: { color: '#b45309', label: t('stem.brainatlas.verdict_oversimplified', 'Oversimplified'), meaning: t('stem.brainatlas.verdict_oversimplified_meaning', 'Built on a real finding, then stretched far past what the evidence shows.') },
+            real_small: { color: '#0369a1', label: t('stem.brainatlas.verdict_real_small', 'Real, but small and not diagnostic'), meaning: t('stem.brainatlas.verdict_real_small_meaning', 'Group-level differences replicate, but they are small, overlap almost completely between groups, and cannot classify an individual.') },
+            promising: { color: '#6d28d9', label: t('stem.brainatlas.verdict_promising', 'Promising, not proven'), meaning: t('stem.brainatlas.verdict_promising_meaning', 'An early result worth following, but not yet validated in new populations or real-world use.') }
+          };
           var EEG_ACTIVITY_MODES = [
             { id: 'resting', label: t('stem.brainatlas.resting', 'Resting') || 'Resting', mults: [0.3, 0.5, 1.0, 0.4, 0.2] },
             { id: 'sleeping', label: t('stem.brainatlas.sleeping', 'Sleeping') || 'Sleeping', mults: [1.0, 0.7, 0.2, 0.1, 0.05] },
@@ -5467,6 +5526,77 @@ var d = labToolData.brainAtlas || {};
                 ctx.beginPath(); ctx.moveTo(scanX, y0); ctx.lineTo(scanX, yB); ctx.stroke();
                 pulsePoint(pointOnCurve(sensoryPts, scan), '#22d3ee', 'sensory');
                 pulsePoint(pointOnCurve(prefrontalPts, (scan + 0.17) % 1), '#f59e0b', 'prefrontal');
+              } else if (currentView.isNeuromyths) {
+                // Belief vs evidence: how widely surveyed teachers endorsed each claim
+                // (Dekker et al. 2012, UK sample, n=137) next to the evidence verdict.
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                var nmTick = canvas._brainTick || 0;
+                var nmGlow = brainMotionReduced ? 0.5 : (0.5 + 0.5 * Math.sin(nmTick * 0.05));
+                brainAtlasDrawCompactCanvasHeading('Neuromyths: how widely believed vs what the evidence shows', 'Bars: share of surveyed UK teachers who agreed with the claim (Dekker et al. 2012). Chips: open a card.', { title: '#e2e8f0', subtitle: '#94a3b8' });
+                var nmVerdictStyle = {
+                  debunked: { color: '#fb7185', label: 'Debunked' },
+                  oversimplified: { color: '#f59e0b', label: 'Oversimplified' },
+                  real_small: { color: '#38bdf8', label: 'Real, but small' },
+                  promising: { color: '#a78bfa', label: 'Promising, not proven' }
+                };
+                var nmBars = filtered.filter(function (r) { return typeof r.belief === 'number'; });
+                var nmChartTop = Math.max(70, H * 0.17), nmChartBottom = H * 0.50;
+                var nmLabelW = Math.max(96, W * 0.24), nmBarX = 16 + nmLabelW, nmBarW = W - nmBarX - 52;
+                var nmRowH = nmBars.length ? (nmChartBottom - nmChartTop) / nmBars.length : 0;
+                var nmFontPx = Math.max(9, Math.min(11, Math.round(8 * fontScale)));
+                ctx.font = nmFontPx + 'px Inter,system-ui,sans-serif';
+                [0, 25, 50, 75, 100].forEach(function (pct) {
+                  var gx = nmBarX + (pct / 100) * nmBarW;
+                  ctx.strokeStyle = 'rgba(71,85,105,0.35)'; ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.moveTo(gx, nmChartTop - 6); ctx.lineTo(gx, nmChartBottom); ctx.stroke();
+                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+                  ctx.fillText(pct + '%', gx, nmChartBottom + 14);
+                });
+                nmBars.forEach(function (r, i) {
+                  var rowY = nmChartTop + i * nmRowH, barH = Math.max(10, Math.min(18, nmRowH * 0.55));
+                  var by = rowY + (nmRowH - barH) / 2;
+                  var style = nmVerdictStyle[r.verdict] || nmVerdictStyle.debunked;
+                  var isSelBar = sel && sel.id === r.id;
+                  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                  ctx.fillStyle = isSelBar ? '#f8fafc' : '#cbd5e1';
+                  ctx.font = (isSelBar ? 'bold ' : '') + nmFontPx + 'px Inter,system-ui,sans-serif';
+                  ctx.fillText(brainAtlasEllipsizeCanvasText(r.short || r.name, nmLabelW - 10), nmBarX - 10, by + barH / 2);
+                  ctx.fillStyle = 'rgba(51,65,85,0.6)';
+                  ctx.beginPath(); ctx.roundRect(nmBarX, by, nmBarW, barH, barH / 2); ctx.fill();
+                  var fillW = (r.belief / 100) * nmBarW;
+                  ctx.save();
+                  if (isSelBar) { ctx.shadowColor = style.color; ctx.shadowBlur = 8 + nmGlow * 6; }
+                  ctx.fillStyle = style.color;
+                  ctx.beginPath(); ctx.roundRect(nmBarX, by, fillW, barH, barH / 2); ctx.fill();
+                  ctx.restore();
+                  ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+                  ctx.fillText(r.belief + '%', nmBarX + fillW + 6, by + barH / 2);
+                });
+                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+                ctx.font = Math.max(8, nmFontPx - 1) + 'px Inter,system-ui,sans-serif';
+                ctx.fillText('One 2012 sample, not a current national figure. The point: belief and evidence can point opposite ways.', 16, nmChartBottom + 30);
+                // Verdict chips at each card position (click or tap to open the card)
+                filtered.forEach(function (r) {
+                  var cx0 = r.x * W, cy0 = r.y * H;
+                  var style = nmVerdictStyle[r.verdict] || nmVerdictStyle.debunked;
+                  var isSelChip = sel && sel.id === r.id;
+                  var chipW = Math.min(W * 0.22, Math.max(84, nmLabelW)), chipH = Math.max(30, nmFontPx * 3);
+                  var chipX = Math.max(4, Math.min(W - chipW - 4, cx0 - chipW / 2)), chipY = cy0 - chipH / 2;
+                  ctx.save();
+                  if (isSelChip) { ctx.shadowColor = style.color; ctx.shadowBlur = 10 + nmGlow * 8; }
+                  ctx.fillStyle = isSelChip ? 'rgba(30,41,59,0.98)' : 'rgba(30,41,59,0.85)';
+                  ctx.beginPath(); ctx.roundRect(chipX, chipY, chipW, chipH, 8); ctx.fill();
+                  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                  ctx.strokeStyle = isSelChip ? style.color : style.color + '88'; ctx.lineWidth = isSelChip ? 2 : 1; ctx.stroke();
+                  ctx.fillStyle = style.color;
+                  ctx.beginPath(); ctx.roundRect(chipX, chipY, 5, chipH, [8, 0, 0, 8]); ctx.fill();
+                  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold ' + nmFontPx + 'px Inter,system-ui,sans-serif';
+                  ctx.fillText(brainAtlasEllipsizeCanvasText(r.short || r.name, chipW - 18), chipX + 11, chipY + chipH * 0.34);
+                  ctx.fillStyle = style.color; ctx.font = Math.max(8, nmFontPx - 1) + 'px Inter,system-ui,sans-serif';
+                  ctx.fillText(brainAtlasEllipsizeCanvasText(style.label, chipW - 18), chipX + 11, chipY + chipH * 0.72);
+                  ctx.restore();
+                });
               } else if (currentView.isStim) {
                 var stimTick = canvas._brainTick || 0;
                 var stimPulse = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(stimTick * 0.095));
@@ -6237,7 +6367,7 @@ var d = labToolData.brainAtlas || {};
               canvas._brainLabelTargets = [];
               canvas._brainLabelView = viewKey;
               // ── Enhanced Region Markers + collision-aware labels (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isPrenatal && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez && !currentView.isStrokeTerritory && !currentView.isCerebellumClinic && !currentView.isBrainstemCross && !currentView.isCsfHydro && !currentView.isCrossLateral) {
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isPrenatal && !currentView.isStim && !currentView.isNeuromyths && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez && !currentView.isStrokeTerritory && !currentView.isCerebellumClinic && !currentView.isBrainstemCross && !currentView.isCsfHydro && !currentView.isCrossLateral) {
                 var regionLabelCandidates = [];
                 brainAtlasMarkerBoxes = filtered.map(function (region) {
                   var radius = (sel && sel.id === region.id ? 10 : 5) * brainAtlasLabelUnit;
@@ -6448,7 +6578,7 @@ var d = labToolData.brainAtlas || {};
           var selectedLabel = useBrain3D ? (selected3DLabel || (sel && sel.name) || (t('stem.brainatlas.none_selected', 'None selected') || 'None selected')) : (sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected'));
           selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
-          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isPrenatal || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isStim || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
+          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isNeuromyths || currentView.isPrenatal || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isStim || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
           var supportsCalloutDensity = !specialAtlasView;
 
           // Neurochemistry diagrams (synapse release, neuron anatomy, synapse
@@ -6458,7 +6588,7 @@ var d = labToolData.brainAtlas || {};
           // so the extra room becomes label SPACING, not bigger glyphs.
           // Safe: hit-testing is fraction-based [0,1], independent of canvas px.
           var neurochemView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse);
-          var wideAtlasView = !!(currentView.isSynapse || currentView.isPrenatal || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isCrossLateral);
+          var wideAtlasView = !!(currentView.isSynapse || currentView.isNeuromyths || currentView.isPrenatal || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isCrossLateral);
           var atlasW = currentView.isNeuron ? 1040 : (wideAtlasView ? 1040 : (currentView.isHomunculus ? 960 : (currentView.isNT ? 960 : (specialAtlasView ? 900 : 840))));
           var atlasH = currentView.isNeuron ? 880 : (currentView.isNT ? 820 : (wideAtlasView ? 780 : (currentView.isHomunculus ? 720 : (specialAtlasView ? 680 : 640))));
           // Use native fullscreen when available; otherwise fill the host frame safely.
@@ -6608,7 +6738,8 @@ var d = labToolData.brainAtlas || {};
             { id: 'clinical', label: t('stem.brainatlas.group_clinical', 'Clinical'), note: t('stem.brainatlas.group_clinical_note', 'Stroke territories, cerebellar signs, brainstem tracts, CSF flow, and case clues'), views: ['strokeTerritories', 'cerebellumClinic', 'brainstemCrossSection', 'csfHydrocephalus'] },
             { id: 'development', label: t('stem.brainatlas.group_development', 'Development'), note: t('stem.brainatlas.group_development_note', 'Brain growth before birth'), views: ['prenatalDevelopment'] },
             { id: 'systems', label: t('stem.brainatlas.group_systems', 'Systems'), note: t('stem.brainatlas.group_systems_note', 'Cells, synapses, chemistry, memory, emotion, and movement loops'), views: ['neurotransmitters', 'neuron', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop'] },
-            { id: 'simulations', label: t('stem.brainatlas.group_simulations', 'Simulations'), note: t('stem.brainatlas.group_simulations_note', 'Stimulation, sleep, rhythms, and wiring'), views: ['stimulate', 'sleepStages', 'eegWaves', 'crossLateral'] }
+            { id: 'simulations', label: t('stem.brainatlas.group_simulations', 'Simulations'), note: t('stem.brainatlas.group_simulations_note', 'Stimulation, sleep, rhythms, and wiring'), views: ['stimulate', 'sleepStages', 'eegWaves', 'crossLateral'] },
+            { id: 'evidence', label: t('stem.brainatlas.group_evidence', 'Evidence'), note: t('stem.brainatlas.group_evidence_note', 'Neuromyths, neurodiversity, and what the research actually supports'), views: ['neuromyths'] }
           ];
           function brainAtlasViewGroupFor(key) {
             for (var gi = 0; gi < VIEW_GROUPS.length; gi++) {
@@ -8991,6 +9122,7 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isCerebellumClinic) return t('stem.brainatlas.teacher_prompt_cerebellum_clinic', 'Ask students whether the sign is midline, limb, vestibular, or artery-pattern before naming the cerebellar target.');
             if (currentView.isBrainstemCross) return t('stem.brainatlas.teacher_prompt_brainstem_cross', 'Ask students to identify the ipsilateral cranial nerve sign first, then pair it with the crossed body tract finding.');
             if (currentView.isCsfHydro) return t('stem.brainatlas.teacher_prompt_csf_hydro', 'Ask students to trace one CSF drop from production to reabsorption, then predict which ventricles enlarge when a blockage occurs.');
+            if (currentView.isNeuromyths) return t('stem.brainatlas.teacher_prompt_neuromyths', 'Ask students to pick one claim they have heard, find the evidence card, and explain in one sentence why belief and evidence can disagree.');
             if (currentView.isStim) return t('stem.brainatlas.teacher_prompt_stim', 'Ask students to predict the patient response first, then revise their reasoning after feedback.');
             if (currentView.isSleep) return t('stem.brainatlas.teacher_prompt_sleep', 'Ask students to compare two sleep stages and connect each to memory, attention, or recovery.');
             if (currentView.isEEG) return t('stem.brainatlas.teacher_prompt_eeg', 'Ask students to match a brain-wave pattern to a state, then explain the clue they used.');
@@ -9014,6 +9146,7 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isCerebellumClinic) return t('stem.brainatlas.canvas_summary_cerebellum_clinic', 'Cerebellum clinic view showing vermis, cerebellar hemispheres, flocculonodular vestibular zone, deep nuclei, PICA, AICA, SCA, and case cards for wide gait, finger overshoot, vertigo with nystagmus, and hoarse ataxia.');
             if (currentView.isBrainstemCross) return t('stem.brainatlas.canvas_summary_brainstem_cross', 'Brainstem cross-section view showing midbrain, pons, medulla, corticospinal tract, medial lemniscus, spinothalamic tract, cranial nerve nuclei, and a crossed-findings decoder for localizing ipsilateral cranial nerve signs with contralateral body deficits.');
             if (currentView.isCsfHydro) return t('stem.brainatlas.canvas_summary_csf_hydro', 'CSF flow and hydrocephalus view showing choroid plexus production, lateral ventricles, third ventricle, cerebral aqueduct, fourth ventricle, subarachnoid space, arachnoid granulation reabsorption, and a hydrocephalus decoder for obstructive, communicating, normal-pressure, and raised-pressure patterns.');
+            if (currentView.isNeuromyths) return t('stem.brainatlas.canvas_summary_neuromyths', 'Neuromyths view showing a bar chart of how many surveyed teachers endorsed learning styles, hemispheric dominance, and the ten-percent myth, next to verdict chips for eight claims: debunked, oversimplified, real but small, or promising but not proven.');
             if (currentView.isStim) return t('stem.brainatlas.canvas_summary_stim', 'Stimulation Lab view showing a Penfield-style response map for motor movement, sensory tingling, visual flashes, auditory sounds, language disruption, memory-emotion responses, autonomic body-state changes, and quiet association cortex while the current electrode target pulses.');
             if (currentView.isSleep) return t('stem.brainatlas.canvas_summary_sleep', 'Sleep-stage view showing an animated overnight hypnogram, repeated 90-minute cycles, early-night N3 slow-wave sleep, later-night REM periods, N2 spindle sleep, and a sleep-architecture decoder for recovery, memory, emotion, attention, and fragmented sleep.');
             if (currentView.isEEG) return (t('stem.brainatlas.canvas_summary_eeg_active', 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') || 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') + activeEegMode.label + '. ' + activeEegReadout.dominant + '. ' + activeEegReadout.caution;
@@ -11220,6 +11353,17 @@ var d = labToolData.brainAtlas || {};
               ),
 
               // \u2500\u2500\u2500 Stimulation Lab (predict the effect) \u2500\u2500\u2500
+              currentView.isNeuromyths && React.createElement("section", { className: "bg-white rounded-xl border-2 border-violet-200 p-4 space-y-2", "data-brainatlas-neuromyths-panel": "true", "aria-labelledby": "brainatlas-neuromyths-heading" },
+                React.createElement("h4", { id: "brainatlas-neuromyths-heading", className: "font-black text-violet-800 text-sm" }, t('stem.brainatlas.neuromyths_panel_title', 'The brain science, honestly')),
+                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, t('stem.brainatlas.neuromyths_panel_intro', 'Surveys of teachers in several countries find that most endorse at least a few neuromyths, and the myths tend to spread through well-meant training rather than bad intent. Each card here pairs a popular claim with the evidence and a classroom alternative.')),
+                React.createElement("ul", { className: "text-xs text-slate-700 leading-relaxed list-disc pl-4 space-y-1" },
+                  React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_debunked', 'Debunked')), ": ", t('stem.brainatlas.verdict_debunked_meaning', 'Tested directly and not supported. Still widely taught, which is why it is worth naming.')),
+                  React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_oversimplified', 'Oversimplified')), ": ", t('stem.brainatlas.verdict_oversimplified_meaning', 'Built on a real finding, then stretched far past what the evidence shows.')),
+                  React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_real_small', 'Real, but small and not diagnostic')), ": ", t('stem.brainatlas.verdict_real_small_meaning', 'Group-level differences replicate, but they are small, overlap almost completely between groups, and cannot classify an individual.')),
+                  React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_promising', 'Promising, not proven')), ": ", t('stem.brainatlas.verdict_promising_meaning', 'An early result worth following, but not yet validated in new populations or real-world use.'))
+                ),
+                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.neuromyths_panel_note', 'Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team.'))
+              ),
               currentView.isStim && React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3" },
                 React.createElement("div", { className: "flex items-center justify-between" },
                   React.createElement("h4", { className: "font-black text-amber-800 text-sm" }, t('stem.brainatlas.stimulation_lab_2', "\u26A1 Stimulation Lab")),
@@ -11807,6 +11951,10 @@ var d = labToolData.brainAtlas || {};
                         { label: t('stem.brainatlas.big_idea', 'Big idea'), text: plainLesson.idea, color: '#7c3aed' },
                         { label: t('stem.brainatlas.everyday_example', 'Everyday example'), text: plainLesson.example, color: '#0f766e' },
                         { label: t('stem.brainatlas.connected_idea', 'Connected idea'), text: plainLesson.connection, color: '#0369a1' }
+                      ] : currentView.isNeuromyths ? [
+                        { label: t('stem.brainatlas.quick_the_claim', 'The claim') || 'The claim', text: brainAtlasShortText(sel.claim, 116), color: '#be185d' },
+                        { label: t('stem.brainatlas.quick_the_evidence', 'The evidence') || 'The evidence', text: brainAtlasShortText(sel.fn, 116), color: '#0369a1' },
+                        { label: t('stem.brainatlas.quick_instead', 'Instead') || 'Instead', text: brainAtlasShortText(sel.instead, 116), color: '#0f766e' }
                       ] : currentView.isPrenatal ? [
                         { label: t('stem.brainatlas.quick_milestone', 'Milestone') || 'Milestone', text: brainAtlasShortText(sel.fn, 116), color: '#7c3aed' },
                         { label: t('stem.brainatlas.quick_also_happening', 'Also happening') || 'Also happening', text: brainAtlasShortText(sel.context, 116), color: '#0f766e' },
@@ -11843,7 +11991,7 @@ var d = labToolData.brainAtlas || {};
 
                       !plainLesson && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, currentView.isPrenatal ? (t('stem.brainatlas.what_is_forming', 'What is forming') || 'What is forming') : t('stem.brainatlas.function', "Function")),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, currentView.isPrenatal ? (t('stem.brainatlas.what_is_forming', 'What is forming') || 'What is forming') : currentView.isNeuromyths ? (t('stem.brainatlas.what_the_evidence_says', 'What the evidence says') || 'What the evidence says') : t('stem.brainatlas.function', "Function")),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -11856,6 +12004,26 @@ var d = labToolData.brainAtlas || {};
                       currentView.isPrenatal && sel.continues && React.createElement("div", null,
                         React.createElement("p", { className: "text-[11px] font-bold text-pink-700 uppercase mb-0.5" }, t('stem.brainatlas.development_continues', 'Development continues')),
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-pink-50 rounded-lg p-2" }, sel.continues)
+                      ),
+                      currentView.isNeuromyths && sel.verdict && (function () {
+                        var verdictMeta = BRAIN_ATLAS_MYTH_VERDICTS[sel.verdict] || BRAIN_ATLAS_MYTH_VERDICTS.debunked;
+                        return React.createElement("div", { className: "brainatlas-myth-verdict", "data-brainatlas-myth-verdict": sel.verdict, style: { borderLeftColor: verdictMeta.color } },
+                          React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: verdictMeta.color } }, t('stem.brainatlas.evidence_verdict', 'Evidence verdict')),
+                          React.createElement("p", { className: "text-sm font-bold", style: { color: verdictMeta.color } }, verdictMeta.label),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, verdictMeta.meaning)
+                        );
+                      })(),
+                      currentView.isNeuromyths && sel.claim && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-rose-700 uppercase mb-0.5" }, t('stem.brainatlas.the_claim', 'The claim')),
+                        React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.claim)
+                      ),
+                      currentView.isNeuromyths && sel.instead && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.instead_try', 'Instead, try')),
+                        React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.instead)
+                      ),
+                      currentView.isNeuromyths && sel.source && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.source', 'Source')),
+                        sel.sourceUrl ? React.createElement("a", { className: "text-xs text-sky-700 underline leading-relaxed", href: sel.sourceUrl, target: "_blank", rel: "noopener noreferrer" }, sel.source) : React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, sel.source)
                       ),
 
                       plainLesson ? React.createElement("section", { className: "brainatlas-plain-lesson", "data-brainatlas-plain-lesson": sel.id, "aria-labelledby": "brainatlas-plain-question" },

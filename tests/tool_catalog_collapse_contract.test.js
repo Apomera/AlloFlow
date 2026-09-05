@@ -25,7 +25,7 @@ const catalogStateBlock = sourceBetween(
   "  const [toolCatalogGroup, setToolCatalogGroup] = useState('essentials');",
   "  const [workspacePane, setWorkspacePane] = useState('create');"
 );
-const catalogBridge = sourceBetween(
+const catalogBridge = sourceBetweenIn(sidebarSource,
   '            {!guidedMode && (() => {\n              const ToolCatalogControls',
   '            {/* -- UniversalSettingsPanel'
 );
@@ -33,10 +33,10 @@ const catalogMarkup = sourceBetweenIn(
   sidebarSource, 'function ToolCatalogControls(props) {',
   '// Types eligible for a differentiated set.'
 );
-const directToolMarkup = sourceBetween(
-  '            <div style={{display: isGuidedToolVisible(\'math\')',
-  '          )}\n            {!isTeacherMode && !activeSessionCode'
-);
+const generatorView = sidebarSource.slice(sidebarSource.indexOf('function GeneratorActionsView('), sidebarSource.indexOf('function SourceInputShellView('));
+const directToolStart = generatorView.indexOf("<div style={{display: isGuidedToolVisible('math')");
+expect(directToolStart).toBeGreaterThanOrEqual(0);
+const directToolMarkup = generatorView.slice(directToolStart);
 
 describe('Create a resource catalog collapse contract', () => {
   it('starts expanded while retaining independent query and filter state', () => {
@@ -107,7 +107,7 @@ describe('Create a resource catalog collapse contract', () => {
   it('records every direct catalog selection before launching its action', () => {
     expect(directToolMarkup).toContain("onClick={() => { selectToolFromCatalog('math'); setShowStemLab(true); setStemLabTab('explore'); }}");
     expect(directToolMarkup).toContain("onClick={() => { selectToolFromCatalog('directions'); setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}");
-    expect(directToolMarkup).toContain("onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}");
+    expect(readFileSync('view_full_pack_run_source.jsx', 'utf8')).toContain("onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}");
     expect(directToolMarkup).toContain("onClick={() => { selectToolFromCatalog('alignment'); handleGenerate('alignment-report'); }}");
   });
 

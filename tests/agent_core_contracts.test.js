@@ -191,6 +191,13 @@ describe('Blueprint contract + legacy round-trip', () => {
     expect(r.errors.some((e) => e.code === 'payload-too-deep')).toBe(true);
   });
 
+  it('accepts an AlloPack whose visual panels carry native labels (nine levels deep)', () => {
+    const pack = { allopack: { spec: '0.1', title: 'Illustrated' }, history: [{ id: 'r1', type: 'image', data: { visualPlan: { layout: 'grid', title: 't', panels: [{ id: 'p1', imageUrl: 'data:image/webp;base64,AA==', alt: 'A puddle.', labels: [{ text: 'Evaporation', position: 'bottom-left', anchorX: 26, anchorY: 49 }] }] } } }] };
+    const r = C.validateArtifact({ schemaVersion: C.SCHEMA_VERSION, artifactId: 'allopack-illustrated', type: 'allopack', title: 'Illustrated', language: 'en', data: pack });
+    expect(r.errors, JSON.stringify(r.errors)).toEqual([]);
+    expect(r.ok).toBe(true);
+  });
+
   it('applies the provenance contract to Blueprints', () => {
     const bp = C.fromLegacyConfig(fixture('legacy_config.json'), {
       blueprintId: 'bp-prov',

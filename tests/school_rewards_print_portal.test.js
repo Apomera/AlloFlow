@@ -127,7 +127,7 @@ function memorySessionStorage() {
   };
 }
 
-async function runPortal({ role = 'student', printBootstrap, mainBootstrapData, rpcResponses = {}, sessionStore, confirm = () => true, prompt = () => 'Test reason' } = {}) {
+async function runPortal({ role = 'student', printBootstrap, mainBootstrapData, rpcResponses = {}, sessionStore, confirm = () => true, prompt = () => 'Test reason', dateConstructor = Date } = {}) {
   const dom = createDocument();
   const calls = [];
   const storage = sessionStore || memorySessionStorage();
@@ -143,7 +143,7 @@ async function runPortal({ role = 'student', printBootstrap, mainBootstrapData, 
     return { ok: true };
   };
   const context = vm.createContext({
-    console, Date, JSON, Math, Promise, setTimeout, clearTimeout,
+    console, Date: dateConstructor, JSON, Math, Promise, setTimeout, clearTimeout,
     ArrayBuffer, Uint8Array, DataView, TextDecoder, crypto: webcrypto,
     btoa: value => Buffer.from(value, 'binary').toString('base64'),
     document: dom.document,
@@ -180,7 +180,743 @@ function mailRun(overrides = {}) {
   };
 }
 
+
+function checkoutFixture() {
+  const main = mainBootstrap('cashier');
+  main.students = [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', balance: 100, availableBalance: 100, active: true }];
+  main.catalog = [{ id: 'prize-1', name: 'Notebook', cost: 20, inventoryLimit: 5, remaining: 5, active: true }];
+  return main;
+}
+function prepareCheckout(app) {
+  app.nodes['checkout-student'].value = 'student-1';
+  app.nodes['checkout-window'].value = 'window-1';
+  app.nodes['store-catalog'].querySelectorAll('[data-add]')[0].onclick();
+}
+
+describe('School store checkout reliability', () => {
+  it('shows a completed receipt before refreshing and keeps it visible if refresh fails', async () => {
+    const main = checkoutFixture();
+    let loads = 0, rejectRefresh;
+    const refresh = new Promise((_resolve, reject) => { rejectRefresh = reject; });
+    const app = await runPortal({ role: 'cashier', rpcResponses: {
+      getSchoolRewardsBootstrap: () => ++loads >= 3 ? refresh : main,
+      checkoutSchoolRewardsOrder: () => ({ ok: true, order: { id: 'completed-order', total: 20, lines: [{ itemName: 'Notebook', quantity: 1, lineTotal: 20 }] }, receipt: { status: 'SENT' }, availableBalance: 80 }),
+    } });
+    prepareCheckout(app);
+    const submit = app.nodes['checkout-form'].onsubmit({ preventDefault() {} });
+    await flush();
+    const visibleWhileRefreshing = !app.nodes['checkout-receipt'].hidden && app.nodes['checkout-receipt'].innerHTML.includes('completed-order');
+    rejectRefresh(new Error('Connection lost during refresh'));
+    await submit;
+    expect(visibleWhileRefreshing).toBe(true);
+    expect(app.nodes['checkout-receipt'].hidden).toBe(false);
+    expect(app.nodes['checkout-receipt'].innerHTML).toContain('completed-order');
+    expect(app.nodes.notice.textContent).toContain('Checkout completed');
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes.notice.textContent).not.toContain('retry key were preserved');
+    expect(app.nodes['cart-total'].textContent).toBe('0 points');
+    expect(app.sessionStorage.values.size).toBe(0);
+    expect(app.calls.filter(call => call.name === 'checkoutSchoolRewardsOrder')).toHaveLength(1);
+  });
+
+  it('requires a fresh selection when the shopping window changes during checkout refresh', async () => {
+    const main = checkoutFixture(), changed = structuredClone(main);
+    changed.windows = [{ id: 'window-2', name: 'Next trimester', status: 'OPEN' }];
+    let loads = 0, confirmations = 0;
+    const app = await runPortal({ role: 'cashier', confirm: () => { confirmations++; return true; }, rpcResponses: {
+      getSchoolRewardsBootstrap: () => ++loads === 1 ? main : changed,
+    } });
+    prepareCheckout(app);
+    await app.nodes['checkout-form'].onsubmit({ preventDefault() {} });
+    expect(confirmations).toBe(0);
+    expect(app.calls.filter(call => call.name === 'checkoutSchoolRewardsOrder')).toHaveLength(0);
+    expect(app.nodes.notice.textContent).toContain('no longer available');
+    expect(app.nodes['cart-total'].textContent).toBe('20 points');
+  });
+
+  it('freezes cart and student controls during live verification, then unlocks after cancellation', async () => {
+    const main = checkoutFixture();
+    let loads = 0, releaseRefresh;
+    const refresh = new Promise(resolve => { releaseRefresh = resolve; });
+    const app = await runPortal({ role: 'cashier', confirm: () => false, rpcResponses: {
+      getSchoolRewardsBootstrap: () => ++loads === 2 ? refresh : main,
+    } });
+    prepareCheckout(app);
+    const add = app.nodes['store-catalog'].querySelectorAll('[data-add]')[0];
+    const submit = app.nodes['checkout-form'].onsubmit({ preventDefault() {} });
+    await flush();
+    const controlsLocked = ['checkout-student', 'checkout-window', 'checkout-student-search', 'checkout-grade-filter', 'checkout-room-filter'].every(id => app.nodes[id].disabled);
+    const decrease = app.nodes['cart-lines'].querySelectorAll('[data-decrease]')[0];
+    const increase = app.nodes['cart-lines'].querySelectorAll('[data-increase]')[0];
+    const steppersLocked = decrease.disabled && increase.disabled;
+    add.onclick(); increase.onclick(); decrease.onclick();
+    const totalWhileBusy = app.nodes['cart-total'].textContent;
+    releaseRefresh(main);
+    await submit;
+    expect(controlsLocked).toBe(true);
+    expect(steppersLocked).toBe(true);
+    expect(totalWhileBusy).toBe('20 points');
+    expect(app.nodes['checkout-student'].disabled).toBe(false);
+    expect(app.nodes['checkout-submit'].disabled).toBe(false);
+    expect(app.calls.filter(call => call.name === 'checkoutSchoolRewardsOrder')).toHaveLength(0);
+  });
+});
+
+
+
+describe('School Rewards confirmed saves and refresh recovery', () => {
+  it('keeps a confirmed print submission visible and retries only the refresh', async () => {
+    let loads = 0, rejectRefresh;
+    const blocked = new Promise((_ok, reject) => { rejectRefresh = reject; });
+    const app = await runPortal({ rpcResponses: { getSchoolRewardsBootstrap: () => ++loads === 2 ? blocked : mainBootstrap() } });
+    app.nodes['print-window'].value = 'window-1';
+    app.nodes['print-package-file'].files = [{ name: 'model.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff()) }];
+    await app.nodes['print-package-file'].onchange();
+    const submitting = app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+    await flush();
+    const messageBeforeRefresh = app.nodes.notice.textContent;
+    rejectRefresh(new Error('Refresh connection interrupted'));
+    await submitting;
+    expect(messageBeforeRefresh).toContain('print request submitted');
+    expect(app.nodes.notice.textContent).toContain('print request submitted');
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes['print-submit'].disabled).toBe(true);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(false);
+    await Promise.all([app.nodes['retry-saved-refresh'].onclick(), app.nodes['retry-saved-refresh'].onclick()]);
+    expect(loads).toBe(3);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(true);
+    expect(app.calls.filter(c => c.name === 'createSchoolRewardsPrintModel')).toHaveLength(1);
+    expect(app.calls.filter(c => c.name === 'submitSchoolRewardsPrintRequest')).toHaveLength(1);
+  });
+
+  it('preserves roster apply confirmation when only the refresh fails', async () => {
+    let loads = 0;
+    const preview = { contractVersion: 'alloflow-sis-roster/1', snapshotId: 'confirmed-roster', contentHash: 'c'.repeat(43), rosterRevision: 'd'.repeat(43), counts: { created: 1, total: 1 } };
+    const app = await runPortal({ role: 'admin', rpcResponses: {
+      getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return mainBootstrap('admin'); },
+      previewSchoolRewardsSisSnapshot: preview, applySchoolRewardsSisSnapshot: { applied: 1 },
+    } });
+    const snapshot = { formatVersion: 'alloflow-sis-roster/1', snapshotId: 'confirmed-roster', students: [{ firstName: 'Avery', email: 'avery@school.example' }] };
+    app.nodes['sis-snapshot-file'].files = [{ name: 'roster.json', size: 500, text: async () => JSON.stringify(snapshot) }];
+    await app.nodes['sis-snapshot-file'].onchange();
+    await app.nodes['preview-sis-snapshot'].onclick();
+    await app.nodes['apply-sis-snapshot'].onclick();
+    expect(app.nodes.notice.textContent).toContain('SIS snapshot applied: 1 roster records');
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes['apply-sis-snapshot'].disabled).toBe(true);
+    await app.nodes['retry-saved-refresh'].onclick();
+    expect(app.calls.filter(c => c.name === 'applySchoolRewardsSisSnapshot')).toHaveLength(1);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(true);
+  });
+
+  it.each(['prize', 'inventory'])('does not restore an uncertain %s retry after a confirmed save and failed refresh', async kind => {
+    let loads = 0;
+    const main = mainBootstrap('admin'), item = { id: 'prize-1', name: 'Sketchbook', cost: 20, inventoryLimit: 10, remaining: 3, inventoryVersion: 2, active: true };
+    main.catalog = kind === 'inventory' ? [item] : [];
+    let saved;
+    const app = await runPortal({ role: 'admin', rpcResponses: {
+      getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return loads > 2 ? { ...main, catalog: [saved] } : main; },
+      adminUpsertRewardsCatalogItem: request => { saved = kind === 'inventory' ? { ...item, remaining: 5, inventoryVersion: 3 } : { ...item, ...request }; return { item: saved }; },
+    } });
+    if (kind === 'prize') {
+      app.nodes['catalog-name'].value = item.name; app.nodes['catalog-cost'].value = '20';
+      app.nodes['catalog-inventory-mode'].value = 'FINITE'; app.nodes['catalog-stock'].value = '10'; app.nodes['catalog-remaining'].value = '3';
+      await app.nodes['catalog-form'].onsubmit({ preventDefault() {} });
+      expect(app.nodes.notice.textContent).toContain('Prize and starting inventory created.');
+      expect(app.nodes['catalog-save-status'].hidden).toBe(true);
+      expect(app.nodes['catalog-id'].value).toBe(item.id);
+      expect(app.nodes['catalog-submit'].textContent).toBe('Save prize details');
+    } else {
+      app.nodes['inventory-id'].value = item.id; app.nodes['inventory-id'].onchange();
+      app.nodes['inventory-action'].value = 'ADD'; app.nodes['inventory-action'].onchange();
+      app.nodes['inventory-amount'].value = '2'; app.nodes['inventory-reason'].value = 'New stock received';
+      app.nodes['inventory-form'].onsubmit({ preventDefault() {} });
+      await app.nodes['inventory-confirm'].onclick();
+      expect(app.nodes.notice.textContent).toContain('Inventory adjustment saved at version 3');
+      expect(app.nodes['inventory-review'].hidden).toBe(true);
+      expect(app.nodes['inventory-current'].textContent).toContain('5 of 10 remaining');
+    }
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes.notice.textContent).not.toContain('uncertain');
+    expect(app.sessionStorage.values.size).toBe(0);
+    await app.nodes['retry-saved-refresh'].onclick();
+    expect(app.calls.filter(c => c.name === 'adminUpsertRewardsCatalogItem')).toHaveLength(1);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(true);
+  });
+
+  it('keeps an unconfirmed print request available for its original retry', async () => {
+    const app = await runPortal({ rpcResponses: { submitSchoolRewardsPrintRequest: () => { throw new Error('Submission response lost'); } } });
+    app.nodes['print-window'].value = 'window-1';
+    app.nodes['print-package-file'].files = [{ name: 'model.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff()) }];
+    await app.nodes['print-package-file'].onchange();
+    await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+    expect(app.nodes.notice.textContent).toContain('Submission response lost');
+    expect(app.nodes.notice.textContent).not.toContain('print request submitted');
+    expect(app.nodes['print-submit'].disabled).toBe(false);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(true);
+    expect(app.calls.filter(c => c.name === 'getSchoolRewardsBootstrap')).toHaveLength(1);
+  });
+});
+
+
+describe('School Rewards remaining save recovery', () => {
+  it.each([
+    ['settings', 'adminUpdateRewardsSettings', 'Settings saved.'],
+    ['levels', 'adminSetRewardsLevelThresholds', 'Growth level thresholds saved.'],
+    ['window', 'adminUpsertRewardsWindow', 'Trimester window saved as OPEN.'],
+    ['award', 'awardSchoolRewardsPoints', 'Points, explanation, and growth progress recorded.'],
+    ['print refund', 'refundSchoolRewardsPrintRequest', 'Print points refunded and receipt updated.'],
+    ['order refund', 'refundSchoolRewardsOrder', 'Order refunded; points, inventory, and receipt updated.'],
+  ])('retains confirmed %s results when refresh fails and retries only reads', async (kind, rpcName, message) => {
+    const main = mainBootstrap('admin'); let loads = 0;
+    main.students = [{ id: 'student-1', firstName: 'Avery', active: true }];
+    main.categories = [{ id: 'category-1', name: 'Helping', active: true }];
+    main.recentOrders = [{ id: 'order-1', studentId: 'student-1', at: '2026-09-04T12:00:00Z', total: 10, status: 'COMPLETED', lines: [] }];
+    const print = { actor: { role: 'admin' }, models: [], requests: [{ id: 'print-1', status: 'FULFILLED', modelId: 'model-1', quotePoints: 10, student: { firstName: 'Avery' } }], holds: [], communityModels: [] };
+    const app = await runPortal({ role: 'admin', printBootstrap: print, rpcResponses: {
+      getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return main; },
+      [rpcName]: { ok: true, window: { id: 'window-1', status: 'OPEN' }, entry: { id: 'entry-1', studentId: 'student-1' } },
+    } });
+    expect(app.nodes.notice.className, app.nodes.notice.textContent).not.toContain('error');
+    if (kind === 'settings') await app.nodes['save-settings'].onclick();
+    if (kind === 'levels') { app.nodes['level-thresholds'].value = '0,25,50'; await app.nodes['levels-form'].onsubmit({ preventDefault() {} }); }
+    if (kind === 'window') { app.nodes['window-name'].value = 'Store'; app.nodes['window-status'].value = 'OPEN'; await app.nodes['window-form'].onsubmit({ preventDefault() {} }); }
+    if (kind === 'award') {
+      app.nodes['award-student'].value = 'student-1'; app.nodes['award-category'].value = 'category-1';
+      app.nodes['award-amount'].value = '5'; app.nodes['award-reason'].value = 'Helped the class';
+      await app.nodes['award-form'].onsubmit({ preventDefault() {} });
+    }
+    if (kind === 'print refund') {
+      const button = app.nodes['print-staff-requests'].querySelectorAll('[data-print-refund]')[0];
+      button.closest = () => ({ dataset: { printRequest: 'print-1' } });
+      await button.onclick();
+    }
+    if (kind === 'order refund') await app.nodes['orders-body'].querySelectorAll('[data-refund]')[0].onclick();
+    await flush();
+    expect(app.nodes.notice.textContent).toContain(message);
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(false);
+    await app.nodes['retry-saved-refresh'].onclick();
+    expect(app.calls.filter(call => call.name === rpcName)).toHaveLength(1);
+    expect(app.nodes['retry-saved-refresh'].hidden).toBe(true);
+  });
+
+  it.each([0, 1])('preserves partial group results and retry identity with %s recorded and a failed refresh', async recorded => {
+    const main = mainBootstrap('staff'); let loads = 0;
+    main.students = [{ id: 'student-1', firstName: 'Avery', active: true }, { id: 'student-2', firstName: 'Blake', active: true }];
+    main.categories = [{ id: 'category-1', name: 'Helping', active: true }];
+    const app = await runPortal({ role: 'staff', rpcResponses: {
+      getSchoolRewardsBootstrap: () => { if (++loads === 2) throw new Error('Refresh unavailable'); return main; },
+      awardSchoolRewardsPointsBatch: { recorded, failed: 2 - recorded, results: [{ studentId: 'student-2', ok: false, error: 'Temporary failure' }] },
+    } });
+    app.nodes['award-group-mode'].checked = true; app.nodes['award-group-all'].onclick();
+    app.nodes['award-category'].value = 'category-1'; app.nodes['award-amount'].value = '5'; app.nodes['award-reason'].value = 'Helped together';
+    await app.nodes['award-form'].onsubmit({ preventDefault() {} });
+    expect(app.nodes.notice.textContent).toContain(recorded + ' recorded; ' + (2 - recorded) + ' not recorded');
+    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    expect(app.nodes.notice.textContent).toContain('could not refresh');
+    expect(app.nodes['award-reason'].value).toBe('Helped together');
+    const retryKey = [...app.sessionStorage.values.values()][0];
+    await app.nodes['retry-saved-refresh'].onclick();
+    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    expect(app.nodes.notice.className).toContain('error');
+    expect(app.calls.filter(c => c.name === 'awardSchoolRewardsPointsBatch')).toHaveLength(1);
+    expect([...app.sessionStorage.values.values()][0]).toBe(retryKey);
+    await app.nodes['award-form'].onsubmit({ preventDefault() {} });
+    const calls = app.calls.filter(c => c.name === 'awardSchoolRewardsPointsBatch');
+    expect(calls[1].argument).toEqual(calls[0].argument);
+  });
+});
+
+
+
+function dateInOffset(offset) {
+  return class OffsetDate extends Date {
+    constructor(value) {
+      if (arguments.length === 0) super(OffsetDate.now());
+      else if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) super(Date.parse(value + ':00Z') + offset * 60000);
+      else super(value);
+    }
+    static now() { return Date.parse('2098-12-25T23:15:00Z'); }
+    getTimezoneOffset() { return offset; }
+  };
+}
+
+function staffQuoteForm(app, values = {}) {
+  const fields = Object.fromEntries(Object.entries({ reason: '', quoteExpiresAt: '2099-01-03T12:00', quotePoints: '10', approvedMaterialId: '', printerProfileId: '', estimatedGrams: '0', estimatedMinutes: '0', preflightDecision: 'APPROVED', preflightSummary: '', ...values }).map(([name, value]) => [name, { value }]));
+  const form = { dataset: { printReview: 'request-1' }, querySelector: selector => fields[selector.match(/name="([^"]+)"/)[1]] };
+  const button = app.nodes['print-staff-requests'].querySelectorAll('[data-print-review-action]').find(node => node.dataset.printReviewAction === 'QUOTE');
+  expect(button).toBeTruthy(); button.closest = () => form;
+  return { fields, submit: () => button.onclick() };
+}
+
+describe('School Rewards schedule and quote preservation', () => {
+  it.each([
+    [300, '2099-01-01T21:15', '2099-01-02T21:15'],
+    [-330, '2099-01-02T07:45', '2099-01-03T07:45'],
+  ])('preserves exact shopping dates during a status change at UTC offset %s minutes', async (offset, localStart, localEnd) => {
+    const main = mainBootstrap('admin'), window = { id: 'window-1', name: 'Store', status: 'DRAFT', startsAt: '2099-01-02T02:15:37.250Z', endsAt: '2099-01-03T02:15:48.500Z' };
+    main.windows = [window];
+    const app = await runPortal({ role: 'admin', dateConstructor: dateInOffset(offset), mainBootstrapData: main, rpcResponses: { adminUpsertRewardsWindow: argument => ({ ok: true, window: { ...argument } }) } });
+    app.nodes['window-list'].querySelectorAll('[data-edit-window]')[0].onclick();
+    expect(app.nodes['window-start'].value).toBe(localStart); expect(app.nodes['window-end'].value).toBe(localEnd);
+    app.nodes['window-status'].value = 'PREVIEW';
+    await app.nodes['window-form'].onsubmit({ preventDefault() {} });
+    expect(app.calls.find(c => c.name === 'adminUpsertRewardsWindow').argument).toMatchObject({ startsAt: window.startsAt, endsAt: window.endsAt, status: 'PREVIEW' });
+  });
+
+  it.each([[300, '2099-01-02T15:30:00.000Z'], [-330, '2099-01-02T05:00:00.000Z']])('sends new window dates as UTC instants at offset %s', async (offset, expected) => {
+    const app = await runPortal({ role: 'admin', dateConstructor: dateInOffset(offset), rpcResponses: { adminUpsertRewardsWindow: argument => ({ ok: true, window: { id: 'saved-window', ...argument } }) } });
+    app.nodes['window-start'].value = '2099-01-02T10:30'; app.nodes['window-end'].value = '2099-01-03T10:30';
+    await app.nodes['window-form'].onsubmit({ preventDefault() {} });
+    const request = app.calls.find(c => c.name === 'adminUpsertRewardsWindow').argument;
+    expect(request.startsAt).toBe(expected); expect(request.endsAt).toBe(expected.replace('01-02', '01-03'));
+  });
+
+  it.each([['2099-02-30T10:30', '2099-03-03T10:30'], ['2099-01-03T10:30', '2099-01-02T10:30']])('rejects invalid or reversed window dates before contacting the server', async (startsAt, endsAt) => {
+    const app = await runPortal({ role: 'admin', dateConstructor: dateInOffset(300) });
+    app.nodes['window-start'].value = startsAt; app.nodes['window-end'].value = endsAt;
+    await app.nodes['window-form'].onsubmit({ preventDefault() {} });
+    expect(app.calls.filter(c => c.name === 'adminUpsertRewardsWindow')).toHaveLength(0);
+    expect(app.nodes.notice.className).toContain('error');
+  });
+
+  it('keeps an existing repeated-hour timestamp instead of reparsing it to the earlier occurrence', async () => {
+    const ZonedDate = dateInOffset(300);
+    // This simulates a browser choosing the earlier occurrence when a local clock time repeats.
+    class RepeatedHourDate extends ZonedDate {
+      constructor(value) { super(value === '2099-11-01T01:30' ? '2099-11-01T05:30:00Z' : value); }
+      getTimezoneOffset() { return this.getTime() < Date.parse('2099-11-01T06:00Z') ? 240 : 300; }
+    }
+    const main = mainBootstrap('admin'); main.windows = [{ id: 'window-1', name: 'Store', status: 'DRAFT', startsAt: '2099-11-01T06:30:00Z', endsAt: '' }];
+    const app = await runPortal({ role: 'admin', dateConstructor: RepeatedHourDate, mainBootstrapData: main, rpcResponses: { adminUpsertRewardsWindow: argument => ({ window: argument }) } });
+    app.nodes['window-list'].querySelectorAll('[data-edit-window]')[0].onclick();
+    expect(app.nodes['window-start'].value).toBe('2099-11-01T01:30');
+    await app.nodes['window-form'].onsubmit({ preventDefault() {} });
+    expect(app.calls.find(c => c.name === 'adminUpsertRewardsWindow').argument.startsAt).toBe('2099-11-01T06:30:00.000Z');
+  });
+
+  it('rejects a local time that the browser shifts across a clock-change gap', async () => {
+    const ZonedDate = dateInOffset(300);
+    class GapDate extends ZonedDate {
+      constructor(value) { super(value === '2099-03-08T02:30' ? '2099-03-08T03:30' : value); }
+    }
+    const app = await runPortal({ role: 'admin', dateConstructor: GapDate });
+    app.nodes['window-start'].value = '2099-03-08T02:30';
+    await app.nodes['window-form'].onsubmit({ preventDefault() {} });
+    expect(app.calls.filter(c => c.name === 'adminUpsertRewardsWindow')).toHaveLength(0);
+    expect(app.nodes.notice.textContent).toContain('valid date and time');
+  });
+
+  it.each([[300, '2099-01-01T21:15'], [-330, '2099-01-02T07:45']])('retains the saved quote expiry, feedback, override and blank fields at offset %s', async (offset, expiry) => {
+    const request = { id: 'request-1', modelId: 'model-1', status: 'QUOTED', requestedMaterialId: 'PHA', approvedMaterialId: '', quotePoints: 10, quoteExpiresAt: '2099-01-02T02:15:37.250Z', preflightDecision: 'OVERRIDE', preflightSummary: '', staffReason: 'Checked <thin walls>' };
+    const app = await runPortal({ role: 'staff', dateConstructor: dateInOffset(offset), printBootstrap: { actor: { role: 'staff' }, models: [], requests: [request], holds: [], communityModels: [] } });
+    const html = app.nodes['print-staff-requests'].innerHTML;
+    expect(html).toContain('value="' + expiry + '"'); expect(html).toContain('value="OVERRIDE" selected');
+    expect(html).toContain('Checked &lt;thin walls&gt;'); expect(html).not.toContain('Checked <thin walls>');
+    expect(html).toContain('name="approvedMaterialId" maxlength="80" value=""'); expect(html).toContain('name="preflightSummary" maxlength="2000"></textarea>');
+    const form = staffQuoteForm(app, { quoteExpiresAt: expiry, reason: request.staffReason, preflightDecision: 'OVERRIDE' });
+    await form.submit();
+    expect(app.calls.find(c => c.name === 'reviewSchoolRewardsPrintRequest').argument).toMatchObject({ quoteExpiresAt: request.quoteExpiresAt, reason: request.staffReason, preflightDecision: 'OVERRIDE', approvedMaterialId: '', preflightSummary: '' });
+  });
+
+  it.each([[300, '2099-01-01T18:15'], [-330, '2099-01-02T04:45']])('displays a new quote’s seven-day default in local time at offset %s', async (offset, expiry) => {
+    const app = await runPortal({ role: 'staff', dateConstructor: dateInOffset(offset), printBootstrap: { actor: { role: 'staff' }, models: [], requests: [{ id: 'request-1', modelId: 'model-1', status: 'SUBMITTED' }], holds: [], communityModels: [] } });
+    expect(app.nodes['print-staff-requests'].innerHTML).toContain('value="' + expiry + '"');
+  });
+
+  it.each(['estimatedGrams', 'estimatedMinutes'].flatMap(field => ['-1', '1.5', '100001', 'Infinity', 'not a number'].map(value => [field, value])))('rejects %s=%s without rounding or storing a request, then accepts a correction', async (field, value) => {
+    const app = await runPortal({ role: 'staff', printBootstrap: { actor: { role: 'staff' }, models: [], requests: [{ id: 'request-1', modelId: 'model-1', status: 'SUBMITTED' }], holds: [], communityModels: [] } });
+    const form = staffQuoteForm(app, { [field]: value }); await form.submit();
+    expect(app.calls.filter(c => c.name === 'reviewSchoolRewardsPrintRequest')).toHaveLength(0);
+    expect(app.sessionStorage.values.size).toBe(0); expect(app.nodes.notice.textContent).toContain('whole numbers');
+    form.fields[field].value = '18'; await form.submit();
+    expect(app.calls.filter(c => c.name === 'reviewSchoolRewardsPrintRequest')).toHaveLength(1);
+    expect(app.calls.find(c => c.name === 'reviewSchoolRewardsPrintRequest').argument[field]).toBe(18);
+  });
+});
+
+describe('School Rewards auxiliary action and refresh ordering', () => {
+
+  it.each(['completed', 'pending', 'missing-model', 'unavailable'])('clears a saved remix retry only after verified settlement: %s', async outcome => {
+    const model = { id: 'source-model', title: 'Shared', sourceFormat: 'RECIPE' };
+    const print = { actor: { role: 'student' }, models: [], requests: [], holds: [], communityModels: [{ model, publication: { reusePolicy: 'SCHOOL_REMIX_PRINT' } }] };
+    const initial = await runPortal({ printBootstrap: print, rpcResponses: { remixSchoolRewardsPrintModel: () => { throw new Error('Response lost'); } } });
+    await initial.nodes['print-community'].querySelectorAll('[data-community-remix]')[0].onclick();
+    const original = initial.calls.find(c => c.name === 'remixSchoolRewardsPrintModel').argument;
+    expect(initial.sessionStorage.values.size).toBe(1);
+    const restored = { ...print, models: outcome === 'missing-model' ? [] : [{ id: 'settled-remix', title: 'Recovered', sourceFormat: 'RECIPE' }] };
+    const app = await runPortal({ printBootstrap: restored, sessionStore: initial.sessionStorage, rpcResponses: { getSchoolRewardsPrintRemixStatus: () => {
+      if (outcome === 'unavailable') throw new Error('Status unavailable');
+      return { ok: true, state: outcome === 'pending' ? 'FILE_CREATING' : 'COMPLETED', modelId: 'settled-remix' };
+    } } });
+    expect(app.calls.find(c => c.name === 'getSchoolRewardsPrintRemixStatus').argument).toEqual({ idempotencyKey: original.idempotencyKey });
+    expect(app.calls.filter(c => c.name === 'remixSchoolRewardsPrintModel')).toHaveLength(0);
+    expect(app.sessionStorage.values.size).toBe(outcome === 'completed' ? 0 : 1);
+    expect(app.nodes.notice.className).not.toContain('error');
+    if (outcome === 'completed') {
+      await app.nodes['print-community'].querySelectorAll('[data-community-remix]')[0].onclick();
+      expect(app.calls.find(c => c.name === 'remixSchoolRewardsPrintModel').argument.idempotencyKey).not.toBe(original.idempotencyKey);
+    }
+  });
+
+
+  it.each([false, true])('retains an uncertain guardian request after a later coded rejection (reloaded: %s)', async reload => {
+    let attempts = 0;
+    const respond = { adminUpsertSchoolRewardsGuardian: () => { if (++attempts === 1) throw new Error('Response lost'); throw Object.assign(new Error('Request rejected'), { code: 'bad_request' }); } };
+    let app = await runPortal({ role: 'admin', rpcResponses: respond });
+    function fill(app, address) { app.nodes['guardian-student'].value = 'student-1'; app.nodes['guardian-email'].value = address; app.nodes['guardian-active'].checked = true; app.nodes['guardian-consent'].checked = true; }
+    async function submit(app) { await app.nodes['guardian-form'].onsubmit({ preventDefault() {}, target: app.nodes['guardian-form'] }); }
+    fill(app, 'guardian@family.example'); await submit(app);
+    const originalKey = [...app.sessionStorage.values.values()][0];
+    if (reload) app = await runPortal({ role: 'admin', sessionStore: app.sessionStorage, rpcResponses: respond });
+    fill(app, 'guardian@family.example'); await submit(app);
+    expect([...app.sessionStorage.values.values()][0]).toBe(originalKey);
+    fill(app, 'changed@family.example'); await submit(app);
+    expect(attempts).toBe(2);
+    expect(app.nodes.notice.textContent).toContain('earlier action is unresolved');
+  });
+
+  it('releases a first definitive validation rejection so a guardian form can be corrected', async () => {
+    let attempts = 0;
+    const app = await runPortal({ role: 'admin', rpcResponses: { adminUpsertSchoolRewardsGuardian: () => { if (++attempts === 1) throw Object.assign(new Error('Invalid guardian'), { code: 'bad_guardian' }); return { ok: true }; } } });
+    app.nodes['guardian-student'].value = 'student-1'; app.nodes['guardian-email'].value = 'bad';
+    app.nodes['guardian-active'].checked = true; app.nodes['guardian-consent'].checked = true;
+    const event = { preventDefault() {}, target: app.nodes['guardian-form'] };
+    await app.nodes['guardian-form'].onsubmit(event);
+    expect(app.sessionStorage.values.size).toBe(0);
+    app.nodes['guardian-email'].value = 'guardian@family.example'; await app.nodes['guardian-form'].onsubmit(event);
+    expect(attempts).toBe(2); expect(app.nodes.notice.textContent).toContain('Guardian connection saved');
+  });
+
+  it.each([['past', '10'], ['future', '1.5'], ['future', '100001'], ['future', 'Infinity']])('allows correcting a %s quote with %s points before a request key is created', async (expiry, points) => {
+    const print = { actor: { role: 'staff' }, models: [], requests: [{ id: 'request-1', modelId: 'model-1', status: 'SUBMITTED', model: { sourceFormat: 'RECIPE' } }], holds: [], communityModels: [] };
+    const app = await runPortal({ role: 'staff', printBootstrap: print });
+    const fields = Object.fromEntries(Object.entries({ reason: '', quoteExpiresAt: expiry === 'past' ? '2000-01-01T12:00' : '2099-01-01T12:00', quotePoints: points, approvedMaterialId: '', printerProfileId: '', estimatedGrams: '0', estimatedMinutes: '0', preflightDecision: 'APPROVED', preflightSummary: '' }).map(([name, value]) => [name, { value }]));
+    const form = { dataset: { printReview: 'request-1' }, querySelector: selector => fields[selector.match(/name="([^"]+)"/)[1]] };
+    const button = app.nodes['print-staff-requests'].querySelectorAll('[data-print-review-action]').find(node => node.dataset.printReviewAction === 'QUOTE');
+    expect(button).toBeTruthy(); button.closest = () => form;
+    await button.onclick();
+    expect(app.calls.filter(c => c.name === 'reviewSchoolRewardsPrintRequest')).toHaveLength(0);
+    expect(app.sessionStorage.values.size).toBe(0);
+    fields.quoteExpiresAt.value = '2099-01-01T12:00'; fields.quotePoints.value = '10';
+    await button.onclick();
+    expect(app.calls.filter(c => c.name === 'reviewSchoolRewardsPrintRequest')).toHaveLength(1);
+    expect(app.nodes.notice.textContent).toContain('Point quote sent');
+  });
+
+
+  it('does not let an older success hide the newest refresh failure', async () => {
+    let loads = 0, finishOld; const old = new Promise(resolve => { finishOld = resolve; });
+    const main = mainBootstrap('admin');
+    const app = await runPortal({ role: 'admin', rpcResponses: { getSchoolRewardsBootstrap: () => { if (++loads === 2) return old; if (loads === 3) throw new Error('Newest refresh failed'); return main; } } });
+    const first = app.nodes['retry-print-load'].onclick(); await flush();
+    await app.nodes['refresh-store-live'].onclick();
+    finishOld({ ...main, config: { ...main.config, schoolName: 'Obsolete school' } }); await first;
+    expect(app.nodes['school-title'].textContent).toBe('Pilot School Rewards');
+    expect(app.nodes.notice.textContent).toBe('Newest refresh failed');
+  });
+
+  it('stops checkout when another refresh supersedes its availability check', async () => {
+    let loads = 0, finishOld; const old = new Promise(resolve => { finishOld = resolve; });
+    const main = checkoutFixture(); main.actor.role = 'admin';
+    const app = await runPortal({ role: 'admin', rpcResponses: { getSchoolRewardsBootstrap: () => ++loads === 2 ? old : main } });
+    prepareCheckout(app);
+    const checkout = app.nodes['checkout-form'].onsubmit({ preventDefault() {} }); await flush();
+    await app.nodes['retry-print-load'].onclick(); finishOld(main); await checkout;
+    expect(app.calls.filter(c => c.name === 'checkoutSchoolRewardsOrder')).toHaveLength(0);
+    expect(app.nodes['cart-total'].textContent).toBe('20 points');
+  });
+
+
+
+  it('suppresses repeated remix clicks and retries a lost response with the same key', async () => {
+    let rejectFirst, attempts = 0; const pending = new Promise((_resolve, reject) => { rejectFirst = reject; });
+    const model = { id: 'model-1', title: 'Shared bridge', sourceFormat: 'RECIPE' };
+    const print = { actor: { role: 'student' }, models: [], requests: [], holds: [], communityModels: [{ model, publication: { id: 'publication-1', reusePolicy: 'SCHOOL_REMIX_PRINT' } }] };
+    const app = await runPortal({ printBootstrap: print, rpcResponses: { remixSchoolRewardsPrintModel: () => ++attempts === 1 ? pending : { ok: true } } });
+    const button = app.nodes['print-community'].querySelectorAll('[data-community-remix]')[0];
+    const first = button.onclick(), duplicate = button.onclick();
+    await flush(); const during = app.calls.filter(c => c.name === 'remixSchoolRewardsPrintModel').length;
+    rejectFirst(new Error('Reply lost')); await Promise.all([first, duplicate]);
+    expect(during).toBe(1);
+    await button.onclick();
+    const calls = app.calls.filter(c => c.name === 'remixSchoolRewardsPrintModel');
+    expect(calls).toHaveLength(2); expect(calls[1].argument).toEqual(calls[0].argument);
+  });
+
+
+  it('suppresses duplicate guardian submits and retains the exact request after response loss', async () => {
+    let failFirst, attempts = 0; const pending = new Promise((_resolve, reject) => { failFirst = reject; });
+    const app = await runPortal({ role: 'admin', rpcResponses: { adminUpsertSchoolRewardsGuardian: () => ++attempts === 1 ? pending : { ok: true } } });
+    app.nodes['guardian-student'].value = 'student-1'; app.nodes['guardian-email'].value = 'guardian@family.example';
+    app.nodes['guardian-active'].checked = true; app.nodes['guardian-consent'].checked = true;
+    const event = { preventDefault() {}, target: app.nodes['guardian-form'] };
+    const first = app.nodes['guardian-form'].onsubmit(event), second = app.nodes['guardian-form'].onsubmit(event);
+    await flush(); const callsDuring = app.calls.filter(c => c.name === 'adminUpsertSchoolRewardsGuardian').length;
+    failFirst(new Error('Response lost')); await Promise.all([first, second]);
+    expect(callsDuring).toBe(1);
+    app.nodes['guardian-email'].value = 'changed@family.example';
+    await app.nodes['guardian-form'].onsubmit(event);
+    expect(app.calls.filter(c => c.name === 'adminUpsertSchoolRewardsGuardian')).toHaveLength(1);
+    app.nodes['guardian-email'].value = 'guardian@family.example';
+    await app.nodes['guardian-form'].onsubmit(event);
+    const calls = app.calls.filter(c => c.name === 'adminUpsertSchoolRewardsGuardian');
+    expect(calls).toHaveLength(2); expect(calls[1].argument).toEqual(calls[0].argument);
+    expect(app.sessionStorage.values.size).toBe(0);
+  });
+
+  it.each(['success', 'failure'])('ignores an older full refresh ending in %s after a newer store refresh', async outcome => {
+    let loads = 0, finishOld, failOld;
+    const old = new Promise((resolve, reject) => { finishOld = resolve; failOld = reject; });
+    const main = mainBootstrap('admin'), latest = { ...main, config: { ...main.config, schoolName: 'Newest school' } };
+    const app = await runPortal({ role: 'admin', rpcResponses: { getSchoolRewardsBootstrap: () => ++loads === 2 ? old : loads > 2 ? latest : main } });
+    const first = app.nodes['retry-print-load'].onclick();
+    await flush(); await app.nodes['refresh-store-live'].onclick();
+    const notice = app.nodes.notice.textContent;
+    if (outcome === 'failure') failOld(new Error('Obsolete refresh error')); else finishOld({ ...main, config: { ...main.config, schoolName: 'Old school' } });
+    await first;
+    expect(app.nodes['school-title'].textContent).toBe('Newest school Rewards');
+    expect(app.nodes.notice.textContent).toBe(notice);
+  });
+});
+describe('School Rewards asynchronous imports', () => {
+  function deferred() { let resolve, reject; const promise = new Promise((ok, fail) => { resolve = ok; reject = fail; }); return { promise, resolve, reject }; }
+  function roster(id) { return { formatVersion: 'alloflow-sis-roster/1', snapshotId: id, students: [{ id: 'sis-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', email: 'avery@school.example', active: true }] }; }
+  function preview(id) { return { contractVersion: 'alloflow-sis-roster/1', snapshotId: id, contentHash: 'c'.repeat(43), rosterRevision: 'd'.repeat(43), counts: { created: 1, total: 1 } }; }
+
+
+  it('clears a previous ready print draft immediately while its replacement is still loading', async () => {
+    const app = await runPortal(), slow = deferred(), input = app.nodes['print-package-file'];
+    app.nodes['print-window'].value = 'window-1';
+    input.files = [{ name: 'ready.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff()) }];
+    await input.onchange();
+    expect(app.nodes['print-submit'].disabled).toBe(false);
+    input.files = [{ name: 'replacement.alloflow-print.json', size: 500, text: () => slow.promise }];
+    const reading = input.onchange();
+    const disabled = app.nodes['print-submit'].disabled;
+    await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+    slow.resolve(JSON.stringify(printHandoff('RECIPE', { title: 'Replacement' }))); await reading;
+    expect(disabled).toBe(true);
+    expect(app.calls.filter(c => c.name === 'createSchoolRewardsPrintModel')).toHaveLength(0);
+    expect(app.nodes['print-submit'].disabled).toBe(false);
+  });
+
+  it.each(['success', 'failure', 'clear'])('keeps the latest asset selection after an older verification ends with %s', async outcome => {
+    const bytes = new Uint8Array(24);
+    bytes.set([0x67, 0x6c, 0x54, 0x46]);
+    const view = new DataView(bytes.buffer);
+    view.setUint32(4, 2, true); view.setUint32(8, 24, true); view.setUint32(12, 4, true); view.setUint32(16, 0x4e4f534a, true);
+    bytes.set([0x7b, 0x7d, 0x20, 0x20], 20);
+    const handoff = printHandoff('GLB', { contentHash: createHash('sha256').update(bytes).digest('hex') });
+    handoff.preflight.byteSize = bytes.length;
+    const app = await runPortal(), slow = deferred(), input = app.nodes['print-asset-file'];
+    app.nodes['print-window'].value = 'window-1';
+    app.nodes['print-package-file'].files = [{ name: 'model.alloflow-print.json', size: 500, text: async () => JSON.stringify(handoff) }];
+    await app.nodes['print-package-file'].onchange();
+    input.files = [{ name: 'old.glb', size: bytes.length, arrayBuffer: () => slow.promise }];
+    const first = input.onchange();
+    input.files = outcome === 'clear' ? [] : [{ name: 'new.glb', size: bytes.length, arrayBuffer: async () => bytes.buffer }];
+    await input.onchange();
+    const message = app.nodes.notice.textContent;
+    if (outcome === 'failure') slow.reject(new Error('Old asset failed')); else slow.resolve(bytes.buffer);
+    await first;
+    expect(app.nodes.notice.textContent).toBe(message);
+    expect(app.nodes['print-submit'].disabled).toBe(outcome === 'clear');
+    if (outcome !== 'clear') {
+      await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+      expect(app.calls.find(c => c.name === 'uploadSchoolRewardsPrintAsset').argument.fileName).toBe('new.glb');
+    }
+  });
+
+  it.each(['success', 'failure', 'clear'])('keeps the latest print selection when an older read ends with %s', async outcome => {
+    const app = await runPortal(), slow = deferred(), input = app.nodes['print-package-file'];
+    app.nodes['print-window'].value = 'window-1';
+    input.files = [{ name: 'old.alloflow-print.json', size: 500, text: () => slow.promise }];
+    const first = input.onchange();
+    if (outcome === 'clear') input.files = [];
+    else input.files = [{ name: 'new.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff('RECIPE', { title: 'Newest model' })) }];
+    await input.onchange();
+    const message = app.nodes.notice.textContent;
+    if (outcome === 'failure') slow.reject(new Error('Old read failed')); else slow.resolve(JSON.stringify(printHandoff('RECIPE', { title: 'Old model' })));
+    await first;
+    expect(app.nodes.notice.textContent).toBe(message);
+    if (outcome === 'clear') {
+      expect(app.nodes['print-submit'].disabled).toBe(true);
+      expect(app.nodes['print-package-summary'].textContent).toContain('Choose a Print Lab handoff');
+      expect(app.nodes.notice.className).not.toContain('busy');
+    } else {
+      expect(app.nodes['print-package-summary'].innerHTML).toContain('Newest model');
+      expect(app.nodes['print-submit'].disabled).toBe(false);
+      await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+      expect(app.calls.find(c => c.name === 'createSchoolRewardsPrintModel').argument.title).toBe('Newest model');
+    }
+  });
+
+  it.each(['success', 'failure', 'clear'])('keeps the latest SIS selection when an older read ends with %s', async outcome => {
+    const app = await runPortal({ role: 'admin', rpcResponses: { previewSchoolRewardsSisSnapshot: preview('new-roster') } });
+    const slow = deferred(), input = app.nodes['sis-snapshot-file'];
+    input.files = [{ name: 'old.json', size: 500, text: () => slow.promise }];
+    const first = input.onchange();
+    input.files = outcome === 'clear' ? [] : [{ name: 'new.json', size: 500, text: async () => JSON.stringify(roster('new-roster')) }];
+    await input.onchange();
+    const message = app.nodes.notice.textContent;
+    if (outcome === 'failure') slow.reject(new Error('Old read failed')); else slow.resolve(JSON.stringify(roster('old-roster')));
+    await first;
+    expect(app.nodes.notice.textContent).toBe(message);
+    if (outcome === 'clear') {
+      expect(app.nodes['preview-sis-snapshot'].disabled).toBe(true);
+      expect(app.nodes.notice.className).not.toContain('busy');
+    } else {
+      await app.nodes['preview-sis-snapshot'].onclick();
+      expect(app.calls.find(c => c.name === 'previewSchoolRewardsSisSnapshot').argument.snapshotId).toBe('new-roster');
+      expect(app.nodes['apply-sis-snapshot'].disabled).toBe(false);
+    }
+  });
+
+  it('discards an asset verification completed after selecting a different handoff', async () => {
+    const bytes = new Uint8Array(24);
+    bytes.set([0x67, 0x6c, 0x54, 0x46]);
+    const view = new DataView(bytes.buffer);
+    view.setUint32(4, 2, true); view.setUint32(8, 24, true); view.setUint32(12, 4, true); view.setUint32(16, 0x4e4f534a, true);
+    bytes.set([0x7b, 0x7d, 0x20, 0x20], 20);
+    const handoff = printHandoff('GLB', { contentHash: createHash('sha256').update(bytes).digest('hex') });
+    handoff.preflight.byteSize = bytes.length;
+    const app = await runPortal(), slow = deferred(), input = app.nodes['print-package-file'];
+    app.nodes['print-window'].value = 'window-1';
+    input.files = [{ name: 'old.alloflow-print.json', size: 500, text: async () => JSON.stringify(handoff) }];
+    await input.onchange();
+    app.nodes['print-asset-file'].files = [{ name: 'old.glb', size: bytes.length, arrayBuffer: () => slow.promise }];
+    const checking = app.nodes['print-asset-file'].onchange();
+    input.files = [{ name: 'new.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff('GLB', { contentHash: 'b'.repeat(64), title: 'New binary' })) }];
+    await input.onchange();
+    const message = app.nodes.notice.textContent;
+    slow.resolve(bytes.buffer); await checking;
+    expect(app.nodes['print-submit'].disabled).toBe(true);
+    expect(app.nodes.notice.textContent).toBe(message);
+    await app.nodes['print-submit-form'].onsubmit({ preventDefault() {}, target: app.nodes['print-submit-form'] });
+    expect(app.calls.filter(c => c.name === 'createSchoolRewardsPrintModel')).toHaveLength(0);
+  });
+
+  it.each(['preview', 'apply'])('locks a roster during %s and suppresses duplicate requests', async operation => {
+    const slow = deferred(), name = operation === 'preview' ? 'previewSchoolRewardsSisSnapshot' : 'applySchoolRewardsSisSnapshot';
+    const app = await runPortal({ role: 'admin', rpcResponses: { previewSchoolRewardsSisSnapshot: preview('original'), [name]: () => slow.promise } });
+    const input = app.nodes['sis-snapshot-file'];
+    input.files = [{ name: 'original.json', size: 500, text: async () => JSON.stringify(roster('original')) }];
+    await input.onchange();
+    if (operation === 'apply') await app.nodes['preview-sis-snapshot'].onclick();
+    const button = app.nodes[operation + '-sis-snapshot'], running = button.onclick();
+    await flush();
+    const locked = input.disabled && app.nodes['preview-sis-snapshot'].disabled && app.nodes['apply-sis-snapshot'].disabled;
+    input.files = [{ name: 'replacement.json', size: 500, text: async () => JSON.stringify(roster('replacement')) }];
+    await input.onchange();
+    const duplicate = button.onclick();
+    slow.resolve(operation === 'preview' ? preview('original') : { applied: 1 });
+    await Promise.all([running, duplicate]);
+    expect(locked).toBe(true);
+    expect(app.calls.filter(c => c.name === name)).toHaveLength(1);
+    expect(app.calls.find(c => c.name === name).argument.snapshotId).toBe('original');
+    expect(input.disabled).toBe(false);
+    if (operation === 'preview') expect(app.nodes['apply-sis-snapshot'].disabled).toBe(false);
+  });
+
+  it('unlocks a failed roster apply and retries with the original confirmation and request key', async () => {
+    let attempts = 0;
+    const app = await runPortal({ role: 'admin', rpcResponses: {
+      previewSchoolRewardsSisSnapshot: preview('retry-roster'),
+      applySchoolRewardsSisSnapshot: () => { if (++attempts === 1) throw new Error('Connection interrupted'); return { applied: 1 }; },
+    } });
+    app.nodes['sis-snapshot-file'].files = [{ name: 'roster.json', size: 500, text: async () => JSON.stringify(roster('retry-roster')) }];
+    await app.nodes['sis-snapshot-file'].onchange();
+    await app.nodes['preview-sis-snapshot'].onclick();
+    await app.nodes['apply-sis-snapshot'].onclick();
+    expect(app.nodes['sis-snapshot-file'].disabled).toBe(false);
+    expect(app.nodes['apply-sis-snapshot'].disabled).toBe(false);
+    await app.nodes['apply-sis-snapshot'].onclick();
+    const requests = app.calls.filter(c => c.name === 'applySchoolRewardsSisSnapshot');
+    expect(requests).toHaveLength(2);
+    expect(requests[1].argument).toEqual(requests[0].argument);
+  });
+});
+
 describe('School Rewards Print Lab portal', () => {
+
+  it('submits one immutable print draft while the model registration is pending', async () => {
+    let release;
+    const registration = new Promise(resolve => { release = resolve; });
+    const app = await runPortal({ rpcResponses: { createSchoolRewardsPrintModel: () => registration } });
+    app.nodes['print-window'].value = 'window-1';
+    app.nodes['print-package-file'].files = [{ name: 'bridge.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff()) }];
+    await app.nodes['print-package-file'].onchange();
+    app.nodes['print-material'].value = 'PLA';
+    app.nodes['print-student-note'].value = 'Original note';
+    const event = { preventDefault() {}, target: app.nodes['print-submit-form'] };
+    const first = app.nodes['print-submit-form'].onsubmit(event);
+    const second = app.nodes['print-submit-form'].onsubmit(event);
+    await flush();
+    const locked = app.nodes['print-submit'].disabled && app.nodes['print-package-file'].disabled && app.nodes['print-material'].disabled;
+    app.nodes['print-material'].value = 'Changed during request';
+    app.nodes['print-student-note'].value = 'Changed during request';
+    app.nodes['print-package-file'].files = [{ name: 'replacement.alloflow-print.json', size: 500, text: async () => JSON.stringify(printHandoff('RECIPE', { title: 'Replacement' })) }];
+    await app.nodes['print-package-file'].onchange();
+    release({ ok: true, model: { id: 'model-1' } });
+    await Promise.all([first, second]);
+    expect(locked).toBe(true);
+    expect(app.calls.filter(call => call.name === 'createSchoolRewardsPrintModel')).toHaveLength(1);
+    const requests = app.calls.filter(call => call.name === 'submitSchoolRewardsPrintRequest');
+    expect(requests).toHaveLength(1);
+    expect(requests[0].argument).toMatchObject({ requestedMaterialId: 'PLA', studentNote: 'Original note' });
+    const modelKey = app.calls.find(call => call.name === 'createSchoolRewardsPrintModel').argument.idempotencyKey;
+    expect(requests[0].argument.idempotencyKey).toBe(modelKey.replace(/_model$/, '_request'));
+    expect(app.nodes['print-package-file'].disabled).toBe(false);
+  });
+
+
+  it('retries a partially recorded group with the original safety key and selection', async () => {
+    const main = mainBootstrap('staff');
+    main.students = [{ id: 'student-1', firstName: 'Avery', active: true }, { id: 'student-2', firstName: 'Blake', active: true }];
+    main.categories = [{ id: 'category-1', name: 'Helping', active: true }];
+    let attempts = 0;
+    const confirmations = [];
+    const app = await runPortal({ role: 'staff', mainBootstrapData: main, confirm: message => { confirmations.push(message); return true; }, rpcResponses: {
+      awardSchoolRewardsPointsBatch: () => ++attempts === 1
+        ? { ok: false, recorded: 1, failed: 1, results: [{ studentId: 'student-1', ok: true }, { studentId: 'student-2', ok: false, error: 'Temporary failure' }] }
+        : { ok: true, recorded: 2, failed: 0 },
+    } });
+    app.nodes['award-group-mode'].checked = true;
+    app.nodes['award-group-all'].onclick();
+    app.nodes['award-category'].value = 'category-1';
+    app.nodes['award-amount'].value = '5';
+    app.nodes['award-reason'].value = 'Helped together';
+    await app.nodes['award-form'].onsubmit({ preventDefault() {} });
+    expect(confirmations[0]).toBe('Record 5 points for 2 students with the same explanation?');
+    expect(app.sessionStorage.values.size).toBe(1);
+    expect(app.nodes.notice.textContent).toContain('Retry the same group');
+    await app.nodes['award-form'].onsubmit({ preventDefault() {} });
+    const calls = app.calls.filter(call => call.name === 'awardSchoolRewardsPointsBatch');
+    expect(calls).toHaveLength(2);
+    expect(calls[1].argument).toEqual(calls[0].argument);
+    expect(app.sessionStorage.values.size).toBe(0);
+  });
+
+  it('bounds both catalog and stepper additions to 100 of each prize and 50 distinct prizes', async () => {
+    const main = mainBootstrap('cashier');
+    main.catalog = Array.from({ length: 51 }, (_, index) => ({ id: 'prize-' + index, name: 'Prize ' + index, cost: 1, inventoryLimit: -1, remaining: -1, active: true }));
+    const app = await runPortal({ role: 'cashier', mainBootstrapData: main });
+    const add = app.nodes['store-catalog'].querySelectorAll('[data-add]');
+    for (let i = 0; i < 101; i++) add[0].onclick();
+    expect(app.nodes['cart-total'].textContent).toBe('100 points');
+    const increase = app.nodes['cart-lines'].querySelectorAll('[data-increase]')[0];
+    expect(increase.disabled).toBe(true);
+    increase.onclick();
+    expect(app.nodes['cart-total'].textContent).toBe('100 points');
+    app.nodes['cart-lines'].querySelectorAll('[data-decrease]')[0].onclick();
+    expect(app.nodes['cart-lines'].querySelectorAll('[data-increase]')[0].disabled).toBe(false);
+    for (let i = 1; i < 51; i++) add[i].onclick();
+    expect(app.nodes['cart-lines'].querySelectorAll('[data-decrease]')).toHaveLength(50);
+    expect(app.nodes['cart-total'].textContent).toBe('148 points');
+  });
+
   it('shows the truly available student balance instead of reserved points as spendable', async () => {
     const app = await runPortal();
     expect(app.nodes['metric-students-label'].textContent).toBe('My available-to-spend balance');
@@ -503,6 +1239,45 @@ describe('School Rewards Print Lab portal', () => {
     expect(SCRIPT).not.toMatch(/dataset\.(idempotencyKey|recoveryKey)|data-recover-operation="/);
   });
 
+
+  it('resumes a pending private remix once and reruns the integrity report', async () => {
+    let scans = 0, finish; const pending = new Promise(resolve => { finish = resolve; }), key = 'private_remix_recovery_key';
+    const blocked = { ready: false, summary: { errors: 1, pendingOperations: 1 }, issues: [{ code: 'PRINT_REMIX_PENDING', severity: 'ERROR', entityType: 'idempotency', entityId: key, message: 'Private remix pending.' }] };
+    const ready = { ready: true, summary: { errors: 0, pendingOperations: 0 }, issues: [] };
+    const app = await runPortal({ role: 'admin', rpcResponses: { getSchoolRewardsIntegrityReport: () => ++scans === 1 ? blocked : ready, recoverSchoolRewardsPrintRemix: () => pending } });
+    await app.nodes['run-integrity'].onclick();
+    expect(app.nodes['integrity-issues'].innerHTML).not.toContain(key);
+    const button = app.nodes['integrity-issues'].querySelectorAll('[data-recover-remix]')[0];
+    expect(button).toBeTruthy(); const first = button.onclick(), second = button.onclick(); await flush();
+    expect(app.calls.filter(c => c.name === 'recoverSchoolRewardsPrintRemix')).toHaveLength(1);
+    expect(app.calls.find(c => c.name === 'recoverSchoolRewardsPrintRemix').argument).toEqual({ idempotencyKey: key });
+    expect(app.calls.filter(c => c.name === 'recoverSchoolRewardsOperation')).toHaveLength(0);
+    expect(button.disabled).toBe(true);
+    finish({ ok: true, recovered: true }); await Promise.all([first, second]);
+    expect(scans).toBe(2); expect(app.nodes['integrity-summary'].innerHTML).toContain('Ready');
+    expect(app.nodes['integrity-issues'].querySelectorAll('[data-recover-remix]')).toHaveLength(0);
+  });
+
+  it.each(['PRINT_REMIX_SIGNATURE_INVALID', 'DUPLICATE_PRIMARY_KEY'])('blocks a remix recovery button for %s while preserving other valid remixes', async code => {
+    const key = 'invalid_remix_key', valid = 'valid_remix_key';
+    const app = await runPortal({ role: 'admin', rpcResponses: { getSchoolRewardsIntegrityReport: { ready: false, issues: [
+      { code: 'PRINT_REMIX_PENDING', entityType: 'idempotency', entityId: key },
+      { code, entityType: 'idempotency', entityId: key },
+      { code: 'PRINT_REMIX_PENDING', entityType: 'idempotency', entityId: valid },
+    ] } } });
+    await app.nodes['run-integrity'].onclick();
+    expect(app.nodes['integrity-issues'].querySelectorAll('[data-recover-remix]')).toHaveLength(1);
+    expect(app.nodes['integrity-issues'].innerHTML).toContain('Recovery blocked');
+    await app.nodes['integrity-issues'].querySelectorAll('[data-recover-remix]')[0].onclick();
+    expect(app.calls.find(c => c.name === 'recoverSchoolRewardsPrintRemix').argument).toEqual({ idempotencyKey: valid });
+  });
+
+  it('leaves a remix pending when the administrator cancels its confirmation', async () => {
+    const app = await runPortal({ role: 'admin', confirm: () => false, rpcResponses: { getSchoolRewardsIntegrityReport: { ready: false, issues: [{ code: 'PRINT_REMIX_PENDING', entityType: 'idempotency', entityId: 'pending_remix_key' }] } } });
+    await app.nodes['run-integrity'].onclick(); await app.nodes['integrity-issues'].querySelectorAll('[data-recover-remix]')[0].onclick();
+    expect(app.calls.filter(c => c.name === 'recoverSchoolRewardsPrintRemix')).toHaveLength(0);
+  });
+
   it('bounds integrity issue rendering and leaves non-journal findings read-only', () => {
     expect(SCRIPT).toContain('allIssues.slice(0,100)');
     expect(SCRIPT).toContain("issue.code==='JOURNAL_OPERATION_PENDING'");
@@ -646,7 +1421,7 @@ describe('School Rewards Print Lab portal', () => {
     expect(app.nodes['checkout-student'].value).toBe('student-1');
     expect(app.nodes['checkout-student-confirmation'].innerHTML).toContain('42 points available');
     expect(app.nodes.notice.textContent).toContain('cart was preserved');
-    expect(SCRIPT.indexOf('await refreshStoreBootstrap();var review=cartReview()')).toBeLessThan(SCRIPT.indexOf("window.confirm('LIVE CHECK COMPLETE"));
+    expect(SCRIPT.indexOf('await refreshStoreBootstrap();var review=cartReview()')).toBeLessThan(SCRIPT.indexOf("confirmT(fmt('LIVE CHECK COMPLETE"));
     expect(SCRIPT).toContain('checkoutRequestKey(student.id,windowItem.id,lines)');
     expect(SCRIPT).toContain('The cart and retry key were preserved');
   });
@@ -1507,6 +2282,10 @@ describe('School Rewards Print Lab portal', () => {
     expect(SCRIPT).toContain('MAX_PRINT_ASSET_BYTES=4*1024*1024');
     expect(SCRIPT).toContain('expectedContentHash:state.sisPreview.contentHash');
     expect(SCRIPT).toContain('expectedRosterRevision:state.sisPreview.rosterRevision');
-    expect(SCRIPT).not.toMatch(/driveUrl|driveFileId|fileUrl|printerHost|apiKey|WebSocket|fetch\(/i);
+    expect(SCRIPT).not.toMatch(/driveUrl|driveFileId|fileUrl|printerHost|apiKey|WebSocket/i);
+    const withoutLanguagePacks = SCRIPT.replace(/\/\* SR_I18N_START \*\/[\s\S]*?\/\* SR_I18N_END \*\//, '');
+    expect(withoutLanguagePacks).not.toMatch(/fetch\(/);
+    expect(SCRIPT.match(/fetch\(/g)).toHaveLength(1);
+    expect(SCRIPT).toContain("fetch(CDN_I18N+encodeURIComponent(code)+'.json',{credentials:'omit'})");
   });
 });

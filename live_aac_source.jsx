@@ -310,6 +310,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   const sanitizeHistoryForCloud = deps && deps.sanitizeHistoryForCloud;
   const stripUndefined = deps && deps.stripUndefined;
     if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+    const referenceAudioSource = item;
     // Student packs are an independent egress boundary. A lesson or import
     // can wrap Memory Aids several levels down, so both the shared helper and
     // this fail-closed local gate inspect the entire resource graph. Evidence
@@ -345,6 +346,20 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         return safeValue;
     };
     item = sanitizeNestedMemoryAidEvidence(item, false);
+    // Source excerpts belong to the teacher project, including nested challenges.
+    const stripAppliedSources = (value, scoped = false, seen = { neutral: new WeakMap(), applied: new WeakMap() }) => {
+        if (!value || typeof value !== 'object' || value instanceof Date) return value;
+        const prototype = Object.getPrototypeOf(value);
+        if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+        const active = scoped || [value.type, value.artifactType].some(type => typeof type === 'string' && type.trim().toLowerCase().replace(/[\s_]+/g, '-') === 'applied-challenge');
+        const cache = active ? seen.applied : seen.neutral;
+        if (cache.has(value)) return cache.get(value);
+        const result = Array.isArray(value) ? [] : {};
+        cache.set(value, result);
+        Object.entries(value).forEach(([key, nested]) => { if (!(active && key === 'sourceExcerpt')) result[key] = stripAppliedSources(nested, active, seen); });
+        return result;
+    };
+    item = stripAppliedSources(item);
     // AAC homework and QR packs use an explicit portable-media contract.
     // The package privacy flag is the teacher's per-export consent boundary:
     // prepared speech may travel only when that flag is true. Custom voice
@@ -500,6 +515,24 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             else delete packedWord._ttsRequiredKeys;
         });
     }
+    const readAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud;
+    const audioChannel = ['qr', 'live', 'student-pack'].includes(deps.audioChannel) ? deps.audioChannel : 'student-pack';
+    let audioBudget = readAloud?.deliveryLimits?.[audioChannel] || 0;
+    const restoreReferenceAudio = (source, target, seen = new WeakSet()) => {
+        if (!source || !target || typeof source !== 'object' || typeof target !== 'object' || seen.has(target)) return;
+        seen.add(target);
+        if (['memory-aid', 'applied-challenge'].includes(source.type)) {
+            const audio = readAloud?.portableAudio(source, audioChannel, audioBudget);
+            delete target.karaokeStudentAudio;
+            delete target.karaokeAudio;
+            if (audio) {
+                target.karaokeAudio = audio;
+                audioBudget -= Object.values(audio.entries).reduce((sum, entry) => sum + Math.ceil(entry.audio.length * 3 / 4), 0);
+            }
+        }
+        Object.keys(target).forEach(key => { if (key !== 'karaokeAudio') restoreReferenceAudio(source[key], target[key], seen); });
+    };
+    restoreReferenceAudio(referenceAudioSource, cleaned);
     const { karaokeStudentAudio, ...safe } = cleaned || {};
     return stripUndefined(safe);
 };

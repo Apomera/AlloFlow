@@ -7375,7 +7375,7 @@ var d = labToolData.dissection || {};
                   [-1,1].forEach(function (arterySide) {ctx.beginPath();ctx.moveTo(cx+W*0.025,cy+H*0.19);ctx.quadraticCurveTo(cx+W*(0.10+arterySide*0.012),cy+H*0.13,pigBladderX+arterySide*W*0.018,pigBladderY);ctx.strokeStyle='#dc5265';ctx.lineWidth=0.9;ctx.stroke();});
 
                   if (!d.quizMode) {
-                    ctx.font='6px Inter, system-ui';ctx.fillStyle='rgba(254,226,226,0.58)';ctx.fillText('thorax',cx-W*0.135,cy-H*0.105);ctx.fillText('abdomen',cx+W*0.035,cy-H*0.105);
+                    ctx.font='6px Inter, system-ui';ctx.fillStyle='rgba(254,226,226,0.58)';fillReadableSpecimenText('thorax',cx-W*0.135,cy-H*0.105);fillReadableSpecimenText('abdomen',cx+W*0.035,cy-H*0.105);
                   }
                   ctx.restore();
                 }
@@ -8535,8 +8535,8 @@ var d = labToolData.dissection || {};
                 ctx.strokeStyle = 'rgba(250,204,21,0.42)'; ctx.lineWidth = 0.75; ctx.stroke();
                 if (!d.quizMode) {
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.58)';
-                  ctx.fillText('Area centralis', eyeCx + eyeRx * 0.43, eyeCy - eyeRy * 0.08);
-                  ctx.fillStyle = 'rgba(253,186,116,0.58)'; ctx.fillText('Optic disc', opticDiscX + 5, opticDiscY + 2);
+                  fillReadableSpecimenText('Area centralis', eyeCx + eyeRx * 0.43, eyeCy - eyeRy * 0.08);
+                  ctx.fillStyle = 'rgba(253,186,116,0.58)'; fillReadableSpecimenText('Optic disc', opticDiscX + 5, opticDiscY + 2);
                 }
 
                 // Animated rays retain the optics lesson while respecting reduced-motion preferences.
@@ -8553,7 +8553,7 @@ var d = labToolData.dissection || {};
                 focusGlow.addColorStop(0, 'rgba(251,191,36,0.82)'); focusGlow.addColorStop(1, 'rgba(251,191,36,0)');
                 ctx.beginPath(); ctx.arc(focusX, eyeCy + eyeRy * 0.035, 5, 0, Math.PI * 2); ctx.fillStyle = focusGlow; ctx.fill();
                 if (!d.quizMode) {
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('Refracted light', eyeCx - eyeRx * 1.46, eyeCy - eyeRy * 0.29);
+                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; fillReadableSpecimenText('Refracted light', eyeCx - eyeRx * 1.46, eyeCy - eyeRy * 0.29);
                 }
                 ctx.restore();
 
@@ -8696,9 +8696,9 @@ var d = labToolData.dissection || {};
                 ctx.stroke();
                 var bpm = dissMotionReduced ? 72 : 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
                 if (!d.quizMode) {
-                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e'; ctx.fillText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
+                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e'; fillReadableSpecimenText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.58)';
-                  ctx.fillText('P', ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText('QRS', ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText('T', ecgX + ecgW * 0.42, ecgY - 18);
+                  fillReadableSpecimenText('P', ecgX + ecgW * 0.10, ecgY - 18); fillReadableSpecimenText('QRS', ecgX + ecgW * 0.23, ecgY - 18); fillReadableSpecimenText('T', ecgX + ecgW * 0.42, ecgY - 18);
                 }
                 // Conduction system animation
 
@@ -8722,7 +8722,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = saGrad; ctx.fill();
 
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('SA Node', cx + W * 0.13, cy - H * 0.18);
+                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; fillReadableSpecimenText('SA Node', cx + W * 0.13, cy - H * 0.18);
 
                   // AV Node
 
@@ -8738,7 +8738,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = avGrad; ctx.fill();
 
-                  ctx.fillStyle = '#22c55e'; ctx.fillText('AV Node', cx + W * 0.02, cy - H * 0.06);
+                  ctx.fillStyle = '#22c55e'; fillReadableSpecimenText('AV Node', cx + W * 0.02, cy - H * 0.06);
 
                   // Bundle of His
 
@@ -8748,7 +8748,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + hisPhase * 0.5) + ')'; ctx.lineWidth = 2; ctx.stroke();
 
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText('Bundle of His', cx + W * 0.02, cy + H * 0.02);
+                  ctx.fillStyle = '#3b82f6'; fillReadableSpecimenText('Bundle of His', cx + W * 0.02, cy + H * 0.02);
 
                   // Left and right bundle branches
 
@@ -8786,7 +8786,7 @@ var d = labToolData.dissection || {};
 
                   }
 
-                  ctx.fillStyle = '#a855f7'; ctx.fillText('Purkinje Fibers', cx - W * 0.14, cy + H * 0.24);
+                  ctx.fillStyle = '#a855f7'; fillReadableSpecimenText('Purkinje Fibers', cx - W * 0.14, cy + H * 0.24);
 
                   // Signal propagation indicator
 
@@ -8935,10 +8935,10 @@ var d = labToolData.dissection || {};
                   // Compact labels remain inside the specimen instead of covering the tissue margins.
                   if (!d.quizMode) {
                     ctx.font = 'bold 7px Inter, system-ui';
-                    ctx.fillStyle = 'rgba(254,226,226,0.82)'; ctx.fillText('LA', cx - W * 0.10, cy - H * 0.115); ctx.fillText('LV', cx - W * 0.085, cy + H * 0.105);
-                    ctx.fillStyle = 'rgba(219,234,254,0.88)'; ctx.fillText('RA', cx + W * 0.075, cy - H * 0.115); ctx.fillText('RV', cx + W * 0.075, cy + H * 0.085);
-                    ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.72)'; ctx.fillText('mitral', mitralX - W * 0.03, mitralY - 4);
-                    ctx.fillStyle = 'rgba(219,234,254,0.72)'; ctx.fillText('tricuspid', tricuspidX - W * 0.025, tricuspidY - 4);
+                    ctx.fillStyle = 'rgba(254,226,226,0.82)'; fillReadableSpecimenText('LA', cx - W * 0.10, cy - H * 0.115); fillReadableSpecimenText('LV', cx - W * 0.085, cy + H * 0.105);
+                    ctx.fillStyle = 'rgba(219,234,254,0.88)'; fillReadableSpecimenText('RA', cx + W * 0.075, cy - H * 0.115); fillReadableSpecimenText('RV', cx + W * 0.075, cy + H * 0.085);
+                    ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.72)'; fillReadableSpecimenText('mitral', mitralX - W * 0.03, mitralY - 4);
+                    ctx.fillStyle = 'rgba(219,234,254,0.72)'; fillReadableSpecimenText('tricuspid', tricuspidX - W * 0.025, tricuspidY - 4);
                   }
 
                   // Flow paths bend through the valves and pause when reduced motion is requested.

@@ -2555,7 +2555,7 @@
           tab === 'states' && h('div', null,
             h('div', { className: 'text-center mb-3' },
               h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\uD83C\uDF21\uFE0F States of Matter'),
-              h('p', { className: 'text-xs text-slate-600 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
+              h('p', { className: 'text-xs text-slate-600 mt-1' + onHostInk }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
             ),
 
             // Temperature slider
@@ -2863,7 +2863,7 @@
             h('div', { className: 'flex items-center gap-3 mb-3' },
               h('div', { className: 'flex-1' },
                 h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDDE0 Chemistry Quiz'),
-                h('p', { className: 'text-xs text-slate-600' }, 'Test your knowledge of chemical formulas, elements, and bonds')
+                h('p', { className: 'text-xs text-slate-600' + onHostInk }, 'Test your knowledge of chemical formulas, elements, and bonds')
               ),
               quizScore > 0 && h('div', { className: 'text-right' },
                 h('div', { className: 'text-sm font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' correct'),
@@ -3015,7 +3015,7 @@
 
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDD16 Chemistry AI Tutor'),
-              h('span', { className: 'text-xs text-slate-600' }, 'Ask me anything about ' + sel.name + '!')
+              h('span', { className: 'text-xs text-slate-600' + onHostInk }, 'Ask me anything about ' + sel.name + '!')
             ),
 
             /* Chat messages */

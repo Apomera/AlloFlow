@@ -1,0 +1,14 @@
+{
+  "name": "alloflow-mcp-runtime",
+  "version": "0.10.0",
+  "private": true,
+  "description": "Pinned browser and EPUB accessibility validation runtime for the local MCP connector",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "playwright": "1.60.0",
+    "@daisy/ace-cli": "1.4.6"
+  }
+}

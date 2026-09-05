@@ -2895,8 +2895,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4 text-slate-100'
           : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
-        var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
-        var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
+        // ★ Same pair as the Oratory Lab, same failure: these drive the whole
+        // tool chrome, which paints no ground and so sits on the HOST surface -
+        // a white card in light AND dark, but pure BLACK in the contrast theme,
+        // where the light branch put slate-900 on black at 1.18:1.
+        var headingClass = (isDark || ctx.isContrast) ? 'text-white font-bold' : 'text-slate-900 font-bold';
+        var subTextClass = (isDark || ctx.isContrast) ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
           (isDark ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400 active:scale-[0.97]' : 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 active:scale-[0.97]');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +

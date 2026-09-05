@@ -13,6 +13,16 @@ function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
+function assertAssetHash(buffer, expectedHash, label, textAsset = false) {
+  const actualHash = sha256(buffer);
+  if (actualHash === expectedHash) return;
+  const normalized = textAsset ? Buffer.from(buffer.toString('utf8').replace(/\r\n/g, '\n')) : null;
+  const hint = normalized && sha256(normalized) === expectedHash
+    ? ' CRLF line-ending conversion changed this text asset; restore the pinned LF bytes and preserve them with the Clinical Atlas .gitattributes rules.'
+    : ' Restore the asset from the pinned release; do not replace the expected hash to accept changed content.';
+  throw new Error(`${label}: integrity hash mismatch (expected ${expectedHash || '(missing)'}, received ${actualHash}).${hint}`);
+}
+
 function parseCsvLine(line) {
   const values = [];
   let value = '';
@@ -98,15 +108,14 @@ function checkClinicalAssets() {
     if (!model.equals(publicModel) || !model.equals(buildModel) || !crosswalk.equals(publicCrosswalk) || !crosswalk.equals(buildCrosswalk)) {
       throw new Error(`${pack.id}: canonical, public, and build assets differ`);
     }
-    if (sha256(model) !== pack.sha256.model || sha256(crosswalk) !== pack.sha256.crosswalk) {
-      throw new Error(`${pack.id}: asset integrity hash mismatch`);
-    }
+    assertAssetHash(model, pack.sha256.model, `${pack.id}: ${pack.model}`);
+    assertAssetHash(crosswalk, pack.sha256.crosswalk, `${pack.id}: ${pack.crosswalk}`, true);
     if (pack.metadata) {
       const metadata = fs.readFileSync(path.join(CANONICAL_DIR, pack.metadata));
       const publicMetadata = fs.readFileSync(path.join(PUBLIC_DIR, pack.metadata));
       const buildMetadata = fs.readFileSync(path.join(BUILD_DIR, pack.metadata));
       if (!metadata.equals(publicMetadata) || !metadata.equals(buildMetadata)) throw new Error(`${pack.id}: canonical, public, and build metadata differ`);
-      if (!pack.sha256.metadata || sha256(metadata) !== pack.sha256.metadata) throw new Error(`${pack.id}: metadata integrity hash mismatch`);
+      assertAssetHash(metadata, pack.sha256.metadata, `${pack.id}: ${pack.metadata}`, true);
       const metadataText = metadata.toString('utf8');
       if (pack.hubmapId && (!metadataText.includes(pack.hubmapId) || !metadataText.includes('CC BY 4.0'))) throw new Error(`${pack.id}: metadata provenance is incomplete`);
     }
@@ -161,9 +170,7 @@ function checkClinicalAssets() {
       if (!canonicalAssets[name].equals(publicAsset) || !canonicalAssets[name].equals(buildAsset)) {
         throw new Error(`${atlas.id}: canonical, public, and build ${name} assets differ`);
       }
-      if (sha256(canonicalAssets[name]) !== atlas.sha256[name]) {
-        throw new Error(`${atlas.id}: ${name} integrity hash mismatch`);
-      }
+      assertAssetHash(canonicalAssets[name], atlas.sha256[name], `${atlas.id}: ${atlas[name]}`, name !== 'image');
     }
     const image = canonicalAssets.image;
     if (image.length < 24 || image.toString('hex', 0, 8) !== '89504e470d0a1a0a') throw new Error(`${atlas.id}: invalid PNG image`);
@@ -218,4 +225,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { checkClinicalAssets, readGlbNodeNames };
+module.exports = { checkClinicalAssets, readGlbNodeNames, assertAssetHash };

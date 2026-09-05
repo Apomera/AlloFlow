@@ -29,14 +29,14 @@ describe('group award', () => {
     // Group size is bounded on both sides of the wire.
     expect(SCRIPT).toContain('ids.length>60');
     expect(CODE).toContain('var SR_MAX_GROUP_AWARD = 60;');
-    expect(CODE).toContain("idempotencyKey: (key + ':' + studentId).slice(0, 120)");
+    expect(CODE).toContain("idempotencyKey: groupAwardStudentKey_(key, studentId)");
   });
 
   it('asks for confirmation before recording a group and reports partial failures without hiding successes', () => {
     // The message is one translatable sentence with numbered slots, filled by
     // fmt(), and shown through confirmT so it is translated before the dialog.
     expect(SCRIPT).toContain("confirmT(fmt('Record {1} points for {2} students with the same explanation?',Number($('award-amount').value),ids.length))");
-    expect(SCRIPT).toContain('retry only the rest');
+    expect(SCRIPT).toContain('Retry the same group without changing the selection or explanation.');
   });
 });
 
@@ -83,7 +83,7 @@ describe('student recognition, phone navigation, admin sections, Print Lab switc
     expect(PORTAL).toContain('id="setting-printlab"');
     expect(SCRIPT).toContain("rpc('adminUpdateRewardsSettings',{printLabEnabled:!!$('setting-printlab').checked})");
     expect(SCRIPT).toContain('printAccess=(student||awarder)&&printLabOn');
-    expect(SCRIPT).toContain("!(state.data.config&&state.data.config.printLabEnabled===false)?await rpc('getSchoolRewardsPrintBootstrap'):null");
+    expect(SCRIPT).toContain("!(data.config&&data.config.printLabEnabled===false)?await rpc('getSchoolRewardsPrintBootstrap'):null");
     expect(CODE).toContain('function adminUpdateRewardsSettings(request)');
     expect(CODE).toContain("printLabEnabled: printLabEnabled_(config)");
   });

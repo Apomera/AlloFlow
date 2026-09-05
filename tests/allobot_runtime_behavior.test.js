@@ -210,6 +210,9 @@ describe('AlloBot runtime motion behavior', () => {
     expect(Number(leftEye().getAttribute('ry'))).toBeCloseTo(0.62);
     expect(details().getAttribute('data-allobot-eye-details')).toBe('hidden');
     expect(details().getAttribute('opacity')).toBe('0');
+    // The bead keeps squashing rather than vanishing with the gloss: a blink is
+    // an eye closing, not an eye being deleted for 150ms.
+    expect(leftEye().closest('[data-allobot-eye-details]')).toBeNull();
 
     await advance(150);
     expect(Number(leftEye().getAttribute('ry'))).toBeCloseTo(6.2);
@@ -467,7 +470,7 @@ describe('AlloBot runtime motion behavior', () => {
     await advance(10000);
 
     expect(gaze().style.transform).toBe('translate(0px, 0px)');
-    expect(gaze().getAttribute('data-allobot-eye-details')).toBe('visible');
+    expect(bot.container.querySelector('[data-allobot-eye-details]').getAttribute('data-allobot-eye-details')).toBe('visible');
     expect(Number(bot.container.querySelector('[data-allobot-eye="left"]').getAttribute('ry'))).toBeCloseTo(6.2);
   });
 
@@ -519,6 +522,23 @@ describe('AlloBot position and drag hardening', () => {
 
     expect(surface.style.right).toBe('24px');
     expect(surface.style.top).toBe('20px');
+  });
+
+  it('lifts the bot while the generation hologram shows so the stage rail stays on screen', async () => {
+    // The hologram tower is drawn above the 100-unit box, up to y -54, which is
+    // 35px above the avatar at render size. The clamp allows a 10px top and the
+    // default is 20px, so at the default position the stage rail was entirely
+    // off-screen for every generation. The lift is a render-time offset, never
+    // written to position, and it goes away with the hologram.
+    const bot = await mountBot({ mood: 'thinking', generationType: 'lesson', generationStage: 'build' });
+    const surface = () => bot.container.querySelector('[data-allobot-control-surface="true"]');
+    expect(surface().style.top).toBe('45px');
+    expect(surface().getAttribute('data-allobot-hud-lift')).toBe('25');
+    expect(localStorage.getItem('allo_bot_pos_v2')).toBeNull();
+
+    await bot.rerender({ mood: 'idle' });
+    expect(surface().style.top).toBe('20px');
+    expect(surface().hasAttribute('data-allobot-hud-lift')).toBe(false);
   });
 
   it('clamps a persisted off-screen position into the reachable viewport', async () => {

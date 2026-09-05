@@ -141,6 +141,106 @@ describe('AlloBot accessory integrity', () => {
     expect(SRC).toContain('fill={`url(#${svgPaintIds.body})`}');
   });
 
+  it('gives each cheek one mark and lifts the sad brows at the inner end', () => {
+    // The blush is the shared cheek across every mood: it brightens for happy
+    // and fades for sad. Each mood also drew its own cue into that same patch,
+    // and at 64px the whole cheek is about four pixels, so two marks is mush.
+    const blush = SRC.match(/<ellipse cx="28\.5" cy="([\d.]+)" rx="[\d.]+" ry="([\d.]+)" fill=\{cheekColor\}/);
+    expect(blush, 'left blush not found').toBeTruthy();
+    const blushTop = Number(blush[1]) - Number(blush[2]);
+    const blushBottom = Number(blush[1]) + Number(blush[2]);
+
+    // The happy arcs were a second cheek treatment lying across the blush.
+    expect(SRC).not.toContain('happy-cheeks');
+
+    // The tear starts below the blush and stops above the visor's lower bevel,
+    // which runs M 24 63 Q 50 66.5 76 63 and so sits at y 63.61 where x is 29.
+    const tear = SRC.match(/data-allobot-face-cue="sad-tear"[\s\S]*?d="M29 ([\d.]+)[\s\S]*?A([\d.]+) [\d.]+ 0 0 0 [\d.]+ ([\d.]+)/);
+    expect(tear, 'sad tear not found').toBeTruthy();
+    expect(Number(tear[1]), 'tear starts inside the blush').toBeGreaterThan(blushBottom);
+    expect(Number(tear[3]) + Number(tear[2]), 'tear spills past the visor bevel').toBeLessThanOrEqual(63.61);
+
+    // The thought dots rise clear of the blush instead of dribbling through it.
+    const dots = [...SRC.matchAll(/<circle cx="(7[\d.]*)" cy="([\d.]+)" r="([\d.]+)" \/>/g)];
+    expect(dots.length, 'expected the three thinking dots').toBe(3);
+    for (const dot of dots) {
+      expect(Number(dot[2]) + Number(dot[3]), 'thought dot overlaps the blush').toBeLessThan(blushTop);
+    }
+
+    // Sad brows lift at the INNER end. Inner-end-low is the universal scowl,
+    // and brows are read before mouths, so an angry brow beats a frown and a
+    // tear: the face read as cross rather than sad.
+    const sadBrows = [...SRC.matchAll(/effectiveMood === 'sad' && <path d="M([\d.]+) ([\d.]+) Q[\d.]+ [\d.]+ ([\d.]+) ([\d.]+)"/g)];
+    expect(sadBrows.length, 'expected both sad brows').toBe(2);
+    for (const [, x1, y1, x2, y2] of sadBrows) {
+      const firstIsInner = Math.abs(Number(x1) - 50) < Math.abs(Number(x2) - 50);
+      const innerY = firstIsInner ? Number(y1) : Number(y2);
+      const outerY = firstIsInner ? Number(y2) : Number(y1);
+      expect(innerY, 'sad brow scowls: its inner end sits lower than its outer end').toBeLessThan(outerY);
+    }
+  });
+
+  it('lets the mouth arrive at each viseme and keeps the talking gesture calm', () => {
+    // Visemes changed every 120ms while the path tweened over 300ms, so the
+    // mouth was a permanent mid-morph smear at eight changes a second. Speech
+    // runs four to five syllables a second; the hold must outlast the tween.
+    const holdMs = Number(SRC.match(/setViseme\(mouthShapes\[index\]\);[\s\S]*?\}, (\d+)\);/)[1]);
+    const tweenS = Number(SRC.match(/\.mouth-transition \{ transition: d ([\d.]+)s/)[1]);
+    expect(holdMs).toBeGreaterThanOrEqual(150);
+    expect(holdMs).toBeLessThanOrEqual(250);
+    expect(tweenS * 1000, 'tween must finish inside the hold').toBeLessThan(holdMs);
+
+    // CSS only tweens `d` between paths with the same command structure. Every
+    // mouth, mood or viseme, is two Q segments so no state change snaps.
+    const mouthPaths = [...SRC.slice(SRC.indexOf('const getMouthPath = '), SRC.indexOf('const avatarDepthFilter')).matchAll(/return "([^"]+)";/g)].map((m) => m[1]);
+    expect(mouthPaths.length).toBeGreaterThanOrEqual(8);
+    for (const d of mouthPaths) {
+      expect((d.match(/Q/g) || []).length, `mouth path snaps instead of tweening: ${d}`).toBe(2);
+    }
+
+    // Talking arms used to jump 8 units out and 6 up every 0.8s, in sync on
+    // both sides: wings, not gestures. Slower, smaller, and alternating.
+    for (const side of ['left', 'right']) {
+      const kf = SRC.match(new RegExp(String.raw`@keyframes gesture-${side} \{[\s\S]*?50% \{ transform: translate\((-?[\d.]+)px, (-?[\d.]+)px\)`));
+      expect(Math.abs(Number(kf[1])), `${side} gesture reach`).toBeLessThanOrEqual(4);
+      expect(Math.abs(Number(kf[2])), `${side} gesture lift`).toBeLessThanOrEqual(3);
+      const period = Number(SRC.match(new RegExp(String.raw`\.animate-gesture-${side} \{ animation: gesture-${side} ([\d.]+)s`))[1]);
+      expect(period, `${side} gesture period`).toBeGreaterThanOrEqual(1.6);
+    }
+    const rightDelays = SRC.match(/animationDelay: isTalking \? '-0\.8s' : '0\.5s'/g) || [];
+    expect(rightDelays.length, 'right hand and its behind-shell arm must share the half-cycle offset').toBe(2);
+  });
+
+  it('keeps the listening cue off the eye, closes the eye in place, and gives high contrast a legible cheek', () => {
+    // Listening widens the eye (rx 7.4 + 0.45), so the left eye spans x 30.15
+    // to 45.85. The sound arcs and the status dot are the eye's own cyan, so
+    // anything that touches the eye fuses with it.
+    const listening = SRC.match(/voiceCueState === 'listening'\s*\?\s*\{([\s\S]*?)\}/);
+    expect(listening, 'listening cue paths not found').toBeTruthy();
+    const eyeLeftEdge = 38 - (7.4 + 0.45);
+    const inner = listening[1].match(/leftInner: 'M([\d.]+) 44 Q([\d.]+) 48 [\d.]+ 52'/);
+    expect(inner, 'left inner arc not found').toBeTruthy();
+    const innerApex = 0.5 * Number(inner[1]) + 0.5 * Number(inner[2]);
+    expect(innerApex, 'inner arc touches the widened eye').toBeLessThan(eyeLeftEdge - 1);
+    const dotX = Number(listening[1].match(/leftDotX: ([\d.]+)/)[1]);
+    expect(dotX + 1.15, 'status dot sits inside the eye').toBeLessThan(eyeLeftEdge);
+
+    // The closed-eye arcs are centred on the open eyes (x 38 and 62), so
+    // falling asleep does not nudge the eyes inward.
+    for (const [cx, arc] of [[38, /d="M([\d.]+) 49 Q([\d.]+) 53 ([\d.]+) 49"/], [62, /d="M([\d.]+) 49 Q([\d.]+) 53 ([\d.]+) 49"[^]*?d="M([\d.]+) 49 Q([\d.]+) 53 ([\d.]+) 49"/]]) {
+      const m = SRC.match(arc);
+      expect(m, 'sleeping arc not found').toBeTruthy();
+      const [x1, qx, x2] = m.slice(-3).map(Number);
+      expect(qx, `closed eye is not centred on ${cx}`).toBe(cx);
+      expect((x1 + x2) / 2, `closed eye is not centred on ${cx}`).toBe(cx);
+    }
+
+    // Pink at 0.3 over indigo stays pink; yellow at 0.3 over black is mud. The
+    // contrast theme scales the same mood ordering up so each cheek is a mark.
+    expect(SRC).toContain("const cheekOpacity = theme === 'contrast' ? Math.min(1, baseCheekOpacity * 2.2) : baseCheekOpacity;");
+    expect(0.3 * 2.2).toBeGreaterThanOrEqual(0.6);
+  });
+
   it('joins the arms behind the shell and keeps every mitt clear of the silhouette', () => {
     // Allobot's body is a sphere. A limb drawn across the front of a sphere
     // reads as a stripe painted on a ball rather than an arm, so both arms are
@@ -409,7 +509,9 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('data-allobot-expression-cues');
       expect(source).toContain('data-allobot-eye');
       expect(source).toContain('data-allobot-mouth');
-      expect(source).toContain('happy-cheeks');
+      // Happy is carried by the shared blush, which brightens to 0.62 for it;
+      // the old happy-cheeks arcs were a second mark lying across that blush.
+      expect(source).toContain('soft-cheeks');
       expect(source).toContain('sad-tear');
       expect(source).toContain('thinking-dots');
     }
@@ -561,10 +663,20 @@ describe('AlloBot accessory integrity', () => {
     // The eye itself must live inside the group that carries the gaze
     // transform. If it drifts back outside, the eye is pinned again and a
     // pupil becomes necessary, which is how this regressed the first time.
-    const gazeGroup = SRC.slice(SRC.indexOf('data-allobot-eye-details={'), SRC.indexOf('</g>', SRC.indexOf('data-allobot-eye-details={')));
+    const faceEnd = SRC.indexOf('data-allobot-face-cue="soft-cheeks"');
+    const gazeGroup = SRC.slice(SRC.indexOf('data-allobot-prop-gaze={'), faceEnd);
     expect(gazeGroup).toContain('data-allobot-eye="left"');
     expect(gazeGroup).toContain('data-allobot-eye="right"');
     expect(gazeGroup).toContain('data-allobot-eye-core="left"');
+
+    // ...but the bead must stay OUT of the blink-gated details group. That
+    // group goes to opacity 0 below half-closed, so an eye inside it is
+    // deleted for the 150ms of a blink rather than closing to a slit.
+    const detailsGroup = SRC.slice(SRC.indexOf('data-allobot-eye-details={'), faceEnd);
+    expect(detailsGroup).not.toContain('data-allobot-eye="left"');
+    expect(detailsGroup).not.toContain('data-allobot-eye="right"');
+    expect(detailsGroup).toContain('data-allobot-eye-core="left"');
+    expect(detailsGroup).toContain('data-allobot-eye-sparkle="left-primary"');
 
     // A generous highlight, and no dark pupil hiding inside the bead.
     expect(SRC).toContain('const eyeHighlightRx');

@@ -60,6 +60,13 @@ function AnalysisView(props) {
   var setGenerationStep = props.setGenerationStep;
   var setGeneratedContent = props.setGeneratedContent;
   var setInputText = props.setInputText;
+  // Bind edits to the resource that created the callback, including async corrections.
+  var updateAnalysisResource = function (updater) {
+    const id = generatedContent && generatedContent.id;
+    if (typeof props.onUpdateResource === 'function') return props.onUpdateResource(id, updater);
+    setGeneratedContent(prev => prev && prev.id === id ? updater(prev) : prev);
+    if (typeof props.setHistory === 'function') props.setHistory(items => items.map(item => item.id === id ? updater(item) : item));
+  };
   var setSelectedGrammarErrors = props.setSelectedGrammarErrors;
   var setSourceRefineInstruction = props.setSourceRefineInstruction;
   // Handlers
@@ -264,7 +271,7 @@ function AnalysisView(props) {
     // Restore exists because a mis-click would otherwise silently discard a
     // real issue with no way back.
     const setGrammarNoteAt = (idx, next) => {
-      setGeneratedContent(prev => ({
+      updateAnalysisResource(prev => ({
         ...prev,
         data: {
           ...prev.data,
@@ -343,15 +350,15 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
           addToast(t('process.grammar_fix_failed') || 'No changes applied.', 'warning');
           return;
         }
-        setGeneratedContent(prev => ({
-          ...prev,
-          data: {
-            ...prev.data,
-            originalText: cleaned,
-            grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) && isFixable(g) ? `✓ FIXED: ${g}` : g)
-          }
-        }));
-        setInputText(cleaned);
+        if (typeof props.onCorrectAnalysisText !== 'function') {
+          addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
+          return;
+        }
+        const applied = await props.onCorrectAnalysisText(generatedContent.id, originalText, cleaned, errorsToFix);
+        if (applied === false) {
+          addToast(t('analysis.grammar_source_changed') || 'The source changed while the correction was being prepared. Review it and try again.', 'warning');
+          return;
+        }
         addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
         setSelectedGrammarErrors(new Set());
       } catch (err) {
@@ -431,7 +438,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.check'),
       onClick: () => {
-        setGeneratedContent(prev => ({
+        updateAnalysisResource(prev => ({
           ...prev,
           data: {
             ...prev.data,
@@ -510,8 +517,6 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"
   }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('formatting.bold') || 'Bold',
     onClick: () => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.bold')
@@ -519,16 +524,12 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     size: 16,
     strokeWidth: 3
   })), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('formatting.italic') || 'Italic',
     onClick: () => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.italic')
   }, /*#__PURE__*/React.createElement(Italic, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('formatting.highlight') || 'Highlight',
     onClick: () => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.highlight')
@@ -537,33 +538,26 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
     onClick: () => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h1')
   }, "H1"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
     onClick: () => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
   }, "H2"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
     onClick: () => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h3') || 'Heading 3'
   }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('formatting.list') || 'Bulleted list',
     onClick: () => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('formatting.numlist') || 'Numbered list',
     onClick: () => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.numlist') || 'Numbered List'

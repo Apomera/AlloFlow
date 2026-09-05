@@ -1016,7 +1016,7 @@ window.StemLab = window.StemLab || {
         activeTab === 'challenges' && h('div', { className: 'space-y-3' },
           // Tolerance indicator
           h('div', { className: 'flex items-center gap-2 text-[11px]' },
-            h('span', { className: 'text-slate-600' }, 'Difficulty:'),
+            h('span', { className: 'text-slate-600' + (ctx.isContrast ? ' text-white' : '') }, 'Difficulty:'),
             h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-600' : tolerance <= 3 ? 'text-orange-700' : 'text-green-700') },
               tolerance <= 2 ? '\uD83D\uDD25 Expert (\u00B1' + tolerance + '\u00B0)' : tolerance <= 3 ? '\u26A1 Medium (\u00B1' + tolerance + '\u00B0)' : '\uD83C\uDF3F Easy (\u00B1' + tolerance + '\u00B0)'
             ),

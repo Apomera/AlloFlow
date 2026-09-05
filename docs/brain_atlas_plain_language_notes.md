@@ -73,3 +73,27 @@ Plain directory previews reuse the fourteen authored big ideas. A matching every
 Search stays within the current view and matches every query word across identifiers, translated names, functions, conditions, and the view-appropriate authored ideas/examples/connections. It tolerates extra spaces, case, common accents, apostrophe styles, and hyphen/underscore separators. Results keep their original anatomical order, and the 2D diagram uses the same filtered set. No new scientific content, AI calls, or external search service is introduced.
 
 Enter and View results reveal the directory even while a detail or quiz is open. The query and practice answers remain intact. Clear search returns focus to the input; the / shortcut uses the input ID so it also works with translated placeholders and prenatal milestones. Composition events are respected. A single live status announces the current-view result count.
+
+## Neuromyths and Neurodiversity view
+
+September 4, 2026. A new Evidence group holds one view with eight cards. Each card pairs a popular claim with the evidence, a classroom alternative, an evidence verdict, and a source link. The verdicts are fixed vocabulary: debunked, oversimplified, real but small and not diagnostic, and promising but not proven. The diagram shows how many surveyed UK teachers endorsed four of the claims in Dekker et al. (2012), labelled as one 2012 sample rather than a current figure, next to verdict chips that open the cards.
+
+Cards and the sources reviewed:
+
+- Learning styles: the meshing hypothesis has no adequate support (Pashler, McDaniel, Rohrer and Bjork 2008, Psychological Science in the Public Interest). Later assignment studies (Rogowsky et al. 2015; Husmann and O'Loughlin 2019) found no benefit from matching. Endorsement figure from Dekker et al. 2012, Frontiers in Psychology.
+- Left-brained and right-brained people: real functional lateralization is kept and cross-referenced to the Cross-Lateral view. The person-level dominance claim is not supported (Nielsen et al. 2013, PLoS ONE, 1,011 resting-state scans).
+- Ten percent of the brain: functional imaging, lesion evidence, and the brain's energy cost. Sources are Scientific American (Boyd 2008) and Jarrett, Great Myths of the Brain (2014).
+- The window closes at age three: genuine sensory critical periods are acknowledged and linked to the Synapse and Development view. The Mozart effect is described as one small 1993 result with little support in the Pietschnig et al. 2010 meta-analysis (Intelligence). Bruer 1999 for the broader claim.
+- Brain-training apps: trained-task gains without far transfer (Simons et al. 2016, Psychological Science in the Public Interest); the 2016 FTC action against Lumosity is mentioned as fact.
+- ADHD brain differences: ENIGMA-ADHD (Hoogman et al. 2017, Lancet Psychiatry) group-level subcortical volume differences with small effects and near-complete overlap. The theta/beta EEG ratio hedge (Arns et al. 2013) is restated. Both the "a scan can diagnose it" and the "so it is not real" readings are named as wrong. Diagnosis is described as clinical. The SEL Hub Advocacy tool is named in text for support and accommodation; there is no cross-tool link mechanism in this tool.
+- The autistic brain: ENIGMA-ASD (van Rooij et al. 2018, American Journal of Psychiatry) small, heterogeneous differences. Heterogeneity is presented as the main finding and the neurodiversity framing is stated as a better fit for the data than a single deficit model.
+- Retinal photograph ADHD model: Choi et al. 2025 (npj Digital Medicine), AUROC about 0.96 in a matched case-control design. The card explains why case-control accuracy overstates real screening performance, that the model has no external validation, and that it is not a diagnostic test. The source link points at the journal home page rather than a guessed article URL.
+
+Scope and safeguards:
+
+- Myth cards have no damage field, so they never enter the damage-localization quiz pool. They have no Brodmann, blood-supply, or drug fields, so the Advanced panel shows only the claim, evidence, alternative, verdict, and source.
+- The view-level panel states that nothing in it is a diagnosis or treatment claim, that condition differences are described at the group level only, and that support decisions belong with the student, family, and clinical team.
+- Card names, group labels, verdict labels, and panel copy use translation keys with English fallbacks; the 33 new keys are registered in ui_strings.js and its desktop copy. Long evidence text is plain English like the other views' function text.
+- Every ADHD and autism sentence is intended for Aaron's review before deployment.
+
+Validation targets: golden digests for all 23 views; the neuromyths content locks in tests/brain_atlas_neuromyths.test.js; the existing Brain Atlas suites; a pixel render of the belief-versus-evidence canvas.

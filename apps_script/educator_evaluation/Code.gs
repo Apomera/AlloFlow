@@ -5742,10 +5742,33 @@ function canonicalMaterialTeacherMutation_(raw, change, oldWorkspace, nextWorksp
   return { teacherId: change.teacherId, event: change.event, summary: change.summary, entityType: 'educator_cycle', entityId: change.teacherId, version: clampInt_(raw.version, 1, 1000, 1) };
 }
 
+// A locked SPM may record its own rating in the same educator's annual LEA
+// slot. No other persisted edit may accompany this audited finalization.
+function isBoundSpmRatingFinalization_(raw, oldWorkspace, nextWorkspace, actor) {
+  if (actor.role === 'teacher' || String(raw.event || '').toUpperCase() !== 'FINALIZED' || raw.entityType !== 'spm') return false;
+  var oldSpm = findById_(oldWorkspace.spms || [], raw.entityId);
+  var nextSpm = findById_(nextWorkspace.spms || [], raw.entityId);
+  if (!oldSpm || !nextSpm || oldSpm.status !== 'results_submitted' || nextSpm.status !== 'locked' || nextSpm.teacherId !== oldSpm.teacherId || raw.teacherId !== nextSpm.teacherId || nextSpm.rating === null) return false;
+  var oldTeacher = findById_(oldWorkspace.teachers || [], nextSpm.teacherId);
+  var nextTeacher = findById_(nextWorkspace.teachers || [], nextSpm.teacherId);
+  if (!oldTeacher || !nextTeacher || !nextTeacher.ratings || nextTeacher.ratings.lea !== nextSpm.rating) return false;
+  var comparable = clone_(nextWorkspace);
+  var comparableTeacher = findById_(comparable.teachers, nextSpm.teacherId);
+  comparableTeacher.ratings.lea = oldTeacher.ratings.lea;
+  var derived = ['cycleStatus', 'lastActivityAt', 'cycleLockedAt', 'weightSnapshot', 'finalScore'];
+  for (var i = 0; i < derived.length; i++) comparableTeacher[derived[i]] = clone_(oldTeacher[derived[i]]);
+  for (var j = 0; j < comparable.spms.length; j++) {
+    if (comparable.spms[j].id === nextSpm.id) comparable.spms[j] = clone_(oldSpm);
+  }
+  return same_(oldWorkspace, comparable);
+}
+
 function deriveMutation_(raw, oldWorkspace, nextWorkspace, actor) {
   raw = isPlainObject_(raw) ? raw : {};
   var event = String(raw.event || '').toUpperCase();
   var materialChanges = materialTeacherAuditChanges_(oldWorkspace, nextWorkspace);
+  var spmRatingFinalization = isBoundSpmRatingFinalization_(raw, oldWorkspace, nextWorkspace, actor);
+  if (spmRatingFinalization) materialChanges = [];
   if (materialChanges.length) {
     if (durableMilestoneChanges_(oldWorkspace, nextWorkspace).length) throw eeError_('invalid_transition', 'A material educator change cannot be combined with a durable workflow milestone.');
     if (materialChanges.length !== 1) throw eeError_('invalid_transition', 'Each material save must update exactly one educator category.');
@@ -5773,7 +5796,7 @@ function deriveMutation_(raw, oldWorkspace, nextWorkspace, actor) {
   var milestones = durableMilestoneChanges_(oldWorkspace, nextWorkspace);
   if (milestones.length !== 1 || !sameMilestone_(milestones[0], event, teacherId, entityType, entityId)) throw eeError_('invalid_transition', 'Each save must contain exactly its requested workflow milestone.');
   if (!mutationOccurred_(event, teacherId, entityType, entityId, oldWorkspace, nextWorkspace)) throw eeError_('invalid_transition', 'The requested audit milestone did not occur.');
-  return { teacherId: teacherId, event: event, summary: allowedEvents[event], entityType: entityType || 'workspace', entityId: entityId, version: clampInt_(raw.version, 1, 1000, 1) };
+  return { teacherId: teacherId, event: event, summary: spmRatingFinalization ? 'SPM results locked and annual rating recorded' : allowedEvents[event], entityType: entityType || 'workspace', entityId: entityId, version: clampInt_(raw.version, 1, 1000, 1) };
 }
 
 function durableMilestoneChanges_(oldWorkspace,nextWorkspace){var out=[];collectNewRecordMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[]);collectNewRecordMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[]);collectNewRecordMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[]);collectNewRecordMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[]);collectDeletedWalkthroughMilestones_(out,oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[]);collectMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[],['publishedAt:EVIDENCE_PUBLISHED','teacherAcknowledgedAt:ACKNOWLEDGED']);collectMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[],['preworkSubmittedAt:SUBMITTED','preConferenceAt:CONFERENCED','observedAt:OBSERVATION_STARTED','evidencePublishedAt:EVIDENCE_PUBLISHED','reflectionSubmittedAt:SUBMITTED','postConferenceAt:CONFERENCED','evaluatorSignedAt:SIGNED','teacherAcknowledgedAt:ACKNOWLEDGED','finalizedAt:FINALIZED']);collectMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[],['firstOpenedAt:OPENED']);collectSpmStatusMilestones_(out,oldWorkspace.spms||[],nextWorkspace.spms||[]);collectNewCommentMilestones_(out,oldWorkspace.comments||[],nextWorkspace.comments||[]);collectMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[],['finalizedAt:RELEASED']);return out;}
@@ -6148,7 +6171,7 @@ function sanitizeRubricDomains_(v){v=isPlainObject_(v)?v:{};return{d1:domainRati
 function sanitizeTags_(v){if(!Array.isArray(v))return[];if(v.length>50)throw eeError_('too_large','Too many framework tags.');var out=[],seen={};for(var i=0;i<v.length;i++){var s=safeString_(v[i],12,'');if(s&&!seen[s]&&/^[1-4][a-z]$/i.test(s)){seen[s]=true;out.push(s);}}return out;}
 function sanitizeWeights_(v){if(v===null||v===undefined)return null;if(!Array.isArray(v)||v.length>6)throw eeError_('bad_request','Invalid weight snapshot.');var out=[];for(var i=0;i<v.length;i++){var x=requireObject_(v[i],'weight');out.push({id:safeToken_(x.id,20),label:safeString_(x.label,100,''),short:safeString_(x.short,30,''),weight:Number(x.weight),color:safeString_(x.color,20,'')});if(!isFinite(out[i].weight)||out[i].weight<=0||out[i].weight>100)throw eeError_('bad_request','Invalid weight.');}return out;}
 function optionalTimestamp_(v){if(v===null||v===undefined||v==='')return null;var d=new Date(v);if(isNaN(d.getTime()))throw eeError_('bad_request','Invalid timestamp.');return d.toISOString();}
-function optionalDate_(v){if(v===null||v===undefined||v==='')return'';var s=String(v);if(!/^\d{4}-\d{2}-\d{2}$/.test(s)||isNaN(new Date(s+'T00:00:00Z').getTime()))throw eeError_('bad_request','Invalid date.');return s;}
+function optionalDate_(v){if(v===null||v===undefined||v==='')return'';var s=String(v);var date=new Date(s+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(s)||s.slice(0,4)==='0000'||isNaN(date.getTime())||date.toISOString().slice(0,10)!==s)throw eeError_('bad_request','Invalid date.');return s;}
 function nowIso_(){return new Date().toISOString();}
 function toIso_(v){var d=new Date(v);return isNaN(d.getTime())?'':d.toISOString();}
 function newId_(prefix){return prefix+'-'+Utilities.getUuid().replace(/-/g,'');}

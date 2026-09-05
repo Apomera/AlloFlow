@@ -30,7 +30,7 @@ describe('Beehive campaign intelligence and coaching', () => {
   it('carries colony field evidence into the Drone briefing', () => {
     const html = renderTool('beehive', { beehive: { viewMode: 'drone', colonyHealth: 82, varroaLevel: 12, honey: 45 } });
     expect(html).toContain('data-drone-command-evidence="field"');
-    expect(html).toContain('Health 75% · Varroa 12% · Honey 45 lb');
+    expect(html).toContain('Health 75% · Varroa 12 / 100 · Honey 45 lb');
   });
 
   it('ships prioritized flight diagnoses, experiments, criteria, and colony consequences', () => {

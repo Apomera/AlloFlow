@@ -33,6 +33,8 @@ const os = require('os');       // self-test scratch dir
 const http = require('http');   // self-test loopback model (127.0.0.1, no listener beyond the run)
 const { zipFileMap } = require('./zip_writer.cjs'); // ePub/DAISY packaging, no CDN, works offline
 const crypto = require('crypto');
+const NarrationPlanner = require('./remediation_narration_plan.cjs');
+const Verification = require('./remediation_verification.cjs');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // Kept beside the renderer's own constant and asserted equal in
@@ -40,6 +42,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // type can never drift apart.
 const PAGE_IMAGE_MIME = 'image/jpeg';
 const MODULE_FILES = [
+  'accessibility_evidence_module.js',
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',
   'doc_pipeline_module.js',
@@ -343,7 +346,10 @@ function loadVendorBundle() {
     if (bytes.length !== entry.bytes || sha256 !== entry.sha256) {
       throw new Error('AlloFlow MCP vendor asset failed hash verification: ' + entry.path);
     }
-    files.set(entry.path, { path: absolute, body: bytes, bytes: entry.bytes, sha256 });
+    // EPUBCheck's JARs are read from disk by Java, never served to the browser: verify their hashes
+    // but do not pin ~35 MB of bytecode in memory for the life of the server.
+    const browserAsset = !entry.path.startsWith('epubcheck/');
+    files.set(entry.path, { path: absolute, body: browserAsset ? bytes : null, bytes: entry.bytes, sha256 });
   }
   vendorBundleCache = { root, files };
   return vendorBundleCache;
@@ -384,7 +390,7 @@ async function installVendorRuntime(page, options) {
       let name;
       try { name = parsed.pathname.slice(VENDOR_BOOT_PATH.length).split('/').map((part) => decodeURIComponent(part)).join('/'); } catch (_) { return route.fulfill({ status: 400, body: 'bad vendor path' }); }
       const asset = bundle.files.get(name);
-      if (!asset) return route.fulfill({ status: 404, body: 'vendor asset not found' });
+      if (!asset || !asset.body) return route.fulfill({ status: 404, body: 'vendor asset not found' });
       return route.fulfill({ status: 200, contentType: vendorContentType(name), body: asset.body });
     }
     if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:' || parsed.hostname === '127.0.0.1') {
@@ -882,7 +888,7 @@ function createDriver(options) {
   // each other.
   const RENDER_IMAGE_MIME = 'image/jpeg';
   const RENDER_IMAGE_QUALITY = 0.82;
-  const RENDER_MAX_PAGES = Number(process.env.ALLOFLOW_MCP_MAX_PAGE_IMAGES) || 30;
+  const RENDER_MAX_PAGES = Math.min(1000, Math.max(1, Number(process.env.ALLOFLOW_MCP_MAX_PAGE_IMAGES) || 1000));
 
   async function renderPdfToPageImages(b64, opts) {
     const o = opts || {};
@@ -906,15 +912,21 @@ function createDriver(options) {
         signal,
       );
       if (!loaded) throw new Error('Could not load pdf.js from any CDN — page rendering needs it.');
-      const out = await abortablePromise(page.evaluate(async ({ b64: data, workers, targetWidth, maxPages, mimeType, quality }) => {
+      const out = await abortablePromise(page.evaluate(async ({ b64: data, workers, targetWidth, maxPages, mimeType, quality, pageRange }) => {
         for (const w of workers) { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = w; break; } catch (_) {} }
         const bin = atob(data);
         const bytes = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
         const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
-        const total = pdf.numPages;
-        const pages = [];
-        for (let n = 1; n <= Math.min(total, maxPages); n++) {
+        const sourceTotalPages = pdf.numPages;
+        const firstPage = pageRange ? Math.max(1, pageRange[0]) : 1;
+        const lastPage = pageRange ? Math.min(sourceTotalPages, pageRange[1]) : sourceTotalPages;
+        if(firstPage > lastPage)throw new Error('Selected page range is outside the PDF');
+        const total = lastPage - firstPage + 1;
+        const pages = []; const pageNumbers = [];
+        let imageBytes = 0;
+        if (total > maxPages) throw new Error('Visual evidence exceeds the configured page budget (' + total + '/' + maxPages + '). Use smaller PDF page ranges; no partial audit was run.');
+        for (let n = firstPage; n <= lastPage; n++) {
           const pg = await pdf.getPage(n);
           const base = pg.getViewport({ scale: 1 });
           const viewport = pg.getViewport({ scale: Math.min(3, Math.max(1, targetWidth / base.width)) });
@@ -922,17 +934,20 @@ function createDriver(options) {
           canvas.width = Math.round(viewport.width);
           canvas.height = Math.round(viewport.height);
           await pg.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-          pages.push(canvas.toDataURL(mimeType, quality).split(',')[1] || '');
+          const encoded = canvas.toDataURL(mimeType, quality).split(',')[1] || '';
+          imageBytes += Math.ceil(encoded.length * 0.75);
+          if (imageBytes > 256 * 1024 * 1024) throw new Error('Visual evidence exceeds 256 MB. Use smaller PDF page ranges; no partial audit was run.');
+          pages.push(encoded); pageNumbers.push(n);
           canvas.width = 0; canvas.height = 0; // release the backing store now, not at GC
         }
-        return { pages, totalPages: total };
-      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES, mimeType: RENDER_IMAGE_MIME, quality: RENDER_IMAGE_QUALITY }), signal);
+        return { pages, totalPages: total, sourceTotalPages, pageNumbers };
+      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES, mimeType: RENDER_IMAGE_MIME, quality: RENDER_IMAGE_QUALITY, pageRange: Array.isArray(o.pageRange) ? o.pageRange : null }), signal);
 
       const bytes = out.pages.reduce((n, p) => n + Math.round(p.length * 0.75), 0);
       const truncated = out.totalPages > out.pages.length;
       rlog('rendered ' + out.pages.length + '/' + out.totalPages + ' page(s) to ' + RENDER_IMAGE_MIME.replace('image/', '').toUpperCase() + ' (' + Math.round(bytes / 1024) + ' KB)'
         + (truncated ? ' — TRUNCATED at the ' + RENDER_MAX_PAGES + '-page cap' : ''));
-      return { pages: out.pages, totalPages: out.totalPages, renderedPages: out.pages.length, bytes, truncated };
+      return { pages: out.pages, totalPages: out.totalPages, sourceTotalPages: out.sourceTotalPages, pageNumbers: out.pageNumbers, renderedPages: out.pages.length, bytes, truncated };
     } finally {
       try { await context.close(); } catch (_) {}
       runState?.contexts?.delete(context);
@@ -1040,12 +1055,13 @@ function createDriver(options) {
       // — audio/video transcription and already-image payloads pass through untouched, since the
       // point is to remove the PDF content type, not to re-encode everything.
       const pageImages = runOpts.pageImages;
+      const visionPrompt = String(prompt) + (pageImages && runOpts.renderReport && runOpts.renderReport.pageNumbers ? "\nAttached images correspond, in order, to source PDF pages: " + runOpts.renderReport.pageNumbers.join(", ") + "." : "");
       const parts = (pageImages && pageImages.length && mime === 'application/pdf')
-        ? [{ text: String(prompt) }].concat(
+        ? [{ text: visionPrompt }].concat(
           pageImages.map((p) => ({ inline_data: { mime_type: PAGE_IMAGE_MIME, data: p } }))
         )
         : [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
-      if (modelBridge) return bridgeCall('vision', prompt, parts);
+      if (modelBridge) return bridgeCall('vision', visionPrompt, parts);
       return trackTransport(() => geminiCallWithFallback({
         apiKey, model: DEFAULT_MODEL, log: rlog, parts,
         signal: runOpts.signal, transportState,
@@ -1181,6 +1197,7 @@ function createDriver(options) {
       onLog: runOpts.onLog,
       signal: runOpts.signal,
       runState: runOpts.runState,
+      pageRange: runOpts.pageRange,
     });
     return Object.assign({}, runOpts, { pageImages: rendered.pages, renderReport: rendered });
   }
@@ -1370,7 +1387,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily }) => {
+      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn }) => {
         const pipeline = window.__mcpPipeline;
         // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
         let b64 = _rawB64;
@@ -1677,6 +1694,7 @@ function createDriver(options) {
             if (roundOut._auditOnly) break; // evidence refresh is deliberately single-shot
           }
         }
+        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:window.__lastOcrPageErrors,lowConfidencePages:window.__lastOcrLowConfidencePages,pageRange});
         let verdict = null;
         let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null;
         let activeContentDetected = false;
@@ -1713,6 +1731,7 @@ function createDriver(options) {
             activeContentScanVerified = true;
             activeContentDetected = activeScan.any;
             if (activeContentDetected) throw new Error('active_content_requires_review');
+            if(contentCoverage.reviewRequired)throw Error('content_coverage_requires_review');
             taggedPdfExportMode = 'original_layout';
             let artifactVerdict = null;
             try {
@@ -1753,6 +1772,7 @@ function createDriver(options) {
           } catch (e) { taggedPdfError = (e && e.message) || String(e); }
         }
         if (!verdict) { try { verdict = pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { verdict = null; } }
+        if(contentCoverage.reviewRequired)verdict={...(verdict||{}),level:'review',review:[...(verdict?.review||[]),'Source content coverage requires review'],cautions:verdict?.cautions||[]};
         const stats = (() => { try { return pipeline.getPipelineStats(); } catch (_) { return null; } })();
         return {
           beforeScore: audit && typeof audit.score === 'number' ? audit.score : null,
@@ -1761,6 +1781,7 @@ function createDriver(options) {
           aiVerificationIncomplete: !!(cur && cur._aiVerificationIncomplete),
           scoreSource: (cur && cur._scoreSource) || null,
           estimatedMinimumScore: (cur && cur._estimatedMinimumScore) !== undefined ? cur._estimatedMinimumScore : null,
+          contentCoverage,
           integrityCoverage: (cur && cur.integrityCoverage) !== undefined ? cur.integrityCoverage : null,
           integrityWarning: (cur && cur.integrityWarning) || null,
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
@@ -1783,7 +1804,7 @@ function createDriver(options) {
           stats: stats ? { apiCalls: stats.apiCalls, visionCalls: stats.visionCalls, retries: stats.retries, recoveredRetries: stats.recoveredRetries, authThrottles: stats.authThrottles, terminalFailures: stats.terminalFailures } : null,
         };
       }, {
-        b64, fileName,
+        b64, fileName, sourceCoverageFn:NarrationPlanner.assessSourceCoverage.toString(),
         targetScore: Number(opts.targetScore) || 95,
         fixPasses: Number.isFinite(Number(opts.fixPasses)) ? Number(opts.fixPasses) : 2,
         polishPasses: Number.isFinite(Number(opts.polishPasses)) ? Number(opts.polishPasses) : 0,
@@ -2756,31 +2777,19 @@ function createDriver(options) {
   // a human can act on. Cross-engine disagreement is the cheapest accessibility evidence there is.
   async function auditWithBothEngines(opts) {
     const o = opts || {};
-    return withHtmlPage(false, async (page) => page.evaluate(async (html) => {
-      const p = window.__mcpPipeline;
-      const axe = await p.runAxeAudit(html);
-      let equalAccess = null;
-      let equalAccessError = null;
-      try { equalAccess = await p.runEqualAccessAudit(html); }
-      catch (e) { equalAccessError = String((e && e.message) || e).slice(0, 300); }
-      const ids = (a, key) => new Set(((a && a[key]) || []).map((v) => v.id).filter(Boolean));
-      const axeIds = ids(axe, 'violations');
-      const eaIds = new Set(((equalAccess && (equalAccess.fails || equalAccess.violations)) || []).map((v) => v.ruleId || v.id).filter(Boolean));
-      return {
-        axe: {
-          score: axe && axe.score, violations: axe && axe.totalViolations,
-          incomplete: axe && axe.totalIncomplete, ids: [...axeIds],
-        },
-        equalAccess: equalAccess ? {
-          score: equalAccess.score,
-          failViolations: equalAccess.failViolations != null ? equalAccess.failViolations : (equalAccess.fails || []).length,
-          ids: [...eaIds],
-        } : null,
-        equalAccessError,
-        onlyAxe: [...axeIds].filter((i) => !eaIds.has(i)),
-        onlyEqualAccess: [...eaIds].filter((i) => !axeIds.has(i)),
-      };
-    }, o.html), o);
+    return withHtmlPage(false, async (page) => page.evaluate(async ({html,checksSource}) => {
+      const p=window.__mcpPipeline, errors={};
+      const run=async(name,fn)=>{try{return await fn();}catch(e){errors[name]=String(e?.message||e).slice(0,300);return null;}};
+      const [axe,equalAccess]=await Promise.all([run('axe',()=>p.runAxeAudit(html)),run('equalAccess',()=>p.runEqualAccessAudit(html))]);
+      const checks=(0,eval)('('+checksSource+')')({axe,equalAccess,includeAi:false});
+      const axeIds=new Set((axe?.violations||[]).map(v=>v.id).filter(Boolean));
+      const eaIds=new Set((equalAccess?.fails||equalAccess?.violations||[]).map(v=>v.ruleId||v.id).filter(Boolean));
+      return {checks,scope:'static HTML; live scripts and interactions are not exercised',
+        axe:{score:axe?.score??null,violations:axe?.totalViolations??null,incomplete:axe?.totalIncomplete??null,ids:[...axeIds]},
+        equalAccess:equalAccess?{score:equalAccess.score,failViolations:equalAccess.failViolations??null,reviewFindingCount:checks.equalAccess.reviewFindings,ids:[...eaIds]}:null,
+        equalAccessError:errors.equalAccess||null,engineErrors:errors,
+        onlyAxe:[...axeIds].filter(id=>!eaIds.has(id)),onlyEqualAccess:[...eaIds].filter(id=>!axeIds.has(id))};
+    }, {html:o.html,checksSource:Verification.auditChecks.toString()}), o);
   }
 
   // Plain text and heading-structure check. Both synchronous in the pipeline; useful on their own
@@ -2804,33 +2813,33 @@ function createDriver(options) {
 
   // (2026-08-17) audit_html: the pipeline's native two-engine audit on caller-supplied HTML.
   // Title II is web-first, and this is the same evidence stack every internal reverify uses
-  // (AI rubric + axe). File/string input only — no URL fetching, so document egress stays
+  // (AI rubric + axe + IBM Equal Access). File/string input only — no URL fetching, so document egress stays
   // exactly what the key configuration says.
   async function auditHtml(opts) {
-    const o = opts || {};
-    (o.onLog || log)('audit_html: ' + (o.fileName || 'page.html') + ' (' + Math.round(String(o.html || '').length / 1024) + ' KB)');
-    return withRunPage(Object.assign({ fileName: o.fileName || 'page.html' }, o), (page) =>
-      page.evaluate(async ({ html, fileName }) => {
-        const p = window.__mcpPipeline;
-        const [ai, axe] = await Promise.all([
-          p.auditOutputAccessibility(html, { trigger: 'mcp-html-audit' }),
-          p.runAxeAudit(html).catch(() => null),
-        ]);
-        const issues = (ai && Array.isArray(ai.issues) ? ai.issues : []).slice(0, 60)
-          .map((i) => ({ issue: (i && (i.issue || i.description)) || '', wcag: (i && i.wcag) || '', severity: (i && i.severity) || '' }));
-        return {
-          fileName,
-          score: ai && typeof ai.score === 'number' ? ai.score : null,
-          sectionsAudited: (ai && Number.isFinite(ai.chunksAudited)) ? ai.chunksAudited : null,
-          sectionsRequested: (ai && Number.isFinite(ai.chunksRequested)) ? ai.chunksRequested : null,
-          issueCount: issues.length,
-          issues,
-          passCount: (ai && Array.isArray(ai.passes)) ? ai.passes.length : null,
-          axeViolations: axe && axe.totalViolations != null ? axe.totalViolations : null,
-          axeScore: axe && typeof axe.score === 'number' ? axe.score : null,
-        };
-      }, { html: String(o.html || ''), fileName: o.fileName || 'page.html' })
-    );
+    const o=opts||{};
+    (o.onLog||log)('audit_html: '+(o.fileName||'document.html'));
+    return withRunPage(Object.assign({fileName:o.fileName||'document.html'},o),(page)=>
+      page.evaluate(async ({html,fileName,checksSource})=>{
+        const p=window.__mcpPipeline,errors={};
+        const run=async(name,fn)=>{try{return await fn();}catch(e){errors[name]=String(e?.message||e).slice(0,300);return null;}};
+        const [ai,axe,equalAccess]=await Promise.all([
+          run('ai',()=>p.auditOutputAccessibility(html,{trigger:'mcp-html-audit'})),
+          run('axe',()=>p.runAxeAudit(html)),run('equalAccess',()=>p.runEqualAccessAudit(html))]);
+        const checks=(0,eval)('('+checksSource+')')({ai,axe,equalAccess});
+        const verification=window.AlloModules.VerificationPolicy.deriveVerificationState({ai,axe,equalAccess,verificationScope:'static-source'});
+        const issues=(Array.isArray(ai?.issues)?ai.issues:[]).slice(0,60).map(i=>({issue:i?.issue||i?.description||'',wcag:i?.wcag||'',severity:i?.severity||''}));
+        return {fileName,score:Number.isFinite(ai?.score)?ai.score:null,
+          sectionsAudited:ai?.chunksAudited??null,sectionsRequested:ai?.chunksRequested??null,
+          issueCount:Array.isArray(ai?.issues)?ai.issues.length:null,issues,
+          passCount:Array.isArray(ai?.passes)?ai.passes.length:null,
+          axeViolations:axe?.totalViolations??null,axeIncomplete:axe?.totalIncomplete??null,axeScore:axe?.score??null,
+          equalAccessFailures:equalAccess?.failViolations??null,equalAccessScore:equalAccess?.score??null,
+          equalAccessReviewFindings:checks.equalAccess.reviewFindings,checks,engineErrors:errors,
+          verificationState:verification.verificationState,executionState:verification.executionState,
+          outcomeState:verification.outcomeState,requiresManualReview:verification.requiresManualReview,
+          verificationCoverage:verification.verificationCoverage,
+          note:'AI, axe-core and IBM Equal Access findings cover static HTML. Complete live interaction, keyboard and assistive-technology checks before making conformance claims.'};
+      },{html:String(o.html||''),fileName:o.fileName||'document.html',checksSource:Verification.auditChecks.toString()}));
   }
 
   async function close() {

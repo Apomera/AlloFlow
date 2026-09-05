@@ -23,6 +23,43 @@ beforeAll(() => {
 
 const TEACHER_ONLY = ['lesson-plan', 'udl-advice', 'persona-session'];
 
+const activitySource = fs.readFileSync(path.join(ROOT, 'view_brainstorm_source.jsx'), 'utf8');
+const projectStudentActivityResource = new Function(activitySource.slice(activitySource.indexOf('function projectStudentActivityResource('), activitySource.indexOf('function ActivityStructuredEditor(')) + '\nreturn projectStudentActivityResource;')();
+function makeStudentRule({ module = true, projector = projectStudentActivityResource } = {}) {
+  const begin = anti.indexOf('const TEACHER_ONLY_TYPES = [');
+  const end = anti.indexOf('const _alloIsStudentSafeResource =', begin);
+  const modules = {};
+  if (module) modules.SessionTransport = ST;
+  if (projector) modules.BrainstormView = { projectStudentActivityResource: projector };
+  return new Function('window', anti.slice(begin, end) + '\nreturn _alloStudentSafeResources;')({ AlloModules: modules });
+}
+function mixedActivities() {
+  return {
+    id: 'activities-a', type: 'brainstorm', unitId: 'unit-a', teacherNotes: 'PRIVATE resource notes',
+    config: { grade: '5', language: 'English', apiKey: 'PRIVATE config', customInstructions: 'PRIVATE prompt' },
+    data: [
+      { kind: 'idea', title: 'PRIVATE teacher idea', guide: 'PRIVATE idea guide' },
+      { kind: 'discussion', title: 'Talk about water', openingQuestion: 'Why does ice float?',
+        protocol: 'think-pair-share', grouping: 'Pairs', guide: 'PRIVATE teacher guide', notes: 'PRIVATE notes',
+        questionSets: [{ depth: 'literal', questions: ['What is ice?'], answer: 'PRIVATE key' }],
+        talkStems: { agree: ['I agree because...'], teacherOnly: ['PRIVATE stem'] }, derivativeMeta: { guide: 'PRIVATE meta' } },
+      { kind: 'jigsaw', title: 'Investigate water', groupSize: 4, guide: 'PRIVATE guide',
+        chunks: [{ label: 'Ice', expertPacket: 'Read about frozen water.', answerKey: 'PRIVATE chunk key', teachBack: { keyPoints: ['Ice is solid.'], checkQuestions: ['What is solid?'], notes: 'PRIVATE teaching notes' } }],
+        homeGroupTask: 'Share your findings.', synthesisOrganizer: 'Complete the chart.',
+        accountabilityCheck: [{ q: 'Name a state of matter.', answer: 'PRIVATE answer' }] }
+    ]
+  };
+}
+function expectLearnerActivities(items) {
+  expect(items).toHaveLength(1);
+  expect(items[0]).toMatchObject({ id: 'activities-a', type: 'brainstorm', studentProjection: true, unitId: 'unit-a' });
+  expect(items[0].data.map(item => item.kind)).toEqual(['discussion', 'jigsaw']);
+  expect(items[0].data[0].openingQuestion).toBe('Why does ice float?');
+  expect(items[0].data[1].chunks[0].expertPacket).toBe('Read about frozen water.');
+  expect(JSON.stringify(items)).not.toContain('PRIVATE');
+}
+
+
 const liveFollowStart = anti.indexOf('const _alloFollowResourceLive = (item, options = {}) => {');
 const liveFollowEnd = anti.indexOf('const handleRestoreView', liveFollowStart);
 if (liveFollowStart < 0 || liveFollowEnd < 0) throw new Error('Live follow helper markers are missing');
@@ -34,6 +71,7 @@ function makeLiveFollowHarness(overrides = {}) {
     mbLive: null,
     mbMode: 'sync',
     TEACHER_ONLY_TYPES: TEACHER_ONLY,
+    _alloStudentSafeResources: makeStudentRule(),
     addToast: vi.fn(),
     doc: vi.fn(() => ({ path: 'session' })),
     db: {},
@@ -253,12 +291,54 @@ describe('mailbox pack cycle (stage 2 — the algorithm, module-owned)', () => {
     expect(ops.setHostedFp).not.toHaveBeenCalled();
   });
 
-  it('a failed packRef publish is advisory: hosted fp records, error routed to handler', async () => {
+  it('a failed packRef publish stays retryable and routes the error to its handler', async () => {
     const ops = cycleOps({ publishPackRef: vi.fn(async () => { throw new Error('firestore down'); }) });
     const result = await ST.runMailboxPackCycle(items(['a']), ops);
-    expect(ops.setHostedFp).toHaveBeenCalled();
+    expect(ops.setHostedFp).not.toHaveBeenCalled();
     expect(ops.onPackRefError).toHaveBeenCalledTimes(1);
     expect(result.hosted).toBe(true);
+  });
+
+
+  it('retains removals until the send succeeds so a later cycle retries', async () => {
+    const ops = cycleOps({ seen: { gone: 'old' }, sendRemovals: vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined) });
+    await expect(ST.runMailboxPackCycle([], ops)).rejects.toThrow('offline');
+    expect(ops.seen.gone).toBe('old');
+    await ST.runMailboxPackCycle([], ops);
+    expect(ops.sendRemovals).toHaveBeenCalledTimes(2);
+    expect(ops.seen.gone).toBeUndefined();
+  });
+
+  it.each(['fingerprint', 'pushItem'])('isolates a synchronous %s failure and continues delivery', async operation => {
+    const ops = cycleOps();
+    ops[operation] = vi.fn(item => { if (item.id === 'a') throw new Error('bad resource'); return operation === 'fingerprint' ? 'fp-b-1' : undefined; });
+    const result = await ST.runMailboxPackCycle(items(['a', 'b']), ops);
+    expect(result).toMatchObject({ pushed: 1, failed: 1 });
+    expect(ops.seen.a).toBeUndefined();
+    expect(ops.seen.b).toBe('fp-b-1');
+    expect(ops.onItemError).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaces a formerly nonempty hosted pack with an empty assignment', async () => {
+    const ops = cycleOps({ seen: { gone: 'old' }, getHostedFp: () => 'old-pack' });
+    await ST.runMailboxPackCycle([], ops);
+    expect(ops.hostPack).toHaveBeenCalledWith([]);
+    expect(ops.publishPackRef).toHaveBeenCalledWith(expect.objectContaining({ n: 0 }));
+    expect(ops.setHostedFp).toHaveBeenCalledWith('');
+    const untouched = cycleOps();
+    await ST.runMailboxPackCycle([], untouched);
+    expect(untouched.hostPack).not.toHaveBeenCalled();
+  });
+
+  it('retries an unchanged hosted pack after its reference write fails', async () => {
+    let fingerprint = null;
+    const ops = cycleOps({ getHostedFp: () => fingerprint, setHostedFp: value => { fingerprint = value; }, publishPackRef: vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined) });
+    await ST.runMailboxPackCycle(items(['a']), ops);
+    expect(fingerprint).toBeNull();
+    await ST.runMailboxPackCycle(items(['a']), ops);
+    expect(ops.publishPackRef).toHaveBeenCalledTimes(2);
+    expect(ops.pushItem).toHaveBeenCalledTimes(1);
+    expect(fingerprint).toBe('a:1');
   });
 
   it('traces one pack-cycle event only when something actually happened', async () => {
@@ -353,8 +433,8 @@ describe('ANTI wiring pins', () => {
   });
 
   it('the inline sync fallbacks are retired: transport-unavailable is surfaced, not duplicated', () => {
-    expect(anti).toContain("_alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' })");
-    expect(anti).toContain("_alloSessionSyncTrace('sync:transport-unavailable', { channel: 'mailbox' })");
+    expect(anti.includes("_alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase', sessionPath:")).toBe(true);
+    expect(anti.includes("traceSession('sync:transport-unavailable', { channel: 'mailbox' })")).toBe(true);
     // The retired inline bodies must be gone.
     expect(anti).not.toContain('// Module-not-loaded fallback: identical behavior, inline.');
     expect(anti).not.toContain('const seen = mbSentPacksRef.current;');
@@ -370,7 +450,7 @@ describe('ANTI wiring pins', () => {
     expect(anti).toContain("window.__alloOpenDiagnosticsLog('session')"); // deep link
     expect(liveDock).toMatch(/rosterCount \+ ' ' \+ \(rosterCount === 1/);
     expect(liveDock).toContain("/REFUSED|write-failed|transport-unavailable/.test(ev.event)");
-    expect(liveDock).toContain("problemIsCurrent ? '⚠️' : '🟢'");
+    expect(liveDock.includes("problemIsCurrent ? '⚠️' : lastSync ? '🟢' : '○'")).toBe(true);
   });
 
   it('the mailbox pack effect routes through the module-owned cycle (stage 2)', () => {
@@ -385,5 +465,97 @@ describe('ANTI wiring pins', () => {
     const count = anti.split('_alloStudentSafeResources(history)').length - 1;
     expect(count).toBeGreaterThanOrEqual(6);
     expect(anti).not.toContain('!TEACHER_ONLY_TYPES.includes(h.type));');
+  });
+});
+
+
+describe('student activity projection at real delivery boundaries', () => {
+  it('allows discussion and jigsaw content while excluding teacher ideas, keys, guides and private metadata', () => {
+    const original = mixedActivities(); const snapshot = JSON.stringify(original);
+    expectLearnerActivities(ST.studentSafeResources([original], ['brainstorm'], projectStudentActivityResource));
+    expect(JSON.stringify(original)).toBe(snapshot);
+  });
+
+  it('fails closed without the activity projector and for idea-only resources', () => {
+    expect(ST.studentSafeResources([mixedActivities()], TEACHER_ONLY)).toEqual([]);
+    const ideas = { id: 'ideas', type: 'brainstorm', data: [{ kind: 'idea', title: 'Teacher idea' }] };
+    expect(ST.studentSafeResources([ideas], TEACHER_ONLY, projectStudentActivityResource)).toEqual([]);
+  });
+
+  it('rejects projector results that lose identity or the explicit student projection marker', () => {
+    for (const projected of [null, { id: 'wrong', type: 'brainstorm', studentProjection: true },
+      { id: 'activities-a', type: 'quiz', studentProjection: true },
+      { id: 'activities-a', type: 'brainstorm', data: [] }]) {
+      expect(ST.studentSafeResources([mixedActivities()], TEACHER_ONLY, () => projected)).toEqual([]);
+    }
+  });
+
+  it('uses the same actual projection in the host module path and inline fallback', () => {
+    const activity = mixedActivities();
+    const moduleSafe = makeStudentRule()([activity]);
+    const fallbackSafe = makeStudentRule({ module: false })([activity]);
+    expectLearnerActivities(moduleSafe); expectLearnerActivities(fallbackSafe);
+    expect(fallbackSafe).toEqual(moduleSafe);
+  });
+
+  it('keeps the host fallback closed while the activity projector is unavailable', () => {
+    expect(makeStudentRule({ module: false, projector: null })([mixedActivities()])).toEqual([]);
+    expect(makeStudentRule({ projector: null })([mixedActivities()])).toEqual([]);
+    expect(makeStudentRule({ module: false })([{ id: 'ideas', type: 'brainstorm', data: [{ kind: 'idea' }] }])).toEqual([]);
+  });
+
+  it('sends only the projection to Firebase asset preparation and the outgoing payload', async () => {
+    const uploadAssets = vi.fn(async items => items);
+    const prepareResources = vi.fn(items => ({ resources: items, keptCount: items.length, droppedCount: 0, byteLength: 10 }));
+    const write = vi.fn(async () => {});
+    const transport = ST.createFirebaseTransport({ teacherOnlyTypes: ['brainstorm', 'lesson-plan'], projectStudentActivityResource, uploadAssets, prepareResources, write });
+    await transport.publishResources([mixedActivities(), { id: 'lesson', type: 'lesson-plan', data: { guide: 'PRIVATE' } }]);
+    expectLearnerActivities(uploadAssets.mock.calls[0][0]);
+    expectLearnerActivities(prepareResources.mock.calls[0][0]);
+    expectLearnerActivities(write.mock.calls[0][0].resources);
+  });
+
+  it('sends only the projection through both mailbox adapter modes', async () => {
+    const runPackCycle = vi.fn(async () => ({}));
+    await ST.createMailboxTransport({ teacherOnlyTypes: ['brainstorm'], projectStudentActivityResource, runPackCycle }).publishResources([mixedActivities()]);
+    expectLearnerActivities(runPackCycle.mock.calls[0][0]);
+    const pushItem = vi.fn(async () => {}); const hostPack = vi.fn(async () => ({ id: 'pack' }));
+    await ST.createMailboxTransport({ teacherOnlyTypes: ['brainstorm'], projectStudentActivityResource,
+      fingerprint: item => JSON.stringify(item), pushItem, hostPack, packFingerprint: items => JSON.stringify(items)
+    }).publishResources([mixedActivities()]);
+    expectLearnerActivities([pushItem.mock.calls[0][0]]);
+    expectLearnerActivities(hostPack.mock.calls[0][0]);
+  });
+
+  it('projects a live mailbox follow before sending content', async () => {
+    const { follow, deps } = makeLiveFollowHarness({ activeSessionCode: null, mbLive: { code: 'MAIL-1' } });
+    await expect(follow(mixedActivities(), { awaitDelivery: true })).resolves.toBe(true);
+    expectLearnerActivities([deps._mbPushOneResource.mock.calls[0][0]]);
+  });
+
+  it('projects an immediate mailbox follow and blocks idea-only follow commands', () => {
+    const { follow, deps } = makeLiveFollowHarness({ activeSessionCode: null, mbLive: { code: 'MAIL-1' } });
+    expect(follow(mixedActivities())).toBe(true);
+    expectLearnerActivities([deps.pushResourceToMailbox.mock.calls[0][0]]);
+    deps.pushResourceToMailbox.mockClear();
+    expect(follow({ id: 'ideas', type: 'brainstorm', data: [{ kind: 'idea', title: 'Private idea' }] })).toBe(false);
+    expect(deps.pushResourceToMailbox).not.toHaveBeenCalled();
+  });
+
+  it('writes a Firebase follow pointer only for projected learner activities', async () => {
+    const { follow, deps } = makeLiveFollowHarness();
+    await expect(follow(mixedActivities(), { awaitDelivery: true })).resolves.toBe(true);
+    expect(deps.updateDoc).toHaveBeenCalledWith({ path: 'session' }, { currentResourceId: 'activities-a' });
+    deps.updateDoc.mockClear();
+    expect(follow({ id: 'ideas', type: 'brainstorm', data: [{ kind: 'idea' }] })).toBe(false);
+    expect(deps.updateDoc).not.toHaveBeenCalled();
+  });
+
+  it('supplies the real projection to both root transport adapters', () => {
+    for (const marker of ['ST.createFirebaseTransport({', '_stMb.createMailboxTransport({']) {
+      const begin = anti.indexOf(marker);
+      expect(begin).toBeGreaterThan(-1);
+      expect(anti.slice(begin, begin + 1200)).toContain('projectStudentActivityResource: _alloProjectStudentActivityResource');
+    }
   });
 });

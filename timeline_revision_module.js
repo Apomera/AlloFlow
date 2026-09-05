@@ -23,6 +23,41 @@ if(window.AlloModules&&window.AlloModules.TimelineRevisionModule){console.log("[
 
 var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
 
+// Request ownership survives factory refreshes and always names a history resource.
+var timelineRequestSequence = 0;
+var timelineRequestOwners = Object.create(null);
+var timelineStatusOwners = Object.create(null);
+function beginTimelineRequest(resourceId, channel) {
+  var key = String(resourceId) + ':' + channel;
+  var token = ++timelineRequestSequence;
+  timelineRequestOwners[key] = token;
+  timelineStatusOwners[channel] = token;
+  var isCurrent = function () { return timelineRequestOwners[key] === token; };
+  isCurrent.ownsStatus = function () { return timelineStatusOwners[channel] === token; };
+  return isCurrent;
+}
+function timelineDataSignature(data) {
+  try { return JSON.stringify(data); } catch (_) { return null; }
+}
+function updateTimelineResource(ctx, expectedData, transform, isCurrent, matches) {
+  var resourceId = ctx.generatedContent && ctx.generatedContent.id;
+  if (resourceId == null || !isCurrent()) return;
+  var signature = timelineDataSignature(expectedData);
+  var update = function (resource) {
+    if (!isCurrent() || !resource || resource.type !== 'timeline' || String(resource.id) !== String(resourceId)) return resource;
+    if (matches ? !matches(resource.data) : timelineDataSignature(resource.data) !== signature) return resource;
+    return Object.assign({}, resource, { data: transform(resource.data) });
+  };
+  if (typeof ctx.onUpdateResource === 'function') {
+    ctx.onUpdateResource(resourceId, update);
+  } else {
+    ctx.setGeneratedContent(update);
+    if (typeof ctx.setHistory === 'function') ctx.setHistory(function (history) {
+      return history.map(function (resource) { return String(resource.id) === String(resourceId) ? update(resource) : resource; });
+    });
+  }
+}
+
 var createTimelineRevision = function(deps) {
   var callGemini = deps.callGemini;
   var gradeLevel = deps.gradeLevel || 'Grade 5';
@@ -208,7 +243,8 @@ var createTimelineRevision = function(deps) {
     var setIsRevisingTimeline = ctx.setIsRevisingTimeline;
     var setTimelineRevisionInput = ctx.setTimelineRevisionInput;
 
-    if (!input || !input.trim() || !generatedContent || !generatedContent.data) return;
+    if (!input || !input.trim() || !generatedContent || generatedContent.type !== 'timeline' || generatedContent.id == null || !generatedContent.data) return;
+    var isCurrent = beginTimelineRequest(generatedContent.id, 'revision');
     setIsRevisingTimeline(true);
     try {
       var currentData = generatedContent.data;
@@ -252,6 +288,7 @@ var createTimelineRevision = function(deps) {
         '    ]\n' +
         '}\n';
       var result = await callGemini(prompt, true);
+      if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       var revisedItemsRaw = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
       var revisedItems = revisedItemsRaw.map(function(it) {
@@ -276,9 +313,9 @@ var createTimelineRevision = function(deps) {
         mode: revisedMode,
         autoDetected: revisedAutoDetected
       };
-      setGeneratedContent(function(prev) { return Object.assign({}, prev, { data: revisedData }); });
+      updateTimelineResource(ctx, currentData, function () { return revisedData; }, isCurrent);
       addToast((t && t('timeline.revision_success')) || 'Sequence revised successfully!', 'success');
-      setTimelineRevisionInput('');
+      setTimelineRevisionInput(function (currentInput) { return currentInput === input ? '' : currentInput; });
       if (includeTimelineVisuals && revisedItems.length > 0) {
         addToast((t && t('timeline.visuals.regenerating_batch')) || 'Regenerating visuals...', 'info');
         var POOL_SIZE = 5;
@@ -303,21 +340,18 @@ var createTimelineRevision = function(deps) {
         for (var ii = 0; ii < revisedItems.length; ii += POOL_SIZE) {
           var batch = revisedItems.slice(ii, ii + POOL_SIZE);
           var results = await Promise.all(batch.map(generateOne));
+          if (!isCurrent()) return;
           results.forEach(function(r, jj) { output[ii + jj] = r; });
         }
-        setGeneratedContent(function(prev) {
-          if (!prev || prev.type !== 'timeline') return prev;
-          var nextData = Object.assign({}, prev.data || {}, {
+        updateTimelineResource(ctx, revisedData, function (data) {
+          return Object.assign({}, data || {}, {
             items: output,
             progressionLabel: revisedData.progressionLabel,
             progressionLabel_en: revisedData.progressionLabel_en,
             mode: revisedData.mode,
             autoDetected: revisedData.autoDetected
           });
-          var updated = Object.assign({}, prev, { data: nextData });
-          setHistory(function(h) { return h.map(function(item) { return item.id === prev.id ? updated : item; }); });
-          return updated;
-        });
+        }, isCurrent);
         if (failCount > 0) {
           var msg = t && t('timeline.visuals.failed', { failed: failCount, total: output.length });
           addToast((msg && msg !== 'timeline.visuals.failed') ? msg : failCount + ' of ' + output.length + ' visuals couldn\'t be generated.', 'warning');
@@ -327,7 +361,7 @@ var createTimelineRevision = function(deps) {
       warnLog("Timeline Revision Error:", error);
       addToast((t && t('timeline.revision_error')) || 'Failed to revise sequence. Please try again.', 'error');
     } finally {
-      setIsRevisingTimeline(false);
+      if (isCurrent.ownsStatus()) setIsRevisingTimeline(false);
     }
   }
 
@@ -344,6 +378,7 @@ var createTimelineRevision = function(deps) {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
     var data = generatedContent.data;
     if (Array.isArray(data) || !Array.isArray(data.validationIssues) || data.validationIssues.length === 0) return;
+    var isCurrent = beginTimelineRequest(generatedContent.id, 'auto-fix');
     setIsAutoFixingTimeline(true);
     try {
       var issueList = data.validationIssues.map(function(iss, i) { return (i + 1) + '. ' + iss.message; }).join('\n');
@@ -359,6 +394,7 @@ var createTimelineRevision = function(deps) {
         '}\n' +
         'Keep the same number of items and same overall content scope — just fix the listed problems.\n';
       var result = await callGemini(prompt, true);
+      if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       var newItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : data.items;
       var merged = newItems.map(function(it, i) {
@@ -374,14 +410,12 @@ var createTimelineRevision = function(deps) {
         delete newData.validationIssues;
         addToast((t && t('timeline.validation.all_fixed')) || 'All validation issues fixed.', 'success');
       }
-      var updated = Object.assign({}, generatedContent, { data: newData });
-      setGeneratedContent(updated);
-      setHistory(function(prev) { return prev.map(function(item) { return item.id === generatedContent.id ? updated : item; }); });
+      updateTimelineResource(ctx, data, function () { return newData; }, isCurrent);
     } catch (e) {
       warnLog('Timeline auto-fix failed:', e);
       addToast((t && t('timeline.validation.fix_failed')) || "Couldn't auto-fix. Please revise manually.", 'error');
     } finally {
-      setIsAutoFixingTimeline(false);
+      if (isCurrent.ownsStatus()) setIsAutoFixingTimeline(false);
     }
   }
 
@@ -400,6 +434,7 @@ var createTimelineRevision = function(deps) {
     var data = generatedContent.data;
     var items = Array.isArray(data) ? data : (data && data.items) || [];
     if (items.length === 0) return;
+    var isCurrent = beginTimelineRequest(generatedContent.id, 'verification');
     setIsVerifyingTimeline(true);
     try {
       var modeLbl = (!Array.isArray(data) && data.mode && TIMELINE_MODE_DEFINITIONS[data.mode]) ? TIMELINE_MODE_DEFINITIONS[data.mode].label : 'sequence';
@@ -416,6 +451,7 @@ var createTimelineRevision = function(deps) {
         'Return ONLY a JSON array like:\n' +
         '[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": "", "rationale": "Verified the date 1969 against historical Apollo 11 records; this is correctly placed as the first crewed Moon landing."}, ...]\n';
       var result = await callGemini(prompt, true);
+      if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       if (!Array.isArray(parsed)) throw new Error('Invalid verification response');
       var verdictByIndex = {};
@@ -433,9 +469,7 @@ var createTimelineRevision = function(deps) {
         return Object.assign({}, it, { verification: v });
       });
       var newData = Array.isArray(data) ? newItems : Object.assign({}, data, { items: newItems });
-      var updated = Object.assign({}, generatedContent, { data: newData });
-      setGeneratedContent(updated);
-      setHistory(function(prev) { return prev.map(function(item) { return item.id === generatedContent.id ? updated : item; }); });
+      updateTimelineResource(ctx, data, function () { return newData; }, isCurrent);
       var concerns = parsed.filter(function(v) { return v.isFactuallyAccurate === false || v.isPositionCorrect === false; }).length;
       if (concerns === 0) {
         addToast((t && t('timeline.validation.verified_clean')) || 'Verified: all items look accurate.', 'success');
@@ -446,7 +480,7 @@ var createTimelineRevision = function(deps) {
       warnLog('Timeline verification failed:', e);
       addToast((t && t('timeline.validation.verify_failed')) || "Couldn't run accuracy check. Try again later.", 'error');
     } finally {
-      setIsVerifyingTimeline(false);
+      if (isCurrent.ownsStatus()) setIsVerifyingTimeline(false);
     }
   }
 
@@ -467,9 +501,14 @@ var createTimelineRevision = function(deps) {
     var setIsGeneratingTimelineImage = ctx.setIsGeneratingTimelineImage;
 
     if (!generatedContent || generatedContent.type !== 'timeline') return;
+    var originalItems = Array.isArray(generatedContent.data) ? generatedContent.data : (generatedContent.data && generatedContent.data.items) || [];
+    var originalItem = originalItems[index];
+    if (!originalItem) return;
+    var originalItemSignature = timelineDataSignature(originalItem);
+    var isCurrent = beginTimelineRequest(generatedContent.id, 'image:' + index);
     setIsGeneratingTimelineImage(function(prev) { var next = Object.assign({}, prev); next[index] = true; return next; });
     var hangGuard = setTimeout(function() {
-      setIsGeneratingTimelineImage(function(prev) { var next = Object.assign({}, prev); next[index] = false; return next; });
+      if (isCurrent.ownsStatus()) setIsGeneratingTimelineImage(function(prev) { var next = Object.assign({}, prev); next[index] = false; return next; });
       warnLog('Timeline image hang guard tripped for:', event);
     }, 30000);
     try {
@@ -481,7 +520,7 @@ var createTimelineRevision = function(deps) {
       var imageUrl;
       if (customPromptOverride) {
         var prevItems = isArrayShape ? data : ((data && data.items) || []);
-        var existingItem = prevItems.find(function(it) { return it && it.event === event; });
+        var existingItem = prevItems[index];
         var existing = existingItem && existingItem.image;
         if (existing) {
           try {
@@ -506,30 +545,32 @@ var createTimelineRevision = function(deps) {
           }
         }
       }
-      setGeneratedContent(function(prev) {
-        if (!prev || prev.type !== 'timeline') return prev;
-        var prevData = prev.data;
+      if (!isCurrent()) return;
+      var findOriginalItem = function (data) {
+        var items = Array.isArray(data) ? data : ((data && data.items) || []);
+        if (originalItem.id != null) return items.findIndex(function (item) { return item && item.id === originalItem.id && timelineDataSignature(item) === originalItemSignature; });
+        return timelineDataSignature(items[index]) === originalItemSignature ? index : -1;
+      };
+      updateTimelineResource(ctx, generatedContent.data, function(prevData) {
         var prevIsArray = Array.isArray(prevData);
         var prevItems = prevIsArray ? prevData : ((prevData && prevData.items) || []);
-        var liveIdx = prevItems.findIndex(function(it) { return it && it.event === event; });
+        var liveIdx = findOriginalItem(prevData);
         if (liveIdx === -1) {
           warnLog('Timeline item no longer exists, discarding image for:', event);
-          return prev;
+          return prevData;
         }
         var nextItems = prevItems.slice();
         nextItems[liveIdx] = Object.assign({}, nextItems[liveIdx], { image: imageUrl, altHash: 'regenerated' });
         var nextData = prevIsArray ? nextItems : Object.assign({}, prevData, { items: nextItems });
-        var updated = Object.assign({}, prev, { data: nextData });
-        setHistory(function(h) { return h.map(function(item) { return item.id === prev.id ? updated : item; }); });
-        return updated;
-      });
+        return nextData;
+      }, isCurrent, function (data) { return findOriginalItem(data) !== -1; });
       addToast((t && t('timeline.visuals.regen_success')) || 'Image updated.', 'success');
     } catch (e) {
       warnLog('Timeline image regen failed', e);
       addToast((t && t('timeline.visuals.regen_failed')) || "Couldn't regenerate image right now.", 'error');
     } finally {
       clearTimeout(hangGuard);
-      setIsGeneratingTimelineImage(function(prev) { var next = Object.assign({}, prev); next[index] = false; return next; });
+      if (isCurrent.ownsStatus()) setIsGeneratingTimelineImage(function(prev) { var next = Object.assign({}, prev); next[index] = false; return next; });
     }
   }
 

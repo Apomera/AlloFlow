@@ -1,6 +1,8 @@
 {
   "private": true,
   "scripts": {
+    "build:performance": "node dev-tools/build_performance_release.cjs",
+    "verify:performance-artifacts": "node dev-tools/build_performance_release.cjs --check",
     "test": "vitest run",
     "cdn:cache-bust": "node dev-tools/cache_bust_module_urls.cjs",
     "build:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs",
@@ -32,7 +34,7 @@
     "verify:data-kernel": "node dev-tools/build_data_kernel_assets.cjs --check",
     "verify:blockly-build": "node dev-tools/build_blockly_runtime.cjs --check",
     "test:e2e": "playwright test",
-    "test:e2e:gl": "playwright test tests/e2e/17-memory-palace-gl.spec.ts tests/e2e/18-geometry-world-gl.spec.ts tests/e2e/19-solar-system-gl.spec.ts tests/e2e/20-galaxy-gl.spec.ts tests/e2e/21-moon-mission-gl.spec.ts tests/e2e/22-stem-gl-conformance.spec.ts --workers=1",
+    "test:e2e:gl": "playwright test tests/e2e/17-memory-palace-gl.spec.ts tests/e2e/18-geometry-world-gl.spec.ts tests/e2e/19-solar-system-gl.spec.ts tests/e2e/20-galaxy-gl.spec.ts tests/e2e/21-moon-mission-gl.spec.ts tests/e2e/22-stem-gl-conformance.spec.ts tests/e2e/raptor-flight-continuity.spec.ts --workers=1",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
     "test:mobile": "playwright test -c playwright.mobile.config.ts",
@@ -195,7 +197,8 @@
     "triage:semantic-duplicates": "node dev-tools/scan_semantic_duplicates.cjs",
     "triage:post-review-drift": "node dev-tools/track_post_review_source_drift.cjs",
     "verify:sel-a11y": "node dev-tools/check_sel_a11y.cjs",
-    "verify:sel-wcag": "node dev-tools/check_sel_hub_wcag.cjs"
+    "verify:sel-wcag": "node dev-tools/check_sel_hub_wcag.cjs",
+    "verify:school-rewards": "vitest run tests/school_rewards tests/admin_hub_rewards_card.test.js tests/allohaven_classroom_reward_bridge.test.js tests/print_lab_tool.test.js tests/geometry_world_printlab_bridge.test.js --maxWorkers=1 --testTimeout=60000"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.32.0",

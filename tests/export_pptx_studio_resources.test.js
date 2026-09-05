@@ -48,7 +48,7 @@ function recordingStub(record) {
   };
 }
 
-function runExport(history) {
+function runExport(history, options) {
   const record = { slides: [] };
   window.PptxGenJS = recordingStub(record);
   const addToast = vi.fn();
@@ -60,7 +60,7 @@ function runExport(history) {
     liveRef: { current: { history, sourceTopic: 'Matter', gradeLevel: '5', addToast, t } },
     warnLog: vi.fn(), debugLog: vi.fn(), escapeXml, generateUUID: () => 'uuid',
   });
-  return api.handleExportSlides().then((ok) => ({ ok, record, addToast, allText: record.slides.map((s) => s.texts.map((x) => x.text).join('\n')).join('\n====\n') }));
+  return api.handleExportSlides(options).then((ok) => ({ ok, record, addToast, allText: record.slides.map((s) => s.texts.map((x) => x.text).join('\n')).join('\n====\n') }));
 }
 
 const memoryAid = {
@@ -138,5 +138,22 @@ describe('PowerPoint export of studio resources', () => {
   it('stays silent about omissions when nothing was left out', async () => {
     const { addToast } = await runExport([anchorChart]);
     expect(addToast.mock.calls.map((call) => call[0]).some((m) => /left out/.test(m))).toBe(false);
+  });
+});
+
+
+describe('Scoped PowerPoint export', () => {
+  it('uses the explicit Builder resources instead of unrelated live History', async () => {
+    const old = { id: 'old', type: 'simplified', title: 'Other lesson', data: 'OTHER_LESSON_TEXT' };
+    const selected = { id: 'current', type: 'simplified', title: 'Current lesson', data: 'CURRENT_LESSON_TEXT' };
+    const result = await runExport([old, selected], { history: [selected] });
+    expect(result.ok).toBe(true);
+    expect(result.allText).toContain('CURRENT_LESSON_TEXT');
+    expect(result.allText).not.toContain('OTHER_LESSON_TEXT');
+  });
+  it('does not fall back to History when the explicit selection is empty', async () => {
+    const result = await runExport([analysis], { history: [] });
+    expect(result.ok).toBe(false);
+    expect(result.record.slides).toEqual([]);
   });
 });

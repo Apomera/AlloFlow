@@ -74,6 +74,27 @@
             .catch(function () { /* Keep the bundled fallback version when offline. */ });
     }
 
+    function initExampleCopy() {
+        var button = document.getElementById('copy-example-source');
+        var source = document.getElementById('classroom-example-source');
+        var status = document.getElementById('copy-example-status');
+        if (!button || !source || !status || !window.isSecureContext || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') return;
+        button.hidden = false;
+        button.addEventListener('click', async function () {
+            if (button.getAttribute('aria-disabled') === 'true') return;
+            button.setAttribute('aria-disabled', 'true');
+            status.textContent = 'Copying sample text...';
+            try {
+                await navigator.clipboard.writeText(source.textContent.trim());
+                status.textContent = 'Copied. Open AlloFlow and paste the passage into your source.';
+            } catch (error) {
+                status.textContent = 'Copy is unavailable. Download the text file or select and copy the passage above.';
+            } finally {
+                button.removeAttribute('aria-disabled');
+            }
+        });
+    }
+
     function trackStickyCallToAction() {
         var sticky = document.getElementById('stickyCta');
         if (!sticky || typeof MutationObserver === 'undefined') return;
@@ -83,10 +104,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        if (window.lucide) window.lucide.createIcons();
         initMobileNavigation();
         hardenExternalLinks();
         syncReleaseVersion();
         trackStickyCallToAction();
+        initExampleCopy();
     });
 
 })();

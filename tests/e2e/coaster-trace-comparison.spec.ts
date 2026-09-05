@@ -1,0 +1,123 @@
+import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { GlHarness } from './helpers/stem_gl_harness';
+
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1180, height: 940, probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%}.clab-root{width:100%}</style>');"  });
+test.beforeAll(async () => { await harness.start(); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.destroy(page); });
+
+test('compares saved telemetry using keyboard and touch-sized layouts in the mounted 3-D lab', async ({ page }, testInfo) => {
+  test.setTimeout(180000); // Two real WebGL mounts plus packet import and report download.
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.addInitScript(() => {
+    if(localStorage.getItem('coaster_lab_guided_record_v1')) return;
+    const point = (s: number, v: number) => ({ s, v, g: 1 + v / 10, gl: 0 });
+    const entry = { revision: 0, goal: 'hill20', goalValue: 20, goalPassed: true, friction: 'ideal', cars: 3, propulsion: 'chain', accel: 4, maxSpeed: 20, maxGV: 3, minGV: 1, maxLat: 0, designKey: '[[0,3,0,0],[10,20,10,0]]' };
+    localStorage.setItem('coaster_lab_onboarding_v1', 'complete');
+    localStorage.setItem('coaster_lab_guided_record_v1', JSON.stringify({ attempts: 2, history: [
+      { ...entry, attempt: 1, trace: [point(0, 0), point(100, 20)] },
+      { ...entry, attempt: 2, revision: 1, trace: [point(0, 10), point(200, 30)] }
+    ] }));
+  });
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await harness.mount(page, {}, "document.querySelector('[aria-label=\"Coaster Lab 3-D designer\"]')._lab");
+  await page.addStyleTag({ content: '#wrap{width:100%}.clab-root{width:100%}' });
+  await page.evaluate(() => (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.fastRun(false));
+  await page.locator('#clab-tab-report-btn').click();
+  const board = page.locator('[data-clab-experiment-compare]');
+  const slider = board.getByRole('slider', { name: 'Compare runs at distance along track' });
+  await expect(slider).toBeVisible();
+  await slider.focus();
+  await page.keyboard.press('End');
+  await expect(slider).toHaveValue('200');
+  await expect(board.locator('[data-clab-trace-readout]')).toContainText('Not recorded');
+  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowRight');
+  await expect(slider).toBeFocused();
+  expect(Number(await slider.inputValue())).toBeGreaterThan(0);
+  await expect(slider).toHaveAttribute('aria-valuetext', /meters from the start/);
+  const speedDifference = board.getByRole('button', { name: 'Find largest speed difference', exact: true });
+  await speedDifference.focus();
+  await page.keyboard.press('Enter');
+  await expect(speedDifference).toBeFocused();
+  await expect(slider).toHaveValue('0');
+  await expect(board.getByRole('button', { name: 'Find largest lateral-force difference', exact: true })).toBeDisabled();
+  await board.getByRole('group', { name: 'Find largest recorded differences' }).screenshot({ path: testInfo.outputPath('coaster-evidence-shortcuts.png') });
+  await slider.fill('50');
+  await slider.dispatchEvent('change');
+  await expect(board.locator('tbody tr').first()).toContainText('+5.00');
+  await expect(board.locator('[data-clab-trace-status]')).toContainText('Earlier: speed 10.00');
+  await board.locator('[data-clab-trace-overlay]').screenshot({ path: testInfo.outputPath('coaster-comparison-desktop.png') });
+  const conclusion = board.getByRole('textbox', { name: 'Experiment conclusion' });
+  let draft = 'My claim: compare <speed> at the same distance. The later run is 5 m/s faster at 50 m.';
+  await conclusion.fill(draft);
+  await expect(board.locator('[data-clab-draft-status]')).toContainText('saved on this device');
+  const addEvidence = board.getByRole('button', { name: 'Add selected readings', exact: true });
+  await expect(addEvidence).toBeEnabled();
+  await addEvidence.click();
+  expect(await conclusion.inputValue()).toContain(draft);
+  expect(await conclusion.inputValue()).toContain('Evidence at 50.0 m');
+  expect(await conclusion.inputValue()).toContain('change +5.00 m/s');
+  await expect(addEvidence).toBeDisabled();
+  draft = await conclusion.inputValue();
+  await page.locator('#clab-compareTo').selectOption('0');
+  await expect(board).toContainText('Choose two different saved runs');
+  await expect(slider).toHaveCount(0);
+  await page.locator('#clab-compareTo').selectOption('1');
+  await expect(conclusion).toHaveValue(draft);
+  await conclusion.fill('');
+  await page.locator('#clab-compareTo').selectOption('0');
+  await page.locator('#clab-compareTo').selectOption('1');
+  await expect(conclusion).toHaveValue('');
+  await conclusion.fill(draft);
+  await expect(slider).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await slider.scrollIntoViewIfNeeded();
+  await slider.fill('150');
+  await slider.dispatchEvent('change');
+  await expect(board.locator('tbody tr').first()).toContainText('25.00');
+  await expect(addEvidence).toBeDisabled();
+  const readout = board.locator('[data-clab-trace-readout]');
+  await readout.evaluate(el => el.scrollIntoView({ block: 'center' }));
+  expect(await page.locator('#clab-top').evaluate(el => el.getBoundingClientRect().height)).toBeLessThanOrEqual(112);
+  const bounds = await readout.evaluate(el => {
+    const table = el.getBoundingClientRect();
+    const panel = document.querySelector('#clab-tab-report')!.getBoundingClientRect();
+    return { top: table.top >= panel.top - 1, bottom: table.bottom <= panel.bottom + 1 };
+  });
+  expect(bounds).toEqual({ top: true, bottom: true });
+  await page.screenshot({ path: testInfo.outputPath('coaster-comparison-mobile.png') });
+  expect(await board.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  const downloadReady = page.waitForEvent('download');
+  await page.locator('[data-clab-teacher-report]').click();
+  const download = await downloadReady;
+  const report = readFileSync((await download.path())!, 'utf8');
+  expect(report).toContain('Readings at 150.0 m from the start');
+  expect(report).toContain('compare &lt;speed&gt;');
+  expect(report).toContain('Evidence at 50.0 m');
+  expect(report).not.toContain('type="range"');
+  const packetDrafts = await page.evaluate(() => {
+    const engine = (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab;
+    const packet = engine.exportLabPacket();
+    engine.importLabPacket(packet);
+    return JSON.parse(localStorage.getItem('coaster_lab_guided_record_v1')!).comparisonDrafts;
+  });
+  expect(Object.values(packetDrafts)).toContain(draft);
+  await harness.destroy(page);
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await harness.mount(page, {}, "document.querySelector('[aria-label=\"Coaster Lab 3-D designer\"]')._lab");
+  await page.evaluate(() => (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.fastRun(false));
+  await page.locator('#clab-tab-report-btn').click();
+  await expect(conclusion).toHaveValue(draft);
+  // A blocked browser store must never be reported as a successful local save.
+  await page.evaluate(() => { (window as any).__originalSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('storage unavailable'); }; });
+  await conclusion.fill(draft + ' Edited offline.');
+  await expect(board.locator('[data-clab-draft-status]')).toContainText('Local saving is unavailable');
+  await page.locator('#clab-compareTo').selectOption('0');
+  await page.locator('#clab-compareTo').selectOption('1');
+  await expect(conclusion).toHaveValue(draft + ' Edited offline.');
+  await page.evaluate(() => { Storage.prototype.setItem = (window as any).__originalSetItem; });
+  expect(errors).toEqual([]);
+});

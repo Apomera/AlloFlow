@@ -80,7 +80,7 @@ const TOOL_CATALOG = [
   {
     id: 'brainstorm',
     description: 'Activity designer: quick idea starters, class discussion kits (Socratic seminar, think-pair-share, fishbowl, gallery walk), jigsaw cooperative activities, or interactive Canvas simulations.',
-    whenToUse: 'Use discussion/jigsaw modes for student-to-student interaction; idea starters for open-ended engagement hooks.',
+    whenToUse: 'Use discussion/jigsaw modes for student-to-student interaction; idea starters for open-ended engagement hooks. In resource plans set activityMode to discussion or jigsaw. Use activityConfig.protocol (think-pair-share, socratic-seminar, fishbowl, gallery-walk) for discussion or activityConfig.groupSize (2-6) for jigsaw.',
     inAutofill: true,
     sidebarKey: 'sidebar.tool_brainstorm',
   },

@@ -46,7 +46,7 @@ const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
 // The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
 // Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
 const SERVER_DIRS = ['vendor'];
@@ -55,7 +55,7 @@ const SERVER_DIRS = ['vendor'];
 // than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
 // on a packaged install. Adding it was the 2026-07-28 capability-inventory finding: the connector
 // reached 11% of the pipeline, partly because capabilities lived in modules it never shipped.
-const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js'];
+const ASSET_FILES = ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js', 'audio_helpers_module.js', 'karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'kokoro_tts_loader.js', 'piper_tts_loader.js', 'document_narration_text_module.js'];
 const ASSET_DIRS = ['verapdf'];
 const SKILL_DIRS = ['alloflow-pdf-remediation'];
 
@@ -130,20 +130,28 @@ function buildManifest() {
     { name: 'remediation_job_result', description: 'The completed job\'s summary (per-file for batches). Read-only.' },
     { name: 'remediation_job_cancel', description: 'Cancel a queued job or kill the running one.' },
     { name: 'remediation_job_diagnostics', description: 'Numbers-only run diagnostics: per-call ledger, throttle events, constants. Never document content.' },
-    { name: 'audit_html', description: 'Two-engine accessibility audit (AI rubric + axe-core) of a local HTML file. Never fetches URLs.' },
+    { name: 'audit_html', description: 'Accessibility audit (AI review + axe-core + IBM Equal Access) of a local HTML file. Never fetches URLs.' },
     { name: 'pdf_remediate_agent_start', description: "Full remediation with the MCP client's own model as the engine — no Gemini key, no Gemini egress; prompts surface to the client conversation." },
     { name: 'remediation_agent_requests', description: 'Fetch the agent-bridge run state and pending model requests (long-poll; vision requests include page images).' },
     { name: 'remediation_agent_respond', description: 'Answer one pending agent-bridge model request with the reply text.' },
     { name: 'remediation_agent_cancel', description: 'Cancel the agent-bridge run; written outputs stay.' },
   ];
+  tools.push(
+    {name:'document_narration_preflight',description:'Check local narration language routes and readiness for a document or folder without model downloads.'},
+    {name:'document_narration_voices',description:'Discover local voices, languages, localized narration modes and model cards.'},
+    {name:'remediation_agent_runs',description:'Find saved keyless and narration runs for recovery after restart.'},
+    {name:'document_narrate_start',description:'Complete Kokoro/Piper narration: accessible or natural, with audio files, HTML playback and read-along EPUB.'},
+    {name:'remediation_agent_resume',description:'Resume a saved keyless document, folder or narration run.'},
+    {name:'remediation_agent_respond_batch',description:'Answer several pending client-model requests and fetch the next work.'}
+  );
   return {
     $schema: 'https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.4.schema.json',
     manifest_version: '0.4',
     name: 'alloflow-remediation',
-    display_name: 'AlloFlow PDF Remediation',
+    display_name: 'AlloFlow Document Accessibility',
     version: require('./connector_version.cjs'),
     description: 'Remediate PDFs (and DOCX/PPTX) for accessibility with AlloFlow\'s honesty-gated pipeline: audit, accessible-HTML rebuild, AI fix passes, tagged-PDF export, and independent PDF/UA-1 validation.',
-    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+ and a one-time Chromium download. AI-dependent tools require a Google Gemini API key and send the selected document to Gemini under your key; deterministic tools remain available without a key. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
+    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 20+ and a one-time Chromium download. Full remediation defaults to the keyless agent bridge using your MCP client model, including resumable folders. Gemini is optional; deterministic tools remain available without a key. Kokoro can narrate the complete result locally in accessible or natural style; its first use downloads public dependencies. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
     author: { name: 'Aaron Pomeranz', url: 'https://github.com/Apomera' },
     homepage: 'https://apomera.github.io/AlloFlow/',
     documentation: 'https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/README_REMEDIATION.md',
@@ -173,7 +181,7 @@ function buildManifest() {
         required: false,
       },
     },
-    compatibility: { claude_desktop: '>=1.0.0', platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=18' } },
+    compatibility: { claude_desktop: '>=1.0.0', platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=20' } },
     tools,
     keywords: ['accessibility', 'pdf', 'remediation', 'wcag', 'pdf-ua', 'education'],
     license: 'AGPL-3.0-or-later',
@@ -217,12 +225,14 @@ function main() {
   stageBundle(STAGING);
 
   if (!LEAN) {
-    log('installing playwright into the bundle (use --lean to skip; ~50MB)…');
+    log('installing pinned Playwright and Ace runtimes (browser downloads disabled)…');
     fs.writeFileSync(path.join(STAGING, 'package.json'), JSON.stringify({
       name: 'alloflow-remediation-mcpb', private: true, version: require('./connector_version.cjs'),
-      dependencies: { playwright: '1.60.0' },
+      engines: {node: '>=20'},
+      dependencies: JSON.parse(fs.readFileSync(path.join(MCP_DIR,'runtime','package.json'),'utf8')).dependencies,
     }, null, 2), 'utf8');
-    execSync('npm install --omit=dev --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
+    fs.copyFileSync(path.join(MCP_DIR,'runtime','package-lock.json'),path.join(STAGING,'package-lock.json'));
+    execSync('npm ci --omit=dev --ignore-scripts --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
   } else {
     log('--lean: skipping node_modules; the host must be able to require(\'playwright\')');
   }
@@ -259,7 +269,7 @@ function main() {
   execSync('node "' + path.join(MCP_DIR, 'verify_mcpb_artifact.cjs') + '" "' + BUNDLE + '"' + (LEAN ? '' : ' --require-playwright'), { stdio: ['ignore', 'inherit', 'inherit'] });
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; the Gemini API key field is optional and can be left blank for no-account tools.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
-  log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');
+  log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 20+ on PATH; veraPDF and EPUBCheck need a local Java runtime.');
 }
 
 // Guarded so the manifest can be imported and checked against the live tool registry without

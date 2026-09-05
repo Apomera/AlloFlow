@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "scope": "Real GuidedModeBanner + GuidedModeConfig in an isolated browser harness; not full application E2E",
+  "checks": [
+    "7-step preset visible before selection",
+    "preset applied",
+    "short draft protected",
+    "keyboard sample load",
+    "next-step navigation",
+    "390px viewport without horizontal overflow"
+  ],
+  "pageErrors": []
+}

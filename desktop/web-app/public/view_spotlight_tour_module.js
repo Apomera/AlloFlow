@@ -179,8 +179,34 @@ function SpotlightTourView(props) {
       });
     });
   };
-  var viewportWidth = typeof window !== 'undefined' && window.innerWidth || 1024;
-  var viewportHeight = typeof window !== 'undefined' && window.innerHeight || 768;
+  var _viewportState = React.useState(function () {
+    return {
+      width: typeof window !== 'undefined' && window.innerWidth || 1024,
+      height: typeof window !== 'undefined' && window.innerHeight || 768
+    };
+  });
+  var viewport = _viewportState[0],
+    setViewport = _viewportState[1];
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return;
+    var updateViewport = function () {
+      var width = window.innerWidth || 1024,
+        height = window.innerHeight || 768;
+      setViewport(function (previous) {
+        return previous.width === width && previous.height === height ? previous : {
+          width: width,
+          height: height
+        };
+      });
+    };
+    window.addEventListener('resize', updateViewport);
+    updateViewport();
+    return function () {
+      window.removeEventListener('resize', updateViewport);
+    };
+  }, []);
+  var viewportWidth = viewport.width;
+  var viewportHeight = viewport.height;
   var popupWidth = Math.max(0, Math.min(380, viewportWidth - 32));
   var preferredLeft = tourRect.left > viewportWidth / 2 ? tourRect.left - popupWidth - 24 : tourRect.right + 24;
   var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));

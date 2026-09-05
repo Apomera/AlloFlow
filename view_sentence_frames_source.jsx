@@ -1,9 +1,24 @@
+// Preserve split-index keys used by existing student projects and voice inputs.
+function scaffoldParagraphParts(text) {
+  return String(text || '').split(/(\[.*?\])/).map((part, index) => ({
+    text: part, responseKey: index % 2 === 1 ? 'paragraph-' + index : null
+  }));
+}
+function serializeScaffoldParagraph(text, responses, missing = '_____') {
+  return scaffoldParagraphParts(text).map(part => part.responseKey
+    ? (String((responses || {})[part.responseKey] || '').trim() || missing) : part.text).join('');
+}
+function isScaffoldParagraphComplete(text, responses) {
+  const blanks = scaffoldParagraphParts(text).filter(part => part.responseKey);
+  return blanks.length > 0 && blanks.every(part => String((responses || {})[part.responseKey] || '').trim());
+}
 
 function SentenceFramesView(props) {
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
   var studentWorkStatus = props.studentWorkStatus;
+  var onRetrySave = props.onRetrySave;
   var isTeacherMode = props.isTeacherMode;
   var isScaffoldComplete = props.isScaffoldComplete;
   var isEditingScaffolds = props.isEditingScaffolds;
@@ -44,17 +59,11 @@ function SentenceFramesView(props) {
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
                         <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>
                         <div className="flex items-center gap-3">
-                            {studentWorkStatus !== 'idle' && (
-                                <div className={`flex items-center gap-1.5 text-xs font-bold transition-all duration-500 ${studentWorkStatus === 'saving' ? 'text-rose-400' : 'text-green-600'}`}>
-                                    {studentWorkStatus === 'saving' ? (
-                                        <>
-                                            <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> {t('status.saving')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle2 size={12}/> {t('status.saved')}
-                                        </>
-                                    )}
+                            {['saving', 'saved', 'error'].includes(studentWorkStatus) && (
+                                <div role="status" aria-live="polite" aria-atomic="true" className={`flex flex-wrap items-center gap-1.5 text-xs font-bold ${studentWorkStatus === 'error' ? 'text-red-700' : studentWorkStatus === 'saving' ? 'text-rose-700' : 'text-green-700'}`}>
+                                    {studentWorkStatus === 'saving' ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.saving')}</>
+                                      : studentWorkStatus === 'saved' ? <><CheckCircle2 size={12} aria-hidden="true" /> {t('status.saved')}</>
+                                      : <><span>{t('scaffolds.save_failed') || 'Your answers could not be saved on this device.'}</span>{typeof onRetrySave === 'function' && <button type="button" onClick={onRetrySave} className="rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600">{t('common.retry') || 'Try again'}</button>}</>}
                                 </div>
                             )}
                             {!isTeacherMode && (
@@ -166,13 +175,13 @@ function SentenceFramesView(props) {
                                 />
                             ) : (
                                 <div className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
-                                    {generatedContent?.data.text.split(/(\[.*?\])/).map((part, i) => (
-                                        part.startsWith('[') ?
+                                    {scaffoldParagraphParts(generatedContent?.data.text).map(({ text: part, responseKey }, i) => (
+                                        responseKey ?
                                         <input aria-label={t('common.enter_student_responses')}
                                             key={i}
                                             type="text"
-                                            value={studentResponses[generatedContent.id]?.[`paragraph-${i}`] || ''}
-                                            onChange={(e) => handleStudentInput(generatedContent.id, `paragraph-${i}`, e.target.value)}
+                                            value={studentResponses[generatedContent.id]?.[responseKey] || ''}
+                                            onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
                                             className="inline-block border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors"
                                             placeholder={part.replace(/[\[\]]/g, '')}
                                         /> :
@@ -331,3 +340,7 @@ function SentenceFramesView(props) {
                   </div>
   );
 }
+
+SentenceFramesView.paragraphParts = scaffoldParagraphParts;
+SentenceFramesView.serializeParagraph = serializeScaffoldParagraph;
+SentenceFramesView.isParagraphComplete = isScaffoldParagraphComplete;

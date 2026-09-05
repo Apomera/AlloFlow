@@ -161,9 +161,15 @@ window.StemLab = window.StemLab || {
           var badges = _n.badges || {};
 
           // Skip count state
-          var skipBy = _n.skipBy || 2;
-          var skipFrom = _n.skipFrom || 0;
-          var skipCount = _n.skipCount || 8;
+          var skipBound = function(value, min, max, fallback) { var n = Number(value); return Number.isFinite(n) ? Math.max(min, Math.min(max, Math.trunc(n))) : fallback; };
+          var skipBy = skipBound(_n.skipBy == null ? 2 : _n.skipBy, 1, 100, 2);
+          var skipFrom = skipBound(_n.skipFrom == null ? 0 : _n.skipFrom, -1000, 1000, 0);
+          var skipCount = skipBound(_n.skipCount == null ? 8 : _n.skipCount, 1, 20, 8);
+          var skipDirection = _n.skipDirection === 'backward' ? 'backward' : 'forward';
+          var skipStep = skipDirection === 'backward' ? -skipBy : skipBy;
+          var skipDraftState = React.useState({ skipBy:String(skipBy), skipFrom:String(skipFrom), skipCount:String(skipCount) });
+          var skipDrafts = skipDraftState[0], setSkipDrafts = skipDraftState[1];
+          React.useEffect(function(){setSkipDrafts({skipBy:String(skipBy),skipFrom:String(skipFrom),skipCount:String(skipCount)});},[skipBy,skipFrom,skipCount]);
           var showSkipMarkers = _n.showSkipMarkers != null ? _n.showSkipMarkers : true;
 
           // AI Tutor state
@@ -333,7 +339,7 @@ window.StemLab = window.StemLab || {
               var base = pick(bases);
               var raw = randInt(base === 10 ? 1 : base === 100 ? 10 : 100, base === 10 ? 99 : base === 100 ? 999 : 9999);
               var rounded = Math.round(raw / base) * base;
-              ch = { type: 'rounding', question: 'Round ' + raw + ' to the nearest ' + base + '.', answer: rounded, hint: raw + ' is between ' + (Math.floor(raw / base) * base) + ' and ' + ((Math.floor(raw / base) + 1) * base) };
+              ch = { type: 'rounding', roundingValue: raw, roundingBase: base, question: 'Round ' + raw + ' to the nearest ' + base + '.', answer: rounded, hint: raw + ' is between ' + (Math.floor(raw / base) * base) + ' and ' + ((Math.floor(raw / base) + 1) * base) };
               upd({ range: { min: Math.floor(raw / base) * base - base, max: (Math.floor(raw / base) + 2) * base } });
 
             } else if (type === 'between') {
@@ -361,7 +367,7 @@ window.StemLab = window.StemLab || {
             newTypes[type] = true;
 
             sfxNewChallenge();
-            upd({ challenge: ch, answer: '', feedback: null, challengeTypesUsed: newTypes, markers: [] });
+            upd({ challenge: ch, answer: '', feedback: null, challengeSupportUsed: false, solutionShown: false, challengeTypesUsed: newTypes, markers: [] });
           };
 
           // ═══ CHECK ANSWER ═══
@@ -414,8 +420,11 @@ window.StemLab = window.StemLab || {
             upd({
               challenge: ok ? Object.assign({}, challenge, { solved: true }) : challenge,
               feedback: ok
-                ? { correct: true, msg: '\u2705 Correct!' + (challenge.hint ? '' : '') }
-                : { correct: false, msg: '\u274C ' + (challenge.type === 'estimate' ? 'The value is approximately ' + challenge.answer + '.' : 'The correct answer is ' + challenge.answer + '.') + (challenge.hint ? ' (' + challenge.hint + ')' : '') },
+                ? { correct: true, msg: _n.challengeSupportUsed ? t('stem.numberline.correct_with_support', 'Correct with support. Try a new problem to check your understanding.') : t('stem.numberline.correct_independent', 'Correct — solved independently.') }
+                : { correct: false, msg: t('stem.numberline.try_visual_hint', 'Not yet. Use the marks and distances on the line, then try again.') },
+              challengeSupportUsed: !ok || !!_n.challengeSupportUsed,
+              independentCorrect: (_n.independentCorrect || 0) + (ok && !_n.challengeSupportUsed ? 1 : 0),
+              supportedCorrect: (_n.supportedCorrect || 0) + (ok && _n.challengeSupportUsed ? 1 : 0),
               score: { correct: newCorrect, total: newTotal },
               streak: newStreak,
               bestStreak: newBest,
@@ -544,7 +553,7 @@ window.StemLab = window.StemLab || {
                 h('text', {
                   x: x, y: 102, textAnchor: valStr.length > 4 ? 'end' : 'middle',
                   transform: transformAttr,
-                  fill: '#1e3a8a', fontSize: valStr.length > 4 ? '11' : '13',
+                  fill: '#1e3a8a', fontSize: valStr.length > 4 ? '13' : '16',
                   fontWeight: 'bold', fontFamily: 'monospace'
                 }, valStr)
               ));
@@ -659,9 +668,9 @@ window.StemLab = window.StemLab || {
               });
             }
 
-            return h('svg', {
+            return h('div', { style: { maxWidth: '100%', overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': t('stem.numberline.scroll_ticks', 'Number line: scroll horizontally to read every tick') }, h('svg', {
               width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
-              style: { cursor: (challenge && challenge.type === 'place') ? 'crosshair' : 'default' },
+              style: { minWidth: 600, cursor: (challenge && challenge.type === 'place') ? 'crosshair' : 'default' },
               role: 'img',
               'aria-label': challenge && challenge.question ? challenge.question : 'Number line visualization',
               onClick: function(e) {
@@ -690,7 +699,7 @@ window.StemLab = window.StemLab || {
               skipEls,
               h('polygon', { points: (W - PAD) + ',53 ' + (W - PAD + 10) + ',60 ' + (W - PAD) + ',67', fill: '#3b82f6' }),
               h('polygon', { points: PAD + ',53 ' + (PAD - 10) + ',60 ' + PAD + ',67', fill: '#3b82f6' })
-            );
+            ));
           };
 
           // ═══ TAB: EXPLORE ═══
@@ -843,7 +852,20 @@ window.StemLab = window.StemLab || {
                           className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
                         }, challenge.type === 'place' ? 'Check Placement' : 'Check')
                       ),
-                      feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
+                      feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-700' : 'text-red-700') }, feedback.msg),
+                      feedback && !feedback.correct && h('div', { className: 'rounded-lg p-3 bg-blue-50 text-blue-900 space-y-2' },
+                        h('p', { className: 'text-sm' }, challenge.type === 'rounding' ? t('stem.numberline.rounding_hint', 'Find the two neighboring multiples and their midpoint. Which multiple is closer?') : challenge.type === 'fraction' ? t('stem.numberline.fraction_hint', 'Count equal intervals from zero. The denominator tells you how many intervals make one whole.') : t('stem.numberline.distance_hint', 'Check the endpoints, the size of each interval, and the distance from zero.')),
+                        challenge.type === 'rounding' && Number.isFinite(challenge.roundingValue) && challenge.roundingBase > 0 && (function() {
+                          var lo = Math.floor(challenge.roundingValue / challenge.roundingBase) * challenge.roundingBase, hi = lo + challenge.roundingBase, mid = (lo + hi) / 2;
+                          var x = 30 + (challenge.roundingValue - lo) / (hi - lo) * 260;
+                          return h('svg', {viewBox:'0 0 320 100',role:'img','aria-label':challenge.roundingValue+'; '+lo+' — '+mid+' — '+hi,style:{width:'100%',maxWidth:520}},
+                            h('line',{x1:30,x2:290,y1:45,y2:45,stroke:'#1e40af',strokeWidth:3}),
+                            [lo,mid,hi].map(function(value,i){return h('g',{key:i},h('line',{x1:30+i*130,x2:30+i*130,y1:35,y2:55,stroke:'#1e40af',strokeWidth:2}),h('text',{x:30+i*130,y:80,textAnchor:'middle',fill:'#1e3a8a',fontSize:16},value));}),
+                            h('circle',{cx:x,cy:45,r:6,fill:'#9f1239'}),h('text',{x:x,y:22,textAnchor:'middle',fill:'#881337',fontSize:16},challenge.roundingValue));
+                        })(),
+                        h('button', { type: 'button', className: 'rounded-lg border border-blue-700 px-3 py-2 text-sm font-bold', onClick: function() { upd({ solutionShown: true, challengeSupportUsed: true }); } }, t('stem.numberline.show_solution', 'Show a worked solution')),
+                        _n.solutionShown && h('p', { role: 'status', className: 'text-sm font-bold' }, t('stem.numberline.solution_value', 'One correct answer is: ') + challenge.answer + '. ' + (challenge.hint || ''))
+                      ),
                       feedback && h('button', { 'aria-label': t('stem.numberline.next_challenge', 'Next Challenge'),
                         onClick: genChallenge,
                         className: 'text-xs text-blue-600 font-bold hover:underline'
@@ -855,85 +877,86 @@ window.StemLab = window.StemLab || {
 
           // ═══ TAB: SKIP COUNT ═══
           var renderSkipCount = function() {
-            var skipMarkersList = [];
-            if (showSkipMarkers) {
-              for (var i = 0; i < skipCount; i++) {
-                skipMarkersList.push(skipFrom + i * skipBy);
-              }
+            var panel = 'var(--allo-stem-panel, #f8fafc)', ink = 'var(--allo-stem-text, #0f172a)';
+            var edge = 'var(--allo-stem-border, #cbd5e1)', soft = 'var(--allo-stem-text-soft, #475569)';
+            var sign = skipDirection === 'backward' ? '−' : '+';
+            var shown = _n.skipShown == null ? skipCount : skipBound(_n.skipShown, 0, skipCount, 0);
+            var landing = skipFrom + shown * skipStep;
+            var end = skipFrom + skipCount * skipStep;
+            var low = Math.min(skipFrom, end), span = Math.abs(end - skipFrom);
+            var xAt = function(value) { return 38 + (value - low) / span * 284; };
+            var resetSteps = function(patch) { patch.skipShown = _n.skipShown == null ? null : 0; upd(patch); };
+            var points = Array.from({ length: shown + 1 }, function(_, i) { return skipFrom + i * skipStep; });
+            var equation = skipFrom + ' ' + sign + ' ' + shown + ' × ' + skipBy + ' = ' + landing;
+            var actionStyle = { minHeight:44, padding:'8px 12px', border:'1px solid '+soft, borderRadius:8, background:panel, color:ink, fontWeight:700 };
+            var ticks = [];
+            for (var tick = 0; tick <= skipCount; tick++) {
+              var value = skipFrom + tick * skipStep, x = xAt(value);
+              var labelled = tick === 0 || tick === skipCount || tick % Math.ceil(skipCount / 3) === 0;
+              ticks.push(h('g', {key:'tick-'+tick},
+                h('line', {x1:x,x2:x,y1:89,y2:labelled?105:98,stroke:ink,strokeWidth:1.5}),
+                labelled && h('text', {x:x,y:124,textAnchor:'middle',fill:ink,fontSize:14}, value)));
             }
-            var skipMin = skipFrom - skipBy;
-            var skipMax = skipFrom + skipCount * skipBy + skipBy;
-
-            return h('div', { className: 'space-y-4 allo-nl-bg-skipcount' },
-              // Controls
-              h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
-                h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.skip_by', 'Skip By')),
-                  h('input', {
-                    type: 'number', min: 1, max: 100, value: skipBy,
-                    'aria-label': t('stem.numberline.skip_by', 'Skip By'),
-                    onChange: function(e) { upd({ skipBy: Math.max(1, parseInt(e.target.value) || 1) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
-                  })
-                ),
-                h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.start_from', 'Start From')),
-                  h('input', {
-                    type: 'number', value: skipFrom,
-                    'aria-label': t('stem.numberline.start_from', 'Start From'),
-                    onChange: function(e) { upd({ skipFrom: parseInt(e.target.value) || 0 }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
-                  })
-                ),
-                h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.how_many', 'How Many')),
-                  h('input', {
-                    type: 'number', min: 2, max: 20, value: skipCount,
-                    'aria-label': t('stem.numberline.how_many', 'How Many'),
-                    onChange: function(e) { upd({ skipCount: Math.max(2, Math.min(20, parseInt(e.target.value) || 8)) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
-                  })
-                )
-              ),
-              // Quick skip presets
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, t('stem.numberline.count_by', 'Count by:')),
-                [2, 3, 5, 10, 25, 100].map(function(s) {
-                  return h('button', { key: s,
-                    onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
-                    className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
-                      (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100') + ' transition-all'
-                  }, '' + s + 's');
-                })
-              ),
-              // Number line with skip markers
-              h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-6 flex flex-col items-center' },
-                renderNumberLine({ min: skipMin, max: skipMax }, null, showSkipMarkers ? skipMarkersList : null)
-              ),
-              // Sequence display
-              h('div', { className: 'bg-violet-50 rounded-xl p-4 border border-violet-200' },
-                h('p', { className: 'text-xs font-bold text-violet-700 uppercase tracking-wider mb-2' }, t('stem.numberline.skip_counting_sequence', '\uD83D\uDD22 Skip Counting Sequence')),
-                h('div', { className: 'flex flex-wrap gap-2' },
-                  skipMarkersList.map(function(val, i) {
-                    return h('div', {
-                      key: i,
-                      className: 'px-3 py-2 rounded-lg border text-center transition-all ' +
-                        (i === 0 ? 'bg-violet-200 border-violet-400 shadow-sm' : 'bg-white border-violet-200 hover:bg-violet-50')
-                    },
-                      h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
-                      h('span', { className: 'text-[11px] text-violet-700 block' }, i === 0 ? 'start' : '+' + skipBy)
-                    );
-                  })
-                ),
-                h('p', { className: 'text-xs text-violet-700 mt-2' },
-                  '\uD83D\uDCA1 Pattern: ' + skipFrom + ', ' + (skipFrom + skipBy) + ', ' + (skipFrom + 2 * skipBy) + ', ... (adding ' + skipBy + ' each time)')
-              ),
-              // Toggle
-              h('button', { onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-600') + ' hover:text-violet-800 transition-colors'
-              }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
-            );
+            var hops = points.slice(1).map(function(value, i) {
+              var x1=xAt(points[i]), x2=xAt(value), direction=skipStep>0?1:-1;
+              return h('g', {key:'hop-'+i,'data-skip-hop':i+1,'data-from':points[i],'data-to':value},
+                h('path', {d:'M '+x1+' 89 Q '+((x1+x2)/2)+' 33 '+x2+' 89',fill:'none',stroke:ink,strokeWidth:i===shown-1?3:1.5}),
+                h('path', {d:'M '+(x2-direction*5)+' 81 L '+x2+' 89 L '+(x2+direction*1)+' 80',fill:'none',stroke:ink,strokeWidth:1.5}));
+            });
+            return h('div', {className:'space-y-4 allo-nl-bg-skipcount','data-skip-activity':true,style:{background:panel,color:ink}},
+              h('p', {className:'text-sm'}, t('stem.numberline.hops_intro', 'Count the hops, not the starting point. Each equal hop changes the value by the same amount.')),
+              h('style',null,'@media(max-width:479px){.allo-skip-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}.allo-skip-controls>label:first-child{grid-column:1 / -1}}'),
+              h('div', {className:'allo-skip-controls grid grid-cols-3 gap-3'},
+                [
+                  {key:'skipFrom',label:t('stem.numberline.start_from','Start From'),value:skipFrom,min:-1000,max:1000},
+                  {key:'skipBy',label:t('stem.numberline.skip_by','Skip By'),value:skipBy,min:1,max:100},
+                  {key:'skipCount',label:t('stem.numberline.number_of_hops','Number of hops'),value:skipCount,min:1,max:20}
+                ].map(function(field) {
+                  return h('label', {key:field.key,className:'block rounded-lg p-3 text-sm font-bold',style:{border:'1px solid '+edge}},field.label,
+                    h('input', {type:'text',inputMode:'numeric',value:skipDrafts[field.key],'aria-label':field.label,'aria-describedby':'skip-bound-'+field.key,
+                      onChange:function(e){var raw=e.target.value;setSkipDrafts(function(previous){var next=Object.assign({},previous);next[field.key]=raw;return next;});if(!/^[+-]?\d+$/.test(raw.trim()))return;var patch={};patch[field.key]=skipBound(raw,field.min,field.max,field.min===1?1:0);resetSteps(patch);},
+                      onBlur:function(){setSkipDrafts(function(previous){var next=Object.assign({},previous);next[field.key]=String(field.value);return next;});},
+                      style:{display:'block',width:'100%',minHeight:44,marginTop:6,border:'1px solid '+soft,borderRadius:8,textAlign:'center',background:panel,color:ink}}),
+                    h('span',{id:'skip-bound-'+field.key,className:'block text-xs',style:{marginTop:6,color:soft}},field.min+' '+t('stem.numberline.through_bound','to')+' '+field.max));
+                })),
+              h('div', {role:'group','aria-label':t('stem.numberline.count_direction','Counting direction'),className:'flex flex-wrap gap-2'},
+                ['forward','backward'].map(function(direction){return h('button',{key:direction,type:'button','aria-pressed':skipDirection===direction,
+                  style:Object.assign({},actionStyle,{borderWidth:skipDirection===direction?3:1}),onClick:function(){resetSteps({skipDirection:direction});}},
+                  direction==='forward'?t('stem.numberline.forward_right','Forward: add →'):t('stem.numberline.backward_left','← Backward: subtract'));})),
+              h('div', {className:'flex flex-wrap gap-2'},
+                h('span',{className:'text-sm self-center'},t('stem.numberline.count_by','Count by:')),
+                [2,3,5,10,25,100].map(function(size){return h('button',{key:size,type:'button','aria-pressed':skipBy===size,style:actionStyle,
+                  onClick:function(){sfxClick();resetSteps({skipBy:size});}},String(size));})),
+              h('div', {className:'rounded-xl p-3 space-y-3',style:{border:'1px solid '+edge}},
+                h('p', {className:'text-sm font-bold'},t('stem.numberline.each_hop','Each hop: ')+sign+skipBy+' · '+(skipStep>0?t('stem.numberline.moves_right','move right'):t('stem.numberline.moves_left','move left'))),
+                h('svg', {viewBox:'0 0 360 145',role:'img','aria-label':t('stem.numberline.equal_hops','Equal hops on a number line')+': '+equation,style:{width:'100%',maxWidth:720,display:'block',margin:'0 auto'}},
+                  h('line',{x1:18,x2:342,y1:94,y2:94,stroke:ink,strokeWidth:2}),
+                  h('path',{d:'M 24 89 L 18 94 L 24 99 M 336 89 L 342 94 L 336 99',fill:'none',stroke:ink,strokeWidth:2}),
+                  ticks,hops,
+                  showSkipMarkers && points.map(function(value,i){return i===0
+                    ? h('rect',{key:i,'data-skip-marker':i,x:xAt(value)-4,y:90,width:8,height:8,fill:ink})
+                    : h('circle',{key:i,'data-skip-marker':i,cx:xAt(value),cy:94,r:i===shown?5:3,fill:ink});})),
+                h('p', {className:'text-sm',style:{color:soft}},t('stem.numberline.hop_scale_note','The spacing represents value. Square: start; circles: landings. The start is zero hops.')),
+                h('div', {role:'status','aria-live':'polite','aria-atomic':'true','data-skip-progress':shown},
+                  h('p',{className:'text-sm'},t('stem.numberline.hops_completed','Hops completed: ')+shown+' / '+skipCount),
+                  h('p',{'data-skip-equation':true,className:'text-lg font-bold',style:{overflowWrap:'anywhere'}},equation)),
+                h('div',{className:'flex flex-wrap gap-2'},
+                  h('button',{type:'button',style:actionStyle,onClick:function(){upd({skipShown:0});}},t('stem.numberline.restart_hops','Start at zero hops')),
+                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===0?0.5:1}),disabled:shown===0,onClick:function(){upd({skipShown:Math.max(0,shown-1)});}},t('stem.numberline.previous_hop','Previous hop')),
+                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){upd({skipShown:Math.min(skipCount,shown+1)});}},t('stem.numberline.next_hop','Next hop')),
+                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){upd({skipShown:null});}},t('stem.numberline.show_all_hops','Show all hops'))),
+                h('p',{className:'text-sm'},shown<skipCount?t('stem.numberline.predict_next_hop','Predict the next landing before choosing Next hop.'):t('stem.numberline.explain_hops','Explain how the start, number of hops, and hop size appear in the equation.'))),
+              h('div',{className:'rounded-xl p-3 space-y-2',style:{border:'1px solid '+edge}},
+                h('p',{className:'text-sm font-bold'},t('stem.numberline.hop_sequence','Start and landings')),
+                h('ol',{'data-skip-sequence':true,style:{display:'flex',flexWrap:'wrap',gap:8,listStyle:'none',padding:0,margin:0}},
+                  points.map(function(value,i){return h('li',{key:i,'data-skip-landing':value,style:{padding:'8px 12px',border:'1px solid '+edge,borderRadius:8,textAlign:'center'}},
+                    h('span',{className:'block text-xs'},i===0?t('stem.numberline.hop_start','Start · 0 hops'):t('stem.numberline.hop_number','Hop ')+i),
+                    h('strong',{className:'block'},value),
+                    i>0&&h('span',{className:'block text-xs'},points[i-1]+' '+sign+' '+skipBy+' = '+value));}))),
+              h('button',{type:'button',style:actionStyle,'aria-pressed':showSkipMarkers,onClick:function(){sfxClick();upd({showSkipMarkers:!showSkipMarkers});}},
+                showSkipMarkers?t('stem.numberline.hide_hop_markers','Hide markers on line'):t('stem.numberline.show_hop_markers','Show markers on line')));
           };
+
 
           // ═══ TAB: FRACTIONS ↔ DECIMALS ═══
           // Pedagogical goal: make fraction-decimal-percent equivalence VISIBLE.
@@ -1938,7 +1961,7 @@ window.StemLab = window.StemLab || {
               {
                 id: 'skipcount',
                 label: t('stem.numberline.focus_skip_label', 'Skip Count'),
-                metric: skipBy + 's',
+                metric: (skipStep < 0 ? '−' : '+') + skipBy,
                 body: skipCount + ' hops from ' + skipFrom,
                 active: 'border-violet-500 bg-violet-50 text-violet-900'
               },
@@ -1966,7 +1989,7 @@ window.StemLab = window.StemLab || {
             };
             var focusValue = range.min + rangeLen * 0.6;
             if (tab === 'challenges' && challenge && challenge._arrowValue != null) focusValue = challenge._arrowValue;
-            else if (tab === 'skipcount') focusValue = skipFrom + skipBy * Math.min(Math.max(skipCount - 1, 0), 4);
+            else if (tab === 'skipcount') focusValue = skipFrom + skipStep * (_n.skipShown == null ? skipCount : skipBound(_n.skipShown, 0, skipCount, 0));
             else if (tab === 'fracdec') {
               var fdSpan = fdMax - fdMin;
               if (fdSpan <= 0) fdSpan = 1;
@@ -1984,12 +2007,13 @@ window.StemLab = window.StemLab || {
               return m && typeof m.value === 'number' && !isNaN(m.value);
             });
 
-            return h('section', {
+            return h('details', {
               className: 'rounded-2xl border border-blue-200 bg-white shadow-sm overflow-hidden',
               'data-numberline-focus': 'true',
               role: 'region',
               'aria-label': t('stem.numberline.number_line_workspace', 'Number Line workspace')
             },
+              h('summary', { className: 'cursor-pointer p-3 text-sm font-bold', style:{color:'var(--allo-stem-text, #0f172a)',background:'var(--allo-stem-panel, #f8fafc)'} }, t('stem.numberline.workspace_overview', 'Explore the number line: overview and activities')),
               h('div', { className: 'grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-4 p-4' },
                 h('div', { className: 'space-y-3' },
                   h('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3' },
@@ -2098,11 +2122,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back') },
                 h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-              h('h3', { className: 'text-lg font-bold text-blue-800' }, t('stem.numberline.number_line', '\uD83D\uDCCF Number Line')),
+              h('h3', { className: 'text-lg font-bold text-blue-800' + (ctx.isContrast ? ' text-white' : '') }, t('stem.numberline.number_line', '\uD83D\uDCCF Number Line')),
               h('div', { className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
                 bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-                h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total),
+                h('span', { className: 'text-xs font-bold text-blue-600', style: { color: ctx.isContrast ? '#ffff00' : undefined } }, score.correct + '/' + score.total),
                 h('button', {
                   onClick: function() {
                     var next = !muted;

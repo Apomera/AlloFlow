@@ -612,6 +612,7 @@
     return 'Visual assets';
   }
 
+  // BEGIN SOURCEBOOK HELPER: commons-provider
   function commonsItemFromPage(page, query, requestedKind) {
     var info = page && Array.isArray(page.imageinfo) ? page.imageinfo[0] : null;
     if (!info) return null;
@@ -745,7 +746,9 @@
       commonsCategory: NARA_COMMONS_CATEGORY
     }));
   }
+  // END SOURCEBOOK HELPER: commons-provider
 
+  // BEGIN SOURCEBOOK HELPER: smk-and-source-identity
   function parsedSmkHttpsUrl(value) {
     var safe = safeHttpsUrl(value);
     var match = safe.match(/^https:\/\/([^/?#]+)(\/[^?#]*)?(?:\?[^#]*)?(?:#.*)?$/i);
@@ -852,7 +855,8 @@
   }
 
   function isSerializedSourceVerifiedAsset(item) {
-    return isSerializedRijksAsset(item) || isSerializedMuseumsVictoriaAsset(item) || isSerializedYaleAsset(item) || isSerializedSmkAsset(item);
+    return isSerializedRijksAsset(item) || isSerializedMuseumsVictoriaAsset(item) || isSerializedYaleAsset(item) || isSerializedSmkAsset(item)
+      || (isCatalogSourcebookAsset(item) && !curatedSourcebookAsset(item));
   }
 
   function sourceVerifiedAssetIdentityMatches(raw, verified) {
@@ -888,7 +892,8 @@
         && rawIdentity.manifestUrl === safeYaleManifestUrl(verified.yaleManifestUrl)
         && rawIdentity.iiifServiceUrl === yaleIiifServiceFromAsset(verified));
     }
-    return false;
+    return isCatalogSourcebookAsset(raw) && sameCatalogIdentity(raw, verified) && raw.rightsType === verified.rightsType
+      && String(raw.licenseUrl || '') === String(verified.licenseUrl || '');
   }
 
   function normalizeSmkRights(record) {
@@ -1119,8 +1124,9 @@
       throw error;
     });
   }
+  // END SOURCEBOOK HELPER: smk-and-source-identity
 
-
+  // BEGIN SOURCEBOOK HELPER: yale-provider
   function safeYaleLuxObjectUrl(value) {
     var parsed = parsedSmkHttpsUrl(value);
     if (!parsed || parsed.hostname !== 'lux.collections.yale.edu') return '';
@@ -1532,7 +1538,9 @@
       return (Array.isArray(items) ? items : []).filter(Boolean);
     });
   }
+  // END SOURCEBOOK HELPER: yale-provider
 
+  // BEGIN SOURCEBOOK HELPER: rijks-provider
   function normalizedRijksRecordId(value) {
     var id = String(value || '').trim();
     return /^\d{1,16}$/.test(id) ? id : '';
@@ -2194,6 +2202,9 @@
       });
     });
   }
+  // END SOURCEBOOK HELPER: rijks-provider
+
+  // BEGIN SOURCEBOOK HELPER: public-catalog-providers
   function metItemFromObject(object, query, requestedKind) {
     if (!object || object.isPublicDomain !== true) return null;
     var imageUrl = safeHttpsUrl(object.primaryImageSmall || object.primaryImage);
@@ -3321,6 +3332,7 @@
       throw error;
     });
   }
+  // END SOURCEBOOK HELPER: public-catalog-providers
 
   function retryAfterMilliseconds(response, nowValue) {
     var raw = response && response.headers && typeof response.headers.get === 'function' ? response.headers.get('retry-after') : '';
@@ -4404,21 +4416,11 @@
   }
 
   function normalizePersistedNonSmkAsset(raw) {
-    if (!raw || typeof raw !== 'object' || isSerializedSourceVerifiedAsset(raw)) return null;
-    var provider = String(raw.provider || '').trim();
-    var sourceUrl = safeHttpsUrl(raw.sourceUrl);
-    var imageUrl = safeHttpsUrl(raw.imageUrl);
-    var downloadUrl = safeHttpsUrl(raw.downloadUrl);
-    var rawLicenseUrl = String(raw.licenseUrl || '').trim();
-    var licenseUrl = rawLicenseUrl ? safeHttpsUrl(rawLicenseUrl) : '';
-    if (!provider || !sourceUrl || !imageUrl || !downloadUrl || (rawLicenseUrl && !licenseUrl)) return null;
-    if (!sourcebookImportedDomainAllowed(provider, sourceUrl, imageUrl, downloadUrl)) return null;
-    if (!ALLOWED_RIGHTS[raw.rightsType] || !String(raw.license || '').trim() || !String(raw.rightsNote || '').trim() || !String(raw.rightsMetadataSource || '').trim()) return null;
-    return portableAsset(Object.assign({}, raw, {
-      provider: provider, sourceUrl: sourceUrl, imageUrl: imageUrl,
-      downloadUrl: downloadUrl, licenseUrl: licenseUrl,
-      pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown'
-    }));
+    // Only the code-owned shelf is available synchronously. External records
+    // must enter the asynchronous exact-record verification path.
+    var curated = curatedSourcebookAsset(raw);
+    return curated ? portableAsset(Object.assign({}, curated, { rightsMetadataSource: 'Built-in reviewed source record',
+      pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown' })) : null;
   }
 
   function buildLiveSession(items, context, nowValue) {
@@ -4512,6 +4514,7 @@
       var sourceVerified = isSerializedSourceVerifiedAsset(raw);
       var item = portableAsset({
         id: id, title: title, kind: raw.kind, creator: raw.creator, year: raw.year,
+        medium: normalizedMedium(raw.medium), tags: raw.tags, file: raw.file,
         provider: provider, imageUrl: imageUrl, downloadUrl: downloadUrl, sourceUrl: sourceUrl,
         license: raw.license, licenseUrl: licenseUrl, rightsType: raw.rightsType,
         rightsShort: raw.rightsShort, rightsNote: raw.rightsNote, description: raw.description,
@@ -4553,13 +4556,143 @@
 
   function normalizeLiveSession(session, nowValue) {
     var candidate = normalizeLiveSessionCandidate(session, nowValue);
-    return candidate && !serializedAssetsContainSmk(candidate.results) ? candidate : null;
+    if (!candidate || serializedAssetsContainSmk(candidate.results)) return null;
+    candidate.results = candidate.results.map(function (raw) { return Object.assign({}, normalizePersistedNonSmkAsset(raw), { recommended: raw.recommended, recommendationSource: raw.recommendationSource }); });
+    return candidate;
   }
 
   function normalizePaletteManifest(manifest) {
     var candidate = normalizePaletteManifestCandidate(manifest);
-    return candidate && !serializedAssetsContainSmk(candidate.assets) ? candidate : null;
+    if (!candidate || serializedAssetsContainSmk(candidate.assets)) return null;
+    candidate.assets = candidate.assets.map(normalizePersistedNonSmkAsset);
+    return candidate;
   }
+
+  // BEGIN SOURCEBOOK HELPER: catalog-verification
+// Included inside Sourcebook's existing IIFE by build_sourcebook_helpers.cjs.
+// Only source-owned records, never serialized verification flags, establish trust.
+  function isCatalogSourcebookAsset(raw) {
+    return !!raw && ['Wikimedia Commons', NGA_PROVIDER, SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER,
+      'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'Library of Congress',
+      'Wellcome Collection', 'Getty Museum Open Content', 'Openverse'].indexOf(raw.provider) !== -1;
+  }
+
+  function curatedSourcebookAsset(raw) {
+    if (!raw) return null;
+    return MATERIALS.filter(function (item) {
+      return item.id === raw.id && item.provider === raw.provider
+        && item.sourceUrl === raw.sourceUrl && item.imageUrl === raw.imageUrl
+        && item.downloadUrl === raw.downloadUrl && item.rightsType === raw.rightsType
+        && String(item.licenseUrl || '') === String(raw.licenseUrl || '');
+    })[0] || null;
+  }
+
+  function sameCatalogIdentity(raw, fresh) {
+    return !!(raw && fresh && raw.provider === fresh.provider
+      && raw.sourceUrl === fresh.sourceUrl && raw.imageUrl === fresh.imageUrl
+      && raw.downloadUrl === fresh.downloadUrl);
+  }
+
+  function fetchCatalogRecord(url, options) {
+    var opts = options || {};
+    var fetchFn = opts.fetch || (typeof window.fetch === 'function' ? window.fetch.bind(window) : null);
+    if (!fetchFn) return Promise.reject(new Error('Source record verification is unavailable. Connect and retry.'));
+    var request = providerRequestContext(opts.signal, 12000);
+    return Promise.resolve().then(function () {
+      if (opts.signal && opts.signal.aborted) throw new Error('Source verification cancelled.');
+      return fetchFn(url, Object.assign({}, request.options, { headers: { Accept: url.indexOf('https://data.getty.edu/') === 0 ? 'application/ld+json' : 'application/json' } }));
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error('The source record could not be verified. Connect and retry.');
+      return response.json();
+    }).then(function (record) { request.finish(); return record; }, function (error) { request.finish(); throw error; });
+  }
+
+  // Build every endpoint from a bounded identifier and a fixed provider origin.
+  function revalidateCatalogAsset(raw, options) {
+    var curated = curatedSourcebookAsset(raw);
+    if (curated) return Promise.resolve(portableAsset(Object.assign({}, curated, { rightsMetadataSource: 'Built-in reviewed source record' })));
+    if (!isCatalogSourcebookAsset(raw) || !sourcebookImportedDomainAllowed(raw.provider, raw.sourceUrl, raw.imageUrl, raw.downloadUrl)) {
+      return Promise.reject(new Error('Unknown provider or untrusted source identity.'));
+    }
+    var provider = String(raw && raw.provider || '');
+    var source = String(raw && raw.sourceUrl || '');
+    var id = String(raw && raw.id || '');
+    var match;
+    var task;
+    var read = function (url) { return fetchCatalogRecord(url, options); };
+    if (provider === 'Wikimedia Commons' || COMMONS_PROVIDER_PROFILES[provider]) {
+      match = source.match(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:([^?#]+)$/);
+      if (match) {
+        var title;
+        try { title = 'File:' + decodeURIComponent(match[1]).replace(/_/g, ' '); } catch (_) { title = ''; }
+        if (title && title.length <= 260) {
+          var url = COMMONS_API + '?action=query&format=json&formatversion=2&origin=*&prop=imageinfo&titles=' + encodeURIComponent(title)
+            + '&iiprop=url%7Cextmetadata%7Csize%7Cmediatype&iiurlwidth=900&iiextmetadatalanguage=en';
+          var profile = COMMONS_PROVIDER_PROFILES[provider];
+          if (profile) url = url.replace('prop=imageinfo&', 'prop=imageinfo%7Ccategories&') + '&cllimit=max&clcategories=' + encodeURIComponent('Category:' + profile.category);
+          task = COMMONS_SEARCH_QUEUE.then(function () { return read(url); });
+          COMMONS_SEARCH_QUEUE = task.then(function () {}, function () {});
+          task = task.then(function (payload) {
+            var pages = payload && payload.query && payload.query.pages;
+            var page = Array.isArray(pages) && pages.length === 1 ? pages[0] : null;
+            if (profile && (!page || !Array.isArray(page.categories) || !page.categories.some(function (category) { return category.title === 'Category:' + profile.category; }))) return null;
+            var fresh = page ? commonsItemFromPage(page, '', raw.kind) : null;
+            return fresh ? Object.assign({}, fresh, { provider: provider }) : null;
+          });
+        }
+      }
+    } else if (provider === 'The Met Open Access') {
+      match = source.match(/^https:\/\/(?:www\.)?metmuseum\.org\/art\/collection\/search\/(\d{1,12})\/?$/);
+      if (match) task = read(MET_API + '/objects/' + match[1]).then(function (record) { return metItemFromObject(record, '', raw.kind); });
+    } else if (provider === 'Art Institute of Chicago') {
+      match = source.match(/^https:\/\/www\.artic\.edu\/artworks\/(\d{1,12})$/);
+      if (match) task = read(AIC_API + '/artworks/' + match[1]).then(function (payload) { return aicItemFromArtwork(payload.data, payload.config || {}, '', raw.kind); });
+    } else if (provider === 'Cleveland Museum of Art') {
+      match = id.match(/^cma-live-(\d{1,12})$/);
+      if (match) task = read(CMA_API + '/artworks/' + match[1]).then(function (payload) { return cmaItemFromArtwork(payload.data, '', raw.kind); });
+    } else if (provider === 'Library of Congress') {
+      match = source.match(/^https:\/\/www\.loc\.gov\/item\/([a-z0-9._-]{1,100})\/$/i);
+      if (match) task = read(LOC_API + '/item/' + match[1] + '/?fo=json').then(function (payload) { return locItemFromDetail(payload, null, '', raw.kind); });
+    } else if (provider === 'Wellcome Collection') {
+      match = id.match(/^wellcome-live-([a-z0-9]{1,80})$/);
+      if (match) task = read(WELLCOME_API + '/images/' + match[1] + '?include=source.contributors,source.subjects,source.genres').then(function (record) { return wellcomeImageFromRecord(record, '', raw.kind); });
+    } else if (provider === 'Getty Museum Open Content') {
+      match = id.match(/^getty-live-([a-f0-9-]{36})$/);
+      if (match && /^https:\/\/data\.getty\.edu\/museum\/collection\/object\/[a-f0-9-]{36}$/.test(source)) {
+        var mediaUrl = 'https://data.getty.edu/media/image/' + match[1];
+        task = read(source).then(function (object) {
+          // A valid image licence alone does not establish its connection to the object.
+          var linked = (Array.isArray(object.shows) ? object.shows : []).some(function (entry) { return entry && entry.id === mediaUrl; });
+          if (!linked) return null;
+          return read(mediaUrl).then(function (media) { return gettyImageFromRecords(object, media, '', raw.kind); });
+        });
+      }
+    } else if (provider === 'Openverse') {
+      match = source.match(/^https:\/\/api\.openverse\.org\/v1\/images\/([a-f0-9-]{36})\/$/);
+      if (match) task = read(OPENVERSE_API + '/images/' + match[1] + '/').then(function (record) { return openverseItemFromRecord(record, '', raw.kind); });
+    }
+    if (!task) return Promise.reject(new Error('This saved asset has no verifiable source identity. Find it again in its collection.'));
+    return task.then(function (fresh) {
+      if (!fresh || !sameCatalogIdentity(raw, fresh) || raw.rightsType !== fresh.rightsType
+        || String(raw.licenseUrl || '') !== String(fresh.licenseUrl || '')) {
+        throw new Error('A saved source has changed its image identity or reuse rights. Find it again in its collection.');
+      }
+      // Keep the local key for existing notes and preparation, replace catalog claims.
+      return portableAsset(Object.assign({}, fresh, { id: raw.id, live: false,
+        recommended: raw.recommended === true, recommendationSource: raw.recommendationSource }));
+    });
+  }
+
+  function revalidateCatalogAssets(items, options) {
+    return mapWithConcurrency(items, 2, function (item) {
+      return revalidateCatalogAsset(item, options).then(function (asset) { return { asset: asset }; }, function (error) { return { error: error }; });
+    }).then(function (outcomes) {
+      var failure = outcomes.filter(function (outcome) { return !outcome || outcome.error; })[0];
+      if (failure) throw (failure.error || new Error('Source verification failed.'));
+      return outcomes.map(function (outcome) { return outcome.asset; });
+    });
+  }
+  // END SOURCEBOOK HELPER: catalog-verification
 
   function revalidateImportedSourceVerifiedAssets(assets, options) {
     var candidates = Array.isArray(assets) ? assets : [];
@@ -4567,11 +4700,13 @@
     var smkCandidates = [];
     var yaleCandidates = [];
     var museumsVictoriaCandidates = [];
+    var catalogCandidates = [];
     candidates.forEach(function (item) {
       if (isSerializedRijksAsset(item)) rijksCandidates.push(item);
       else if (isSerializedMuseumsVictoriaAsset(item)) museumsVictoriaCandidates.push(item);
       else if (isSerializedYaleAsset(item)) yaleCandidates.push(item);
       else if (isSerializedSmkAsset(item)) smkCandidates.push(item);
+      else catalogCandidates.push(item);
     });
     var objectNumbers = smkCandidates.map(smkObjectNumberFromAsset);
     if (objectNumbers.some(function (value) { return !value; })) {
@@ -4590,7 +4725,7 @@
       ? fetchRijksAssetsByIdentities(rijksCandidates, options)
       : Promise.resolve([]);
 
-    return Promise.all([rijksVerification, smkVerification, yaleVerification, museumsVictoriaVerification]).then(function (verifiedGroups) {
+    return Promise.all([rijksVerification, smkVerification, yaleVerification, museumsVictoriaVerification, revalidateCatalogAssets(catalogCandidates, options)]).then(function (verifiedGroups) {
       var freshRijksItems = verifiedGroups[0];
       var freshSmkItems = verifiedGroups[1];
       var freshYaleItems = verifiedGroups[2];
@@ -4599,6 +4734,7 @@
       var smkCursor = 0;
       var yaleCursor = 0;
       var museumsVictoriaCursor = 0;
+      var catalogCursor = 0;
       var seenIds = {};
       return candidates.map(function (candidate) {
         var refreshed = candidate;
@@ -4654,6 +4790,8 @@
             recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
           }));
           if (!refreshed) throw new Error('An SMK Open record could not be normalized after verification.');
+        } else {
+          refreshed = verifiedGroups[4][catalogCursor++];
         }
         if (seenIds[refreshed.id]) throw new Error('Verified Sourcebook assets contain duplicate records.');
         seenIds[refreshed.id] = true;
@@ -4718,6 +4856,48 @@
         idMap[keys[index]] = item.id;
       });
       return { assets: assets, idMap: idMap };
+    });
+  }
+
+  // Recovery is only for reopening saved palettes; imports remain atomic.
+  function recoverSavedSourceAssets(savedAssets, options) {
+    var opts = options || {};
+    var source = savedAssets || {};
+    if (Object.keys(source).filter(function (id) { return isSerializedSourceVerifiedAsset(source[id]); }).length > PALETTE_MAX_ASSETS) {
+      return Promise.reject(new Error('The saved palette exceeds the 48-asset recovery limit.'));
+    }
+    function individually() {
+      var keys = Object.keys(source).filter(function (id) { return isSerializedSourceVerifiedAsset(source[id]); });
+      return mapWithConcurrency(keys, 3, function (id) {
+        if (opts.signal && opts.signal.aborted) return Promise.resolve(null);
+        var one = {}; one[id] = source[id];
+        return revalidateSavedSmkAssets(one, opts).then(function (result) { return { id: id, result: result }; }, function (error) {
+          return { id: id, error: String(error && error.message || 'This source could not be verified.') };
+        });
+      }).then(function (results) {
+        throwIfSourcebookAborted(opts.signal);
+        var assets = {}, idMap = {}, errors = {}, owners = {};
+        results.forEach(function (entry) {
+          if (!entry) return;
+          if (entry.error) { errors[entry.id] = entry.error; return; }
+          var freshId = entry.result.idMap[entry.id];
+          if (owners[freshId]) {
+            errors[entry.id] = errors[owners[freshId]] = 'Saved sources resolve to a duplicate record.';
+            delete assets[freshId]; delete idMap[owners[freshId]];
+            return;
+          }
+          owners[freshId] = entry.id;
+          assets[freshId] = entry.result.assets[freshId]; idMap[entry.id] = freshId;
+        });
+        return { assets: assets, idMap: idMap, errors: errors };
+      });
+    }
+    if (opts.individual) return individually();
+    return revalidateSavedSmkAssets(source, opts).then(function (result) {
+      return { assets: result.assets, idMap: result.idMap, errors: {} };
+    }, function (error) {
+      if (opts.signal && opts.signal.aborted) throw error;
+      return individually();
     });
   }
 
@@ -5774,7 +5954,7 @@
     return identity.iiifServiceUrl + '/full/!' + boundWidth + ',' + boundHeight + '/0/default.jpg';
   }
 
-  function resolveFetchableImageUrl(item) {
+  function resolveFetchableImageUrl(item, signal) {
     var initialUrl = item && String(item.imageUrl || '');
     if (item && item.provider === RIJKS_PROVIDER) return Promise.resolve(rijksPreparationImageUrl(item));
     if (!item || (item.provider !== 'Wikimedia Commons' && !COMMONS_PROVIDER_PROFILES[item.provider])) return Promise.resolve(initialUrl);
@@ -5794,7 +5974,7 @@
       'prop=imageinfo', 'iiprop=url', 'iiurlwidth=1400',
       'titles=' + encodeURIComponent('File:' + filename)
     ];
-    return window.fetch(COMMONS_API + '?' + params.join('&'), { mode: 'cors', credentials: 'omit' })
+    return window.fetch(COMMONS_API + '?' + params.join('&'), { mode: 'cors', credentials: 'omit', signal: signal })
       .then(function (response) {
         if (!response || !response.ok) return initialUrl;
         return response.json();
@@ -5802,25 +5982,27 @@
         var pages = payload && payload.query && Array.isArray(payload.query.pages) ? payload.query.pages : [];
         var info = pages[0] && Array.isArray(pages[0].imageinfo) ? pages[0].imageinfo[0] : null;
         return safeHttpsUrl(info && (info.thumburl || info.url)) || initialUrl;
-      }).catch(function () { return initialUrl; });
+      }).catch(function (error) { if (signal && signal.aborted) throw error; return initialUrl; });
   }
 
   // A dropped connection rejects the fetch promise itself; an HTTP error resolves.
   // Only the former is retried, once, so request-counting contracts see one call per success.
   function fetchWithOneRetry(url, options, delayMs) {
     return window.fetch(url, options).catch(function (error) {
-      if (!isSourcebookOnline()) throw error;
+      if ((options && options.signal && options.signal.aborted) || (error && error.name === "AbortError") || !isSourcebookOnline()) throw error;
       return new Promise(function (resolve) { setTimeout(resolve, delayMs == null ? 600 : delayMs); }).then(function () {
+        if (options && options.signal && options.signal.aborted) throw error;
         return window.fetch(url, options);
       });
     });
   }
 
-  function fetchImageDataUrl(item) {
+  function fetchImageDataUrl(item, signal) {
     if (!item || typeof window.fetch !== 'function') return Promise.reject(new Error('This source cannot be fetched in this browser.'));
-    return resolveFetchableImageUrl(item).then(function (url) {
+    return resolveFetchableImageUrl(item, signal).then(function (url) {
+      throwIfSourcebookAborted(signal);
       if (!/^https:\/\//i.test(url)) throw new Error('This source cannot be fetched in this browser.');
-      return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit' });
+      return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit', signal: signal });
     }).then(function (response) {
       if (!response || !response.ok) throw new Error('The source image could not be downloaded.');
       var length = Number(response.headers && response.headers.get && response.headers.get('content-length')) || 0;
@@ -5829,10 +6011,10 @@
     }).then(readImageBlobAsDataUrl);
   }
 
-  function fetchContactThumbnailDataUrl(item) {
+  function fetchContactThumbnailDataUrl(item, signal) {
     var url = safeHttpsUrl(item && item.imageUrl);
     if (!url || typeof window.fetch !== 'function') return Promise.reject(new Error('Thumbnail unavailable.'));
-    return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit' }).then(function (response) {
+    return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit', signal: signal }).then(function (response) {
       if (!response || !response.ok) throw new Error('Thumbnail unavailable.');
       var length = Number(response.headers && response.headers.get && response.headers.get('content-length')) || 0;
       if (length > 5000000) throw new Error('Thumbnail is too large for visual review.');
@@ -6172,20 +6354,21 @@
 
   // Fetch the full image where the source allows it, fall back to the card
   // thumbnail, and never let one failed image sink the whole board.
-  function loadReferenceBoardEntries(items, preparation, onProgress) {
+  function loadReferenceBoardEntries(items, preparation, onProgress, signal) {
     var list = (Array.isArray(items) ? items : []).filter(function (item) { return item && ALLOWED_RIGHTS[item.rightsType]; });
     var done = 0;
     return mapWithConcurrency(list, 2, function (item) {
       var prep = normalizedPreparation(preparation && preparation[item.id]);
       var usePrepared = prep.mode !== 'fit' || preparationBakesStudy(prep);
-      return fetchImageDataUrl(item).catch(function () { return fetchContactThumbnailDataUrl(item); })
+      if (signal && signal.aborted) return Promise.resolve(null);
+      return fetchImageDataUrl(item, signal).catch(function (error) { throwIfSourcebookAborted(signal); return fetchContactThumbnailDataUrl(item, signal); })
         .then(function (dataUrl) {
+          throwIfSourcebookAborted(signal);
           if (!usePrepared) return { dataUrl: dataUrl, prepared: false };
           // Crop, tile, and study aids come from the same receipt the downloads use,
           // so the board shows exactly what the student prepared.
           return prepareImageReceipt(dataUrl, prep)
-            .then(function (receipt) { return { dataUrl: receipt.dataUrl, prepared: true }; })
-            .catch(function () { return { dataUrl: dataUrl, prepared: false }; });
+            .then(function (receipt) { return { dataUrl: receipt.dataUrl, prepared: true }; });
         })
         .then(function (loaded) {
           return loadContactImage(loaded.dataUrl).then(function (image) {
@@ -6198,8 +6381,58 @@
           if (typeof onProgress === 'function') onProgress(done, list.length);
           return entry;
         });
-    }).then(function (entries) { return entries.filter(Boolean); });
+    }).then(function (entries) { throwIfSourcebookAborted(signal); return entries.filter(Boolean); });
   }
+
+  // BEGIN SOURCEBOOK HELPER: reference-board
+// Included inside Sourcebook's existing IIFE. Each page stays below 12 images.
+  function throwIfSourcebookAborted(signal) {
+    if (signal && signal.aborted) {
+      var error = new Error('Reference board preparation cancelled.');
+      error.name = 'AbortError';
+      throw error;
+    }
+  }
+
+  function referenceBoardPages(items) {
+    var list = (Array.isArray(items) ? items : []).slice(0, PALETTE_MAX_ASSETS);
+    var pages = [];
+    for (var i = 0; i < list.length; i += 12) pages.push(list.slice(i, i + 12));
+    return pages;
+  }
+
+  function buildReferenceBoardPages(items, preparation, options) {
+    var opts = options || {};
+    var pages = referenceBoardPages(items);
+    var output = [];
+    // Process one page at a time to bound canvas and decoded-image memory.
+    return pages.reduce(function (pending, page, index) {
+      return pending.then(function () {
+        throwIfSourcebookAborted(opts.signal);
+        return loadReferenceBoardEntries(page, preparation, function (done) {
+          if (opts.onProgress && !(opts.signal && opts.signal.aborted)) opts.onProgress(index * 12 + done, items.length);
+        }, opts.signal).then(function (entries) {
+          throwIfSourcebookAborted(opts.signal);
+          if (entries.length !== page.length) {
+            var loadedIds = entries.map(function (entry) { return (entry.item || entry).id; });
+            var missing = page.filter(function (item) { return loadedIds.indexOf(item.id) === -1; });
+            var names = missing.slice(0, 3).map(function (item) { return String(item.title || item.id || 'Image').slice(0, 180); }).join('; ');
+            var message = typeof sbTf === 'function'
+              ? sbTf('stem.sourcebook.board_images_failed', 'Could not prepare: {names}. Retry these images or remove them from your selection; no incomplete board was created.', { names: names })
+              : 'Could not prepare: ' + names + '. Retry these images or remove them from your selection; no incomplete board was created.';
+            throw new Error(message);
+          }
+          var title = String(opts.title || 'Reference board');
+          if (pages.length > 1) title += ' (' + (index + 1) + '/' + pages.length + ')';
+          var dataUrl = buildReferenceBoardDataUrl(entries, { title: title, columns: opts.columns });
+          if (!dataUrl) throw new Error('A reference board could not be encoded.');
+          output.push({ dataUrl: dataUrl, count: page.length, page: index + 1,
+            filename: sourcebookSlug(opts.title, 'sourcebook-palette') + (pages.length === 1 ? '.reference-board.png' : '.reference-board-' + (index + 1) + '.png') });
+        });
+      });
+    }, Promise.resolve()).then(function () { return output; });
+  }
+  // END SOURCEBOOK HELPER: reference-board
 
   function renderPreparedDataUrl(dataUrl, preparation) {
     return prepareImageReceipt(dataUrl, preparation).then(function (receipt) { return receipt.dataUrl; });
@@ -6381,6 +6614,50 @@
     return { items: retained.concat(additions), additions: additions };
   }
 
+  // BEGIN SOURCEBOOK HELPER: palette-history
+  var PALETTE_HISTORY_LIMIT = 8;
+  var PALETTE_HISTORY_MAX_LENGTH = 160000;
+
+  // Checkpoints are portable candidates, never a source-verification cache.
+  function normalizeCheckpointManifest(manifest) {
+    var candidate = normalizePaletteManifestCandidate(manifest);
+    if (!candidate) throw new Error('checkpoint-invalid');
+    return {
+      schema: candidate.schema, version: 1, title: candidate.title,
+      rightsPolicy: 'allowlist:public-domain,cc0,cc-by', maximumAssets: PALETTE_MAX_ASSETS,
+      assets: candidate.assets.map(function (item) {
+        return Object.assign({}, item, { preparation: candidate.preparation[item.id], attribution: attributionText(item) });
+      })
+    };
+  }
+
+  function checkpointFingerprint(manifest) {
+    return JSON.stringify(normalizeCheckpointManifest(manifest));
+  }
+
+  function normalizePaletteHistory(value) {
+    if (value == null) return [];
+    if (!Array.isArray(value)) throw new Error('checkpoint-invalid');
+    if (value.length > PALETTE_HISTORY_LIMIT || JSON.stringify(value).length > PALETTE_HISTORY_MAX_LENGTH) throw new Error('checkpoint-full');
+    var seen = Object.create(null);
+    return value.map(function (entry) {
+      if (!entry || !/^checkpoint-[a-z0-9-]{1,80}$/.test(String(entry.id || '')) || seen[entry.id] || !String(entry.name || '').trim() || !Number.isFinite(Date.parse(entry.createdAt))) throw new Error('checkpoint-invalid');
+      seen[entry.id] = true;
+      return { id: entry.id, name: String(entry.name).trim().slice(0, 80), createdAt: new Date(entry.createdAt).toISOString(), manifest: normalizeCheckpointManifest(entry.manifest) };
+    });
+  }
+
+  function appendPaletteCheckpoint(history, manifest, name, id, createdAt) {
+    var entries = normalizePaletteHistory(history);
+    if (entries.length >= PALETTE_HISTORY_LIMIT) throw new Error('checkpoint-full');
+    var next = [{ id: id, name: name, createdAt: createdAt, manifest: normalizeCheckpointManifest(manifest) }].concat(entries);
+    // Never evict older checkpoints to make room for a save or restore backup.
+    var normalized = normalizePaletteHistory(next);
+    if (JSON.stringify(normalized).length > PALETTE_HISTORY_MAX_LENGTH) throw new Error('checkpoint-full');
+    return normalized;
+  }
+  // END SOURCEBOOK HELPER: palette-history
+
   function buildPaletteManifest(ids, preparation, title, extraAssets) {
     var selected = Array.isArray(ids) ? ids : [];
     var prep = preparation || {};
@@ -6411,6 +6688,8 @@
           creator: item.creator,
           year: item.year,
           medium: normalizedMedium(item.medium),
+          tags: Array.isArray(item.tags) ? item.tags.slice(0, 20) : [],
+          file: String(item.file || "").slice(0, 240),
           provider: item.provider,
           imageUrl: item.imageUrl,
           downloadUrl: item.downloadUrl,
@@ -6518,8 +6797,13 @@
   }
 
   window.SourcebookProviders = {
-    version: 59,
+    version: 60,
+    normalizePaletteHistory: normalizePaletteHistory,
+    appendPaletteCheckpoint: appendPaletteCheckpoint,
+    checkpointFingerprint: checkpointFingerprint,
+    paletteHistoryLimit: PALETTE_HISTORY_LIMIT,
     paletteMaxAssets: PALETTE_MAX_ASSETS,
+    recoverSavedAssets: recoverSavedSourceAssets,
     liveProviderNames: LIVE_PROVIDER_NAMES.slice(),
     providers: PROVIDERS,
     providerPresentation: providerPresentation,
@@ -6677,6 +6961,8 @@
     isSourcebookOnline: isSourcebookOnline,
     liveResultSummary: liveResultSummary,
     buildReferenceBoardDataUrl: buildReferenceBoardDataUrl,
+    referenceBoardPages: referenceBoardPages,
+    buildReferenceBoardPages: buildReferenceBoardPages,
     renderPreparedDataUrl: renderPreparedDataUrl,
     buildSourcePackage: buildSourcePackageHtml,
     downloadSourcePackage: downloadSourcePackage,
@@ -6755,7 +7041,26 @@
       var collection = Array.isArray(rootState.collection) ? rootState.collection.slice(0, PALETTE_MAX_ASSETS) : [];
       var rawSavedAssets = rootState.savedAssets && typeof rootState.savedAssets === 'object' ? rootState.savedAssets : {};
       var preparation = rootState.preparation || {};
-      var paletteUndo = normalizePaletteManifest(rootState.paletteUndo);
+      var paletteUndo = normalizePaletteManifestCandidate(rootState.paletteUndo);
+      var historyState = React.useMemo(function () {
+        try { return { entries: normalizePaletteHistory(rootState.paletteHistory), error: false }; }
+        catch (_) { return { entries: [], error: true }; }
+      }, [rootState.paletteHistory]);
+      var paletteHistory = historyState.entries;
+      var checkpointNameState = React.useState('');
+      var checkpointName = checkpointNameState[0];
+      var setCheckpointName = checkpointNameState[1];
+      var checkpointBusyState = React.useState('');
+      var checkpointBusy = checkpointBusyState[0];
+      var setCheckpointBusy = checkpointBusyState[1];
+      var checkpointOperationRef = React.useRef(null);
+      React.useEffect(function () {
+        return function () {
+          var operation = checkpointOperationRef.current;
+          checkpointOperationRef.current = null;
+          if (operation && operation.controller) operation.controller.abort();
+        };
+      }, []);
       var storedKind = storedSessionContext ? storedSessionContext.kind : (rootState.kind || 'All');
       var storedProvider = storedSessionContext ? storedSessionContext.provider : (rootState.provider || 'All');
       var storedRightsScope = storedSessionContext ? storedSessionContext.rightsScope : (RIGHTS_SCOPES[rootState.rightsScope] ? rootState.rightsScope : 'pd');
@@ -6906,9 +7211,17 @@
       var _palettePackageState = React.useState(false);
       var palettePackageBusy = _palettePackageState[0];
       var setPalettePackageBusy = _palettePackageState[1];
-      var _paletteImportState = React.useState(false);
+      var _paletteImportState = React.useState('');
       var paletteImportBusy = _paletteImportState[0];
       var setPaletteImportBusy = _paletteImportState[1];
+      var paletteVerificationRef = React.useRef(null);
+      React.useEffect(function () {
+        return function () {
+          var operation = paletteVerificationRef.current;
+          paletteVerificationRef.current = null;
+          disposePaletteVerification(operation);
+        };
+      }, []);
       var _palettePackageProgressState = React.useState(0);
       var palettePackageProgress = _palettePackageProgressState[0];
       var setPalettePackageProgress = _palettePackageProgressState[1];
@@ -6957,6 +7270,11 @@
       var liveRequestRef = React.useRef(0);
       var liveAbortRef = React.useRef(null);
       var trustedLiveSessionSignatureRef = React.useRef('');
+      var savedRecoveryRef = React.useRef(null);
+      var savedRetryTargetsRef = React.useRef(null);
+      var savedErrorsState = React.useState({});
+      var savedSourceErrors = savedErrorsState[0];
+      var setSavedSourceErrors = savedErrorsState[1];
       var savedSmkRequestRef = React.useRef(0);
       var savedSmkAbortRef = React.useRef(null);
       var trustedSavedSmkSignatureRef = React.useRef('');
@@ -6967,12 +7285,58 @@
         savedAssets: rawSavedAssets,
         visibleSavedAssets: savedAssets,
         savedSmkVerificationStatus: savedSmkVerificationStatus,
+        autoCurate: autoCurate,
         paletteTarget: paletteTarget,
         paletteTitle: storedTitle,
+        paletteHistory: rootState.paletteHistory,
+        paletteUndo: rootState.paletteUndo,
         checkedPaletteIds: checkedPaletteIds.slice()
       };
       var inspirationIndexRef = React.useRef(0);
       var sourcebookRootRef = React.useRef(null);
+      var pendingActionFocusRef = React.useRef(null);
+      function queueSourcebookActionFocus(request) {
+        var root = sourcebookRootRef.current;
+        var doc = root && root.ownerDocument;
+        var origin = doc && doc.activeElement;
+        if (!root || !origin || !root.contains(origin)) return;
+        pendingActionFocusRef.current = Object.assign({ origin: origin }, request);
+      }
+      React.useEffect(function () {
+        var request = pendingActionFocusRef.current;
+        if (!request) return;
+        pendingActionFocusRef.current = null;
+        var root = sourcebookRootRef.current;
+        if (!root) return;
+        var current = root.ownerDocument.activeElement;
+        // Do not take focus back if the user has already moved to another control.
+        if (current && current !== request.origin && current !== root.ownerDocument.body && current.isConnected && !current.disabled) return;
+        function available(node) { return node && !node.disabled && node.getClientRects().length && !node.closest('[inert]'); }
+        var target = null;
+        var cards = Array.prototype.slice.call(root.querySelectorAll('[data-sourcebook-result-card]'));
+        (request.cardIds || []).some(function (id) {
+          var card = cards.filter(function (node) { return node.getAttribute('data-sourcebook-result-card') === id; })[0];
+          if (!card) return false;
+          var control = request.direction && card.querySelector('[data-sourcebook-reorder="' + request.direction + '"]');
+          target = available(control) ? control : card.querySelector('[data-sourcebook-inspect]');
+          return available(target);
+        });
+        var checkpoints = Array.prototype.slice.call(root.querySelectorAll('[data-sourcebook-checkpoint]'));
+        (request.checkpointIds || []).some(function (id) {
+          var row = checkpoints.filter(function (node) { return node.getAttribute('data-sourcebook-checkpoint') === id; })[0];
+          target = row && row.querySelector('[data-sourcebook-checkpoint-restore]');
+          return available(target);
+        });
+        if (!available(target)) (request.selectors || ['#sourcebook-results-title', '#sourcebook-search']).some(function (selector) {
+          target = root.querySelector(selector); return available(target);
+        });
+        if (available(target)) {
+          var tray = root.querySelector('[data-sourcebook-palette-tray]');
+          target.style.scrollMarginTop = ((tray ? tray.getBoundingClientRect().height : 0) + 20) + 'px';
+          target.focus({ preventScroll: true });
+          if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest' });
+        }
+      });
       var liveStatusRef = React.useRef(null);
       var roleFillFocusPendingRef = React.useRef(false);
       var mobileDetailDialogRef = React.useRef(null);
@@ -7053,72 +7417,91 @@
         };
       }, [storedSmkSessionSignature]);
 
+      function retrySavedSourceRecords(id) {
+        savedRetryTargetsRef.current = id ? [id] : Object.keys(savedSourceErrors);
+        setSavedVerificationRetry(function (value) { return value + 1; });
+      }
+
       React.useEffect(function () {
         var previous = savedSmkAbortRef.current;
-        if (previous && previous.controller && typeof previous.controller.abort === 'function') previous.controller.abort();
+        if (previous && previous.controller) previous.controller.abort();
         var requestId = ++savedSmkRequestRef.current;
+        var retryIds = savedRetryTargetsRef.current;
+        savedRetryTargetsRef.current = null;
         if (!savedSmkSignature) {
           savedSmkAbortRef.current = null;
-          setVerifiedSavedSmkAssets({});
-          setSavedSmkVerificationStatus('idle');
-          setSavedSmkMessage('');
+          savedRecoveryRef.current = null;
+          setVerifiedSavedSmkAssets({}); setSavedSourceErrors({});
+          setSavedSmkVerificationStatus('idle'); setSavedSmkMessage('');
           return undefined;
         }
-        if (trustedSavedSmkSignatureRef.current === savedSmkSignature) {
-          setSavedSmkVerificationStatus('ready');
+        var recovery = savedRecoveryRef.current;
+        var retained = recovery && recovery.signature === savedSmkSignature ? recovery : null;
+        if (retained && Object.keys(retained.errors).length && !retryIds) {
+          setVerifiedSavedSmkAssets(retained.assets); setSavedSourceErrors(retained.errors);
+          setSavedSmkVerificationStatus(Object.keys(retained.assets).length ? 'partial' : 'error');
+          return undefined;
+        }
+        if (trustedSavedSmkSignatureRef.current === savedSmkSignature && !retryIds) {
+          setSavedSourceErrors({}); setSavedSmkVerificationStatus('ready');
           setSavedSmkMessage('Saved source-verified assets are trusted for this live session.');
           return undefined;
         }
+        var subset = rawSavedAssets;
+        var baseAssets = {}, baseErrors = {};
+        if (retained && retryIds && retryIds.length) {
+          subset = {}; baseAssets = Object.assign({}, retained.assets); baseErrors = Object.assign({}, retained.errors);
+          retryIds.forEach(function (id) { if (rawSavedAssets[id] && retained.errors[id]) subset[id] = rawSavedAssets[id]; });
+        }
         var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         savedSmkAbortRef.current = { id: requestId, controller: controller };
-        setVerifiedSavedSmkAssets({});
+        setVerifiedSavedSmkAssets(baseAssets); setSavedSourceErrors(baseErrors);
         setSavedSmkVerificationStatus('loading');
         setSavedSmkMessage('Checking saved source-verified assets before showing them...');
-        revalidateSavedSmkAssets(rawSavedAssets, { signal: controller ? controller.signal : null }).then(function (verified) {
+        recoverSavedSourceAssets(subset, { signal: controller ? controller.signal : null, individual: !!(retained && retryIds) }).then(function (verified) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
-          setVerifiedSavedSmkAssets(verified.assets);
-          setSavedSmkVerificationStatus('ready');
-          var count = Object.keys(verified.assets).length;
-          setSavedSmkMessage('Verified ' + count + ' saved source-verified asset' + (count === 1 ? '' : 's') + ' against current source records.');
-          var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, savedAssets: {} };
-          var nextSavedAssets = {};
-          Object.keys(latest.savedAssets || {}).forEach(function (id) {
-            var raw = latest.savedAssets[id];
-            var normalized = normalizePersistedNonSmkAsset(raw);
-            if (normalized) nextSavedAssets[id] = normalized;
-          });
-          Object.keys(verified.assets).forEach(function (id) { nextSavedAssets[id] = verified.assets[id]; });
-          trustedSavedSmkSignatureRef.current = savedSmkAssetsSignature(nextSavedAssets);
-          var collectionSeen = {};
-          var nextCollection = (latest.collection || []).map(function (id) { return verified.idMap[id] || id; }).filter(function (id) {
-            if (!id || collectionSeen[id]) return false;
-            collectionSeen[id] = true;
-            return true;
-          }).slice(0, PALETTE_MAX_ASSETS);
-          var nextPreparation = Object.assign({}, latest.preparation || {});
+          var mergedAssets = Object.assign({}, baseAssets, verified.assets);
+          var errors = Object.assign({}, baseErrors);
+          Object.keys(subset).forEach(function (id) { delete errors[id]; });
+          Object.keys(verified.errors).forEach(function (id) { errors[id] = verified.errors[id]; });
+          var latest = latestPaletteStateRef.current;
+          // Keep failed raw records and their notes intact; only verified records are replaced.
+          var nextSavedAssets = Object.assign({}, latest.savedAssets);
+          Object.keys(verified.idMap).forEach(function (id) { delete nextSavedAssets[id]; });
+          Object.keys(mergedAssets).forEach(function (id) { nextSavedAssets[id] = mergedAssets[id]; });
+          var nextPreparation = Object.assign({}, latest.preparation);
           Object.keys(verified.idMap).forEach(function (oldId) {
             var freshId = verified.idMap[oldId];
-            if (oldId !== freshId) {
-              nextPreparation[freshId] = normalizedPreparation(nextPreparation[oldId]);
-              delete nextPreparation[oldId];
-            }
+            if (oldId !== freshId) { nextPreparation[freshId] = normalizedPreparation(nextPreparation[oldId]); delete nextPreparation[oldId]; }
           });
+          var seen = {};
+          var nextCollection = latest.collection.map(function (id) { return verified.idMap[id] || id; }).filter(function (id) {
+            if (!id || seen[id]) return false; seen[id] = true; return true;
+          }).slice(0, PALETTE_MAX_ASSETS);
+          var count = Object.keys(mergedAssets).length;
+          var failed = Object.keys(errors).length;
+          var signature = savedSmkAssetsSignature(nextSavedAssets);
+          savedRecoveryRef.current = { signature: signature, assets: mergedAssets, errors: errors };
+          trustedSavedSmkSignatureRef.current = failed ? '' : signature;
+          setVerifiedSavedSmkAssets(mergedAssets); setSavedSourceErrors(errors);
+          setSavedSmkVerificationStatus(failed ? (count ? 'partial' : 'error') : 'ready');
+          var message = failed
+            ? __alloTf('stem.sourcebook.saved_partial_verification', '{verified} saved sources are verified and available. {failed} need verification; their records and notes are preserved.', { verified: count, failed: failed })
+            : __alloTf('stem.sourcebook.saved_verification_complete', 'Verified {count} saved sources against current source records.', { count: count });
+          setSavedSmkMessage(message);
           patch({ savedAssets: nextSavedAssets, collection: nextCollection, preparation: nextPreparation });
-          announce(__alloT('stem.sourcebook.msg_saved_source_verified_palette_assets_verified', 'Saved source-verified palette assets verified'));
+          announce(message);
         }).catch(function (error) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
-          setVerifiedSavedSmkAssets({});
-          setSavedSmkVerificationStatus('error');
-          setSavedSmkMessage('Saved source-verified assets are hidden because current source records could not be verified. ' + (error && error.message ? error.message : 'Try again when the network is available.'));
-          announce(__alloT('stem.sourcebook.msg_saved_source_verified_palette_assets_hidden_because', 'Saved source-verified palette assets hidden because verification failed'));
+          setSavedSmkVerificationStatus(Object.keys(baseAssets).length ? 'partial' : 'error');
+          setSavedSmkMessage('Saved source verification could not finish. ' + String(error && error.message || 'Retry when the connection is available.'));
         });
         return function () {
           if (savedSmkAbortRef.current && savedSmkAbortRef.current.id === requestId) {
-            if (savedSmkAbortRef.current.controller && typeof savedSmkAbortRef.current.controller.abort === 'function') savedSmkAbortRef.current.controller.abort();
-            savedSmkAbortRef.current = null;
-            ++savedSmkRequestRef.current;
+            if (savedSmkAbortRef.current.controller) savedSmkAbortRef.current.controller.abort();
+            savedSmkAbortRef.current = null; ++savedSmkRequestRef.current;
           }
         };
       }, [savedSmkSignature, savedVerificationRetry]);
@@ -7211,22 +7594,47 @@
       }, [boardWindowSignature]);
 
       function downloadReferenceBoard() {
-        var boardItems = exportItems.slice(0, 12);
-        if (!boardItems.length || referenceBoardProgress) return;
+        var boardItems = exportItems.slice();
+        if (!boardItems.length || referenceBoardOperationRef.current) return;
+        var signature = referenceBoardSignature;
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var operation = { signature: signature, controller: controller };
+        referenceBoardOperationRef.current = operation;
+        setReferenceBoardDownloads(null);
         setReferenceBoardProgress(1);
         announce(__alloTn('stem.sourcebook.msg_preparing_reference_board', boardItems.length, 'Preparing a reference board for {count} source', 'Preparing a reference board for {count} sources'));
-        loadReferenceBoardEntries(boardItems, preparation, function (done, total) { setReferenceBoardProgress(1 + Math.round((done / total) * 98)); }).then(function (entries) {
-          if (!entries.length) throw new Error('No palette images could be loaded for the board.');
-          var dataUrl = buildReferenceBoardDataUrl(entries, { title: storedTitle, columns: referenceBoardColumns });
-          if (!dataUrl || !downloadDataUrlFile(dataUrl, sourcebookSlug(storedTitle, 'sourcebook-palette') + '.reference-board.png')) throw new Error('The reference board could not be encoded in this browser.');
-          toast(entries.length === boardItems.length
-            ? __alloT('stem.sourcebook.msg_reference_board_downloaded_full', 'Reference board downloaded with credits and swatches under every image.')
-            : __alloTf('stem.sourcebook.msg_reference_board_downloaded_partial', '{loaded} of {total} images could be loaded; the board carries those with their credits.', { loaded: entries.length, total: boardItems.length }), entries.length === boardItems.length ? 'success' : 'info');
-          announce(__alloT('stem.sourcebook.msg_reference_board_downloaded', 'Reference board downloaded'));
+        buildReferenceBoardPages(boardItems, preparation, { title: storedTitle, columns: referenceBoardColumns, signal: controller ? controller.signal : null,
+          onProgress: function (done, total) { if (referenceBoardOperationRef.current === operation) setReferenceBoardProgress(1 + Math.round(done / total * 98)); }
+        }).then(function (pages) {
+          if (referenceBoardOperationRef.current !== operation) return;
+          if (latestReferenceBoardSignatureRef.current !== signature) { cancelReferenceBoard('changed'); return; }
+          setReferenceBoardDownloads({ signature: signature, pages: pages, total: boardItems.length });
+          if (pages.length === 1 && !downloadDataUrlFile(pages[0].dataUrl, pages[0].filename)) throw new Error('The board could not be saved. Use the download link to retry.');
+          var message = __alloTf('stem.sourcebook.reference_boards_ready', '{count} images are ready across {pages} reference board pages. Each page has its own download link.', { count: boardItems.length, pages: pages.length });
+          toast(message, 'success'); announce(message);
         }).catch(function (error) {
-          toast(__alloTf('stem.sourcebook.msg_reference_board_failed', '{reason} The saved palette is unchanged.', { reason: error && error.message ? error.message : __alloT('stem.sourcebook.msg_reference_board_not_prepared', 'The reference board could not be prepared.') }), 'error');
+          if (referenceBoardOperationRef.current !== operation || error.name === 'AbortError') return;
+          toast(__alloTf('stem.sourcebook.msg_reference_board_failed', '{reason} The saved palette is unchanged.', { reason: error.message }), 'error');
           announce(__alloT('stem.sourcebook.msg_could_not_download_the_reference_board', 'Could not download the reference board'));
-        }).then(function () { setReferenceBoardProgress(0); });
+        }).then(function () {
+          if (referenceBoardOperationRef.current === operation) {
+            referenceBoardOperationRef.current = null;
+            setReferenceBoardProgress(0);
+          }
+        });
+      }
+
+      function cancelReferenceBoard(reason) {
+        var operation = referenceBoardOperationRef.current;
+        if (!operation) return;
+        referenceBoardOperationRef.current = null;
+        if (operation.controller) operation.controller.abort();
+        setReferenceBoardProgress(0);
+        setReferenceBoardDownloads(null);
+        var message = reason === 'changed'
+          ? __alloT('stem.sourcebook.board_palette_changed', 'Your palette changed. Prepare the reference boards again to include your latest edits.')
+          : __alloT('stem.sourcebook.board_cancelled', 'Reference board preparation cancelled. Your palette is unchanged.');
+        toast(message, 'info'); announce(message);
       }
 
       function patch(next) {
@@ -7256,9 +7664,12 @@
             if (portable) trusted[id] = portable;
           }
         });
-        trustedSavedSmkSignatureRef.current = savedSmkAssetsSignature(nextAssets);
+        var needsCatalogCheck = Object.keys(nextAssets || {}).some(function (id) { return isSerializedSourceVerifiedAsset(nextAssets[id]) && !trusted[id]; });
+        trustedSavedSmkSignatureRef.current = needsCatalogCheck ? '' : savedSmkAssetsSignature(nextAssets);
+        // A curated-only palette edit can leave the external-asset signature unchanged.
+        if (needsCatalogCheck) setSavedVerificationRetry(function (value) { return value + 1; });
         setVerifiedSavedSmkAssets(trusted);
-        setSavedSmkVerificationStatus(Object.keys(trusted).length ? 'ready' : 'idle');
+        setSavedSmkVerificationStatus(needsCatalogCheck ? 'loading' : (Object.keys(trusted).length ? 'ready' : 'idle'));
         setSavedSmkMessage(Object.keys(trusted).length ? 'Saved source-verified assets are trusted for this live session.' : '');
       }
 
@@ -7382,8 +7793,162 @@
         return buildPaletteManifest(currentCollection, state.preparation || {}, state.paletteTitle || storedTitle, portableSavedAssets);
       }
 
+      function checkpointMessage(error) {
+        if (error.message === 'checkpoint-full') return __alloT('stem.sourcebook.checkpoint_full', 'Checkpoint storage is full. Export and delete an older checkpoint before continuing.');
+        if (error.message === 'checkpoint-invalid') return __alloT('stem.sourcebook.checkpoint_invalid', 'Checkpoint history could not be read. Your saved data has been preserved.');
+        return error.message;
+      }
+
+      function nextCheckpointId() {
+        return 'checkpoint-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+      }
+
+      function completeCheckpointSnapshot(latest) {
+        var snapshot = createLatestPaletteUndoSnapshot(latest);
+        if (!snapshot || snapshot.assets.length !== latest.collection.length) throw new Error(__alloT('stem.sourcebook.checkpoint_incomplete', 'Wait for all saved sources to be verified before saving a checkpoint.'));
+        return snapshot;
+      }
+
+      function savePaletteCheckpoint() {
+        if (checkpointOperationRef.current || !savedPaletteReadyForMerge()) return;
+        try {
+          var latest = latestPaletteStateRef.current;
+          var snapshot = completeCheckpointSnapshot(latest);
+          var name = checkpointName.trim() || latest.paletteTitle;
+          var next = appendPaletteCheckpoint(latest.paletteHistory, snapshot, name, nextCheckpointId(), new Date().toISOString());
+          patch({ paletteHistory: next });
+          setCheckpointName('');
+          var message = __alloT('stem.sourcebook.checkpoint_saved', 'Palette checkpoint saved.');
+          toast(message, 'success'); announce(message);
+        } catch (error) { toast(checkpointMessage(error), 'error'); }
+      }
+
+      function cancelCheckpointRestore() {
+        var operation = checkpointOperationRef.current;
+        if (operation) queueSourcebookActionFocus({ checkpointIds: [operation.checkpointId], selectors: ['#sourcebook-checkpoint-name'] });
+        checkpointOperationRef.current = null;
+        if (operation && operation.controller) operation.controller.abort();
+        setCheckpointBusy('');
+        announce(__alloT('stem.sourcebook.checkpoint_cancelled', 'Checkpoint restore cancelled. Your palette is unchanged.'));
+      }
+
+      function checkpointRestoreRevision(latest) {
+        return JSON.stringify([latest.collection, latest.preparation, latest.savedAssets, latest.paletteTitle, latest.paletteHistory, latest.paletteUndo]);
+      }
+
+      function restorePaletteCheckpoint(entry) {
+        if (checkpointOperationRef.current || paletteVerificationRef.current || !savedPaletteReadyForMerge()) return;
+        var latest = latestPaletteStateRef.current;
+        var before = checkpointRestoreRevision(latest);
+        var persistedBefore = checkpointRestoreRevision((ctx.toolData || {}).sourcebook || {});
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var operation = { controller: controller, checkpointId: entry.id };
+        checkpointOperationRef.current = operation;
+        setCheckpointBusy(entry.id);
+        revalidatePaletteManifest(entry.manifest, { signal: controller ? controller.signal : undefined }).then(function (restored) {
+          if (checkpointOperationRef.current !== operation) return;
+          var current = latestPaletteStateRef.current;
+          if (checkpointRestoreRevision(current) !== before || checkpointRestoreRevision((ctx.toolData || {}).sourcebook || {}) !== persistedBefore) throw new Error(__alloT('stem.sourcebook.checkpoint_changed', 'The palette or checkpoint history changed during verification. Retry restore when you are ready.'));
+          var nextHistory = normalizePaletteHistory(current.paletteHistory);
+          var previous = current.collection.length ? completeCheckpointSnapshot(current) : null;
+          if (previous && !nextHistory.some(function (saved) { return checkpointFingerprint(saved.manifest) === checkpointFingerprint(previous); })) {
+            nextHistory = appendPaletteCheckpoint(nextHistory, previous, __alloT('stem.sourcebook.checkpoint_backup', 'Before restore') + ': ' + current.paletteTitle, nextCheckpointId(), new Date().toISOString());
+          }
+          var builtInIds = MATERIALS.reduce(function (ids, item) { ids[item.id] = true; return ids; }, {});
+          var restoredAssets = {};
+          restored.assets.forEach(function (item) { if (!builtInIds[item.id]) restoredAssets[item.id] = portableAsset(item); });
+          trustCurrentSavedSmkAssets(restoredAssets);
+          patch({ collection: restored.assets.map(function (item) { return item.id; }), savedAssets: restoredAssets,
+            preparation: restored.preparation, paletteTitle: restored.title, paletteUndo: previous, paletteHistory: nextHistory });
+          setCheckedPaletteIds([]); setPaletteFilter(''); setShowingCollection(true);
+          var message = __alloT('stem.sourcebook.checkpoint_restored', 'Palette checkpoint restored.');
+          toast(message, 'success'); announce(message);
+        }).catch(function (error) {
+          if (checkpointOperationRef.current !== operation) return;
+          toast(__alloTf('stem.sourcebook.checkpoint_failed', 'Checkpoint was not restored. {reason}', { reason: checkpointMessage(error) }), 'error');
+        }).then(function () {
+          if (checkpointOperationRef.current === operation) { checkpointOperationRef.current = null; setCheckpointBusy(''); }
+        });
+      }
+
+      function exportPaletteCheckpoint(entry) {
+        try {
+          var blob = new Blob([JSON.stringify(entry.manifest, null, 2)], { type: 'application/json' });
+          var url = window.URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = (entry.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sourcebook-checkpoint') + '.sourcebook.json';
+          document.body.appendChild(link); link.click(); document.body.removeChild(link);
+          setTimeout(function () { window.URL.revokeObjectURL(url); }, 1000);
+        } catch (_) { toast(__alloT('stem.sourcebook.checkpoint_export_failed', 'The checkpoint could not be downloaded. Please try again.'), 'error'); }
+      }
+
+      function deletePaletteCheckpoint(entry) {
+        if (checkpointOperationRef.current) return;
+        if (!window.confirm(__alloTf('stem.sourcebook.checkpoint_delete_confirm', 'Delete checkpoint “{name}”? This cannot be undone. Your current palette will stay the same.', { name: entry.name }))) return;
+        try {
+          var next = normalizePaletteHistory(latestPaletteStateRef.current.paletteHistory).filter(function (saved) { return saved.id !== entry.id; });
+          var previousIds = paletteHistory.map(function (saved) { return saved.id; });
+          var deletedIndex = previousIds.indexOf(entry.id);
+          queueSourcebookActionFocus({ checkpointIds: previousIds.slice(deletedIndex + 1).concat(previousIds.slice(0, deletedIndex).reverse()), selectors: ['#sourcebook-checkpoint-name'] });
+          patch({ paletteHistory: next });
+          announce(__alloT('stem.sourcebook.checkpoint_deleted', 'Checkpoint deleted.'));
+        } catch (error) { toast(checkpointMessage(error), 'error'); }
+      }
+
+      function paletteVerificationRevision(latest) {
+        return JSON.stringify([latest.collection, latest.preparation, latest.savedAssets, latest.paletteTitle, latest.paletteUndo]);
+      }
+
+      function disposePaletteVerification(operation) {
+        if (!operation) return;
+        if (operation.reader) {
+          operation.reader.onload = operation.reader.onerror = operation.reader.onabort = null;
+          if (operation.reader.readyState === 1) operation.reader.abort();
+        }
+        if (operation.controller) operation.controller.abort();
+      }
+
+      function beginPaletteVerification(action) {
+        // A ref closes the same-event gap before React renders the disabled controls.
+        if (paletteVerificationRef.current || checkpointOperationRef.current) return null;
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var operation = { action: action, controller: controller, reader: null,
+          revision: paletteVerificationRevision(latestPaletteStateRef.current),
+          persistedRevision: paletteVerificationRevision((ctx.toolData || {}).sourcebook || {}), signal: controller ? controller.signal : undefined };
+        paletteVerificationRef.current = operation;
+        setPaletteImportBusy(action);
+        return operation;
+      }
+
+      function finishPaletteVerification(operation) {
+        if (paletteVerificationRef.current !== operation) return;
+        paletteVerificationRef.current = null;
+        if (operation.reader) operation.reader.onload = operation.reader.onerror = operation.reader.onabort = null;
+        setPaletteImportBusy('');
+      }
+
+      function cancelPaletteVerification() {
+        var operation = paletteVerificationRef.current;
+        if (!operation) return;
+        queueSourcebookActionFocus({ selectors: showingCollection ? ['#sourcebook-palette-title', '#sourcebook-results-title'] : ['#sourcebook-search'] });
+        paletteVerificationRef.current = null;
+        disposePaletteVerification(operation);
+        setPaletteImportBusy('');
+        var message = __alloT('stem.sourcebook.palette_verification_cancelled', 'Palette verification cancelled. Your palette is unchanged.');
+        toast(message, 'info'); announce(message);
+      }
+
       function restorePaletteUndo() {
         if (!paletteUndo) return;
+        var operation = beginPaletteVerification('undo');
+        if (!operation) return;
+        revalidatePaletteManifest(latestPaletteStateRef.current.paletteUndo, { signal: operation.signal }).then(function (paletteUndo) {
+          if (paletteVerificationRef.current !== operation) return;
+          var latest = latestPaletteStateRef.current;
+          if (paletteVerificationRevision(latest) !== operation.revision || paletteVerificationRevision((ctx.toolData || {}).sourcebook || {}) !== operation.persistedRevision) {
+            throw new Error(__alloT('stem.sourcebook.palette_verification_undo_changed', 'The palette or its undo history changed during verification. Retry undo on the current palette.'));
+          }
         var builtInIds = MATERIALS.reduce(function (ids, item) {
           ids[item.id] = true;
           return ids;
@@ -7405,15 +7970,35 @@
         setShowingCollection(true);
         toast(__alloT('stem.sourcebook.msg_restored_the_previous_sourcebook_palette', 'Restored the previous Sourcebook palette.'), 'success');
         announce(__alloT('stem.sourcebook.msg_previous_sourcebook_palette_restored', 'Previous Sourcebook palette restored'));
+        }).catch(function (error) {
+          if (paletteVerificationRef.current !== operation) return;
+          toast(__alloTf('stem.sourcebook.undo_verification_failed', 'The previous palette could not be verified. {reason}', { reason: error.message }), 'error');
+        }).then(function () { finishPaletteVerification(operation); });
+      }
+
+      function savedPaletteReadyForMerge() {
+        var latest = latestPaletteStateRef.current;
+        var unresolved = latest && latest.savedSmkVerificationStatus !== 'ready' && Object.keys(latest.savedAssets || {}).some(function (id) {
+          return isSerializedSourceVerifiedAsset(latest.savedAssets[id]);
+        });
+        if (!unresolved) return true;
+        var message = (latest.savedSmkVerificationStatus === 'error' || latest.savedSmkVerificationStatus === 'partial')
+          ? __alloT('stem.sourcebook.palette_merge_needs_retry', 'Your saved sources are preserved. Retry verification before adding, importing, or removing individual palette items.')
+          : __alloT('stem.sourcebook.palette_merge_needs_verification', 'Your saved sources are still undergoing verification. Wait for it to finish before adding, importing, or removing individual palette items.');
+        toast(message, 'info'); announce(message);
+        return false;
       }
 
       function addItemsToPalette(items, message) {
+        if (!savedPaletteReadyForMerge()) return 0;
         var eligible = (Array.isArray(items) ? items : []).filter(function (item) {
           return item && ALLOWED_RIGHTS[item.rightsType];
         });
         if (!eligible.length) return 0;
-        var nextCollection = collection.slice();
-        var nextAssets = Object.assign({}, savedAssets);
+        // Search and curation may finish after the palette has been edited.
+        var latest = latestPaletteStateRef.current;
+        var nextCollection = latest.collection.slice();
+        var nextAssets = Object.assign({}, latest.visibleSavedAssets);
         var added = 0;
         var skipped = 0;
         eligible.forEach(function (item) {
@@ -7765,7 +8350,7 @@
             persistLiveBoard(decorated, { query: next, kind: requestedKind || kind, provider: activeProvider, page: 0, canLoadMore: canSearchMore, discoveryPlan: result.plan, discoveryNote: nextDiscoveryNote });
             if (roleFillRequest) {
               addRoleFillItemsToPalette(curation.items, roleFillRequest);
-            } else if (shouldAutoPick && autoCurate && curation.items.length) {
+            } else if (shouldAutoPick && autoCurate && latestPaletteStateRef.current.autoCurate && curation.items.length) {
               addItemsToPalette(curation.items, __alloTf('stem.sourcebook.msg_selected_matches_added', 'Sourcebook selected {count} verified matches and added them to your palette.', { count: curation.items.length }));
             }
             announce(__alloTf('stem.sourcebook.msg_live_results_found', '{found} verified live Sourcebook results found; {selected} strongest matches selected', { found: result.items.length, selected: curation.items.length }));
@@ -8126,7 +8711,7 @@
           var refreshedBroad = refreshedQuality.broad ? ' ' + __alloTn('stem.sourcebook.msg_broad_results_stay', refreshedQuality.broad, '{count} broad result stays available on the board.', '{count} broad results stay available on the board.') : '';
           setLiveMessage(liveResultSummary(liveResults) + ' ' + refreshedNote + keptNote + reviewTail + refreshedBroad);
           persistLiveBoard(decorated, { discoveryPlan: plan, discoveryNote: nextDiscoveryNote });
-          if (autoCurate && nextPicks.length) addItemsToPalette(nextPicks, __alloTf('stem.sourcebook.msg_added_refreshed_recommendations', 'Added {count} refreshed recommendations to your palette.', { count: nextPicks.length }));
+          if (autoCurate && latestPaletteStateRef.current.autoCurate && nextPicks.length) addItemsToPalette(nextPicks, __alloTf('stem.sourcebook.msg_added_refreshed_recommendations', 'Added {count} refreshed recommendations to your palette.', { count: nextPicks.length }));
           announce(directive ? __alloTf('stem.sourcebook.msg_recommendations_refined_toward', 'Sourcebook recommendations refined toward {directive}', { directive: directive }) : __alloT('stem.sourcebook.msg_recommendations_refreshed', 'Sourcebook recommendations refreshed'));
         }, function () {
           if (requestId !== liveRequestRef.current) return;
@@ -8141,7 +8726,8 @@
 
       function clearPalette() {
         if (!collection.length) return;
-        if (typeof window.confirm === 'function' && !window.confirm('Clear every saved Sourcebook asset and its crop or tile preparation?')) return;
+        if (typeof window.confirm === 'function' && !window.confirm(__alloT('stem.sourcebook.confirm_clear', 'Clear every saved Sourcebook asset and its crop or tile preparation?'))) return;
+        queueSourcebookActionFocus({ selectors: ['#sourcebook-search'] });
         trustCurrentSavedSmkAssets({});
         patch({ collection: [], savedAssets: {}, preparation: {}, paletteUndo: createPaletteUndoSnapshot() });
         setCheckedPaletteIds([]);
@@ -8159,8 +8745,10 @@
         var next = collection.slice();
         var moved = next.splice(index, 1)[0];
         next.splice(target, 0, moved);
+        queueSourcebookActionFocus({ cardIds: [id], direction: direction < 0 ? 'earlier' : 'later' });
         patch({ collection: next, paletteUndo: createPaletteUndoSnapshot() });
-        announce(direction < 0 ? __alloT('stem.sourcebook.msg_moved_item_earlier', 'Moved Sourcebook palette item earlier') : __alloT('stem.sourcebook.msg_moved_item_later', 'Moved Sourcebook palette item later'));
+        var movedItem = allAssets.filter(function (item) { return item.id === id; })[0];
+        announce(__alloTf('stem.sourcebook.msg_moved_item_position', 'Moved {title} to position {position} of {total}.', { title: movedItem ? movedItem.title : id, position: target + 1, total: next.length }));
       }
 
       function setFilter(filterKind, value) {
@@ -8259,12 +8847,21 @@
       }
 
       function toggleSaved(item) {
+        if (!savedPaletteReadyForMerge()) return;
         var id = item.id;
         var exists = collection.indexOf(id) !== -1;
         if (!exists && collection.length >= PALETTE_MAX_ASSETS) {
           toast(__alloTf('stem.sourcebook.msg_palette_full', 'Your palette already has {max} assets. Remove one before saving another so exports stay dependable.', { max: PALETTE_MAX_ASSETS }), 'info');
           announce(__alloT('stem.sourcebook.msg_sourcebook_palette_limit_reached', 'Sourcebook palette limit reached'));
           return;
+        }
+        if (exists && showingCollection) {
+          var focusedCard = sourcebookRootRef.current && sourcebookRootRef.current.ownerDocument.activeElement.closest('[data-sourcebook-result-card]');
+          if (focusedCard && focusedCard.getAttribute('data-sourcebook-result-card') === id) {
+            var visibleIds = visible.map(function (source) { return source.id; });
+            var removedIndex = visibleIds.indexOf(id);
+            queueSourcebookActionFocus({ cardIds: visibleIds.slice(removedIndex + 1).concat(visibleIds.slice(0, removedIndex).reverse()) });
+          }
         }
         var next = exists ? collection.filter(function (saved) { return saved !== id; }) : collection.concat([id]);
         var nextAssets = Object.assign({}, savedAssets);
@@ -8313,9 +8910,11 @@
       }
 
       function removeCheckedPaletteItems() {
+        if (!savedPaletteReadyForMerge()) return;
         var removeIds = checkedPaletteIds.filter(function (id) { return collection.indexOf(id) !== -1; });
         if (!removeIds.length) return;
-        if (typeof window.confirm === 'function' && !window.confirm('Remove ' + removeIds.length + ' selected Sourcebook asset' + (removeIds.length === 1 ? '' : 's') + ' from this palette?')) return;
+        if (typeof window.confirm === 'function' && !window.confirm(__alloTn('stem.sourcebook.confirm_remove_selected', removeIds.length, 'Remove {count} selected Sourcebook asset from this palette?', 'Remove {count} selected Sourcebook assets from this palette?'))) return;
+        queueSourcebookActionFocus({ cardIds: visible.filter(function (item) { return removeIds.indexOf(item.id) === -1; }).map(function (item) { return item.id; }) });
         var nextAssets = Object.assign({}, savedAssets);
         var nextPreparation = Object.assign({}, preparation);
         removeIds.forEach(function (id) {
@@ -8388,88 +8987,121 @@
         announce(__alloTf('stem.sourcebook.msg_applied_role_plan', 'Sourcebook applied the {plan} role plan', { plan: planned.label }));
       }
 
-      function sendToPageDesigner(item) {
-        if (!item || !ALLOWED_RIGHTS[item.rightsType]) {
-          toast(__alloT('stem.sourcebook.msg_only_an_asset_with_verified_reuse_rights', 'Only an asset with verified reuse rights can be sent to Page Designer.'), 'error');
-          return;
-        }
-        if (typeof ctx.onUseArtwork !== 'function') {
-          toast(__alloT('stem.sourcebook.msg_page_designer_handoff_is_not_available_in', 'Page Designer handoff is not available in this version of AlloFlow.'), 'info');
-          return;
-        }
-        var prep = normalizedPreparation(preparation[item.id]);
-        setHandoffId(item.id);
-        announce(__alloTf('stem.sourcebook.msg_preparing_for_page_designer', 'Preparing {title} for Page Designer', { title: item.title }));
-        fetchImageDataUrl(item).then(function (dataUrl) {
-          return prepareImageReceipt(dataUrl, prep);
-        }).then(function (preparedReceipt) {
-          var artwork = buildPageDesignerArtwork(item, prep, preparedReceipt);
-          if (!artwork) throw new Error('The prepared asset did not pass the Sourcebook handoff checks.');
-          ctx.onUseArtwork(artwork, 'page-designer');
-        }).catch(function (error) {
-          var message = error && error.message ? error.message : 'The source image could not be prepared.';
-          toast(message + ' You can still open the image and upload it in Page Designer.', 'error');
-          announce(__alloT('stem.sourcebook.msg_could_not_prepare_the_sourcebook_asset_for', 'Could not prepare the Sourcebook asset for Page Designer'));
-        }).then(function () { setHandoffId(''); });
+      function cancelSingleSourceAction(reason) {
+        var operation = singleSourceOperationRef.current;
+        if (!operation) return;
+        singleSourceOperationRef.current = null;
+        if (operation.controller) operation.controller.abort(); else operation.signal.aborted = true;
+        setHandoffId(''); setPackageId('');
+        if (reason === 'replaced') return;
+        var message = reason === 'changed'
+          ? __alloT('stem.sourcebook.single_source_changed', 'The selected image or its preparation changed. Start the image action again to use your latest choices.')
+          : __alloT('stem.sourcebook.single_source_cancelled', 'Image preparation cancelled. Your palette is unchanged.');
+        toast(message, 'info'); announce(message);
       }
 
-      function saveSourcePackage(item) {
-        if (!item || !ALLOWED_RIGHTS[item.rightsType]) {
-          toast(__alloT('stem.sourcebook.msg_only_an_asset_with_verified_reuse_rights_2', 'Only an asset with verified reuse rights can be downloaded.'), 'error');
-          return;
+      function startSingleSourceAction(item, action) {
+        if (!item || !ALLOWED_RIGHTS[item.rightsType]) return;
+        if (action === 'handoff' && typeof ctx.onUseArtwork !== 'function') {
+          toast(__alloT('stem.sourcebook.msg_page_designer_handoff_is_not_available_in', 'Page Designer handoff is not available in this version of AlloFlow.'), 'info'); return;
         }
+        cancelSingleSourceAction('replaced');
         var prep = normalizedPreparation(preparation[item.id]);
-        setPackageId(item.id);
-        announce(__alloTf('stem.sourcebook.msg_preparing_source_package', 'Preparing a downloadable source package for {title}', { title: item.title }));
-        fetchImageDataUrl(item).then(function (dataUrl) {
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var operation = { id: item.id, action: action, signature: JSON.stringify([item, prep]), controller: controller, signal: controller ? controller.signal : { aborted: false } };
+        singleSourceOperationRef.current = operation;
+        setHandoffId(action === 'handoff' ? item.id : ''); setPackageId(action === 'package' ? item.id : '');
+        announce(__alloTf('stem.sourcebook.single_source_preparing', 'Preparing {title}. You can cancel this action.', { title: item.title }));
+        fetchImageDataUrl(item, controller ? controller.signal : undefined).then(function (dataUrl) {
+          throwIfSourcebookAborted(operation.signal);
           return prepareImageReceipt(dataUrl, prep);
-        }).then(function (preparedReceipt) {
-          if (!downloadSourcePackage(item, prep, preparedReceipt)) throw new Error('This browser could not save the source package.');
+        }).then(function (receipt) {
+          if (singleSourceOperationRef.current !== operation) return;
+          if (latestSingleSourceSignatureRef.current !== operation.signature) { cancelSingleSourceAction('changed'); return; }
+          if (action === 'handoff') {
+            var artwork = buildPageDesignerArtwork(item, prep, receipt);
+            if (!artwork) throw new Error('The prepared asset did not pass the Sourcebook handoff checks.');
+            return ctx.onUseArtwork(artwork, 'page-designer');
+          }
+          if (!downloadSourcePackage(item, prep, receipt)) throw new Error('This browser could not save the source package.');
           bumpQuestCounter('packagesSaved');
           toast(__alloT('stem.sourcebook.msg_source_package_downloaded_with_the_prepared_image', 'Source package downloaded with the prepared image, credit, license, and source record.'), 'success');
-          announce(__alloTf('stem.sourcebook.msg_source_package_downloaded_for', 'Source package downloaded for {title}', { title: item.title }));
         }).catch(function (error) {
-          var message = error && error.message ? error.message : 'The source package could not be prepared.';
-          toast(message + ' You can still open the printable image and copy its credit.', 'error');
-          announce(__alloT('stem.sourcebook.msg_could_not_download_the_sourcebook_source_package', 'Could not download the Sourcebook source package'));
-        }).then(function () { setPackageId(''); });
+          if (singleSourceOperationRef.current !== operation || (error && error.name === 'AbortError')) return;
+          toast(String(error && error.message || 'The source image could not be prepared.'), 'error');
+        }).then(function () {
+          if (singleSourceOperationRef.current !== operation) return;
+          singleSourceOperationRef.current = null; setHandoffId(''); setPackageId('');
+        });
+      }
+      function sendToPageDesigner(item) { startSingleSourceAction(item, 'handoff'); }
+      function saveSourcePackage(item) { startSingleSourceAction(item, 'package'); }
+
+      function cancelPalettePackage(reason) {
+        var operation = palettePackageOperationRef.current;
+        if (!operation) return;
+        palettePackageOperationRef.current = null;
+        if (operation.controller) operation.controller.abort();
+        else operation.signal.aborted = true;
+        setPalettePackageBusy(false);
+        setPalettePackageProgress(0);
+        setPalettePackageTotal(0);
+        var message = reason === 'changed'
+          ? __alloT('stem.sourcebook.package_palette_changed', 'Your palette changed. Download the package again to include your latest edits.')
+          : __alloT('stem.sourcebook.package_cancelled', 'Package preparation cancelled. Your palette is unchanged.');
+        toast(message, 'info'); announce(message);
       }
 
       function savePalettePackage() {
+        if (palettePackageOperationRef.current) return;
         var items = exportItems.slice();
         if (!items.length || items.some(function (item) { return !ALLOWED_RIGHTS[item.rightsType]; })) {
           toast(__alloT('stem.sourcebook.msg_only_a_non_empty_palette_of_verified', 'Only a non-empty palette of verified reusable assets can be downloaded.'), 'error');
           return;
         }
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var operation = { controller: controller, signal: controller ? controller.signal : { aborted: false }, signature: palettePackageSignature };
+        palettePackageOperationRef.current = operation;
         var preparedImages = {};
         setPalettePackageBusy(true);
         setPalettePackageProgress(0);
         setPalettePackageTotal(items.length);
         announce(__alloTf('stem.sourcebook.msg_preparing_palette_download', 'Preparing {count} palette assets for download', { count: items.length }));
         mapWithConcurrency(items, 3, function (item) {
+          if (palettePackageOperationRef.current !== operation) return Promise.resolve(null);
           var itemPrep = normalizedPreparation(preparation[item.id]);
-          return fetchImageDataUrl(item).then(function (dataUrl) {
+          return fetchImageDataUrl(item, controller ? operation.signal : undefined).then(function (dataUrl) {
+            throwIfSourcebookAborted(operation.signal);
             return prepareImageReceipt(dataUrl, itemPrep);
           }).then(function (preparedReceipt) {
+            throwIfSourcebookAborted(operation.signal);
             preparedImages[item.id] = preparedReceipt;
-            setPalettePackageProgress(function (current) { return current + 1; });
+            if (palettePackageOperationRef.current === operation) setPalettePackageProgress(function (current) { return current + 1; });
             return item.id;
           }, function (error) {
-            setPalettePackageProgress(function (current) { return current + 1; });
+            if (palettePackageOperationRef.current === operation) setPalettePackageProgress(function (current) { return current + 1; });
             throw error;
           });
         }).then(function (preparedIds) {
-          var failed = preparedIds.filter(function (id) { return !id; }).length;
-          if (failed) throw new Error(failed + ' of ' + items.length + ' source images could not be prepared, so no incomplete package was downloaded.');
+          if (palettePackageOperationRef.current !== operation) return;
+          if (latestPalettePackageSignatureRef.current !== operation.signature) { cancelPalettePackage('changed'); return; }
+          var failed = items.filter(function (item, index) { return !preparedIds[index]; });
+          if (failed.length) {
+            var names = failed.slice(0, 3).map(function (item) { return String(item.title || item.id).slice(0, 180); }).join('; ');
+            throw new Error(__alloTf('stem.sourcebook.package_images_failed', 'Could not prepare {count} of {total} images: {names}. Retry these images or remove them from your selection; no incomplete package was downloaded.', { count: failed.length, total: items.length, names: names }));
+          }
           if (!downloadPalettePackage(items, preparation, storedTitle, preparedImages)) throw new Error('This browser could not save the palette package.');
           bumpQuestCounter('packagesSaved');
           toast(__alloT('stem.sourcebook.msg_palette_package_downloaded_with_prepared_images_credits', 'Palette package downloaded with prepared images, credits, licenses, and source records.'), 'success');
           announce(__alloT('stem.sourcebook.msg_sourcebook_palette_package_downloaded', 'Sourcebook palette package downloaded'));
         }).catch(function (error) {
+          if (palettePackageOperationRef.current !== operation || (error && error.name === 'AbortError')) return;
           var message = error && error.message ? error.message : 'The palette package could not be prepared.';
           toast(message + ' Your saved palette remains available.', 'error');
           announce(__alloT('stem.sourcebook.msg_could_not_download_the_sourcebook_palette_package', 'Could not download the Sourcebook palette package'));
         }).then(function () {
+          if (palettePackageOperationRef.current !== operation) return;
+          palettePackageOperationRef.current = null;
           setPalettePackageBusy(false);
           setPalettePackageProgress(0);
           setPalettePackageTotal(0);
@@ -8481,6 +9113,8 @@
         var file = input && input.files && input.files[0];
         if (!file) return;
         input.value = '';
+        if (paletteVerificationRef.current || checkpointOperationRef.current) return;
+        if (!savedPaletteReadyForMerge()) return;
         if (file.size > 2000000) {
           toast(__alloT('stem.sourcebook.msg_this_palette_manifest_is_too_large_to', 'This palette manifest is too large to import safely (2 MB maximum).'), 'error');
           return;
@@ -8489,19 +9123,33 @@
           toast(__alloT('stem.sourcebook.msg_this_browser_cannot_read_a_palette_manifest', 'This browser cannot read a palette manifest.'), 'error');
           return;
         }
-        var reader = new FileReader();
+        var operation = beginPaletteVerification('import');
+        if (!operation) return;
+        var reader;
+        try { reader = new FileReader(); }
+        catch (_) {
+          finishPaletteVerification(operation);
+          toast(__alloT('stem.sourcebook.msg_the_palette_manifest_could_not_be_read', 'The palette manifest could not be read.'), 'error');
+          return;
+        }
+        operation.reader = reader;
         reader.onload = function () {
+          if (paletteVerificationRef.current !== operation) return;
           var parsed;
           try {
             parsed = JSON.parse(String(reader.result || ''));
           } catch (error) {
-            setPaletteImportBusy(false);
+            finishPaletteVerification(operation);
             toast(__alloT('stem.sourcebook.msg_the_palette_manifest_is_not_valid_json', 'The palette manifest is not valid JSON.'), 'error');
             announce(__alloT('stem.sourcebook.msg_could_not_import_the_sourcebook_palette_manifest', 'Could not import the Sourcebook palette manifest'));
             return;
           }
-          revalidatePaletteManifest(parsed).then(function (imported) {
+          revalidatePaletteManifest(parsed, { signal: operation.signal }).then(function (imported) {
+            if (paletteVerificationRef.current !== operation) return;
             var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, visibleSavedAssets: {} };
+            if (paletteVerificationRevision(latest) !== operation.revision || paletteVerificationRevision((ctx.toolData || {}).sourcebook || {}) !== operation.persistedRevision) {
+              throw new Error(__alloT('stem.sourcebook.import_palette_changed', 'Your palette changed while the import was being verified. Your edits are safe. Import the file again when you are ready.'));
+            }
             var nextAssets = Object.assign({}, latest.visibleSavedAssets || {});
             var nextCollection = (latest.collection || []).slice();
             var nextPreparation = Object.assign({}, latest.preparation || {});
@@ -8521,7 +9169,7 @@
               nextPreparation[item.id] = imported.preparation[item.id];
             });
             trustCurrentSavedSmkAssets(nextAssets);
-            patch({ savedAssets: nextAssets, collection: nextCollection, preparation: nextPreparation, paletteTitle: imported.title, paletteUndo: createPaletteUndoSnapshot() });
+            patch({ savedAssets: nextAssets, collection: nextCollection, preparation: nextPreparation, paletteTitle: imported.title, paletteUndo: createLatestPaletteUndoSnapshot(latest) });
             setCheckedPaletteIds([]);
             setPaletteFilter('');
             setShowingCollection(true);
@@ -8534,17 +9182,22 @@
             toast(importMessage, 'success');
             announce(__alloTf('stem.sourcebook.msg_imported_assets_announce', 'Imported {count} new verified Sourcebook assets', { count: added }));
           }).catch(function (error) {
+            if (paletteVerificationRef.current !== operation) return;
             toast(__alloTf('stem.sourcebook.msg_nothing_imported', 'Nothing was imported. {reason}', { reason: error && error.message ? error.message : __alloT('stem.sourcebook.msg_manifest_not_verified', 'The palette manifest could not be verified.') }), 'error');
             announce(__alloT('stem.sourcebook.msg_could_not_import_the_sourcebook_palette_manifest_2', 'Could not import the Sourcebook palette manifest'));
-          }).then(function () { setPaletteImportBusy(false); });
+          }).then(function () { finishPaletteVerification(operation); });
         };
         reader.onerror = function () {
-          setPaletteImportBusy(false);
+          if (paletteVerificationRef.current !== operation) return;
+          finishPaletteVerification(operation);
           toast(__alloT('stem.sourcebook.msg_the_palette_manifest_could_not_be_read', 'The palette manifest could not be read.'), 'error');
           announce(__alloT('stem.sourcebook.msg_could_not_read_the_sourcebook_palette_manifest', 'Could not read the Sourcebook palette manifest'));
         };
-        setPaletteImportBusy(true);
-        reader.readAsText(file);
+        reader.onabort = function () {
+          if (paletteVerificationRef.current === operation) cancelPaletteVerification();
+        };
+        try { reader.readAsText(file); }
+        catch (_) { if (reader.onerror) reader.onerror(); }
       }
 
       var results = searchMaterials(query, kind, provider, rightsScope);
@@ -8648,6 +9301,24 @@
       var publicDomainResultCount = refinedResults.filter(function (item) { return item.rightsType === 'pd'; }).length;
       var yaleLiveResultCount = liveResults.filter(function (item) { return item.provider === YALE_PROVIDER; }).length;
       var active = allAssets.filter(function (item) { return item.id === activeId; })[0] || visible[0] || MATERIALS[0];
+      var singleSourceOperationRef = React.useRef(null);
+      var singleSourceSignature = JSON.stringify([active, normalizedPreparation(preparation[active.id])]);
+      var latestSingleSourceSignatureRef = React.useRef(singleSourceSignature);
+      latestSingleSourceSignatureRef.current = singleSourceSignature;
+      React.useEffect(function () {
+        var operation = singleSourceOperationRef.current;
+        if (operation && operation.signature !== singleSourceSignature) cancelSingleSourceAction('changed');
+      }, [singleSourceSignature]);
+      React.useEffect(function () { return function () {
+        var operation = singleSourceOperationRef.current;
+        singleSourceOperationRef.current = null;
+        if (operation && operation.controller) operation.controller.abort(); else if (operation) operation.signal.aborted = true;
+      }; }, []);
+      var imageFailureState = React.useState({});
+      var imageFailures = imageFailureState[0], setImageFailures = imageFailureState[1];
+      var imageAttemptState = React.useState({});
+      var imageAttempts = imageAttemptState[0], setImageAttempts = imageAttemptState[1];
+
       // Colour swatches per inspected asset, computed once from its thumbnail.
       var swatchState = React.useState({});
       var swatchesById = swatchState[0];
@@ -8659,6 +9330,61 @@
       var referenceBoardState = React.useState(0);
       var referenceBoardProgress = referenceBoardState[0];
       var setReferenceBoardProgress = referenceBoardState[1];
+      var workflowFocusRef = React.useRef('');
+      function focusWorkflowTarget() {
+        var id = workflowFocusRef.current;
+        var node = id && sourcebookRootRef.current && sourcebookRootRef.current.querySelector('#' + id);
+        if (node) { workflowFocusRef.current = ''; node.focus(); if (node.scrollIntoView) node.scrollIntoView({ block: 'nearest' }); }
+      }
+      React.useEffect(focusWorkflowTarget, [showingCollection, comparisonOpen]);
+      function workflowStep(step) {
+        if (step === 'find') { setShowingCollection(false); workflowFocusRef.current = 'sourcebook-search'; }
+        else if (step === 'compare') {
+          setShowingCollection(false);
+          if (comparisonItems.length < 2) { announce(__alloT('stem.sourcebook.compare_choose_two', 'Choose Compare on at least two results to compare their sources and preparation.')); return; }
+          setComparisonOpen(true); workflowFocusRef.current = 'sourcebook-comparison-title';
+        } else {
+          setShowingCollection(true);
+          workflowFocusRef.current = step === 'export' ? 'sourcebook-output-preflight-title' : 'sourcebook-results-title';
+        }
+        window.setTimeout(focusWorkflowTarget, 0);
+      }
+      var boardDownloadsState = React.useState(null);
+      var referenceBoardDownloads = boardDownloadsState[0];
+      var setReferenceBoardDownloads = boardDownloadsState[1];
+      var referenceBoardSignature = JSON.stringify([exportItems.map(function (item) { return [item.id, item.imageUrl]; }), preparation, storedTitle, referenceBoardColumns]);
+      var referenceBoardOperationRef = React.useRef(null);
+      var latestReferenceBoardSignatureRef = React.useRef(referenceBoardSignature);
+      latestReferenceBoardSignatureRef.current = referenceBoardSignature;
+      React.useEffect(function () {
+        var operation = referenceBoardOperationRef.current;
+        if (operation && operation.signature !== referenceBoardSignature) cancelReferenceBoard('changed');
+      }, [referenceBoardSignature]);
+      React.useEffect(function () {
+        return function () {
+          var operation = referenceBoardOperationRef.current;
+          referenceBoardOperationRef.current = null;
+          if (operation && operation.controller) operation.controller.abort();
+        };
+      }, []);
+      var readyReferenceBoards = referenceBoardDownloads && referenceBoardDownloads.signature === referenceBoardSignature ? referenceBoardDownloads : null;
+      var palettePackageSignature = JSON.stringify([exportItems.map(function (item) { return [item, normalizedPreparation(preparation[item.id])]; }), storedTitle]);
+      var palettePackageOperationRef = React.useRef(null);
+      var latestPalettePackageSignatureRef = React.useRef(palettePackageSignature);
+      latestPalettePackageSignatureRef.current = palettePackageSignature;
+      React.useEffect(function () {
+        var operation = palettePackageOperationRef.current;
+        if (operation && operation.signature !== palettePackageSignature) cancelPalettePackage('changed');
+      }, [palettePackageSignature]);
+      React.useEffect(function () {
+        return function () {
+          var operation = palettePackageOperationRef.current;
+          palettePackageOperationRef.current = null;
+          if (operation && operation.controller) operation.controller.abort();
+          else if (operation) operation.signal.aborted = true;
+        };
+      }, []);
+
       // Reads colours from the card thumbnail ONLY when asked: inspecting an asset
       // must never start a request on its own (the browse/compare contracts count them).
       // Stored swatches win when the session has not read fresh ones.
@@ -8863,6 +9589,26 @@
         announce(__alloTf('stem.sourcebook.msg_comparing_assets', 'Comparing {count} rights-verified Sourcebook assets', { count: comparisonItems.length }));
       }
 
+      function sourcebookImage(item, props) {
+        if (imageFailures[item.imageUrl]) return h('span', { className: 'flex h-full min-h-[44px] items-center justify-center bg-slate-100 p-2 text-center text-xs font-bold text-slate-700', 'data-sourcebook-image-unavailable': item.id }, __alloT('stem.sourcebook.image_unavailable', 'Image unavailable'));
+        var given = props || {};
+        return h('img', Object.assign({}, given, { key: item.imageUrl + ':' + (imageAttempts[item.imageUrl] || 0), src: item.imageUrl,
+          onError: function () { setImageFailures(function (current) { if (current[item.imageUrl]) return current; var next = Object.assign({}, current); next[item.imageUrl] = true; return next; }); },
+          onLoad: given.onLoad
+        }));
+      }
+      function imageRecoveryControls(item) {
+        if (!imageFailures[item.imageUrl]) return null;
+        return h('div', { className: 'my-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 p-2 text-slate-800', 'data-sourcebook-image-recovery': item.id },
+          h('button', { type: 'button', className: 'min-h-[44px] rounded-lg border border-slate-500 bg-white px-3 text-xs font-bold', onClick: function (event) {
+            event.stopPropagation();
+            setImageAttempts(function (current) { var next = Object.assign({}, current); next[item.imageUrl] = (next[item.imageUrl] || 0) + 1; return next; });
+            setImageFailures(function (current) { var next = Object.assign({}, current); delete next[item.imageUrl]; return next; });
+          } }, __alloT('stem.sourcebook.retry_image', 'Retry image')),
+          h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'inline-flex min-h-[44px] items-center rounded-lg border border-slate-500 bg-white px-3 text-xs font-bold' }, __alloT('stem.sourcebook.open_image_source', 'Open source record'))
+        );
+      }
+
       function preview(item, prep, height, onFocusPoint, showOutputAspect, cardPresentation) {
         var isTile = prep && prep.mode === 'tile';
         var previewDimensions = showOutputAspect ? preparationDimensions(prep) : null;
@@ -8887,11 +9633,11 @@
             height: previewRatio ? 'auto' : (height || 250),
             aspectRatio: previewRatio || undefined,
             backgroundColor: item.accent[0],
-            backgroundImage: isTile ? 'url("' + item.imageUrl + '"), ' + fallback : fallback,
+            backgroundImage: isTile && !imageFailures[item.imageUrl] ? 'url("' + item.imageUrl + '"), ' + fallback : fallback,
             backgroundRepeat: isTile ? 'repeat' : 'no-repeat',
             backgroundSize: isTile ? tileBackgroundSize : 'cover'
           }
-        }, !isTile && h('img', {
+        }, sourcebookImage(item, {
           src: item.imageUrl, alt: '', loading: 'lazy',
           onLoad: function (event) {
             var image = event && event.currentTarget;
@@ -8906,9 +9652,8 @@
               return next;
             });
           },
-          onError: function (event) { event.currentTarget.style.display = 'none'; },
           style: {
-            width: '100%', height: '100%', display: 'block',
+            width: isTile ? 1 : '100%', height: isTile ? 1 : '100%', display: 'block', opacity: isTile ? 0 : 1,
             objectFit: prep && prep.mode === 'crop' ? 'cover' : 'contain',
             objectPosition: Number((prep && prep.x) || 50) + '% ' + Number((prep && prep.y) || 50) + '%',
             transform: (prep && prep.flip ? 'scaleX(-1) ' : '') + 'scale(' + (Number((prep && prep.zoom) || 100) / 100) + ')',
@@ -8980,7 +9725,7 @@
         }, preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, boardView === 'gallery' ? 180 : (item.kind === 'Archival' || item.kind === 'Botanical' ? 280 : 210), null, false, providerInfo),
           h('span', { 'aria-hidden': 'true', className: 'pointer-events-none absolute bottom-2 right-3 rounded-full bg-[#183b32]/95 px-2.5 py-1 text-[10px] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.inspect_prepare', 'Inspect & prepare'))
         ),
-        h('div', { className: boardView === 'gallery' ? 'p-3' : 'p-4' },
+        h('div', { className: boardView === 'gallery' ? 'p-3' : 'p-4' }, imageRecoveryControls(item),
           h('p', { 'data-sourcebook-card-provider': providerInfo.name, className: 'mb-1 text-[10px] font-black uppercase tracking-[.12em] text-[#4d685e]' }, providerInfo.name),
           h('div', { className: 'min-w-0' },
             h('h3', { className: 'font-black text-[#18352d] leading-tight' }, item.title),
@@ -9047,11 +9792,13 @@
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex <= 0, onClick: function () { movePaletteItem(item.id, -1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
+            'data-sourcebook-reorder': 'earlier',
             'aria-label': __alloTf('stem.sourcebook.aria_move_earlier', 'Move {title} earlier in palette', { title: item.title })
           }, __alloT('stem.sourcebook.earlier', 'Earlier')),
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex < 0 || paletteIndex >= collection.length - 1, onClick: function () { movePaletteItem(item.id, 1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
+            'data-sourcebook-reorder': 'later',
             'aria-label': __alloTf('stem.sourcebook.aria_move_later', 'Move {title} later in palette', { title: item.title })
           }, __alloT('stem.sourcebook.later', 'Later')),
           h('a', {
@@ -9075,6 +9822,7 @@
           'aria-label': __alloT('stem.sourcebook.selected_source_details_and_preparatio', 'Selected source details and preparation controls')
         },
           preview(item, activePrep, 260, activePrep.mode === 'crop' ? function (nextX, nextY) { updatePrep(item.id, { x: nextX, y: nextY }); } : null, true),
+          imageRecoveryControls(item),
           h('div', { className: 'p-5 space-y-4' },
             h('div', null,
               h('p', { className: 'text-[10px] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + item.kind),
@@ -9304,7 +10052,7 @@
                       'aria-describedby': 'sourcebook-alt-help-' + item.id
                     }),
                     h('div', { className: 'flex items-center justify-between gap-3 text-[9px] font-bold text-[#5b6d65]' },
-                      h('span', { id: 'sourcebook-alt-help-' + item.id }, accessibility.source === 'user-edited' ? 'Saved with this asset.' : 'Suggested from verified catalog metadata.'),
+                      h('span', { id: 'sourcebook-alt-help-' + item.id }, accessibility.source === 'user-edited' ? __alloT('stem.sourcebook.saved_with_asset', 'Saved with this asset.') : __alloT('stem.sourcebook.suggested_from_catalog', 'Suggested from verified catalog metadata.')),
                       h('span', null, accessibility.altText.length + '/300')
                     ),
                     accessibility.source === 'catalog-metadata' && !accessibility.reviewed && h('button', {
@@ -9330,15 +10078,17 @@
             ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               h('button', {
-                type: 'button', onClick: function () { sendToPageDesigner(item); }, disabled: handoffId === item.id,
+                type: 'button', 'data-sourcebook-single-action': 'handoff', onClick: function () { sendToPageDesigner(item); }, disabled: handoffId === item.id,
                 className: 'col-span-2 min-h-[48px] rounded-xl bg-[#183b32] text-white font-black text-xs shadow-sm hover:bg-[#245447] disabled:opacity-60 disabled:cursor-wait',
                 title: __alloT('stem.sourcebook.insert_this_prepared_asset_into_a_new_', 'Insert this prepared asset into a new Page Designer document with its source and rights information')
               }, handoffId === item.id ? 'Preparing image...' : 'Open in Page Designer'),
               h('button', {
-                type: 'button', onClick: function () { saveSourcePackage(item); }, disabled: packageId === item.id,
+                type: 'button', 'data-sourcebook-single-action': 'package', onClick: function () { saveSourcePackage(item); }, disabled: packageId === item.id,
                 className: 'col-span-2 min-h-[46px] rounded-xl border border-[#b35a35] bg-white text-[#8c452b] font-black text-xs hover:bg-[#fff5ef] disabled:opacity-60 disabled:cursor-wait',
                 title: __alloT('stem.sourcebook.download_a_self_contained_source_sheet', 'Download a self-contained source sheet with the prepared image, credit, license, and source record')
               }, packageId === item.id ? 'Building source package...' : 'Download source package'),
+              mobileDetailOpen && (handoffId === item.id || packageId === item.id) && h('button', { type: 'button', onClick: function () { cancelSingleSourceAction('user'); }, className: 'col-span-2 min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-single': 'detail' }, __alloT('stem.sourcebook.cancel_image_preparation', 'Cancel image preparation')),
+
               h('button', {
                 type: 'button',
                 onClick: function () { toggleSaved(item); },
@@ -9369,11 +10119,14 @@
           h('div', { className: 'relative max-w-3xl' },
             h('p', { className: 'text-[10px] uppercase tracking-[.28em] font-black text-[#507064]' }, __alloT('stem.sourcebook.ai_optional_rights_first', 'AI optional · rights-first')),
             h('div', { className: 'flex items-center gap-3 mt-1' },
-              h('span', { 'aria-hidden': 'true', className: 'w-11 h-11 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center text-2xl font-serif shadow-lg' }, 'S'),
+              h('span', { 'aria-hidden': 'true', className: 'shrink-0 w-11 h-11 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center text-2xl font-serif shadow-lg' }, 'S'),
               h('div', null,
                 h('h1', { className: 'font-serif text-3xl md:text-4xl font-black tracking-tight text-[#17372e]' }, __alloT('stem.sourcebook.sourcebook', 'Sourcebook')),
                 h('p', { className: 'mt-1 text-sm text-[#426157]' }, __alloT('stem.sourcebook.describe_what_you_need_sourcebook_sear', 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.')),
+                h('details', { className: 'mt-2 text-[#557168]' },
+                  h('summary', { className: 'min-h-[32px] cursor-pointer text-xs font-bold' }, __alloT('stem.sourcebook.collections_searched', 'Collections searched')),
                 h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, __alloT('stem.sourcebook.federated_search_covers_commons_nation', 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.'))
+                )
               )
             ),
             h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/75 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
@@ -9385,6 +10138,17 @@
               h('p', { className: 'mt-1 text-[11px] leading-relaxed text-[#536d64]' }, __alloT('stem.sourcebook.search_rights_verification_saving_prep', 'Search, rights verification, saving, preparation, and printing work without AI. Rights gates never depend on an AI judgment.'))
             )
           )
+        ),
+        h('nav', { className: 'sb-no-print mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4', 'aria-label': __alloT('stem.sourcebook.workflow', 'Sourcebook workflow'), 'data-sourcebook-workflow': 'true' },
+          [['find', __alloT('stem.sourcebook.step_find', '1. Find')], ['compare', __alloT('stem.sourcebook.step_compare', '2. Compare')], ['prepare', __alloT('stem.sourcebook.step_prepare', '3. Prepare')], ['export', __alloT('stem.sourcebook.step_export', '4. Export')]].map(function (step) {
+            return h('button', { key: step[0], type: 'button', onClick: function () { workflowStep(step[0]); },
+              disabled: (step[0] === 'prepare' || step[0] === 'export') && !selectedItems.length,
+              'data-sourcebook-workflow-step': step[0], className: 'min-h-[44px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-sm font-bold text-[#183b32] disabled:opacity-40' }, step[1]);
+          })
+        ),
+        (handoffId || packageId) && !mobileDetailOpen && h('div', { className: 'sb-no-print mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3', role: 'status' },
+          h('span', { className: 'text-sm font-bold text-sky-950' }, __alloT('stem.sourcebook.single_source_busy', 'Preparing the selected image')),
+          h('button', { type: 'button', onClick: function () { cancelSingleSourceAction('user'); }, className: 'min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-single': 'global' }, __alloT('stem.sourcebook.cancel_image_preparation', 'Cancel image preparation'))
         ),
         h('form', { className: 'sb-no-print rounded-2xl border border-[#adbbb5] bg-white p-3 shadow-sm mb-4', onSubmit: function (event) { event.preventDefault(); submitSearch(); } },
           h('label', { htmlFor: 'sourcebook-search', className: 'sr-only' }, __alloT('stem.sourcebook.describe_the_visual_material_you_need', 'Describe the visual material you need')),
@@ -9431,6 +10195,7 @@
         ),
         selectedItems.length > 0 && h('section', {
           className: 'sb-no-print sticky top-2 z-40 mb-4 flex items-center gap-3 rounded-2xl border border-[#9fb5ac] bg-white/95 p-2.5 shadow-lg backdrop-blur',
+          'data-sourcebook-palette-tray': 'true',
           'aria-label': __alloT('stem.sourcebook.saved_sourcebook_palette_tray', 'Saved Sourcebook palette tray')
         },
           h('div', { className: 'shrink-0 px-1' },
@@ -9448,23 +10213,69 @@
               'aria-pressed': isActive ? 'true' : 'false',
               'aria-controls': 'sourcebook-detail-panel'
             },
-              h('img', { src: item.imageUrl, alt: '', className: 'h-full w-full object-cover', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
+              sourcebookImage(item, { alt: '', className: 'h-full w-full object-cover' }),
               isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-700 text-[9px] font-black text-white' }, '✓')
             );
           })),
           h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? 'Viewing palette' : 'View palette')
         ),
+        paletteImportBusy && h('div', { role: 'status', 'aria-live': 'polite', 'data-sourcebook-palette-verification': paletteImportBusy,
+          className: 'sb-no-print mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm font-bold text-sky-950' },
+          h('span', { className: 'min-w-0 flex-1' }, paletteImportBusy === 'undo'
+            ? __alloT('stem.sourcebook.palette_verification_undo', 'Verifying sources before undo…')
+            : __alloT('stem.sourcebook.palette_verification_import', 'Reading and verifying palette import…')),
+          h('button', { type: 'button', onClick: cancelPaletteVerification, 'data-sourcebook-cancel-palette-verification': 'true',
+            className: 'min-h-[44px] rounded-lg border border-current bg-white px-3 text-sm font-bold' }, __alloT('stem.sourcebook.palette_verification_cancel', 'Cancel verification'))
+        ),
+        h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#b7c8c0] bg-white p-3', 'data-sourcebook-history': 'true' },
+          h('summary', { className: 'min-h-[44px] cursor-pointer py-3 text-sm font-black text-[#183b32]' }, __alloT('stem.sourcebook.checkpoint_heading', 'Palette checkpoints') + ' (' + paletteHistory.length + '/' + PALETTE_HISTORY_LIMIT + ')'),
+          h('p', { className: 'mb-3 text-xs text-[#49635a]' }, __alloT('stem.sourcebook.checkpoint_help', 'Save the full palette, including order, preparation, and notes. Restoring rechecks external sources and saves your current palette as a backup. Keep up to eight checkpoints; export older ones before deleting them.')),
+          historyState.error && h('p', { role: 'alert', className: 'mb-3 text-sm text-red-800' }, __alloT('stem.sourcebook.checkpoint_invalid', 'Checkpoint history could not be read. Your saved data has been preserved.')),
+          h('div', { className: 'mb-3 flex flex-wrap items-end gap-2' },
+            h('label', { className: 'min-w-0 flex-1 text-xs font-bold text-[#183b32]', htmlFor: 'sourcebook-checkpoint-name' },
+              __alloT('stem.sourcebook.checkpoint_name', 'Checkpoint name'),
+              h('input', { id: 'sourcebook-checkpoint-name', value: checkpointName, maxLength: 80, placeholder: storedTitle, disabled: !!checkpointBusy || historyState.error,
+                onChange: function (event) { setCheckpointName(event.target.value.slice(0, 80)); }, className: 'mt-1 min-h-[44px] w-full rounded-lg border border-[#b7c8c0] px-3 text-sm' })),
+            h('button', { type: 'button', onClick: savePaletteCheckpoint, disabled: !collection.length || !!checkpointBusy || historyState.error || savedSmkVerificationStatus === 'loading',
+              'data-sourcebook-checkpoint-save': 'true', className: 'min-h-[44px] rounded-lg bg-[#183b32] px-3 text-sm font-bold text-white disabled:opacity-50' }, __alloT('stem.sourcebook.checkpoint_save', 'Save checkpoint'))
+          ),
+          !paletteHistory.length && !historyState.error && h('p', { className: 'text-xs text-[#49635a]' }, __alloT('stem.sourcebook.checkpoint_empty', 'No checkpoints yet. Save a checkpoint when your palette is ready.')),
+          checkpointBusy && h('div', { role: 'status', className: 'mb-3 flex flex-wrap items-center gap-2 text-sm text-[#183b32]' },
+            h('span', null, __alloT('stem.sourcebook.checkpoint_verifying', 'Verifying checkpoint sources…')),
+            h('button', { type: 'button', onClick: cancelCheckpointRestore, className: 'min-h-[44px] rounded-lg border border-current px-3 font-bold', 'data-sourcebook-checkpoint-cancel': 'true' }, __alloT('stem.sourcebook.checkpoint_cancel', 'Cancel restore'))),
+          h('ul', { className: 'space-y-2' }, paletteHistory.map(function (entry) {
+            var buttonClass = 'min-h-[44px] rounded-lg border border-[#b7c8c0] bg-white px-3 text-xs font-bold text-[#183b32] disabled:opacity-50';
+            return h('li', { key: entry.id, className: 'flex flex-wrap items-center gap-2 rounded-xl bg-[#f1f5f2] p-3', 'data-sourcebook-checkpoint': entry.id },
+              h('div', { className: 'min-w-0 flex-1', style: { minWidth: 'min(100%, 180px)' } },
+                h('p', { className: 'break-words text-sm font-bold text-[#183b32]' }, entry.name),
+                h('p', { className: 'text-xs text-[#49635a]' }, __alloTf('stem.sourcebook.checkpoint_count', '{count} sources', { count: entry.manifest.assets.length }) + ' · ' + new Date(entry.createdAt).toLocaleString())),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { type: 'button', className: buttonClass, disabled: !!checkpointBusy || paletteImportBusy || savedSmkVerificationStatus === 'loading', onClick: function () { restorePaletteCheckpoint(entry); }, 'data-sourcebook-checkpoint-restore': entry.id, 'aria-label': __alloTf('stem.sourcebook.checkpoint_restore_named', 'Restore checkpoint {name}', { name: entry.name }) }, __alloT('stem.sourcebook.checkpoint_restore', 'Restore')),
+                h('button', { type: 'button', className: buttonClass, onClick: function () { exportPaletteCheckpoint(entry); }, 'aria-label': __alloTf('stem.sourcebook.checkpoint_export_named', 'Export checkpoint {name}', { name: entry.name }) }, __alloT('stem.sourcebook.checkpoint_export', 'Export')),
+                h('button', { type: 'button', className: buttonClass, disabled: !!checkpointBusy, onClick: function () { deletePaletteCheckpoint(entry); }, 'aria-label': __alloTf('stem.sourcebook.checkpoint_delete_named', 'Delete checkpoint {name}', { name: entry.name }) }, __alloT('stem.sourcebook.checkpoint_delete', 'Delete')))
+            );
+          }))
+        ),
         savedSmkVerificationStatus !== 'idle' && h('div', {
-          className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + (savedSmkVerificationStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : (savedSmkVerificationStatus === 'loading' ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')),
+          className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + ((savedSmkVerificationStatus === 'error' || savedSmkVerificationStatus === 'partial') ? 'border-amber-300 bg-amber-50 text-amber-950' : (savedSmkVerificationStatus === 'loading' ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')),
           role: 'status', 'aria-live': 'polite', 'data-sourcebook-smk-saved-status': savedSmkVerificationStatus
         },
           h('span', { className: 'min-w-0 flex-1' }, savedSmkMessage),
-          savedSmkVerificationStatus === 'error' && h('button', {
+          (savedSmkVerificationStatus === 'error' || savedSmkVerificationStatus === 'partial') && h('button', {
             type: 'button',
-            onClick: function () { setSavedVerificationRetry(function (value) { return value + 1; }); },
+            onClick: function () { retrySavedSourceRecords(); },
             className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/80 px-3 py-2 text-[11px] font-black',
             'data-sourcebook-retry-verification': 'true'
           }, __alloT('stem.sourcebook.retry_verification', 'Retry verification'))
+        ),
+        Object.keys(savedSourceErrors).length > 0 && h('section', { className: 'sb-no-print mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-950', 'aria-label': __alloT('stem.sourcebook.saved_sources_to_retry', 'Saved sources needing verification') },
+          Object.keys(savedSourceErrors).map(function (id) {
+            var raw = rawSavedAssets[id] || {};
+            return h('div', { key: id, className: 'mb-2 flex flex-wrap items-center gap-2', 'data-sourcebook-saved-error': id },
+              h('div', { className: 'min-w-0 flex-1' }, h('p', { className: 'text-sm font-bold break-words' }, String(raw.title || id).slice(0, 180)), h('p', { className: 'text-xs break-words' }, savedSourceErrors[id])),
+              h('button', { type: 'button', disabled: savedSmkVerificationStatus === 'loading', onClick: function () { retrySavedSourceRecords(id); }, className: 'min-h-[44px] rounded-lg border border-amber-700 bg-white px-3 text-sm font-bold', 'data-sourcebook-retry-saved': id }, __alloT('stem.sourcebook.retry_this_source', 'Retry this source'))
+            );
+          })
         ),
         !isOnline && h('div', {
           className: 'sb-no-print mb-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-950',
@@ -9610,8 +10421,8 @@
           h('main', { className: 'min-w-0' },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3 mb-3' },
               h('div', null,
-                h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? 'Saved working set' : (query ? 'Federated public collections' : 'Offline fallback shelf')),
-                h('h2', { id: 'sourcebook-results-title', className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? refinedResults.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
+                h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? __alloT('stem.sourcebook.saved_working_set', 'Saved working set') : (query ? __alloT('stem.sourcebook.public_collections', 'Public collections') : __alloT('stem.sourcebook.offline_shelf', 'Offline fallback shelf'))),
+                h('h2', { id: 'sourcebook-results-title', tabIndex: -1, className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? refinedResults.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
                 !showingCollection && h('p', { className: 'mt-1 text-[11px] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' available')
               ),
               h('div', { className: 'sb-no-print flex flex-wrap justify-end gap-2' },
@@ -9620,18 +10431,19 @@
                 controlButton('Gallery', boardView === 'gallery', function () { setBoardView('gallery'); patch({ boardView: 'gallery' }); }, { title: __alloT('stem.sourcebook.compact_visual_first_contact_sheet', 'Compact, visual-first contact sheet') }),
                 controlButton('Research', boardView === 'research', function () { setBoardView('research'); patch({ boardView: 'research' }); }, { title: __alloT('stem.sourcebook.larger_cards_with_descriptions_and_met', 'Larger cards with descriptions and metadata') }),
                 paletteUndo && h('button', {
-                  type: 'button', onClick: restorePaletteUndo,
+                  type: 'button', onClick: restorePaletteUndo, disabled: !!paletteImportBusy || !!checkpointBusy,
                   className: 'min-h-[34px] rounded-full border border-amber-400 bg-amber-50 px-3 text-xs font-black text-amber-900 hover:bg-amber-100',
                   title: __alloT('stem.sourcebook.restore_the_palette_order_and_preparat', 'Restore the palette, order, and preparation from before your last palette-wide change')
                 }, __alloT('stem.sourcebook.undo_palette_change', 'Undo palette change'))
               )
             ),
-            !showingCollection && combinedResults.length > 0 && loadedProviderCoverageList.length > 0 && h('section', {
+            !showingCollection && combinedResults.length > 0 && loadedProviderCoverageList.length > 0 && h('details', {
               className: 'sb-no-print mb-3 rounded-2xl border border-[#8fb2a5] bg-gradient-to-br from-[#eef6f2] to-white p-3 shadow-sm',
               'aria-label': __alloT('stem.sourcebook.explore_loaded_sourcebook_results', 'Explore loaded Sourcebook results'),
               'data-sourcebook-loaded-provider-filter': 'true',
               'data-sourcebook-loaded-facets': 'true'
             },
+              h('summary', { className: 'min-h-[44px] cursor-pointer text-sm font-bold text-[#183b32]' }, __alloT('stem.sourcebook.refine_loaded_results', 'Refine loaded results')),
               h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                 h('div', null,
                   h('h3', { className: 'font-serif text-lg font-black text-[#183b32]' }, __alloT('stem.sourcebook.explore_loaded_board', 'Explore loaded board')),
@@ -9837,7 +10649,7 @@
               h('div', { className: 'grid gap-4 p-4 md:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end' },
                 h('div', null,
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[.2em] text-[#a8c9bd]' }, curationBusy ? 'Reviewing the verified board…' : 'Ready-made starting point'),
-                  h('h3', { className: 'mt-1 font-serif text-2xl font-black leading-tight text-white' }, 'Sourcebook selected ' + recommendedItems.length + ' visuals'),
+                  h('h3', { className: 'mt-1 font-serif text-2xl font-black leading-tight text-white' }, __alloTf('stem.sourcebook.selected_visuals', 'Sourcebook selected {count} visuals', { count: recommendedItems.length })),
                   h('p', { className: 'mt-1 max-w-2xl text-xs leading-relaxed text-[#d3e3dd]' }, __alloT('stem.sourcebook.use_this_rights_verified_set_as_is_or_', 'Use this rights-verified set as-is, or inspect any pick before adding it to your palette. The full result board remains below.')),
                   h('p', { className: 'mt-2 max-w-2xl text-[11px] font-bold leading-relaxed text-[#c7ddd5]' }, __alloT('stem.sourcebook.automatic_picks_must_have_matching_tit', 'Automatic picks must have matching title, description, or tag metadata. Broad results stay on the board for exploration and are never added automatically.')),
                   h('p', { className: 'mt-2 text-[11px] font-bold text-[#afcec3]' }, 'Chosen from ' + liveResults.length + ' verified results · ' + recommendedCoverage.providerCount + ' collection' + (recommendedCoverage.providerCount === 1 ? '' : 's') + ' · ' + recommendedCoverage.kindCount + ' visual type' + (recommendedCoverage.kindCount === 1 ? '' : 's')),
@@ -9930,8 +10742,8 @@
               h('label', { className: 'sr-only', htmlFor: 'sourcebook-palette-title' }, __alloT('stem.sourcebook.palette_title', 'Palette title')),
               h('input', { id: 'sourcebook-palette-title', value: storedTitle, onChange: function (event) { patch({ paletteTitle: event.target.value.slice(0, 80) }); }, className: 'flex-1 min-w-[220px] min-h-[42px] rounded-xl border border-[#afc0b8] px-3 text-sm font-bold', placeholder: __alloT('stem.sourcebook.palette_title_2', 'Palette title') }),
               h('label', { className: 'inline-flex items-center min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black cursor-pointer', title: __alloT('stem.sourcebook.import_a_sourcebook_json_manifest_crea', 'Import a Sourcebook .json manifest created by this tool') },
-                paletteImportBusy ? 'Verifying import...' : 'Import .json',
-                h('input', { type: 'file', accept: '.json,application/json', disabled: palettePackageBusy || paletteImportBusy || savedSmkVerificationStatus === 'loading', onChange: importPaletteManifest, className: 'sr-only', 'aria-label': __alloT('stem.sourcebook.import_sourcebook_palette_manifest', 'Import Sourcebook palette manifest') })
+                paletteImportBusy === 'import' ? __alloT('stem.sourcebook.verifying_import', 'Verifying import…') : __alloT('stem.sourcebook.import_json', 'Import .json'),
+                h('input', { type: 'file', accept: '.json,application/json', disabled: palettePackageBusy || !!paletteImportBusy || !!checkpointBusy || savedSmkVerificationStatus === 'loading', onChange: importPaletteManifest, className: 'sr-only', 'aria-label': __alloT('stem.sourcebook.import_sourcebook_palette_manifest', 'Import Sourcebook palette manifest') })
               ),
               h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#294d42]' },
                 __alloT('stem.sourcebook.board_columns', 'Board columns'),
@@ -9959,17 +10771,29 @@
                   toast(copied ? (checkedPaletteItems.length ? __alloT('stem.sourcebook.msg_selected_credits_copied', 'Selected palette credits copied.') : __alloT('stem.sourcebook.msg_all_credits_copied', 'All palette credits copied.')) : __alloT('stem.sourcebook.msg_credits_not_copied', 'Credits could not be copied in this browser.'), copied ? 'success' : 'error');
                   announce(copied ? __alloT('stem.sourcebook.msg_credits_copied_announce', 'Palette credits copied') : __alloT('stem.sourcebook.msg_credits_not_copied_announce', 'Could not copy palette credits'));
                 });
-              }, className: 'min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? 'Copy selected credits' : 'Copy credits'),
+              }, className: 'min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? __alloT('stem.sourcebook.copy_selected_credits', 'Copy selected credits') : __alloT('stem.sourcebook.copy_credits', 'Copy credits')),
               h('button', { type: 'button', disabled: !exportItems.length, onClick: function () { if (!printCollection(exportItems, preparation, storedTitle)) toast(__alloT('stem.sourcebook.msg_allow_pop_ups_to_open_the_print', 'Allow pop-ups to open the print sheet.'), 'error'); }, className: 'min-h-[42px] px-4 rounded-xl bg-[#b84d37] text-white text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? __alloTf('stem.sourcebook.label_print_selected_count', 'Print selected ({count})', { count: exportItems.length }) : __alloT('stem.sourcebook.label_print_palette', 'Print palette')),
               h('button', { type: 'button', disabled: !selectedItems.length || palettePackageBusy, onClick: clearPalette, className: 'min-h-[42px] px-4 rounded-xl border border-red-300 bg-white text-red-800 text-xs font-black disabled:opacity-40' }, __alloT('stem.sourcebook.clear_palette', 'Clear palette'))
             ),
-            showingCollection && palettePackageBusy && h('div', { className: 'sb-no-print mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold text-sky-950', role: 'status', 'aria-live': 'polite' },
+            referenceBoardProgress > 0 && h('div', { className: 'sb-no-print mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-sourcebook-board-progress': referenceBoardProgress },
+              h('label', { htmlFor: 'sourcebook-board-progress', className: 'text-sm font-bold text-sky-950' }, __alloT('stem.sourcebook.preparing_boards', 'Preparing reference boards')),
+              h('progress', { id: 'sourcebook-board-progress', value: referenceBoardProgress, max: 100, className: 'min-w-[100px] flex-1' }),
+              h('button', { type: 'button', onClick: function () { cancelReferenceBoard('user'); }, className: 'min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-board': 'true' }, __alloT('stem.sourcebook.cancel_board', 'Cancel preparation'))
+            ),
+            showingCollection && readyReferenceBoards && h('section', { className: 'sb-no-print mb-3 rounded-xl border border-[#a9bbb4] bg-white p-4', 'aria-label': __alloT('stem.sourcebook.reference_board_downloads', 'Reference board downloads'), 'data-sourcebook-board-downloads': readyReferenceBoards.total },
+              h('p', { role: 'status', className: 'mb-2 text-sm font-bold text-[#183b32]' }, __alloTf('stem.sourcebook.reference_boards_ready', '{count} images are ready across {pages} reference board pages. Each page has its own download link.', { count: readyReferenceBoards.total, pages: readyReferenceBoards.pages.length })),
+              h('div', { className: 'flex flex-wrap gap-2' }, readyReferenceBoards.pages.map(function (page) {
+                return h('a', { key: page.page, href: page.dataUrl, download: page.filename, className: 'inline-flex min-h-[44px] items-center rounded-lg bg-[#245a49] px-4 text-sm font-bold text-white' }, __alloTn('stem.sourcebook.download_board_page', page.count, 'Download page {page} ({count} image)', 'Download page {page} ({count} images)', { page: page.page }));
+              }))
+            ),
+            palettePackageBusy && h('div', { className: 'sb-no-print mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold text-sky-950', role: 'status', 'aria-live': 'polite', 'data-sourcebook-package-progress': 'true' },
               h('div', { className: 'flex items-center justify-between gap-3' },
-                h('span', null, 'Preparing source images ' + palettePackageProgress + ' of ' + palettePackageTotal),
+                h('span', null, __alloTf('stem.sourcebook.preparing_source_images', 'Preparing source images {done} of {total}', { done: palettePackageProgress, total: palettePackageTotal })),
                 h('span', { className: 'text-[9px] font-black uppercase tracking-[.1em]' }, __alloT('stem.sourcebook.3_at_a_time', '3 at a time'))
               ),
               h('progress', { value: palettePackageProgress, max: Math.max(1, palettePackageTotal), className: 'mt-2 block h-2 w-full accent-[#245a49]', 'aria-label': __alloT('stem.sourcebook.palette_package_preparation_progress', 'Palette package preparation progress') }),
-              h('p', { className: 'mt-1 text-[9px] font-medium' }, __alloT('stem.sourcebook.no_package_is_downloaded_unless_every_', 'No package is downloaded unless every selected source image is prepared successfully.'))
+              h('p', { className: 'mt-1 text-[9px] font-medium' }, __alloT('stem.sourcebook.no_package_is_downloaded_unless_every_', 'No package is downloaded unless every selected source image is prepared successfully.')),
+              h('button', { type: 'button', onClick: function () { cancelPalettePackage('user'); }, className: 'mt-2 min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-package': 'true' }, __alloT('stem.sourcebook.cancel_package', 'Cancel package preparation'))
             ),
             showingCollection && selectedItems.length > 0 && h('div', {
               className: 'sb-no-print mb-3 grid gap-3 rounded-2xl border border-[#b9c9c2] bg-white p-3 md:grid-cols-[minmax(0,1fr)_auto]',
@@ -9985,7 +10809,7 @@
               h('div', { className: 'flex flex-wrap items-end gap-2' },
                 h('button', { type: 'button', disabled: !filteredPaletteItems.length, onClick: function () { selectVisiblePaletteItems(filteredPaletteItems); }, className: 'min-h-[40px] rounded-xl border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40] disabled:opacity-40' }, 'Select shown (' + filteredPaletteItems.length + ')'),
                 h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: function () { setCheckedPaletteIds([]); }, className: 'min-h-[40px] rounded-xl border border-[#aebdb7] bg-white px-3 text-[11px] font-black text-[#53685f] disabled:opacity-40' }, __alloT('stem.sourcebook.clear_selection', 'Clear selection')),
-                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: removeCheckedPaletteItems, className: 'min-h-[40px] rounded-xl border border-red-300 bg-red-50 px-3 text-[11px] font-black text-red-800 disabled:opacity-40' }, 'Remove selected (' + checkedPaletteItems.length + ')')
+                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: removeCheckedPaletteItems, className: 'min-h-[40px] rounded-xl border border-red-300 bg-red-50 px-3 text-[11px] font-black text-red-800 disabled:opacity-40' }, __alloTf('stem.sourcebook.remove_selected_count', 'Remove selected ({count})', { count: checkedPaletteItems.length }))
               ),
               h('p', { className: 'text-[10px] font-bold text-[#5a7168] md:col-span-2', role: 'status', 'aria-live': 'polite' },
                 checkedPaletteItems.length
@@ -9993,11 +10817,12 @@
                   : 'No subset selected. Preparation and output actions use all ' + selectedItems.length + ' palette assets.'
               )
             ),
-            showingCollection && selectedItems.length > 0 && h('section', {
+            showingCollection && selectedItems.length > 0 && h('details', {
               className: 'sb-no-print mb-3 overflow-hidden rounded-2xl border border-violet-200 bg-violet-50',
               'aria-labelledby': 'sourcebook-usage-plan-title',
               'data-sourcebook-usage-plan': paletteUsageSummary.total
             },
+              h('summary', { className: 'min-h-[44px] cursor-pointer px-4 py-3 text-sm font-bold text-violet-950' }, __alloT('stem.sourcebook.optional_role_planning', 'Optional: plan how to use your images')),
               h('div', { className: 'grid gap-3 border-b border-violet-200 bg-white p-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center' },
                 h('div', null,
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[.15em] text-violet-700' }, __alloT('stem.sourcebook.reuse_plan', 'Reuse plan')),
@@ -10166,7 +10991,7 @@
               h('div', { className: 'flex flex-col gap-3 border-b border-[#d3dfda] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? 'Selected output' : 'Full palette output'),
-                  h('h2', { id: 'sourcebook-output-preflight-title', className: 'mt-1 font-serif text-xl font-black' }, __alloT('stem.sourcebook.output_preflight', 'Output preflight')),
+                  h('h2', { id: 'sourcebook-output-preflight-title', tabIndex: -1, className: 'mt-1 font-serif text-xl font-black' }, __alloT('stem.sourcebook.output_preflight', 'Output preflight')),
                   h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d1e0db]' }, __alloT('stem.sourcebook.a_truthful_snapshot_of_intended_use_re', 'A truthful snapshot of intended use, reuse rights, accessibility review, print evidence, and attribution before download.'))
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-2' },
@@ -10392,7 +11217,7 @@
               h('div', { className: 'grid gap-px border-t border-sky-100 bg-sky-100 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': __alloT('stem.sourcebook.compared_candidate_previews', 'Compared candidate previews') }, comparisonItems.map(function (item, index) {
                 return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-2 bg-white p-2.5' },
                   h('div', { className: 'relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-[#e8ece7]' },
-                    h('img', { src: item.imageUrl, alt: '', loading: 'lazy', className: 'h-full w-full object-cover', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
+                    sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-cover' }),
                     h('span', { 'aria-hidden': 'true', className: 'absolute left-1 top-1 rounded-full bg-[#183b32] px-1.5 py-0.5 text-[9px] font-black text-white' }, index + 1)
                   ),
                   h('div', { className: 'min-w-0 flex-1' },
@@ -10417,7 +11242,7 @@
               h('div', { className: 'flex flex-col gap-3 border-b border-[#cbdcd5] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, __alloT('stem.sourcebook.local_evaluation_no_new_provider_reque', 'Local evaluation / no new provider request')),
-                  h('h2', { id: 'sourcebook-comparison-title', className: 'mt-1 font-serif text-xl font-black' }, 'Compare ' + comparisonItems.length + ' visual sources'),
+                  h('h2', { id: 'sourcebook-comparison-title', tabIndex: -1, className: 'mt-1 font-serif text-xl font-black' }, __alloTf('stem.sourcebook.compare_sources', 'Compare {count} visual sources', { count: comparisonItems.length })),
                   h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d2e2dc]' }, __alloT('stem.sourcebook.every_candidate_still_passes_the_activ', 'Every candidate still passes the active reuse-rights scope. Saving remains a separate, explicit action.'))
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
@@ -10458,7 +11283,7 @@
                   'data-sourcebook-comparison-rights': item.rightsType
                 },
                   h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
-                    h('img', { src: item.imageUrl, alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] }, onError: function (event) { event.currentTarget.style.display = 'none'; } }),
+                    sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] } }),
                     h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
                     h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950' }, item.rightsShort)
                   ),

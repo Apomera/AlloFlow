@@ -71,7 +71,7 @@
       image: ['effectiveVisualStyle', 'visualLayoutMode', 'useLowQualityVisuals', 'noText',
         'fillInTheBlank', 'creativeMode'],
       quiz: ['quizMode', 'itemCount', 'reflectionCount',
-        'passAnalysisToQuiz', 'cellGameDifficulty'],
+        'passAnalysisToQuiz', 'cellGameDifficulty', 'mcqVisualMode'],
       faq: ['itemCount'],
       'sentence-frames': ['frameType'],
       timeline: ['mode', 'itemCount', 'includeTimelineVisuals', 'topic', 'imageStyle',
@@ -91,7 +91,7 @@
       timeline: ['timelineMode', 'timelineItemCount', 'timelineTopic', 'includeTimelineVisuals'],
       'applied-challenge': ['appliedChallengeSelectionMode', 'appliedChallengeFamily',
         'appliedChallengeAgencyMode', 'appliedChallengeScope'],
-      brainstorm: ['isIndependentMode'],
+      brainstorm: ['isIndependentMode', 'activityMode'],
       persona: ['personaMode', 'sourceTopic'],
       'alignment-report': ['alignmentMode']
     };
@@ -109,7 +109,7 @@
     'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts', 'includeTimelineVisuals',
     'appliedChallengeSelectionMode', 'appliedChallengeFamily',
     'appliedChallengeAgencyMode', 'appliedChallengeScope',
-    'imageGenerationStyle', 'imageAspectRatio'
+    'imageGenerationStyle', 'imageAspectRatio', 'activityConfig'
   ]);
 
   var DEFAULT_POLICY = Object.freeze({
@@ -338,6 +338,26 @@
     return compactStableObject(scoped);
   }
 
+  function normalizeActivityOptions(resource, settings) {
+    var row = isObject(resource) ? resource : {};
+    var source = isObject(settings) ? settings : {};
+    var requested = fold(effectiveConfigValue(row, source, 'brainstorm', 'activityMode')
+      || effectiveConfigValue(row, source, 'brainstorm', 'mode')
+      || (isObject(row.config) ? row.config.type : ''));
+    var mode = requested === 'discussion' || requested === 'jigsaw' ? requested : 'ideas';
+    var raw = effectiveConfigValue(row, source, 'brainstorm', 'activityConfig');
+    raw = isObject(raw) ? raw : {};
+    var config = {};
+    if (mode === 'discussion') {
+      var protocol = fold(raw.protocol);
+      config.protocol = ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'].indexOf(protocol) !== -1 ? protocol : 'think-pair-share';
+    } else if (mode === 'jigsaw') {
+      var size = Number(raw.groupSize);
+      config.groupSize = Number.isFinite(size) && size >= 2 && size <= 6 ? Math.floor(size) : 4;
+    }
+    return { activityMode: mode, activityConfig: config };
+  }
+
   function projectEffectiveGenerationConfig(resource, settings) {
     var row = typeof resource === 'string' ? { type: resource } : (resource || {});
     var type = getResourceType(row);
@@ -391,6 +411,14 @@
       if (value === '') return;
       fields[key] = stableValue(value);
     }
+    if (type === 'brainstorm') {
+      var activityOptions = normalizeActivityOptions(row, source);
+      setField('activityMode', activityOptions.activityMode);
+      setField('activityConfig', activityOptions.activityConfig);
+      // The same normalized configuration drives the generator and the planner.
+      if (activityOptions.activityMode === 'ideas') delete fields.mode;
+      else fields.mode = activityOptions.activityMode;
+    }
     if (type === 'image') {
       var visual = effective('effectiveVisualStyle');
       if (!clean(visual)) {
@@ -408,6 +436,10 @@
         || clean(effective('universalImageStyle')));
     } else if (type === 'quiz') {
       setField('quizMode', effective('quizMode') || 'exit-ticket');
+      var visuals = fold(effective('mcqVisualMode'));
+      visuals = ['question', 'options', 'both'].indexOf(visuals) !== -1 ? visuals : 'none';
+      setField('mcqVisualMode', visuals);
+      if (visuals !== 'none') setField('imageStyle', clean(effective('imageStyle')) || clean(effective('universalImageStyle')));
       setField('itemCount', effective('itemCount') !== undefined ? effective('itemCount')
         : (effective('quizCount') !== undefined ? effective('quizCount') : effective('quizMcqCount')));
       setField('reflectionCount', effective('reflectionCount') !== undefined
@@ -657,7 +689,7 @@
       || config.type || activity.protocol);
   }
 
-  function buildVariantKey(resource, policy) {
+  function buildVariantKey(resource, policy, settings) {
     if (!policy.allowVariants) return 'singleton';
     var explicit = clean(resource && (resource.explicitVariantKey || resource.variantKeyInput));
     // Plan rows carry the resolved key for display together with a marker that
@@ -668,6 +700,10 @@
     }
     if (explicit) return 'key-' + hashText(fold(explicit));
     var mode = resourceMode(resource);
+    if (getResourceType(resource) === 'brainstorm') {
+      mode = normalizeActivityOptions(resource, settings).activityMode;
+      if (mode === 'ideas') mode = '';
+    }
     var directive = resourceDirective(resource);
     if (!mode && !directive) return 'default';
     return 'variant-' + hashText(stableStringify({ mode: fold(mode), directive: fold(directive) }));
@@ -698,7 +734,7 @@
         payload.attachedLanguages = normalizeLanguageValues(settings.selectedLanguages)
           .map(fold).sort();
       }
-      if (policy.allowVariants) payload.variant = clean(cell.variantKey || buildVariantKey(resource, policy));
+      if (policy.allowVariants) payload.variant = clean(cell.variantKey || buildVariantKey(resource, policy, options || settings));
     }
     return 'gm1-' + (type || 'unknown') + '-' + hashText(stableStringify(payload));
   }
@@ -1001,7 +1037,7 @@
       ? clean(row.explicitVariantKey || row.variantKeyInput
         || (row.variantKeyDerived !== true ? row.variantKey : ''))
       : '';
-    var variantKey = buildVariantKey(row, policy);
+    var variantKey = buildVariantKey(row, policy, settingsInput);
     var artifacts = normalizeArtifacts(options || {});
     var grades = resolveGrades(type, settings, row);
     var languages = resolveLanguages(type, settings, row);
@@ -1263,6 +1299,7 @@
     GRADE_ORDER: GRADE_ORDER,
     RESOURCE_GENERATION_CONFIG_FIELDS: RESOURCE_GENERATION_CONFIG_FIELDS,
     getResourcePolicy: getResourcePolicy,
+    normalizeActivityOptions: normalizeActivityOptions,
     isSingletonType: isSingletonType,
     isRepeatableType: isRepeatableType,
     fingerprintSourceText: fingerprintSourceText,

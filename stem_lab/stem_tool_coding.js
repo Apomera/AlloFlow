@@ -2463,6 +2463,7 @@
             className: "grid gap-4 relative",
             style: { gridTemplateColumns: codeMode === 'visual' && playgroundMode === 'turtle' ? 'minmax(480px, 1.25fr) minmax(320px, 1fr)' : '220px 1fr', gridTemplateRows: 'auto auto' }
           },
+            (ctx.renderTutorial || function () { return null; })('codingPlayground', ctx._tutCoding || []),
             React.createElement(CodingActivityCleanup, { React: React }),
             pendingReplacement && pendingReplacementName && React.createElement(CodingReplacementDialog, {
               React: React,

@@ -65,6 +65,10 @@ window.StemLab = window.StemLab || {
       '.dna-brand-mark:after{content:"";position:absolute;width:62px;height:1px;background:#8b5cf6;transform:rotate(-32deg)}',
       '.dna-brand-mark span{position:relative;z-index:1;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(91,33,182,.16)}',
       '.dna-brand-mark span:last-child{background:#ede9fe}',
+      // The kicker is a hardcoded violet literal, so it survived unchanged onto
+      // the contrast theme's black ground (2.96:1). Same shape as the .theme-dark
+      // rule above it.
+      '.theme-contrast [data-dna-tool] .dna-command-kicker{color:var(--allo-stem-text,#ffff00)}',
       '.dna-command-kicker{margin:0 0 3px;color:#6d28d9;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}',
       '.dna-command-title{margin:0;color:var(--allo-stem-text,#172033);font-size:20px;font-weight:950;letter-spacing:-.025em;line-height:1.05}',
       '.dna-command-subtitle{margin:5px 0 0;color:var(--allo-stem-text-soft,#64748b);font-size:11px;line-height:1.35}',
@@ -4288,7 +4292,9 @@ window.StemLab = window.StemLab || {
           };
           var meta = TAB_META[tab] || TAB_META.build;
           var metaInkDark = ({ '#a855f7': '#c4b5fd', '#8b5cf6': '#c4b5fd', '#64748b': '#94a3b8', '#dc2626': '#fca5a5', '#ef4444': '#fca5a5', '#3b82f6': '#93c5fd', '#0ea5e9': '#7dd3fc', '#06b6d4': '#67e8f9', '#22c55e': '#86efac', '#f59e0b': '#fcd34d', '#fbbf24': '#fde68a' })[meta.accent] || meta.accent;
-          var metaInk = (!!ctx.isDark || ctx.theme === 'dark') ? metaInkDark : ({
+          // ★ Contrast counts as dark here: this ink lands on the host ground,
+          // which is black in that theme, where the light partners ran ~2.8:1.
+          var metaInk = (!!ctx.isDark || ctx.theme === 'dark' || !!ctx.isContrast) ? metaInkDark : ({
             '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#0ea5e9': '#0369a1',
             '#22c55e': '#15803d', '#f59e0b': '#92400e', '#ef4444': '#b91c1c',
             '#06b6d4': '#0e7490', '#8b5cf6': '#6d28d9', '#fbbf24': '#854d0e',

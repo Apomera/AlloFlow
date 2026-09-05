@@ -42,15 +42,15 @@ describe('Word Sounds review and launcher UX accessibility', () => {
   it('stacks review controls and hides the review path from learners', () => {
     expect(reviewSource).toContain('flex flex-col-reverse sm:flex-row');
     expect(reviewSource).toContain('flex min-w-0 flex-1 flex-wrap');
-    expect(launcherSource).toContain('Teacher: Review Words &amp; Audio');
+    expect(launcherSource).toContain("label('preview_teacher_review', 'Teacher: Review Words & Audio')");
     expect(launcherSource).toContain('Student: Start Practice');
     expect(launcherSource).toContain('var isTeacherMode = props.isTeacherMode !== false;');
     expect(launcherSource).toContain('{isTeacherMode && (');
-    expect(launcherSource).toContain("isTeacherMode ? 'Student: Start Practice' : 'Start Activity'");
+    expect(launcherSource).toContain("isTeacherMode ? label('preview_student_practice'");
     expect(launcherSource).toContain('setWordSoundsAutoReview(false)');
-    expect(launcherSource).toContain('Audio ready: {wordSoundsAudioCoverage.ready}/{wordSoundsAudioCoverage.total} required clips');
+    expect(launcherSource).toContain("label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips'");
     expect(launcherSource).toContain("var missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels)");
-    expect(launcherSource).toContain("Missing: {missingAudioLabels.slice(0, 5).join(', ')}");
+    expect(launcherSource).toContain("label('preview_missing', 'Missing: {labels}'");
     expect(launcherSource).toContain("role=\"status\"");
     expect(launcherSource).toContain('requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity)');
   });

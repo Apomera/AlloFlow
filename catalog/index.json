@@ -17,6 +17,22 @@
       "license": "CC0",
       "submitted_at": "2026-05-05T01:48:23.225Z",
       "path": "catalog/approved/water_cycle.json"
+    },
+    {
+      "slug": "water_cycle_grade6_illustrated",
+      "title": "The Water Cycle — Illustrated Grade 6 Pilot",
+      "subject": "Science",
+      "grade_level": "6",
+      "tags": [
+        "water-cycle",
+        "illustrated",
+        "pilot",
+        "ngss"
+      ],
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-09-04T00:00:00.000Z",
+      "path": "allopacks/illustrated/water_cycle_grade6.allopack.json"
     }
   ]
 }

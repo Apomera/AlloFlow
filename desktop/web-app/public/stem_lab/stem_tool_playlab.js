@@ -4364,7 +4364,10 @@ window.StemLab = window.StemLab || {
                         // The matchup matrix lives in a WHITE <details> panel, so
                         // its headers need light-ground inks: slate-300 row labels
                         // measured 1.48:1 and amber-400 about 1.9:1 on white.
-                        color: c.id === activeColId ? '#b45309' : '#475569',
+                        // ★ That white panel is NOT white in the contrast theme:
+                        // app_styles_module.js rewrites inline light backgrounds to
+                        // #000 !important there, so these inks needed the other end.
+                        color: ctx.isContrast ? (c.id === activeColId ? '#ffff00' : '#ffffff') : (c.id === activeColId ? '#b45309' : '#475569'),
                         fontWeight: c.id === activeColId ? 700 : 500,
                         padding: '2px 0'
                       }
@@ -4381,7 +4384,7 @@ window.StemLab = window.StemLab || {
                       key: 'row-h-' + r.id, role: 'rowheader',
                       style: {
                         width: 90, flexShrink: 0, textAlign: 'right', fontSize: 10,
-                        color: r.id === activeRowId ? '#b45309' : '#475569',
+                        color: ctx.isContrast ? (r.id === activeRowId ? '#ffff00' : '#ffffff') : (r.id === activeRowId ? '#b45309' : '#475569'),
                         fontWeight: r.id === activeRowId ? 700 : 500,
                         paddingRight: 4
                       }

@@ -16886,7 +16886,7 @@
       "correct_george_stokes_named_fluorescence_after_studying_fluorite": "Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.",
       "correct_gneiss_displays_prominent_mineral_banding_from_intense": "Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.",
       "correct_gypsum_crystals_up_to_12_meters_long": "Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.",
-      "correct_hematite_dust_covers_the_martian_surface_giving": "Correct! Hematite has been identified on Mars, including in iron-rich spherules studied by rovers.",
+      "correct_hematite_dust_covers_the_martian_surface_giving": "Correct! Hematite is one iron-oxide mineral identified on Mars; the planet’s overall red color comes from oxidized iron minerals.",
       "correct_hydrochloric_acid_reacts_with_calcium_carbonate_in": "Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.",
       "correct_igneous_rocks_solidify_from_molten_magma": "Correct! Igneous rocks solidify from molten magma.",
       "correct_it_was": "Correct! It was ",
@@ -16989,7 +16989,7 @@
       "incorrect_erosion_breaks_rocks_down_rather_than_building": "Incorrect. Erosion breaks rocks down rather than building them.",
       "incorrect_gabbro_is_intrusive_and_equivalent_to_extrusive": "Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.",
       "incorrect_galena_is_lead_sulfide_and_is_not": "Incorrect. Galena is lead sulfide and is not magnetic.",
-      "incorrect_general_rust_is_iron_oxide_but_hematite": "Incorrect. ‘Rust’ describes oxidized iron broadly, not a specific mineral phase; hematite is one mineral identified on Mars.",
+      "incorrect_general_rust_is_iron_oxide_but_hematite": "Incorrect. Pyrite is an iron sulfide, not the iron oxide named in this question.",
       "incorrect_glacier_ice_forms_glacial_till": "Incorrect. Glacier ice forms glacial till.",
       "incorrect_gneiss_is_high_grade_metamorphism_occurring_after": "Incorrect. Gneiss is high-grade metamorphism, occurring after schist.",
       "incorrect_gneiss_is_striped": "Incorrect. Gneiss is striped.",
@@ -17046,13 +17046,13 @@
       "incorrect_the_pyramids_are_made_of_standard_limestone": "Incorrect. The Pyramids are made of standard limestone and granite.",
       "incorrect_the_sahara_desert_is_sand_covered_rather": "Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.",
       "incorrect_the_sand_is_natural_olivine_not_man": "Incorrect. The sand is natural olivine, not man-made green glass.",
-      "incorrect_the_sand_is_red_due_to_hematite": "Incorrect. Red sand is a material description, not a mineral identification; hematite has been identified on Mars.",
+      "incorrect_the_sand_is_red_due_to_hematite": "Incorrect. Galena is lead sulfide, not an iron oxide.",
       "incorrect_the_taj_mahal_is_made_of_marble": "Incorrect. The Taj Mahal is made of marble.",
       "incorrect_there_is_no_scientist_named_ande": "Incorrect. There is no scientist named Ande.",
       "incorrect_topaz_is_hard_8_but_softer_than": "Incorrect. Topaz is hard (8) but softer than corundum and diamond.",
       "incorrect_topaz_is_silicate_and_has_a_different": "Incorrect. Topaz is silicate and has a different composition.",
       "incorrect_underwater_cooling_can_form_pillow_basalt_but": "Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.",
-      "incorrect_volcanic_dust_on_mars_is_not_the": "Incorrect. Volcanic dust on Mars is not the primary cause of its color.",
+      "incorrect_volcanic_dust_on_mars_is_not_the": "Incorrect. Halite is sodium chloride, not an iron oxide.",
       "incorrect_water_does_not_react_chemically_to_cause": "Incorrect. Water does not react chemically to cause limestone to fizz.",
       "incorrect_white_gold_is_a_real_gold_alloy": "Incorrect. White gold is a real gold alloy.",
       "landscape_click_zones_hint": "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.",
@@ -19978,7 +19978,19 @@
       "plot_data_points_fit_trend": "Vẽ các điểm dữ liệu, khớp đường xu hướng, tính tương quan.",
       "arts_music": "Nghệ thuật & Âm nhạc",
       "music_synthesizer": "Bộ tổng hợp Âm nhạc",
-      "art_design_studio": "Studio Nghệ thuật & Thiết kế"
+      "art_design_studio": "Studio Nghệ thuật & Thiết kế",
+      "geometry_measurement": "📐 Hình học và đo lường",
+      "data_statistics_probability": "📊 Dữ liệu, thống kê và xác suất",
+      "life_science_genetics": "🧬 Khoa học sự sống và di truyền",
+      "human_body_health_safety": "🫀 Cơ thể người, sức khỏe và an toàn",
+      "ecology_environment_animals": "🌍 Sinh thái, môi trường và động vật",
+      "earth_space_science": "🌎 Khoa học Trái Đất và vũ trụ",
+      "engineering_design": "⚙️ Kỹ thuật và thiết kế",
+      "computing_ai_digital_literacy": "💻 Máy tính, AI và năng lực số",
+      "learning_behavioral_science": "🧠 Khoa học học tập và hành vi",
+      "life_skills_careers_economics": "💰 Kỹ năng sống, nghề nghiệp và kinh tế",
+      "sports_movement_science": "🏅 Khoa học thể thao và vận động",
+      "strategy_games": "⚔️ Trò chơi chiến thuật"
     },
     "area": {
       "volume": "Thể tích..."
@@ -76884,7 +76896,17 @@
     "magnetism": {
       "initializing": "🧲 Charging the coils…"
     },
-    "volume_label": "Volume"
+    "volume_label": "Volume",
+    "tutorial": {
+      "region": "Tham quan",
+      "step_of": "Bước {current} trên {total}",
+      "skip": "Bỏ qua",
+      "back": "Quay lại",
+      "next": "Tiếp",
+      "finish": "Hiểu rồi!",
+      "replay": "Mẹo",
+      "replay_aria": "Hiện hướng dẫn"
+    }
   },
   "glossary_health": {
     "composite_accuracy": "Độ chính xác Tổng hợp",

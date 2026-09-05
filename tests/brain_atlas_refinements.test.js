@@ -344,9 +344,9 @@ describe('brainAtlas refinement contracts', () => {
     expect(first).toContain('data-brainatlas-previous-view="true"');
     expect(first).toContain('data-brainatlas-next-view="true"');
     expect(first).toContain('data-brainatlas-fullscreen-position="true"');
-    expect(first).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">1 \/ 22/);
+    expect(first).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">1 \/ 23/);
     expect(last).toContain('data-brainatlas-fullscreen-position="true"');
-    expect(last).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">22 \/ 22/);
+    expect(last).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">23 \/ 23/);
     expect(src).toContain('function stepBrainAtlasView(direction)');
     expect(src).toContain('VIEW_KEYS[(currentViewIndex - 1 + VIEW_KEYS.length) % VIEW_KEYS.length]');
     expect(src).toContain('VIEW_KEYS[(currentViewIndex + 1) % VIEW_KEYS.length]');

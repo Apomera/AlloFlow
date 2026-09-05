@@ -213,10 +213,10 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain("var screenPhysiologyHudReserve = !d.quizMode && (d.livingFunctionEnabled || (activeCanvasTraceKey && activeLayer === 'organs')) ? 76 : 0;");
       expect(finalScreenSource).toContain('H - guidedScreenHeight - 14 - screenPhysiologyHudReserve');
       expect(finalGuidanceSource).not.toContain('screenPromptText');
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font='6px Inter, system-ui';ctx\.fillStyle='rgba\(254,226,226,0\.58\)';ctx\.fillText\('thorax'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '6px Inter, system-ui'; ctx\.fillStyle = 'rgba\(254,240,138,0\.58\)';\s*ctx\.fillText\('Area centralis'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24'; ctx\.fillText\('Refracted light'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = 'bold 10px Inter, system-ui'; ctx\.fillStyle = '#22c55e'; ctx\.fillText\(bpm \+ ' BPM'/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font='6px Inter, system-ui';ctx\.fillStyle='rgba\(254,226,226,0\.58\)';fillReadableSpecimenText\('thorax'/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '6px Inter, system-ui'; ctx\.fillStyle = 'rgba\(254,240,138,0\.58\)';\s*fillReadableSpecimenText\('Area centralis'/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24'; fillReadableSpecimenText\('Refracted light'/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = 'bold 10px Inter, system-ui'; ctx\.fillStyle = '#22c55e'; fillReadableSpecimenText\(bpm \+ ' BPM'/);
       expect(source).toMatch(/Compact labels remain inside the specimen[\s\S]{0,180}if \(!d\.quizMode\) \{/);
       expect(source).toContain('W = canvas._logicalW || canvas.width;');
       expect(source).toContain('H = canvas._logicalH || canvas.height;');

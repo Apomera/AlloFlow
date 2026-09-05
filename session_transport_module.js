@@ -22,11 +22,16 @@
 
   // The single student-safe candidate rule for EVERY content channel:
   // a resource must have an id and must not be a teacher-only type.
-  function studentSafeResources(history, teacherOnlyTypes) {
+  function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
     var blocked = Array.isArray(teacherOnlyTypes) ? teacherOnlyTypes : [];
-    return (Array.isArray(history) ? history : []).filter(function (item) {
-      return item && item.id && item.type && blocked.indexOf(item.type) === -1;
-    });
+    return (Array.isArray(history) ? history : []).map(function (item) {
+      if (!item || !item.id || !item.type) return null;
+      if (item.type === 'brainstorm') {
+        var projected = typeof projectActivity === 'function' ? projectActivity(item) : null;
+        return projected && projected.id === item.id && projected.type === 'brainstorm' && projected.studentProjection === true ? projected : null;
+      }
+      return blocked.indexOf(item.type) === -1 ? item : null;
+    }).filter(Boolean);
   }
 
   function selectTransportKind(context) {
@@ -53,7 +58,7 @@
         return { chunked: false, maxDocBytes: 850 * 1024, policyChannel: 'session-doc' };
       },
       publishResources: function (history) {
-        var candidates = studentSafeResources(history, teacherOnlyTypes);
+        var candidates = studentSafeResources(history, teacherOnlyTypes, ops.projectStudentActivityResource);
         return Promise.resolve(ops.uploadAssets(candidates)).then(function (uploaded) {
           var prepared = ops.prepareResources(uploaded || candidates);
           var payload = { resources: prepared.resources };
@@ -97,65 +102,89 @@
   // encoding, chunked network sends, Firestore packRef writes.
   function runMailboxPackCycle(candidates, ops) {
     requireOps(ops, ['fingerprint', 'pushItem'], 'mailbox pack cycle');
+    function assertCurrent() {
+      if (typeof ops.isCurrent === 'function' && !ops.isCurrent()) {
+        var error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error;
+      }
+    }
     var seen = ops.seen || {};
-    var currentIds = {};
+    var currentIds = Object.create(null);
     candidates.forEach(function (item) { currentIds[item.id] = true; });
     var removedIds = Object.keys(seen).filter(function (id) { return !currentIds[id]; });
 
     var removalPromise = Promise.resolve();
     if (removedIds.length) {
-      removedIds.forEach(function (id) { delete seen[id]; });
-      if (typeof ops.sendRemovals === 'function') removalPromise = Promise.resolve(ops.sendRemovals(removedIds));
+      removalPromise = Promise.resolve().then(function () {
+        assertCurrent();
+        if (typeof ops.sendRemovals === 'function') return ops.sendRemovals(removedIds);
+      }).then(function () {
+        assertCurrent();
+        // Keep the pending removal until delivery succeeds, including retries.
+        removedIds.forEach(function (id) { delete seen[id]; });
+      });
     }
 
     return removalPromise.then(function () {
+      assertCurrent();
       var pushed = 0;
       var failed = 0;
       var chain = Promise.resolve();
       candidates.forEach(function (item) {
         chain = chain.then(function () {
-          var fp = ops.fingerprint(item);
-          if (seen[item.id] === fp) return null;
-          return Promise.resolve(ops.pushItem(item)).then(function () {
-            seen[item.id] = fp;
-            pushed += 1;
-          }, function (error) {
+          return Promise.resolve().then(function () {
+            assertCurrent();
+            var fp = ops.fingerprint(item);
+            if (Object.prototype.hasOwnProperty.call(seen, item.id) && seen[item.id] === fp) return null;
+            return Promise.resolve().then(function () { assertCurrent(); return ops.pushItem(item); }).then(function () {
+              assertCurrent();
+              Object.defineProperty(seen, item.id, { value: fp, enumerable: true, configurable: true, writable: true });
+              pushed += 1;
+            });
+          }).catch(function (error) {
+            if (error && error.name === 'AbortError') throw error;
             failed += 1;
             if (typeof ops.onItemError === 'function') ops.onItemError(item, error);
           });
         });
       });
       return chain.then(function () {
+        assertCurrent();
         if ((pushed || failed || removedIds.length) && typeof ops.trace === 'function') {
           ops.trace('mailbox:pack-cycle', { candidates: candidates.length, pushed: pushed, failed: failed, removed: removedIds.length });
         }
-        if (!candidates.length || typeof ops.hostPack !== 'function' || typeof ops.packFingerprint !== 'function') {
+        if (typeof ops.hostPack !== 'function' || typeof ops.packFingerprint !== 'function') {
           return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false };
         }
         var packFp = ops.packFingerprint(candidates);
         var hostedFp = typeof ops.getHostedFp === 'function' ? ops.getHostedFp() : null;
-        if (packFp === hostedFp) {
+        if (packFp === hostedFp || (!candidates.length && !removedIds.length && hostedFp == null)) {
           return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false };
         }
         return Promise.resolve(ops.hostPack(candidates)).then(function (packIdentity) {
-          // Fingerprint records ONLY after a fully successful host, so a
-          // failed/partial upload re-hosts next cycle (current semantics).
-          if (typeof ops.setHostedFp === 'function') ops.setHostedFp(packFp);
+          assertCurrent();
+          // Late joiners need both the pack and its published reference.
+          // A failed reference write must remain retryable on the next cycle.
+          var referencePublished = true;
           var publish = Promise.resolve();
           if (packIdentity && typeof ops.publishPackRef === 'function') {
-            publish = Promise.resolve(ops.publishPackRef({
+            publish = Promise.resolve().then(function () { assertCurrent(); return ops.publishPackRef({
               id: packIdentity.id,
               k: packIdentity.k,
               n: candidates.length,
               t: typeof ops.now === 'function' ? ops.now() : Date.now(),
-            })).catch(function (error) {
-              // packRef publish failure is advisory (students self-heal from
-              // ring messages); the hosted pack itself succeeded.
+            }); }).catch(function (error) {
+              if (error && error.name === 'AbortError') throw error;
+              assertCurrent();
+              referencePublished = false;
+              if (typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-failed', { candidates: candidates.length });
               if (typeof ops.onPackRefError === 'function') ops.onPackRefError(error);
             });
           }
           return publish.then(function () {
-            return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: true };
+            assertCurrent();
+            if (referencePublished && typeof ops.setHostedFp === 'function') ops.setHostedFp(packFp);
+            if (referencePublished && !failed && typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-published', { candidates: candidates.length });
+            return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: true, referencePublished: referencePublished };
           });
         });
       });
@@ -177,7 +206,7 @@
         return { chunked: true, maxDocBytes: 85 * 1024, policyChannel: 'join-url' };
       },
       publishResources: function (history) {
-        var candidates = studentSafeResources(history, teacherOnlyTypes);
+        var candidates = studentSafeResources(history, teacherOnlyTypes, ops.projectStudentActivityResource);
         var cycle = shellMode ? ops.runPackCycle(candidates) : runMailboxPackCycle(candidates, ops);
         return Promise.resolve(cycle).then(function (result) {
           return Object.assign({ kind: 'mailbox', candidates: candidates.length }, result || {});

@@ -299,7 +299,8 @@ describe('Guided Mode improvement wiring', () => {
     expect(fullPackRun).toContain('onClick={createGuidedHomeworkShare}');
     expect(app).toContain('setShowSessionStartOptions(true)');
     expect(app).toContain('previewGuidedStudentAssignment={previewGuidedStudentAssignment}');
-    expect(app).toContain("onExportSuccess: () => completeGuidedDelivery('exportCreated')");
+    expect(app).toContain('onExportSuccess: () => confirmBuilderGuidedDelivery(builderGuidedDeliveryContext)');
+    expect(app).toContain('exportContext !== _builderGuidedDeliveryContextRef.current');
   });
 
   it('keeps one intended left-panel surface visible for Directions, Delivery, and final review', () => {

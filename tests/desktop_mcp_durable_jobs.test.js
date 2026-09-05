@@ -55,9 +55,11 @@ function currentEngineDigest(env) {
   const vendorManifest = existsSync(vendorBesideServer)
     ? vendorBesideServer
     : join(Driver.ASSETS_ROOT, 'vendor', 'manifest.json');
+  // Mirrors checkpointEngineFiles() in the server: the sibling helpers are part of the engine identity.
   const files = [
     SERVER,
     DRIVER_PATH,
+    ...['remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs'].map((name) => join(dirname(SERVER), name)),
     ...Driver.MODULE_FILES.map((name) => join(Driver.ASSETS_ROOT, name)),
     vendorManifest,
   ];

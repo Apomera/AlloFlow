@@ -87,6 +87,9 @@ const crypto = require('crypto');
 const zlib = require('zlib');
 
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
+const Narration = require('./remediation_narration.cjs');
+const Verification = require('./remediation_verification.cjs');
+const EpubValidation = require('./remediation_epub_validation.cjs');
 
 const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: require('./connector_version.cjs') };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
@@ -525,7 +528,7 @@ function atomicWriteJson(finalPath, value, mode = 0o600) {
 }
 
 function checkpointEngineFiles() {
-  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs')];
+  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
   const vendorManifest = [
     path.join(__dirname, 'vendor', 'manifest.json'),
@@ -1323,9 +1326,9 @@ const JOB_NOT_FOUND = 'No job with that job_id. Records are kept for ' + Math.ro
 
 // ── Agent-bridge runs (client-model transport) ───────────────────────────────
 // One interactive run at a time: the pipeline runs unmodified, but every internal model call
-// pauses as a pending request the MCP client answers. Deliberately NOT a durable job — the
-// conversation driving it IS its state, so a server restart honestly kills the run instead of
-// resuming against a client context that no longer exists. The run holds the single-flight
+// pauses as a pending request the MCP client answers. Saved records allow explicit resume
+// after restart; completed files are verified and reused, while the unfinished document
+// may restart with fresh client replies. The run holds the single-flight
 // lane (busyWith) for its whole life; queued jobs wait behind it via enqueueJob's lane loop.
 
 let agentRun = null; // the current (or most recent terminal) run — kept until the next start
@@ -1346,6 +1349,8 @@ function agentRunView(run) {
     modelCallsSoFar: run.modelCalls,
     pendingCount: run.pending.size,
     log: run.log.slice(-JOB_LOG_LINES),
+    progress: run.progress,
+    resumable: true,
   };
 }
 
@@ -1354,17 +1359,57 @@ function requireAgentRun(args) {
     throw invalidParams('arguments.run_id must be a non-empty string no longer than 200 characters');
   }
   if (!agentRun || agentRun.runId !== args.run_id) {
-    throw invalidParams('No agent-bridge run with that run_id. Agent runs are conversation-scoped: they do not survive a server restart, and only the most recent run is retained.');
+    const record = readAgentRecord(args.run_id);
+    return Object.assign(record, { status: record.status === 'running' ? 'interrupted' : record.status, pending: new Map(), waiters: [], log: [], modelCalls: record.modelCalls || 0, latenciesMs: [] });
   }
   return agentRun;
 }
 
-function startAgentRun(filePath, outDir, opts) {
+
+function agentRecordPath(id) {
+  if (typeof id !== 'string' || !/^arun-[a-f0-9-]{36}$/.test(id)) throw invalidParams('Invalid agent run id');
+  return path.join(STATE_DIR, 'agent-runs', id + '.json');
+}
+function persistAgentRun(run) {
+  const file = agentRecordPath(run.runId);fs.mkdirSync(path.dirname(file), { recursive: true });
+  atomicWriteJson(file, { schema: 1, runId: run.runId, status: run.status, filePath: run.filePath,
+    outDir: run.outDir, startedAt: run.startedAt, updatedAt: Date.now(), modelCalls: run.modelCalls,
+    workflow: run.workflow, options: run.options, progress: run.progress, result: run.result,
+    partialRows: run.partialRows || [], error: run.error });
+}
+function readAgentRecord(id) {
+  const file = agentRecordPath(id);let record;
+  try { if(fs.statSync(file).size > 8*1024*1024)throw Error('too large');record=JSON.parse(fs.readFileSync(file,'utf8')); }
+  catch (_) {throw invalidParams('No saved agent run with that run_id');}
+  if(!Number.isFinite(Date.parse(record.startedAt)) || record.schema !== 1 || record.runId !== id || !record.workflow || !Array.isArray(record.workflow.files)
+    || record.workflow.files.length < 1 || record.workflow.files.length > 200 || !record.options
+    || Date.now() - Date.parse(record.startedAt) > JOB_RECORD_TTL_MS) throw invalidParams('Invalid or expired saved agent run');
+  return record;
+}
+function narrationInputs(args) {
+  if(!!args.file_path===!!args.dir_path)throw invalidParams('Pass exactly one of file_path or dir_path');
+  const files=args.dir_path?listBatchInputs(args.dir_path,BATCH_LIMIT_REMEDIATE,'narration').files:[args.file_path];
+  return files.map(file=>_requireFileOfType({file_path:file},/\.html?$/i,'accessible HTML'));
+}
+function validateNarrationOptions(args) {
+  const narration = args.narration === undefined ? 'none' : args.narration;
+  if(!['none','accessible','natural'].includes(narration))throw invalidParams('narration must be none, accessible or natural');
+  if(args.narration_voice !== undefined && (typeof args.narration_voice !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(args.narration_voice)))throw invalidParams('narration_voice must be auto or an available voice id');
+  if(args.narration_provider !== undefined && !['auto','kokoro','piper'].includes(args.narration_provider))throw invalidParams('narration_provider must be auto, kokoro or piper');
+  let language;try{language=Narration.normalizeLanguage(args.narration_language);}catch(error){throw invalidParams(error.message);}
+  if(args.readalong_epub !== undefined && typeof args.readalong_epub !== 'boolean')throw invalidParams('readalong_epub must be a boolean');
+  return { narration, narrationVoice: args.narration_voice || 'auto', narrationProvider:args.narration_provider||'auto', narrationLanguage:language, readalongEpub: args.readalong_epub !== false };
+}
+
+function startAgentRun(filePath, outDir, opts, workflow = {}) {
   const run = {
-    runId: 'arun-' + crypto.randomUUID(),
+    runId: workflow.resumeId || ('arun-' + crypto.randomUUID()),
     status: 'running',
     filePath,
     outDir,
+    workflow: Object.assign({ files: [filePath], skipExisting: true }, workflow),
+    options: opts,
+    progress: { total: (workflow.files || [filePath]).length, completed: 0, failed: 0, currentFile: filePath },
     startedAt: new Date().toISOString(),
     updatedAt: Date.now(),
     modelCalls: 0,
@@ -1445,10 +1490,11 @@ function startAgentRun(filePath, outDir, opts) {
     run.pending.clear();
   };
   run.abortController.signal.addEventListener('abort', () => failPending('Run cancelled'), { once: true });
+  persistAgentRun(run);
   busyWith = 'pdf_remediate_agent';
   run.settled = (async () => {
     try {
-      rlog('agent-bridge run started: ' + path.basename(filePath) + ' — the client model answers all pipeline calls');
+      rlog(run.workflow.narrationOnly ? 'local narration started: ' + path.basename(filePath) : 'agent-bridge run started: ' + path.basename(filePath) + ' — the client model answers all pipeline calls');
       // Render PDF pages to images for this lane. The pipeline's default is to
       // attach the whole PDF to a vision call — correct for Gemini, which takes
       // PDFs natively, but unusable here: a single inline part over
@@ -1460,16 +1506,55 @@ function startAgentRun(filePath, outDir, opts) {
       // ones beyond a single response's budget stay individually fetchable by
       // image_index. visionMode is a complete driver feature that until now
       // nothing ever switched on.
-      const summary = await remediateOneFile(
-        filePath, outDir,
-        Object.assign({}, opts, { modelBridge, visionMode: 'images' }),
-        rlog,
-        { signal: run.abortController.signal },
-      );
+      const rows = [];
+      for (const file of run.workflow.files) {
+        if (run.abortController.signal.aborted) throw new Error('Run cancelled');
+        run.filePath = file; run.answeredCache.clear(); run.progress.currentFile = file; persistAgentRun(run);
+        try {
+          let summary;
+          if (!run.workflow.narrationOnly) {
+            const compatibility = { inputSha256: await sha256File(file), optionsSha256: checkpointOptionsDigest(opts), engineSha256: checkpointEngineDigest() };
+            const prior = run.workflow.skipExisting !== false && await findValidCompletionManifest(file, outDir, compatibility);
+            summary = prior ? Object.assign({}, prior.summary, { reused: true }) : await remediateOneFile(
+              file, outDir, Object.assign({}, opts, { modelBridge, visionMode: 'images' }), rlog,
+              { signal: run.abortController.signal, compatibility });
+          } else summary = { input: file, files: {} };
+          if (opts.narration && opts.narration !== 'none') {
+            const htmlPath = run.workflow.narrationOnly ? file : summary.files.accessibleHtml;
+            if (!htmlPath) throw new Error('Remediation produced no accessible HTML to narrate');
+            if(summary.contentCoverage?.reviewRequired)throw Error('Source-to-HTML content coverage requires review before narration. Review '+summary.files.report);
+            summary.narration = await Narration.narrate({
+              filePath: htmlPath, outputDir: outDir, sourceCoverage:summary.contentCoverage||null, assetsRoot: Driver.ASSETS_ROOT, stateDir: STATE_DIR,
+              resolveChromium: Driver.resolveChromium, mode: opts.narration, voice: opts.narrationVoice, provider: opts.narrationProvider, language: opts.narrationLanguage,
+              epub: opts.readalongEpub, maxRunMinutes: opts.maxRunMinutes, signal: run.abortController.signal, onLog: rlog,
+              onProgress: value => { run.progress.narration = value; },
+              claimPath: name => claimOutputPath(outDir, name),
+            });
+            summary.resources = [...(summary.resources || []), ...(publishRunArtifacts(run.runId + '-audio-' + rows.length,
+              htmlPath, outDir, summary.narration.files) || [])];
+            if (run.workflow.narrationOnly) summary.files = summary.narration.files;
+            if(summary.narration.reviewRequired){summary.reviewRequired=true;summary.deliveryStatus='review-required';}
+            else if(run.workflow.narrationOnly){summary.reviewRequired=false;summary.deliveryStatus=summary.narration.deliveryStatus||'complete-for-tested-scope';}
+          }
+          rows.push({ file, status: 'completed', result: summary });run.progress.completed++;
+        } catch (error) {
+          if (run.abortController.signal.aborted || run.workflow.files.length === 1) throw error;
+          rows.push({ file, status: 'failed', error: error.message || String(error) });run.progress.failed++;
+          rlog('file failed: ' + path.basename(file) + ': ' + (error.message || error));
+        }
+        run.progress.currentFile = null;run.partialRows = rows;persistAgentRun(run);
+      }
+      const summary = rows.length === 1 ? rows[0].result : { files: rows, total: rows.length,
+        completed: run.progress.completed, failed: run.progress.failed,
+        outcome: run.progress.failed ? 'completed_with_failures' : rows.some(row=>row.result?.reviewRequired) ? 'completed_with_review' : 'completed',
+        reviewRequired:rows.some(row=>row.result?.reviewRequired),reviewFiles:rows.filter(row=>row.result?.reviewRequired).map(row=>row.file),
+        failedFiles: rows.filter(row=>row.status==='failed').map(row=>row.file),
+        ...(run.progress.failed ? { retry: { tool: 'remediation_agent_resume', arguments: { run_id: run.runId } } } : {}),
+        note: 'Review each file verdict. Resume retries failures and reuses hash-verified completed documents.' };
       run.status = 'completed';
       const lat = run.latenciesMs;
       run.result = Object.assign({}, summary, {
-        modelTransport: 'agent-bridge',
+        modelTransport: run.workflow.narrationOnly ? 'none' : 'agent-bridge',
         modelCallsAnswered: run.modelCalls,
         bridgeStats: {
           pipelineModelCalls: run.modelCalls,
@@ -1483,7 +1568,7 @@ function startAgentRun(filePath, outDir, opts) {
           } : null,
         },
       });
-      rlog('completed: verdict ' + (summary && summary.verdict && summary.verdict.level ? summary.verdict.level : 'unavailable'));
+      rlog(rows.length > 1 ? 'batch finished: ' + run.progress.completed + ' completed, ' + run.progress.failed + ' failed, ' + rows.filter(row=>row.result?.reviewRequired).length + ' require review' : run.workflow.narrationOnly ? 'completed: narration outputs; verification ' + (summary.deliveryStatus||'review-required') : 'completed: verdict ' + (summary && summary.verdict && summary.verdict.level ? summary.verdict.level : 'unavailable'));
     } catch (e) {
       run.status = run.abortController.signal.aborted ? 'cancelled' : 'failed';
       run.error = (e && e.message) || String(e);
@@ -1492,6 +1577,7 @@ function startAgentRun(filePath, outDir, opts) {
       failPending('Run finished');
       if (busyWith === 'pdf_remediate_agent') busyWith = null;
       run.updatedAt = Date.now();
+      try { persistAgentRun(run); } catch (error) { run.status = 'failed'; run.error = 'Could not persist run: ' + error.message; }
       flushAgentWaiters(run);
     }
   })();
@@ -1507,6 +1593,8 @@ function requireJob(args) {
 // ── Shared remediate-and-write runner (sync tool, job, and batch all use it) ──
 
 function validateRemediateOptions(args) {
+  if(args.effort !== undefined && !['standard','thorough'].includes(args.effort))throw invalidParams('effort must be standard or thorough');
+  const thorough = args.effort === 'thorough';
   const targetScore = optionalBoundedNumber(args, 'target_score', 50, 100);
   const fixPasses = optionalBoundedNumber(args, 'fix_passes', 0, 5);
   const polishPasses = optionalBoundedNumber(args, 'polish_passes', 0, 3);
@@ -1528,12 +1616,12 @@ function validateRemediateOptions(args) {
   return {
     pageRange,
     targetScore: targetScore === undefined ? 95 : targetScore,
-    fixPasses: fixPasses === undefined ? 2 : fixPasses,
-    polishPasses: polishPasses === undefined ? 0 : polishPasses,
+    fixPasses: fixPasses === undefined ? (thorough ? 3 : 2) : fixPasses,
+    polishPasses: polishPasses === undefined ? (thorough ? 1 : 0) : polishPasses,
     taggedPdf: args.tagged_pdf !== false,
-    autoContinue: args.auto_continue === true,
+    autoContinue: args.auto_continue === undefined ? thorough : args.auto_continue,
     autoContinueRounds: autoContinueRounds === undefined ? 3 : autoContinueRounds,
-    validateUa: args.validate_ua === true,
+    validateUa: args.validate_ua === undefined ? thorough : args.validate_ua,
     ocrLanguage: optionalOcrLanguage(args),
     maxRunMinutes: Math.max(1, Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30),
   };
@@ -1541,6 +1629,8 @@ function validateRemediateOptions(args) {
 
 function checkpointOptionsDigest(options) {
   return jsonSha256({
+    ...(options.pageRange ? { pageRange: options.pageRange } : {}),
+    ...(options.modelTransport && options.modelTransport !== 'gemini' ? { modelTransport: options.modelTransport } : {}),
     targetScore: options.targetScore,
     fixPasses: options.fixPasses,
     polishPasses: options.polishPasses,
@@ -1679,10 +1769,10 @@ function listBatchInputs(dirPathArg, limit, label) {
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
   catch (_) { throw invalidParams('arguments.dir_path does not exist or is unreadable: ' + dir); }
   const files = entries
-    .filter((e) => e.isFile() && /\.(pdf|docx|pptx)$/i.test(e.name) && !/-tagged\.pdf$/i.test(e.name)) // don't re-process our own outputs
+    .filter((e) => e.isFile() && (label === 'narration' ? /\.html?$/i : label === 'keyless remediation' ? /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i : /\.(pdf|docx|pptx)$/i).test(e.name) && !/-tagged\.pdf$/i.test(e.name) && !(label === 'narration' && /-readalong(?:-\d+)?\.html?$/i.test(e.name))) // don't re-process our own outputs
     .map((e) => path.join(dir, e.name))
     .sort();
-  if (!files.length) throw invalidParams('No .pdf files found in ' + dir);
+  if (!files.length) throw invalidParams('No supported document files found in ' + dir);
   if (files.length > limit) throw invalidParams('Folder has ' + files.length + ' documents; the ' + label + ' batch limit is ' + limit + '. Split the folder.');
   return { dir, files };
 }
@@ -1887,11 +1977,12 @@ const ARTIFACT_URI_PREFIX = 'alloflow-remediation://artifact/';
 const ARTIFACT_ROLE_META = {
   source: { label: 'Original document (before)', description: 'The untouched input document the remediation started from.' },
   accessibleHtml: { label: 'Accessible HTML (after)', description: 'The remediated, accessible version of the document.' },
-  taggedPdf: { label: 'Tagged PDF (after)', description: 'The tagged PDF export, present only when the verdict allowed distribution.' },
+  taggedPdf: { label: 'Tagged PDF (check verification report)', description: 'The tagged export; review-required filenames and report status identify outputs needing further verification.' },
   report: { label: 'Remediation report', description: 'Scores, distribution verdict and every fidelity/honesty disclosure.' },
   completionManifest: { label: 'Completion manifest', description: 'Role, size and sha256 of each artifact, bound to the source hash.' },
 };
-const ARTIFACT_ROLE_ORDER = ['source', 'accessibleHtml', 'taggedPdf', 'report', 'completionManifest'];
+Object.assign(ARTIFACT_ROLE_META, { audioWav: { label: 'Complete narration (WAV)' }, audioMp3: { label: 'Complete narration (MP3)' }, narratedHtml: { label: 'Document with audio playback' }, readalongEpub: { label: 'Synchronized read-along EPUB' }, narrationReport: { label: 'Narration coverage report' } });
+const ARTIFACT_ROLE_ORDER = Object.keys(ARTIFACT_ROLE_META);
 // Big enough for real remediated documents, small enough that one read cannot
 // wedge a stdio transport. Oversized artifacts still list, and the error names
 // the path so the caller can open it directly.
@@ -1899,6 +1990,7 @@ const ARTIFACT_MAX_READ_BYTES = 12 * 1024 * 1024;
 const ARTIFACT_MIME_BY_EXT = {
   '.html': 'text/html', '.htm': 'text/html', '.json': 'application/json',
   '.pdf': 'application/pdf', '.md': 'text/markdown', '.txt': 'text/plain',
+  '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.epub': 'application/epub+zip',
 };
 const ARTIFACT_TEXT_MIMES = new Set(['text/html', 'application/json', 'text/markdown', 'text/plain']);
 const MAX_ARTIFACT_RUNS = 100;
@@ -2544,7 +2636,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
         onLog,
         () => validatePdfUaLocally(files.taggedPdf, onLog, signal),
       );
-      pdfUa = { standard: 'PDF/UA-1 (ISO 14289-1)', compliant: !!(v && v.compliant), validator: v && v.validator, validatorVersion: v && v.validatorVersion, failedChecks: (v && v.failedChecks) || 0, failedRuleCount: (v && v.failedRuleCount) || 0, failedRules: ((v && v.failedRules) || []).slice(0, 100) };
+      pdfUa = v;
     } catch (e) {
       // Cancellation is control flow, not a validation verdict. Let the owner
       // mark the request/job cancelled instead of publishing a completed report
@@ -2565,6 +2657,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     aiVerificationIncomplete: out.aiVerificationIncomplete,
     scoreSource: out.scoreSource,
     estimatedMinimumScore: out.estimatedMinimumScore,
+    contentCoverage: out.contentCoverage ? {...out.contentCoverage,sourceSha256:compatibility.inputSha256,htmlSha256:sha256Bytes(Buffer.from(out.accessibleHtml||'','utf8'))} : null,
     integrityCoverage: out.integrityCoverage,
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
@@ -2581,8 +2674,20 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     taggedPdfError: out.taggedPdfError || undefined,
     runId: out.runId,
     stats: out.stats,
-    note: 'Scores and the verdict come from AlloFlow\'s honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; the tagged PDF only carries a PDF/UA declaration when it earned one.',
+    note: 'Scores and the verdict come from AlloFlow\'s honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.',
   };
+  const pdfEvidence = Verification.pdfUaEvidence(pdfUa, {
+    requested: !!opts.validateUa, hasPdf: !!files.taggedPdf,
+    sha256: files.taggedPdf ? await sha256File(files.taggedPdf) : null,
+    bytes: files.taggedPdf ? fs.statSync(files.taggedPdf).size : null,
+  });
+  Verification.applyPdfDeliveryEvidence(summary, pdfEvidence);
+  if (files.taggedPdf && pdfEvidence.status !== 'passed') {
+    const reviewPath = claimOutputPath(outDir, stem + '-tagged-review-required.pdf');
+    fs.renameSync(files.taggedPdf, reviewPath);
+    files.taggedPdf = reviewPath;
+    if (onLog) onLog('Tagged PDF requires review: independent PDF/UA check ' + pdfEvidence.status + '. See the remediation report.');
+  }
   files.report = claimOutputPath(outDir, stem + '-remediation-report.json');
   files.completionManifest = completionManifestPath(outDir, files.report);
   atomicWriteJson(files.report, summary);
@@ -2934,7 +3039,7 @@ const TOOLS = [
   {
     name: 'audit_html',
     title: 'Audit an HTML file for accessibility',
-    description: 'Run the same two-engine accessibility audit the remediation pipeline uses, on a local .html file: the AI content rubric (score, per-issue WCAG mapping) plus the axe-core automated engine. Title II is web-first — use this to evidence-check web page exports, LMS content, or any saved HTML without remediating it. Local FILE input only; this tool never fetches URLs, so nothing leaves the machine except the audited HTML going to the Gemini API under your key. Writes no files. Typically 1-2 minutes.',
+    description: 'Run the same three-engine accessibility audit the remediation pipeline uses, on a local .html file: the AI content rubric (score, per-issue WCAG mapping), the axe-core engine and IBM Equal Access. Each engine reports its own status (passed, failed, partial, review-required, unavailable); an engine failure is reported, never counted as a pass, and the result carries the canonical verificationState. Title II is web-first — use this to evidence-check web page exports, LMS content, or any saved HTML without remediating it. Local FILE input only; this tool never fetches URLs, so nothing leaves the machine except the audited HTML going to the Gemini API under your key. Writes no files. Typically 1-2 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
@@ -2957,6 +3062,7 @@ const TOOLS = [
   },
   (() => {
     const REMEDIATE_OPTION_PROPS = {
+      effort: { type: 'string', enum: ['standard', 'thorough'], description: 'Thorough enables 3 fix passes, 1 polish pass, bounded auto-continue and independent PDF/UA validation. Explicit options override the preset.' },
       output_dir: { type: 'string', description: 'Directory for output files (default: alongside the input)' },
       target_score: { type: 'number', minimum: 50, maximum: 100, description: 'Stop-improving target (default 95)' },
       fix_passes: { type: 'number', minimum: 0, maximum: 5, description: 'Max auto-fix passes (default 2)' },
@@ -3082,17 +3188,24 @@ const TOOLS = [
         title: 'Start a client-model remediation',
         description: "Run the full remediation pipeline with YOUR model (the MCP client's) as the engine — NO Gemini key and NO Gemini egress. The pipeline pauses at each internal model call and publishes it as a pending request; fetch them with remediation_agent_requests and answer each with remediation_agent_respond, following the embedded prompt's format contract exactly. Expect roughly 10-40 requests per document (more with auto_continue or scanned pages; scanned pages arrive as images). Document-derived content is surfaced to the client conversation instead of being sent to Gemini. Writes the same outputs and honesty-gated report as pdf_remediate. The run occupies the single-flight lane until it finishes, fails, is cancelled, or hits max_run_minutes.",
         inputSchema: {
-          type: 'object', required: ['file_path'],
+          type: 'object', oneOf: [{ required: ['file_path'] }, { required: ['dir_path'] }],
           properties: Object.assign(
             {
               file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' },
+              dir_path: { type: 'string', description: 'Process this folder sequentially (up to 60 supported documents, non-recursive). Use instead of file_path.' },
+              skip_existing: { type: 'boolean', description: 'Reuse hash-verified completed remediations (default true); never skip based on file names alone.' },
+              narration: { type: 'string', enum: ['none','accessible','natural'], description: 'Optional local Kokoro/Piper narration after remediation. Accessible announces document structure; natural is continuous reading. Default none.' },
+              narration_voice: { type: 'string', description: 'auto (default), a Kokoro English voice id, or the language-matched Piper voice from document_narration_voices.' },
+              narration_provider:{type:'string',enum:['auto','kokoro','piper'],default:'auto'},
+              narration_language:{type:'string',description:'BCP-47 language override; auto uses the document lang attribute.'},
+              readalong_epub: { type: 'boolean', description: 'Include a synchronized EPUB with narration (default true when narration is requested).' },
               max_run_minutes: { type: 'number', minimum: 1, maximum: 180, description: 'Wall-clock limit for this interactive run (default 60; the env default of 30 is usually too tight for a conversation-paced run)' },
             },
             REMEDIATE_OPTION_PROPS,
           ),
           additionalProperties: false,
         },
-        annotations: { title: 'Start a client-model remediation', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+        annotations: { title: 'Start a client-model remediation', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
       },
       {
         name: 'remediation_agent_requests',
@@ -3121,7 +3234,7 @@ const TOOLS = [
           properties: {
             run_id: { type: 'string', minLength: 1, maxLength: 200 },
             request_id: { type: 'string', minLength: 1, maxLength: 200 },
-            text: { type: 'string', minLength: 1, maxLength: 8000000, description: 'The reply, exactly as the model answer (no wrapper, no commentary)' },
+            text: { type: 'string', minLength: 1, maxLength: 3000000, description: 'The reply, exactly as the model answer (no wrapper, no commentary)' },
           },
           additionalProperties: false,
         },
@@ -3140,6 +3253,45 @@ const TOOLS = [
       },
     ];
   })(),
+
+  {
+    name:'document_narration_preflight',title:'Check narration readiness before generating audio',
+    description:'Inspect one accessible HTML document or a folder (up to 60 files) using only local bundled helpers. Reports language-tagged blocks, voice routes, unsupported combinations, chunk counts and rough audio duration. Makes no model download or synthesis request. Does not certify accessibility or detect unmarked language changes. Use before a large narration run.',
+    inputSchema:{type:'object',oneOf:[{required:['file_path']},{required:['dir_path']}],additionalProperties:false,properties:{file_path:{type:'string'},dir_path:{type:'string'},narration:{type:'string',enum:['accessible','natural'],default:'accessible'},narration_provider:{type:'string',enum:['auto','kokoro','piper'],default:'auto'},narration_voice:{type:'string',default:'auto'},narration_language:{type:'string',default:'auto'}}},
+    annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
+  },
+  {
+    name:'document_narration_voices',title:'Find local narration languages and voices',
+    description:'List the bundled Piper language defaults, localized narration modes and voice model-card links without downloading models. Auto uses Kokoro for English and Piper otherwise. This reports configured support, not a guarantee that every voice has downloaded or been listening-tested.',
+    inputSchema:{type:'object',additionalProperties:false,properties:{language:{type:'string',description:'Optional BCP-47 language filter.'}}},
+    annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
+  },
+  {
+    name:'remediation_agent_runs',title:'Find saved keyless and narration runs',
+    description:'List recent saved runs, including interrupted work after a restart. Use this to recover run IDs and decide which user-requested task to resume. Does not start work or download anything.',
+    inputSchema:{type:'object',additionalProperties:false,properties:{limit:{type:'integer',minimum:1,maximum:100,default:20}}},
+    annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
+  },
+  {
+    name: 'document_narrate_start', title: 'Narrate an entire accessible document',
+    description: 'Create complete local Kokoro/Piper narration from one accessible HTML document or a folder (up to 60 files). Accessible mode (default) announces headings, lists, tables and image descriptions; natural mode reads continuously. Produces WAV, MP3, HTML playback and optional synchronized EPUB. Downloads public model/library dependencies; no document content goes to a model API. Automatic engine selection: Kokoro for English, Piper for supported other languages. Consult document_narration_voices for localized accessible-mode availability. Language-tagged blocks can switch voices automatically; language changes inside a single block require separate blocks. Returns immediately: poll remediation_agent_requests, and resume interrupted work with remediation_agent_resume. No model replies are needed.',
+    inputSchema: {type:'object',oneOf:[{required:['file_path']},{required:['dir_path']}],additionalProperties:false,properties:{
+      file_path:{type:'string'},dir_path:{type:'string'},output_dir:{type:'string'},narration:{type:'string',enum:['accessible','natural'],default:'accessible'},
+      narration_voice:{type:'string',default:'auto'},narration_provider:{type:'string',enum:['auto','kokoro','piper'],default:'auto'},narration_language:{type:'string',default:'auto'},max_run_minutes:{type:'number',minimum:1,maximum:180,default:180},readalong_epub:{type:'boolean',default:true}}},
+    annotations:{readOnlyHint:false,destructiveHint:false,openWorldHint:true},
+  },
+  {
+    name:'remediation_agent_resume',title:'Resume saved keyless work',
+    description:'Resume an interrupted document, folder, or narration run after a restart. Reuses hash-verified completed remediations and audio sections; an unfinished document may restart. Requires an active client to answer pending model requests. Optional narration may download public dependencies.',
+    inputSchema:{type:'object',required:['run_id'],additionalProperties:false,properties:{run_id:{type:'string'}}},
+    annotations:{readOnlyHint:false,destructiveHint:false,openWorldHint:true},
+  },
+  {
+    name:'remediation_agent_respond_batch',title:'Answer pending requests and fetch the next work',
+    description:'Atomically validate and accept 1-32 independent pending model replies, then return the next requests and correlated images. Saves tool round trips; read every prompt page and required image before replying. For a single reply this also replaces a separate respond/poll pair.',
+    inputSchema:{type:'object',required:['run_id','responses'],additionalProperties:false,properties:{run_id:{type:'string'},wait_seconds:{type:'number',minimum:0,maximum:30},responses:{type:'array',minItems:1,maxItems:32,items:{type:'object',required:['request_id','text'],additionalProperties:false,properties:{request_id:{type:'string'},text:{type:'string',minLength:1,maxLength:3000000}}}}}},
+    annotations:{readOnlyHint:false,destructiveHint:false,openWorldHint:false},
+  },
 ].flat();
 
 // This is the one classification source for capability reporting. It does not duplicate
@@ -3171,6 +3323,9 @@ const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES = Object.freeze([
   'remediation_setup',
   'export_accessible_office',
   'export_alt_format',
+  'document_narrate_start',
+  'pdf_remediate_agent_start',
+  'remediation_agent_resume',
 ]);
 const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET = new Set(PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES);
 
@@ -3184,7 +3339,7 @@ const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET = new Set(PUBLIC_DEPENDENCY_DOWNLOAD_T
 // which the `claude mcp add --env` / `claude_desktop_config.json` "env" route
 // does not.
 const KEY_SETUP_HINT = [
-  'A Gemini key is OPTIONAL and only unlocks the AI tools. To add one:',
+  'A Gemini key is OPTIONAL; full keyless AI remediation already uses your client model. To choose Gemini instead:',
   '(1) get a free key at https://aistudio.google.com/app/apikey (no credit card, about two minutes);',
   '(2) supply it EITHER by setting the GEMINI_API_KEY environment variable in your OS/shell,',
   'OR by writing GEMINI_API_KEY=<value> into a file OUTSIDE this repository and setting',
@@ -3276,7 +3431,7 @@ const S_REMEDIATE = obj({
   beforeScore: { type: ['number', 'null'] }, afterScore: { type: ['number', 'null'] },
   aiVerificationIncomplete: { type: ['boolean', 'null'], description: 'True when the AI semantic audit degraded — the headline is then the deterministic score' },
   scoreSource: { type: ['string', 'null'] }, estimatedMinimumScore: { type: ['number', 'null'] },
-  integrityCoverage: {}, integrityWarning: {}, fidelityNotes: {},
+  contentCoverage: {}, integrityCoverage: {}, integrityWarning: {}, fidelityNotes: {},
   verificationState: { type: ['string', 'null'], enum: ['complete', 'complete-for-tested-scope', 'partial', 'review-required', 'unavailable', null] },
   verificationHtmlBound: S_NULLABLE_BOOL,
   remainingAxeViolations: S_NULLABLE_NUM,
@@ -3298,7 +3453,7 @@ const S_REMEDIATE = obj({
     sliced: S_NULLABLE_BOOL,
   }, ['configuredAuditorCap', 'requestedAuditors', 'completedAuditors', 'sliced'], true),
   autoContinue: {}, taggedPdfError: {}, runId: {}, stats: {},
-  pdfUa: obj({ standard: S_STR, compliant: S_BOOL, failedChecks: S_NUM, failedRules: { type: 'array' } }),
+  pdfUa: {}, verificationChecks: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
   note: S_STR,
 }, ['input', 'files']);
 const S_JOB_VIEW = obj({
@@ -3371,7 +3526,7 @@ const OUTPUT_SCHEMAS = {
   }, ['ok', 'stage']),
   remediation_setup: obj({ ok: S_BOOL, installed: S_BOOL, alreadyInstalled: S_BOOL, error: S_STR, note: S_STR }, ['ok']),
   audit_two_engines: obj({
-    input: S_STR, axe: {}, equalAccess: {}, equalAccessError: S_STR,
+    input: S_STR, axe: {}, equalAccess: {}, equalAccessError: {type:['string','null']}, checks: {}, engineErrors: {}, scope: S_STR,
     onlyAxe: { type: 'array', items: S_STR }, onlyEqualAccess: { type: 'array', items: S_STR },
     disagreements: S_NUM, note: S_STR,
   }, ['input', 'axe']),
@@ -3427,6 +3582,7 @@ const OUTPUT_SCHEMAS = {
     bytes: S_NUM, modelFree: S_BOOL,
     // ePub / DAISY only
     entries: { type: 'array' }, language: S_STR, identifier: S_STR, navEntries: S_NUM,
+    epubValidation:{},verificationFiles:{},reviewRequired:S_BOOL,deliveryStatus:S_STR,
     selfChecked: S_BOOL, valid: S_BOOL, structuralErrors: { type: 'array' },
     // BRF only
     grade: S_NUM, code: S_STR, droppedCharacters: S_NUM, sourceCharacters: S_NUM,
@@ -3454,7 +3610,8 @@ const OUTPUT_SCHEMAS = {
   audit_html: obj({
     fileName: S_STR, score: { type: ['number', 'null'] },
     sectionsAudited: { type: ['number', 'null'] }, sectionsRequested: { type: ['number', 'null'] },
-    issueCount: S_NUM, issues: { type: 'array', items: obj({ issue: S_STR, wcag: S_STR, severity: S_STR }) },
+    issueCount: S_NULLABLE_NUM, issues: { type: 'array', items: obj({ issue: S_STR, wcag: S_STR, severity: S_STR }) },
+    equalAccessFailures:S_NULLABLE_NUM,equalAccessScore:S_NULLABLE_NUM,equalAccessReviewFindings:S_NULLABLE_NUM,axeIncomplete:S_NULLABLE_NUM,checks:{},engineErrors:{},verificationState:S_STR,executionState:S_STR,outcomeState:S_STR,requiresManualReview:S_BOOL,verificationCoverage:{},note:S_STR,
     passCount: { type: ['number', 'null'] }, axeViolations: { type: ['number', 'null'] }, axeScore: { type: ['number', 'null'] },
   }),
   remediation_job_diagnostics: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, source: { type: 'string', enum: ['job', 'last-run'] }, capturedAt: S_STR, fileName: S_STR, diagnostics: {} }, ['ok']),
@@ -3467,7 +3624,7 @@ const OUTPUT_SCHEMAS = {
   }, ['runId', 'status', 'modelTransport']),
   remediation_agent_requests: obj({
     runId: S_STR,
-    status: { type: 'string', enum: ['running', 'completed', 'failed', 'cancelled'] },
+    status: { type: 'string', enum: ['running', 'completed', 'failed', 'cancelled', 'interrupted'] },
     file: S_STR, startedAt: S_STR,
     modelCallsSoFar: S_NUM, pendingCount: S_NUM,
     log: { type: 'array', items: S_STR },
@@ -3501,6 +3658,16 @@ const OUTPUT_SCHEMAS = {
   remediation_agent_cancel: obj({ ok: S_BOOL, runId: S_STR, status: S_STR, killedRun: S_BOOL, error: S_STR, note: S_STR }, ['ok']),
 };
 
+OUTPUT_SCHEMAS.remediation_capabilities.properties.agentBridge = {};
+OUTPUT_SCHEMAS.remediation_capabilities.properties.narration = {};
+OUTPUT_SCHEMAS.document_narration_preflight = obj({epubVerification:{},files:{type:'array',items:{}},total:S_NUM,ready:S_NUM,blocked:S_NUM,note:S_STR},['files','total','ready','blocked','note']);
+OUTPUT_SCHEMAS.document_narration_voices = obj({voices:{type:'array',items:{}},kokoro:{},defaultProvider:S_STR,notes:{type:'array',items:S_STR}},['voices','kokoro','defaultProvider','notes']);
+OUTPUT_SCHEMAS.remediation_agent_runs = obj({runs:{type:'array',items:{}},note:S_STR},['runs','note']);
+OUTPUT_SCHEMAS.document_narrate_start = obj({runId:S_STR,status:S_STR,note:S_STR},['runId','status']);
+OUTPUT_SCHEMAS.remediation_agent_resume = OUTPUT_SCHEMAS.document_narrate_start;
+OUTPUT_SCHEMAS.remediation_agent_respond_batch = OUTPUT_SCHEMAS.remediation_agent_requests;
+OUTPUT_SCHEMAS.remediation_agent_requests.properties.progress = {};
+OUTPUT_SCHEMAS.remediation_agent_requests.properties.resumable = S_BOOL;
 for (const t of TOOLS) {
   if (OUTPUT_SCHEMAS[t.name]) t.outputSchema = OUTPUT_SCHEMAS[t.name];
   else throw new Error('Tool ' + t.name + ' has no outputSchema — every tool here returns structuredContent, so add one.');
@@ -3670,7 +3837,7 @@ const TOOL_HANDLERS = {
     } else {
       onboarding = {
         state: 'keyless-ready', nextTool: 'remediation_selftest', actionRequired: false,
-        message: 'Local tools are ready without an account or key, and cover audit, structure checks, extraction, exports, redaction, conformance reports and PDF/UA validation. ' + KEY_SETUP_HINT,
+        message: 'Full keyless remediation is ready: use pdf_remediate_agent_start and answer its requests with the client model. Pass dir_path for a folder, effort: thorough for bounded improvement and validation, and narration: accessible to include local Kokoro/Piper audio. Local tools also cover structure, extraction and exports. ' + KEY_SETUP_HINT,
       };
     }
     return {
@@ -3682,6 +3849,10 @@ const TOOL_HANDLERS = {
       keylessModeAvailable: true,
       keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
       keylessToolNames: KEYLESS_TOOL_NAMES,
+      agentBridge: { batchLimit: BATCH_LIMIT_REMEDIATE, resumable: true, activeClientRequired: true, defaultEffort: 'standard' },
+      narration: { available: Narration.ASSETS.every(file => fs.existsSync(path.join(Driver.ASSETS_ROOT, file))),
+        modes: ['accessible','natural'], defaultMode: 'accessible', languages: fs.existsSync(path.join(Driver.ASSETS_ROOT,'piper_tts_loader.js')) ? Narration.voiceCatalog(Driver.ASSETS_ROOT).map(v=>v.language) : [], accessibleLanguages:Narration.accessibleLanguages, defaultVoice: 'auto', providers:['auto','kokoro','piper'], voiceDiscoveryTool:'document_narration_voices', preflightTool:'document_narration_preflight', mixedLanguageBlocks:true, inlineLanguageSwitches:true, completedOutputReuse:true, incrementalClipReuse:true, contentCoverageChecks:true, epubVerification:EpubValidation.capabilities(),
+        modelSetup: 'automatic on first use; public dependency downloads', completeSectionsRequired: true },
       geminiRequiredToolNames: GEMINI_REQUIRED_TOOL_NAMES,
       dataHandling: {
         offlineToolNames: OFFLINE_TOOL_NAMES,
@@ -3689,7 +3860,7 @@ const TOOL_HANDLERS = {
         credentialCheckToolNames: CREDENTIAL_CHECK_TOOL_NAMES,
         geminiDocumentEgressToolNames: GEMINI_REQUIRED_TOOL_NAMES,
         dependencyDownloadsSendDocumentContent: false,
-        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key. The agent-bridge tools (pdf_remediate_agent_start and its requests/respond/cancel companions) are offline for the server, but they surface document-derived prompts to the MCP CLIENT as tool results, so that content reaches whatever model provider the client conversation runs on.',
+        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key. Agent-bridge model calls use no server-side model API; optional Kokoro/Piper narration downloads public dependencies. These tools surface document-derived prompts to the MCP CLIENT as tool results, so that content reaches whatever model provider the client conversation runs on.',
       },
       onboarding,
       alloflowAccountRequired: false,
@@ -3718,7 +3889,7 @@ const TOOL_HANDLERS = {
       // Absent means unrestricted, which is the honest word for it: the connector can read and
       // write wherever this user can. Set ALLOFLOW_MCP_ALLOWED_ROOTS to make that a boundary.
       allowedRoots: ALLOWED_ROOTS.length ? ALLOWED_ROOTS : null,
-      networkEgress: ['generativelanguage.googleapis.com (document or derived content; Gemini tools only)', 'Playwright browser download service (remediation_setup only; no document)', 'unpkg.com and cdn.jsdelivr.net (pinned exporter libraries only; no document intentionally included)'],
+      networkEgress: ['generativelanguage.googleapis.com (document or derived content; Gemini tools only)', 'Playwright browser download service (remediation_setup only; no document)', 'unpkg.com, cdn.jsdelivr.net and cdnjs.cloudflare.com (public export/narration libraries and ONNX runtime; no document intentionally included)', 'huggingface.co and its CDN (Kokoro/Piper model/voice downloads; no document intentionally included)'],
       ready: keyUsableNow && browserRuntimeReady,
       fullAiPipelineReady: keyUsableNow && browserRuntimeReady,
       // `ready` is a PRESENCE check, and presence is not function. It reported true for an install
@@ -3798,6 +3969,11 @@ const TOOL_HANDLERS = {
             ? 'Structure comes from the source HTML, so verify it is the remediated file. The self-check is structural only and is not epubcheck; a clean result is not a conformance claim.'
             : 'DAISY 3 full text, no recorded audio. A DAISY reader supplies speech, braille or large print from this text. NOTHING validated this package — there is no DAISY validator in this connector, so absence of errors is not evidence of correctness; run it through a DAISY reader or ZedVal before relying on it.',
         });
+      }
+      if(format==='epub'){
+        const verification=await EpubValidation.validate(dest,{stateDir:STATE_DIR,resolveChromium:Driver.resolveChromium,claimPath:name=>claimOutputPath(outDir,name),onLog:ctx?.onProgress,signal:ctx?.signal});
+        res.epubValidation=verification;res.verificationFiles=verification.files;res.reviewRequired=verification.reviewRequired;res.deliveryStatus=verification.status;
+        res.note='The structural self-check and independent EPUBCheck/Ace findings have distinct scopes. Inspect epubValidation and complete human review before distributing.';
       }
       return res;
     });
@@ -4049,12 +4225,19 @@ const TOOL_HANDLERS = {
       html: fs.readFileSync(htmlPath, 'utf8'), onLog: ctx && ctx.onProgress,
     }));
     const disagreements = out.onlyAxe.length + out.onlyEqualAccess.length;
+    const engineErrors = out.engineErrors || (out.equalAccessError ? { equalAccess: out.equalAccessError } : {});
+    const failedEngines = Object.keys(engineErrors);
     return {
       input: htmlPath, axe: out.axe, equalAccess: out.equalAccess,
       equalAccessError: out.equalAccessError || undefined,
+      // Per-engine status contract (passed/failed/partial/review-required/unavailable): an engine
+      // that failed to run is `unavailable`, never silently a pass. Same helper as audit_html.
+      checks: out.checks || Verification.auditChecks({ axe: out.axe, equalAccess: out.equalAccess, includeAi: false }),
+      engineErrors, scope: out.scope || 'static HTML; live scripts and interactions are not exercised',
       onlyAxe: out.onlyAxe, onlyEqualAccess: out.onlyEqualAccess, disagreements,
-      note: out.equalAccessError
-        ? 'IBM Equal Access failed to run, so this is a SINGLE-engine result. Do not describe it as cross-validated.'
+      note: failedEngines.length
+        ? (failedEngines.length === 2 ? 'Neither engine ran (' + failedEngines.join(', ') + ' failed), so there is NO automated result here.'
+          : (failedEngines[0] === 'axe' ? 'axe-core' : 'IBM Equal Access') + ' failed to run, so this is a SINGLE-engine result. Do not describe it as cross-validated.')
         : (disagreements
           ? disagreements + ' rule(s) flagged by one engine and not the other. Those are the ones worth a human look.'
           : 'The two engines agree on rule findings. Note their SCORES can still differ, and neither covers the criteria that need human judgment.'),
@@ -4139,7 +4322,7 @@ const TOOL_HANDLERS = {
   },
 
   async pdf_remediate(args, ctx) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -4154,7 +4337,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_start(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -4190,7 +4373,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_batch_remediate_start(args) {
-    assertAllowedKeys(args, ['dir_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['dir_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
     if (args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean') throw invalidParams('arguments.skip_existing must be a boolean');
     const skipExisting = args.skip_existing !== false;
     const { dir, files: pdfs } = listBatchInputs(args.dir_path, BATCH_LIMIT_REMEDIATE, 'remediation');
@@ -4210,7 +4393,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_from_scoreboard_start(args) {
-    assertAllowedKeys(args, ['scoreboard_path', 'dir_path', 'bands', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['scoreboard_path', 'dir_path', 'bands', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
     if (args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean') throw invalidParams('arguments.skip_existing must be a boolean');
     const skipExisting = args.skip_existing !== false;
     const bands = validateBands(args.bands);
@@ -4367,31 +4550,88 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_agent_start(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range', 'max_run_minutes'], 'arguments');
-    const filePath = requireDocPath(args);
-    const opts = validateRemediateOptions(args);
+    assertAllowedKeys(args, ['file_path','dir_path','skip_existing','effort','narration','narration_voice','narration_provider','narration_language','readalong_epub','output_dir','target_score','fix_passes','polish_passes','tagged_pdf','auto_continue','auto_continue_rounds','validate_ua','ocr_language','page_range','max_run_minutes'], 'arguments');
+    if (!!args.file_path === !!args.dir_path) throw invalidParams('Pass exactly one of file_path or dir_path');
+    if(args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean')throw invalidParams('skip_existing must be a boolean');
+    const files = args.dir_path ? listBatchInputs(args.dir_path, BATCH_LIMIT_REMEDIATE, 'keyless remediation').files : [requireDocPath(args)];
+    const opts = Object.assign(validateRemediateOptions(args), validateNarrationOptions(args), { modelTransport: 'agent-bridge' });
     const maxRunMinutes = optionalBoundedNumber(args, 'max_run_minutes', 1, 180);
     opts.maxRunMinutes = maxRunMinutes === undefined ? Math.max(60, opts.maxRunMinutes) : maxRunMinutes;
-    const outDir = resolveOutputDir(args, filePath);
-    // No requireGeminiKey(): the client's model is the engine. The single-flight lane must be
-    // free — an agent run cannot queue behind hours of batch work while a conversation waits.
-    if (busyWith) {
-      const e = new Error('A ' + busyWith + ' run is already in progress; the pipeline is single-flight per server. Wait for it (or cancel it), then start the agent run.');
-      e.busy = true;
-      throw e;
-    }
-    if (agentRun && agentRun.status === 'running') {
-      throw invalidParams('Agent-bridge run ' + agentRun.runId + ' is still running. Answer its requests, wait, or cancel it first.');
-    }
+    const outDir = resolveOutputDir(args, files[0]);
+    if(busyWith)throw invalidParams('A run is already in progress. Continue its requests or cancel it before starting another.');
     fs.mkdirSync(outDir, { recursive: true });
-    const run = startAgentRun(filePath, outDir, opts);
-    agentRun = run;
-    return {
-      runId: run.runId,
-      status: run.status,
-      modelTransport: 'agent-bridge',
-      note: 'YOU are the model for this run. Poll remediation_agent_requests (long-poll, default 20s) and answer every pending request with remediation_agent_respond, following each embedded prompt\'s format contract exactly. Expect roughly 10-40 requests. No Gemini key is used and nothing is sent to Gemini; prompts containing document content are surfaced to this conversation instead.',
-    };
+    agentRun = startAgentRun(files[0], outDir, opts, { files, skipExisting: args.skip_existing === true || (!!args.dir_path && args.skip_existing !== false) });
+    return { runId: agentRun.runId, status: 'running', modelTransport: 'agent-bridge',
+      note: 'Use remediation_agent_requests and answer the pending requests until terminal. Folder files run sequentially. After restart use remediation_agent_resume; verified completed files are reused. Optional narration uses local Kokoro/Piper and may download public dependencies.' };
+  },
+  async document_narration_preflight(args) {
+    assertAllowedKeys(args,['file_path','dir_path','narration','narration_voice','narration_provider','narration_language'],'arguments');
+    const files=narrationInputs(args),opts=validateNarrationOptions({narration:'accessible',...args});
+    if(opts.narration==='none')throw invalidParams('Choose accessible or natural narration');
+    return Narration.preflight({filePaths:files,stateDir:STATE_DIR,assetsRoot:Driver.ASSETS_ROOT,resolveChromium:Driver.resolveChromium,mode:opts.narration,provider:opts.narrationProvider,voice:opts.narrationVoice,language:opts.narrationLanguage});
+  },
+  document_narration_voices(args) {
+    assertAllowedKeys(args,['language'],'arguments');
+    let language;try{language=Narration.normalizeLanguage(args.language);}catch(error){throw invalidParams(error.message);}
+    const base=language==='auto'?null:language.split('-')[0];
+    const all=Narration.voiceCatalog(Driver.ASSETS_ROOT);
+    return {voices:all.filter(v=>!base||v.language===base),kokoro:{language:'en',defaultVoice:'af_heart',modes:['accessible','natural']},defaultProvider:'auto',notes:['Auto selects Kokoro for English and Piper for other supported languages.','Piper selects the listed default locale/voice for each base language. Narration does not translate text.','Languages without localized structural announcements support natural narration only.','Models download on first use. Each voice has its own model card; configured support does not mean every voice has been tested.']};
+  },
+  remediation_agent_runs(args) {
+    assertAllowedKeys(args,['limit'],'arguments');
+    const limit=optionalBoundedNumber(args,'limit',1,100)||20;
+    if(!Number.isInteger(limit))throw invalidParams('limit must be an integer');
+    const dir=path.join(STATE_DIR,'agent-runs');let entries=[];
+    try{entries=fs.readdirSync(dir).filter(n=>/^arun-[0-9a-f-]{36}\.json$/i.test(n)).map(n=>({name:n,time:fs.statSync(path.join(dir,n)).mtimeMs})).sort((a,b)=>b.time-a.time);}catch(error){if(error.code!=='ENOENT')throw error;}
+    const runs=[];
+    for(const entry of entries.slice(0,1000)) {try{const r=readAgentRecord(entry.name.replace(/\.json$/,''));const active=agentRun&&agentRun.runId===r.runId&&agentRun.status==='running';runs.push({runId:r.runId,status:active?'running':r.status==='running'?'interrupted':r.status,startedAt:r.startedAt,updatedAt:r.updatedAt,kind:r.workflow.narrationOnly?'narration':'remediation',files:r.workflow.files,progress:r.progress,error:r.error||null,resumable:!active});}catch(_){}if(runs.length>=limit)break;}
+    return {runs,note:'Resume user-requested work with remediation_agent_resume. An interrupted document may restart; verified completed files and audio sections are reused.'};
+  },
+  document_narrate_start(args) {
+    assertAllowedKeys(args, ['file_path','dir_path','output_dir','narration','narration_voice','narration_provider','narration_language','readalong_epub','max_run_minutes'], 'arguments');
+    const files=narrationInputs(args),file=files[0];
+    const opts = validateNarrationOptions(Object.assign({ narration: 'accessible' }, args));
+    opts.maxRunMinutes=optionalBoundedNumber(args,'max_run_minutes',1,180)||180;
+    if(opts.narration === 'none')throw invalidParams('Choose accessible or natural narration');
+    if(busyWith)throw invalidParams('Another run is in progress; wait or cancel it first');
+    const outDir = resolveOutputDir(args,file);fs.mkdirSync(outDir,{recursive:true});
+    agentRun = startAgentRun(file,outDir,opts,{ files, narrationOnly:true });
+    return {runId:agentRun.runId,status:'running',note:'Poll remediation_agent_requests for narration progress and downloadable artifacts. No model replies are needed. Resume saves completed audio sections.'};
+  },
+  remediation_agent_resume(args) {
+    assertAllowedKeys(args,['run_id'],'arguments');
+    if(busyWith)throw invalidParams('Another run is in progress; wait or cancel it first');
+    const record=readAgentRecord(args.run_id);
+    const files=record.workflow.files.map(file=>record.workflow.narrationOnly
+      ? _requireFileOfType({file_path:file}, /\.html?$/i, 'accessible HTML') : requireDocPath({file_path:file}));
+    const outDir=enforceAllowedRoot(path.resolve(record.outDir),'saved output directory');
+    // Revalidate persisted settings. State files are data, never executable instructions.
+    const old=record.options;
+    const args2={target_score:old.targetScore,fix_passes:old.fixPasses,polish_passes:old.polishPasses,
+      tagged_pdf:old.taggedPdf,auto_continue:old.autoContinue,auto_continue_rounds:old.autoContinueRounds,
+      validate_ua:old.validateUa,ocr_language:old.ocrLanguage||undefined,
+      page_range:old.pageRange?old.pageRange.join('-'):undefined};
+    const opts=Object.assign(validateRemediateOptions(args2),validateNarrationOptions({narration:old.narration,narration_voice:old.narrationVoice,narration_provider:old.narrationProvider,narration_language:old.narrationLanguage,readalong_epub:old.readalongEpub}),
+      {modelTransport:'agent-bridge',maxRunMinutes:Math.min(180,Math.max(1,Number(old.maxRunMinutes)||60))});
+    fs.mkdirSync(outDir,{recursive:true});
+    agentRun=startAgentRun(files[0],outDir,opts,{files,narrationOnly:record.workflow.narrationOnly===true,skipExisting:true,resumeId:record.runId});
+    return {runId:agentRun.runId,status:'running',note:'Resumed. Hash-verified completed documents and audio sections are reused; the unfinished document restarts if needed.'};
+  },
+  async remediation_agent_respond_batch(args) {
+    assertAllowedKeys(args,['run_id','responses','wait_seconds'],'arguments');
+    const run=requireAgentRun(args);
+    if(!Array.isArray(args.responses)||!args.responses.length||args.responses.length>32)throw invalidParams('responses must contain 1-32 replies');
+    const seen=new Set();let chars=0;
+    for(const reply of args.responses) {
+      assertAllowedKeys(reply,['request_id','text'],'response');
+      if(typeof reply.request_id!=='string'||seen.has(reply.request_id)||!run.pending.has(reply.request_id))throw invalidParams('Duplicate or unknown pending request id');
+      if(typeof reply.text!=='string'||!reply.text.trim())throw invalidParams('Every response must contain non-empty text');
+      chars+=reply.text.length;seen.add(reply.request_id);
+    }
+    if(chars>3000000)throw invalidParams('Combined replies exceed the 3,000,000 character transport budget');
+    optionalBoundedNumber(args,'wait_seconds',0,30);
+    for(const reply of args.responses)TOOL_HANDLERS.remediation_agent_respond({run_id:args.run_id,...reply});
+    return TOOL_HANDLERS.remediation_agent_requests({run_id:args.run_id,wait_seconds:args.wait_seconds===undefined?0:args.wait_seconds});
   },
 
   async remediation_agent_requests(args) {
@@ -4507,7 +4747,7 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['run_id', 'request_id', 'text'], 'arguments');
     const run = requireAgentRun(args);
     if (typeof args.request_id !== 'string' || !args.request_id.trim() || args.request_id.length > 200) throw invalidParams('arguments.request_id must be a non-empty string no longer than 200 characters');
-    if (typeof args.text !== 'string' || !args.text.length || args.text.length > 8000000) throw invalidParams('arguments.text must be a non-empty string no longer than 8,000,000 characters (the model reply itself)');
+    if (typeof args.text !== 'string' || !args.text.length || args.text.length > 3000000) throw invalidParams('arguments.text must be a non-empty string no longer than 3,000,000 characters (the model reply itself)');
     const entry = run.pending.get(args.request_id);
     if (!entry) {
       throw invalidParams('No pending request ' + args.request_id + ' on this run — it was already answered, or the run moved on. Fetch remediation_agent_requests for the current set.');
@@ -4578,7 +4818,7 @@ async function handleRequest(msg) {
           "AlloFlow local document-remediation connector.",
           "Call remediation_capabilities first, follow onboarding, and inspect dataHandling before opening a document.",
           "A false fullAiPipelineReady does not disable keyless tools. offlineToolNames make no external network request; publicDependencyDownloadToolNames fetch software dependencies but do not intentionally send document content.",
-          "The optional AI pipeline sends document content to Gemini under the user's key. Prefer pdf_remediate_start, poll remediation_job_status, then fetch remediation_job_result.",
+          "For full remediation default to pdf_remediate_agent_start with file_path or dir_path: YOUR model answers requests, without a Gemini key. Use effort: thorough when the user requests the strongest result. Loop requests/respond_batch automatically; find saved runs with remediation_agent_runs and resume interrupted runs with remediation_agent_resume. Use document_narration_preflight before large audio jobs to check content coverage, languages, settings and reusable clips locally. Review contentCoverage issues; never treat a completed run as proof of source fidelity. Optional narration: accessible (structure announced) or natural uses local Kokoro/Piper. Use Gemini jobs only when that provider is selected and authorized.",
           "For synchronous long runs, send _meta.progressToken for progress and notifications/cancelled to stop the request.",
           "A bundled alloflow-pdf-remediation skill supplies the safe tool sequence and honesty-reporting rules to clients that support MCP skill import.",
         ].join(' ')      });

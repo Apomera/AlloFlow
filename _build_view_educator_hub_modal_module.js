@@ -10,7 +10,7 @@ const TMP = path.join(ROOT, '_tmp_educator_hub_modal_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
 const entry = `/* global React */\n\n${source}\n\nwindow.__educatorHubModalExports = { EducatorHubModal };\n`;
-fs.writeFileSync(TMP, entry, 'utf-8');
+writeBuildFile(TMP, entry, 'utf-8');
 console.log('Compiling view_educator_hub_modal_source.jsx...');
 try {
     execSync(`npx esbuild "${TMP}" --bundle=false --format=esm --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --outfile="${TMP}.compiled.js" --target=es2020`, { cwd: ROOT, stdio: 'inherit' });
@@ -41,6 +41,13 @@ ${compiled}
   console.log('[CDN] EducatorHubModal loaded');
 })();
 `;
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
-fs.writeFileSync(PUBLIC_OUTPUT, outputCode, 'utf-8');
+writeBuildFile(OUTPUT, outputCode, 'utf-8');
+writeBuildFile(PUBLIC_OUTPUT, outputCode, 'utf-8');
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
+
+// Keep the previous generated module intact if a synced-folder write fails.
+function writeBuildFile(file,contents,encoding) {
+  const temporary=file+'.build-'+process.pid+'.tmp';
+  try { fs.writeFileSync(temporary,contents,encoding); fs.renameSync(temporary,file); }
+  finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+}

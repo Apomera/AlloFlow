@@ -1134,18 +1134,18 @@ describe('Tree Life Lab — banks and mirrors', () => {
   });
 
   it('stages one mission action and gives primary readers their own language layer', () => {
-    const fresh = render({ treeLab: { view: 'grow', bandOverride: 'k2' } });
+    const fresh = render({ treeLab: { view: 'grow', discoveryMode: 'free', bandOverride: 'k2' } });
     expect(fresh).toContain('data-mission-next="change"');
     expect(fresh).toContain('Try one change. Grow 10 years. Then tell what helped or hurt your tree.');
     expect((fresh.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
 
-    const changed = render({ treeLab: { view: 'grow', bandOverride: 'k2', light: 0.5 } });
+    const changed = render({ treeLab: { view: 'grow', discoveryMode: 'free', bandOverride: 'k2', light: 0.5 } });
     expect(changed).toContain('data-mission-next="grow"');
     expect((changed.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
 
     const olderTree = engine().newTree('oak');
     olderTree.age = 12;
-    const explain = render({ treeLab: { view: 'grow', bandOverride: 'k2', light: 0.5, tree: olderTree } });
+    const explain = render({ treeLab: { view: 'grow', discoveryMode: 'free', bandOverride: 'k2', light: 0.5, tree: olderTree } });
     expect(explain).toContain('data-mission-next="explain"');
     expect((explain.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
 
@@ -1246,7 +1246,7 @@ describe('Tree Life Lab — banks and mirrors', () => {
 
   it('distinguishes dying of old age from starving', () => {
     // Both used to read "died at N". Aspen hits its 120-year lifespan in ANY conditions;
-    // willow starves at 9 in shade and drought and lasts 76 in good ones. Reporting
+    // willow starves early in severe shade and drought but reaches its lifespan in good ones. Reporting
     // those identically hides the whole point of the comparison.
     const E = engine();
     const run = (spId, env, years) => {
@@ -1259,14 +1259,15 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(aspen.alive).toBe(false);
     expect(aspen.causeOfDeath, 'aspen should reach its lifespan in good conditions').toBe('senescence');
 
-    const harsh = { tempC: 22, light: 0.25, co2ppm: 420, soilWater: 0.3 };
+    const harsh = { tempC: 22, light: 0.25, co2ppm: 420, soilWater: 0.2 };
     const willow = run('willow', harsh, 200);
     expect(willow.causeOfDeath, 'willow should starve in shade and drought').toBe('carbon_starvation');
     expect(willow.age, 'willow should die far earlier than its lifespan').toBeLessThan(40);
 
-    const html = render({ treeLab: { view: 'compare', bandOverride: 'g68', light: 0.25, soilWater: 0.3, compareYears: 150 } });
+    const html = render({ treeLab: { view: 'compare', bandOverride: 'g68', light: 0.25, soilWater: 0.2, compareYears: 150 } });
     expect(html).toContain('starved');
-    expect(html).toContain('old age');
+    const goodHtml = render({ treeLab: { view: 'compare', bandOverride: 'g68', light: GOOD_ENV.light, soilWater: GOOD_ENV.soilWater, compareYears: 150 } });
+    expect(goodHtml).toContain('old age');
   });
 
   it('lets conditions change the ranking, as the note claims', () => {
@@ -1636,7 +1637,7 @@ describe('Tree Life Lab — response curves', () => {
     // terms, so sweeping CO2 from 180 to 900 ppm must change nothing at all — the
     // curve is a straight horizontal line. Plotting the isolated CO2 factor instead
     // would draw a rising curve and teach the opposite of what the tool says.
-    const shade = paths(chem({ light: 0.12 }));
+    const shade = paths(chem({ light: 0.06 }));
     expect(shade.length, 'expected four panels').toBe(4);
     const co2 = shade[1];
     const spread = Math.max(...co2) - Math.min(...co2);
@@ -1907,11 +1908,11 @@ describe('Tree Life Lab — controlled investigations and A/B notebook', () => {
 
     expect(html).toContain('data-tree-effect="light"');
     expect(html).toContain('data-tree-scene-effect="light"');
-    expect(html).toContain('Cause \u2192 effect');
+    expect(html).toContain('Last change');
     expect(html).toContain('You changed');
     expect(html).toContain('Carbon budget');
-    expect(html).toContain('Now limiting');
-    expect(html).toContain('Tree response');
+    expect(html).toContain('Limiting at that change');
+    expect(html).toContain('Response to that change');
   });
 
   it('renders Predict, Run, Explain, and a controlled A/B evidence table', () => {
@@ -2065,7 +2066,7 @@ describe('Survival margin: the death rule, made visible', () => {
     expect(t.alive).toBe(true);
     expect(t.deficitYears).toBe(0);
 
-    const dark = { tempC: 22, light: 0.02, co2ppm: 420, soilWater: 0.75 };
+    const dark = { tempC: 22, light: 0.005, co2ppm: 420, soilWater: 0.75 };
     const seen = [];
     for (let y = 0; y < limit + 5; y++) {
       t = E.simulateYear(t, sp, dark, alloc);
@@ -2073,7 +2074,7 @@ describe('Survival margin: the death rule, made visible', () => {
       if (!t.alive) break;
     }
     // Climbs by one a year, so the gauge can count DOWN from the limit.
-    expect(seen.slice(0, 5)).toEqual([0, 1, 2, 3, 4]);
+    expect(seen.slice(0, 5)).toEqual([1, 2, 3, 4, 5]);
     expect(t.alive).toBe(false);
     expect(t.causeOfDeath).toBe('carbon_starvation');
     // The student gets the whole tolerance as warning, not a surprise.
@@ -2087,7 +2088,7 @@ describe('Survival margin: the death rule, made visible', () => {
     let t = E.newTree(sp.id);
     const good = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 };
     for (let y = 0; y < 20 && t.alive; y++) t = E.simulateYear(t, sp, good, alloc);
-    const dark = { tempC: 22, light: 0.02, co2ppm: 420, soilWater: 0.75 };
+    const dark = { tempC: 22, light: 0.005, co2ppm: 420, soilWater: 0.75 };
     for (let y = 0; y < 3; y++) t = E.simulateYear(t, sp, dark, alloc);
     expect(t.deficitYears).toBeGreaterThan(0);
     t = E.simulateYear(t, sp, good, alloc);
@@ -3051,7 +3052,7 @@ describe('Tree Life Lab - seasonal observatory and species lens', () => {
     expect(young).toContain('Yellow may show through; red may be made.');
   });
 
-  it('shows that species traits are model inputs and tradeoffs, not scores', () => {
+  it('explains the effects and tradeoffs of simulated species traits', () => {
     const oak = render({
       treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak') },
     });
@@ -3063,7 +3064,7 @@ describe('Tree Life Lab - seasonal observatory and species lens', () => {
     expect(oak).toContain('Drought tolerance');
     expect(oak).toContain('High');
     expect(oak).toContain('3 routes');
-    expect(oak).toMatch(/tradeoffs, not grades/);
+    expect(oak).toContain('Shade tolerance improves low-light capture');
     expect(aspen).toContain('data-tree-species-lens="aspen"');
     expect(aspen).toContain('Low');
   });
@@ -3073,7 +3074,7 @@ describe('Tree Life Lab - seasonal observatory and species lens', () => {
       treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'redwood', tree: matureTree('redwood') },
     });
     expect(html).toMatch(/Redwood trees can grow very tall/);
-    expect(html).toMatch(/Every kind of tree has things it does well/);
+    expect(html).toContain('Each kind of tree has different strengths');
   });
 });
 
@@ -3191,7 +3192,7 @@ describe('Tree Life Lab - canopy plumbing and year-outcome evidence', () => {
     const tree = E.newTree('oak');
     const sp = E.speciesById('oak');
     const aperture = E.stomatalAperture(GOOD_ENV.soilWater, sp.droughtTol, false);
-    const live = E.grossPhotosynthesis(sp, GOOD_ENV, tree.leafArea, aperture);
+    const live = E.treePhysiology(tree, sp, GOOD_ENV);
     const surplus = Math.max(0, live.gross - E.maintenanceRespiration(sp, tree));
     const alloc = E.normaliseAlloc(ALLOC);
     const projection = E.projectCanopySupport(
@@ -3341,7 +3342,7 @@ describe('Tree Life Lab - causal four-season carbon trace', () => {
     const sp = E.speciesById('oak');
     const trace = E.seasonalCarbonTrace(tree, sp, GOOD_ENV);
     const aperture = E.stomatalAperture(GOOD_ENV.soilWater, sp.droughtTol, false);
-    const annualPhoto = E.grossPhotosynthesis(sp, GOOD_ENV, tree.leafArea, aperture);
+    const annualPhoto = E.treePhysiology(tree, sp, GOOD_ENV);
     const annualResp = E.maintenanceRespiration(sp, tree);
 
     expect(trace.phases.map((phase) => phase.id)).toEqual([

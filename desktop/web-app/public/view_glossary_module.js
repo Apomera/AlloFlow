@@ -19,7 +19,27 @@
   if (!React) { console.error('[ViewGlossaryModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Lazy Lucide icon resolution from window.AlloIcons (populated by
+  // Image descriptions are tied to the displayed bytes, so replacing an image cannot
+// accidentally retain the previous picture's description. Matches AltText.hashImage.
+function getGlossaryImageAlt(item) {
+  if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
+  if (item.imageAltHash) {
+    const image = typeof item.image === 'string' ? item.image : '';
+    let h = 0x811c9dc5;
+    const mix = c => {
+      h ^= c;
+      h = Math.imul(h, 0x01000193) >>> 0;
+    };
+    String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+    const step = Math.max(1, Math.floor(image.length / 4096));
+    for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+    const hash = 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
+    if (hash !== item.imageAltHash) return '';
+  }
+  return item.imageAlt.trim();
+}
+
+// Lazy Lucide icon resolution from window.AlloIcons (populated by
 // host at AlloFlowANTI.txt:4930). Avoids threading dozens of icon
 // components as props. Mirrors view_timeline_module.js pattern.
 var _lazyIcon = function (name) {
@@ -2088,8 +2108,8 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: generatedContent?.data[flashcardIndex].image,
-    alt: "",
-    role: "presentation",
+    alt: getGlossaryImageAlt(generatedContent?.data[flashcardIndex]),
+    role: getGlossaryImageAlt(generatedContent?.data[flashcardIndex]) ? undefined : "presentation",
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
@@ -2135,8 +2155,8 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: generatedContent?.data[flashcardIndex].image,
-    alt: "",
-    role: "presentation",
+    alt: getGlossaryImageAlt(generatedContent?.data[flashcardIndex]),
+    role: getGlossaryImageAlt(generatedContent?.data[flashcardIndex]) ? undefined : "presentation",
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
@@ -2900,8 +2920,8 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement("img", {
       loading: "lazy",
       src: item.image,
-      alt: "",
-      role: "presentation",
+      alt: getGlossaryImageAlt(item),
+      role: getGlossaryImageAlt(item) ? undefined : "presentation",
       style: {
         width: `${glossaryImageSize}px`,
         height: `${glossaryImageSize}px`

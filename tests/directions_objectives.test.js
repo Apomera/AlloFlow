@@ -12,6 +12,7 @@ const shareSurfaces = readFileSync(resolve(process.cwd(), 'view_share_session_su
 // The resource-open handlers (soft gate, visited marking) moved to misc_handlers (2026-08-22).
 const handlers = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
+const directionsComposerSource = readFileSync(resolve(process.cwd(), 'view_directions_composer_source.jsx'), 'utf8');
 const directionsViewSource = readFileSync(resolve(process.cwd(), 'view_directions_result_source.jsx'), 'utf8');
 const directionsViewModule = readFileSync(resolve(process.cwd(), 'view_directions_result_module.js'), 'utf8');
 
@@ -124,8 +125,8 @@ describe('wiring pins', () => {
   it('choice-board authoring validates, previews, and supports optional card descriptions', () => {
     expect(anti).toContain('Select at least two activities before saving the choice board.');
     expect(anti).toContain('Remove unavailable activities from the choice board before saving.');
-    expect(anti).toContain('Preview student choice board');
-    expect(anti).toContain('Optional card descriptions');
+    expect(directionsComposerSource).toContain('Preview student choice board');
+    expect(directionsComposerSource).toContain('Optional card descriptions');
     expect(anti).toContain('_mbDirectionsChoiceStaleCount');
   });
   it('baseline captures on FIRST view; celebration fires once via the existing bot event', () => {
@@ -141,7 +142,7 @@ describe('wiring pins', () => {
   it('NO GATING anywhere in Phase 1 — the checklist informs and celebrates only', () => {
     // The extracted presentation must not condition travel on objective state.
     expect(directionsViewSource).not.toMatch(/locked|disabled=\{!.*done|preventDefault/i);
-    expect(anti).toContain('nothing is ever locked');
+    expect(directionsComposerSource).toContain('nothing is ever locked');
   });
   it('derivation excerpts: student-safe only, bounded, teacher-only contributes NOTHING', () => {
     expect(anti).toContain('let _excerptBudget = 6000;');
@@ -194,13 +195,14 @@ describe('wiring pins', () => {
     expect(anti).toContain(".filter(resource => resource.type !== 'directions' && validId(resource.id))");
     expect(anti).toContain('_alloStudentSafeResources(historyItems)');
   });
-  it('TRANSLATION: directions branch translates prose + labels ONLY, machinery + meta object survive', () => {
+  it('TRANSLATION: directions translates goal and choice-board prose while preserving machinery and metadata', () => {
     const pk = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
     const pkm = readFileSync(resolve(process.cwd(), 'phase_k_helpers_module.js'), 'utf8');
     // exact pins on the SOURCE; formatting-tolerant markers on the BUILT module (the build
     // normalizes quotes/spacing, so exact-string pins only hold on the source).
     expect(pk).toContain('Translate these student-facing assignment directions into');
-    expect(pk).toContain('{"title": "...", "body": "...", "labels": ["..."]}');
+    expect(pk).toContain('Translate choiceBoard title, prompt, and each item');
+    expect(pk).toContain('label: translatedText(translatedCard.label, card.label)');
     // labels merge back BY INDEX with per-entry fallback; ids/kinds/amounts spread through untouched
     expect(pk).toMatch(/objectives: \(Array\.isArray\(_dSrc\.objectives\) \? _dSrc\.objectives : \[\]\)\.map\(\(o, i\) =>/);
     // meta OBJECT preserved (the generic return would stringify derivedFrom provenance)

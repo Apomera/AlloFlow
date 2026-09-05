@@ -54,6 +54,10 @@ function FaqView(props) {
   };
   // State reads
   var t = props.t;
+  const label = (key, fallback) => {
+    const value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
   var generatedContent = props.generatedContent;
   var isPlaying = props.isPlaying;
   var playingContentId = props.playingContentId;
@@ -250,18 +254,18 @@ function FaqView(props) {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium text-cyan-800"
-  }, "Loading FAQ audio...")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, label('faq.audio_loading', 'Loading FAQ audio...'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium text-cyan-800"
-  }, "Reading FAQ..."))), /*#__PURE__*/React.createElement("div", {
+  }, label('faq.audio_reading', 'Reading FAQ...')))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] uppercase font-bold text-slate-600"
-  }, "Speed"), /*#__PURE__*/React.createElement("input", {
+  }, label('common.speed', 'Speed')), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.speed'),
     type: "range",
     min: "0.5",
@@ -284,7 +288,7 @@ function FaqView(props) {
     title: t('common.stop')
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-xs uppercase px-1"
-  }, "Stop")))), /*#__PURE__*/React.createElement("div", {
+  }, label('common.stop', 'Stop'))))), /*#__PURE__*/React.createElement("div", {
     className: "bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4",
     "data-help-key": "faq_goal_panel"
   }, /*#__PURE__*/React.createElement("p", {
@@ -325,13 +329,13 @@ function FaqView(props) {
     onClick: expandAll,
     className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors",
     "aria-label": t("a11y.show_all_faq")
-  }, "▾ Show all"), /*#__PURE__*/React.createElement("button", {
+  }, "▾ ", label('faq.show_all', 'Show all')), /*#__PURE__*/React.createElement("button", {
     onClick: collapseAll,
     className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors",
     "aria-label": t("a11y.hide_all_faq")
-  }, "▸ Hide all"), /*#__PURE__*/React.createElement("span", {
+  }, "▸ ", label('faq.hide_all', 'Hide all')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-500 italic ml-1"
-  }, "Tip: tap a question to reveal its answer")), /*#__PURE__*/React.createElement("div", {
+  }, label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, (() => {
     // PASS 1: precompute sentence index ranges per FAQ so we can derive
@@ -472,7 +476,7 @@ function FaqView(props) {
         onClick: () => toggleFaq(idx),
         "aria-expanded": isExpanded,
         "aria-controls": `faq-answer-${idx}`,
-        "aria-label": isExpanded ? 'Collapse FAQ answer' : 'Expand FAQ answer',
+        "aria-label": isExpanded ? label('faq.collapse_answer', 'Collapse FAQ answer') : label('faq.expand_answer', 'Expand FAQ answer'),
         className: "shrink-0 mt-2 w-8 h-8 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       }, /*#__PURE__*/React.createElement(ChevronDown, {
         size: 20,

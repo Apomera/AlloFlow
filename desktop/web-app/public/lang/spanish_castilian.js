@@ -18790,7 +18790,7 @@
       "correct_george_stokes_named_fluorescence_after_studying_fluorite": "Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.",
       "correct_gneiss_displays_prominent_mineral_banding_from_intense": "Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.",
       "correct_gypsum_crystals_up_to_12_meters_long": "Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.",
-      "correct_hematite_dust_covers_the_martian_surface_giving": "Correct! Hematite has been identified on Mars, including in iron-rich spherules studied by rovers.",
+      "correct_hematite_dust_covers_the_martian_surface_giving": "Correct! Hematite is one iron-oxide mineral identified on Mars; the planet’s overall red color comes from oxidized iron minerals.",
       "correct_hydrochloric_acid_reacts_with_calcium_carbonate_in": "Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.",
       "correct_igneous_rocks_solidify_from_molten_magma": "Correct! Igneous rocks solidify from molten magma.",
       "correct_it_was": "Correct! It was ",
@@ -18893,7 +18893,7 @@
       "incorrect_erosion_breaks_rocks_down_rather_than_building": "Incorrect. Erosion breaks rocks down rather than building them.",
       "incorrect_gabbro_is_intrusive_and_equivalent_to_extrusive": "Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.",
       "incorrect_galena_is_lead_sulfide_and_is_not": "Incorrect. Galena is lead sulfide and is not magnetic.",
-      "incorrect_general_rust_is_iron_oxide_but_hematite": "Incorrect. ‘Rust’ describes oxidized iron broadly, not a specific mineral phase; hematite is one mineral identified on Mars.",
+      "incorrect_general_rust_is_iron_oxide_but_hematite": "Incorrect. Pyrite is an iron sulfide, not the iron oxide named in this question.",
       "incorrect_glacier_ice_forms_glacial_till": "Incorrect. Glacier ice forms glacial till.",
       "incorrect_gneiss_is_high_grade_metamorphism_occurring_after": "Incorrect. Gneiss is high-grade metamorphism, occurring after schist.",
       "incorrect_gneiss_is_striped": "Incorrect. Gneiss is striped.",
@@ -18950,13 +18950,13 @@
       "incorrect_the_pyramids_are_made_of_standard_limestone": "Incorrect. The Pyramids are made of standard limestone and granite.",
       "incorrect_the_sahara_desert_is_sand_covered_rather": "Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.",
       "incorrect_the_sand_is_natural_olivine_not_man": "Incorrect. The sand is natural olivine, not man-made green glass.",
-      "incorrect_the_sand_is_red_due_to_hematite": "Incorrect. Red sand is a material description, not a mineral identification; hematite has been identified on Mars.",
+      "incorrect_the_sand_is_red_due_to_hematite": "Incorrect. Galena is lead sulfide, not an iron oxide.",
       "incorrect_the_taj_mahal_is_made_of_marble": "Incorrect. The Taj Mahal is made of marble.",
       "incorrect_there_is_no_scientist_named_ande": "Incorrect. There is no scientist named Ande.",
       "incorrect_topaz_is_hard_8_but_softer_than": "Incorrect. Topaz is hard (8) but softer than corundum and diamond.",
       "incorrect_topaz_is_silicate_and_has_a_different": "Incorrect. Topaz is silicate and has a different composition.",
       "incorrect_underwater_cooling_can_form_pillow_basalt_but": "Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.",
-      "incorrect_volcanic_dust_on_mars_is_not_the": "Incorrect. Volcanic dust on Mars is not the primary cause of its color.",
+      "incorrect_volcanic_dust_on_mars_is_not_the": "Incorrect. Halite is sodium chloride, not an iron oxide.",
       "incorrect_water_does_not_react_chemically_to_cause": "Incorrect. Water does not react chemically to cause limestone to fizz.",
       "incorrect_white_gold_is_a_real_gold_alloy": "Incorrect. White gold is a real gold alloy.",
       "landscape_click_zones_hint": "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.",
@@ -21882,7 +21882,19 @@
       "plot_data_points_fit_trend": "Traza puntos de datos, ajusta líneas de tendencia, calcula correlación.",
       "arts_music": "Artes y música",
       "music_synthesizer": "Sintetizador de música",
-      "art_design_studio": "Estudio de arte y diseño"
+      "art_design_studio": "Estudio de arte y diseño",
+      "geometry_measurement": "📐 Geometría y medición",
+      "data_statistics_probability": "📊 Datos, estadística y probabilidad",
+      "life_science_genetics": "🧬 Ciencias de la vida y genética",
+      "human_body_health_safety": "🫀 Cuerpo humano, salud y seguridad",
+      "ecology_environment_animals": "🌍 Ecología, medio ambiente y animales",
+      "earth_space_science": "🌎 Ciencias de la Tierra y del espacio",
+      "engineering_design": "⚙️ Ingeniería y diseño",
+      "computing_ai_digital_literacy": "💻 Informática, IA y competencia digital",
+      "learning_behavioral_science": "🧠 Ciencias del aprendizaje y del comportamiento",
+      "life_skills_careers_economics": "💰 Habilidades para la vida, carreras y economía",
+      "sports_movement_science": "🏅 Ciencias del deporte y del movimiento",
+      "strategy_games": "⚔️ Juegos de estrategia"
     },
     "area": {
       "volume": "Volumen..."
@@ -78788,7 +78800,17 @@
     "magnetism": {
       "initializing": "🧲 Charging the coils…"
     },
-    "volume_label": "Volume"
+    "volume_label": "Volume",
+    "tutorial": {
+      "region": "Recorrido",
+      "step_of": "Paso {current} de {total}",
+      "skip": "Omitir",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "finish": "¡Entendido!",
+      "replay": "Consejos",
+      "replay_aria": "Mostrar tutorial"
+    }
   },
   "_version": "2026-05-25T0001",
   "a11y_lab": {
@@ -85361,5 +85383,76 @@
     "pptx_title": "Editable PowerPoint",
     "title": "Import lesson deck",
     "unsupported": "Use a PowerPoint (.pptx) or PDF copy of the lesson."
+  },
+  "studio_response": {
+    "retry_save": "Reintentar guardar",
+    "download_work": "Descargar mi trabajo",
+    "restore_work": "Restaurar copia de texto",
+    "local_not_submitted": "Guardar en este dispositivo no envía tu trabajo al docente.",
+    "backup_note": "Copia de texto: solo escritos y comentarios. No incluye imágenes ni grabaciones. Esto no envía tu trabajo.",
+    "backup_failed": "No se pudo descargar la copia. Mantén esta página abierta y vuelve a intentarlo.",
+    "backup_restored": "Copia restaurada en este espacio de trabajo. Comprueba el estado de guardado antes de salir.",
+    "backup_invalid": "Elige una copia de texto descargada de este recurso. Tu trabajo actual no ha cambiado.",
+    "saving": "Guardando…",
+    "saved": "Guardado en este dispositivo",
+    "error": "No se pudo guardar en este dispositivo. Mantén esta página abierta y descarga tu trabajo.",
+    "idle": "Espacio de trabajo del estudiante",
+    "mode_label": "Modo del espacio de trabajo",
+    "preview": "Vista previa como estudiante",
+    "close_preview": "Cerrar vista previa del estudiante",
+    "reset_preview": "Reiniciar vista previa",
+    "preview_private": "El trabajo de la vista previa es temporal y nunca se envía.",
+    "authoring": "Edición del docente"
+  },
+  "resource_read_aloud": {
+    "pause": "Pausar lectura",
+    "resume": "Reanudar lectura",
+    "repeat": "Repetir este apartado",
+    "pause_between": "Pausar después de cada apartado",
+    "follow_focus": "Mover el foco con la lectura",
+    "paused": "Lectura en pausa. Reanúdala cuando estés listo.",
+    "label": "Audio de lectura guardado",
+    "listen": "Leer la referencia en voz alta",
+    "stop": "Detener lectura",
+    "read_cue": "Leer la pista en voz alta",
+    "read_work": "Leer mi escrito",
+    "save": "Guardar audio de voz",
+    "cancel": "Cancelar guardado",
+    "segments": "Seguir la lectura y ver clips",
+    "ready": "listos",
+    "stale": "desactualizados",
+    "missing": "Falta",
+    "corrupt": "Necesita reparación",
+    "download": "Descargar clip",
+    "regenerate": "Regenerar clip",
+    "unavailable": "El audio de lectura aún no está disponible.",
+    "saved": "Audio guardado con este recurso.",
+    "save_failed": "No se pudo guardar parte del audio. Vuelve a intentarlo.",
+    "play_failed": "No se pudo reproducir este audio. Guarda o regenera el clip, o usa una voz del dispositivo."
+  },
+  "studio_sharing": {
+    "heading": "Listo para compartir",
+    "items": "elementos por revisar",
+    "channel": "Método para compartir",
+    "qr": "Tarea / QR",
+    "live": "En directo / paquete del estudiante",
+    "facts": "Comprobar y verificar los datos de la lección",
+    "description": "Añadir una descripción de la imagen",
+    "visual_review": "Revisar la imagen antes de compartir",
+    "stale": "Actualizar el audio desactualizado o dañado",
+    "omitted": "Los clips de audio superan el límite de este método",
+    "review_note": "Revisa estos elementos antes de compartir. Tú decides cuándo está listo el recurso.",
+    "clear": "Estas comprobaciones no han detectado problemas. Revisa el contenido como docente antes de compartir.",
+    "clips": "clips de referencia actuales incluidos. Los clips que falten pueden usar una voz del dispositivo."
+  },
+  "applied_challenge": {
+    "focus": {
+      "show_all": "Mostrar todos los pasos",
+      "one_step": "Centrarse en un paso",
+      "progress": "Paso {current} de {total}",
+      "move": "Moverse entre pasos",
+      "back": "Atrás",
+      "next": "Siguiente"
+    }
   }
 }

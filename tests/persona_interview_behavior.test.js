@@ -457,6 +457,7 @@ describe('Persona persistence contracts', () => {
     const viewSource = fs.readFileSync('view_persona_chat_source.jsx', 'utf8');
     const reflectionSource = fs.readFileSync('phase_k_helpers_source.jsx', 'utf8');
     const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    const workspaceSource = fs.readFileSync('view_persona_workspace_source.jsx', 'utf8');
     const uiStrings = fs.readFileSync('ui_strings.js', 'utf8');
     // 2026-08-23: the markdown transcript export was removed (superseded by
     // the private session artifact). Old 'persona-transcript' items must
@@ -486,10 +487,10 @@ describe('Persona persistence contracts', () => {
     expect(editorContract).toContain('isCompleted: existing.isCompleted === true');
     expect(editorContract).toContain('setGeneratedContent(nextResource)');
     expect(editorContract).toContain('setHistory(prev => prev.map(item => item.id === generatedContent.id ? nextResource : item))');
-    expect(appSource).toContain('isTeacherMode && personaTeacherEditor && (');
-    expect(appSource).toContain('onClick={savePersonaTeacherEditor}');
+    expect(workspaceSource).toContain('isTeacherMode && personaTeacherEditor && (');
+    expect(workspaceSource).toContain('onClick={savePersonaTeacherEditor}');
     expect(appSource).toContain("clearNamespace('persona_sessions')");
-    expect(appSource).toContain("t('persona.resume_retention')");
+    expect(workspaceSource).toContain("t('persona.resume_retention')");
     expect(uiStrings).toContain('\"simulation_disclaimer\"');
     expect(uiStrings).toContain('\"ai_feedback\"');
   });

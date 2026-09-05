@@ -1,3 +1,26 @@
+// Pure flow layout is colocated with its only consumer.
+const calculateFlowLayout = (nodes, containerWidth = 800) => {
+    const centerX = containerWidth / 2;
+    let currentY = 50;
+    return nodes.map(node => {
+        let newX = centerX;
+        let newY = currentY;
+        if (node.type === 'flow-start') {
+            newY = 50;
+            currentY = 150;
+        } else if (node.type === 'flow-end') {
+            newY = currentY + 50;
+        } else if (node.type === 'flow-note') {
+            newX = centerX + 200;
+            newY = currentY - 80;
+        } else {
+            newY = currentY;
+            currentY += 120;
+        }
+        return { ...node, x: newX, y: newY };
+    });
+  };
+
 // concept_map_handlers_source.jsx - Phase I.3 of CDN modularization.
 // 6 mid-tier handlers covering concept-map init/layout, batch roster
 // generation, lesson plans, source auto-correct, and visual panel refine.
@@ -342,7 +365,7 @@ const handleInitializeMap = async (deps) => {
 };
 
 const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
-  const { generatedContent, conceptMapNodes, conceptMapEdges, isFullscreen, isTeacherMode, mapContainerRef, setConceptMapNodes, setIsProcessing, setGenerationStep, calculateFlowLayout, callGemini, safeJsonParse, t, addToast, playSound, warnLog } = deps;
+  const { generatedContent, conceptMapNodes, conceptMapEdges, isFullscreen, isTeacherMode, mapContainerRef, setConceptMapNodes, setIsProcessing, setGenerationStep, callGemini, safeJsonParse, t, addToast, playSound, warnLog } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleAutoLayout fired"); } catch(_) {}
       const currentNodes = Array.isArray(nodesInput) ? nodesInput : conceptMapNodes;
       const currentEdges = Array.isArray(edgesInput) ? edgesInput : conceptMapEdges;

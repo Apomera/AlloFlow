@@ -1997,6 +1997,8 @@ function TourOverlay(props) {
     tourRect,
     tourStep,
     tourSteps,
+    canGoBack = tourStep > 0,
+    canGoForward = tourStep < tourSteps.length - 1,
     compactTour = false
   } = props;
   const tourDialogRef = React.useRef(null);
@@ -2038,6 +2040,7 @@ function TourOverlay(props) {
     if (!event || !tourDialogRef.current) return;
     if (event.key === "Escape") {
       event.preventDefault();
+      event.stopPropagation();
       closeTourOverlay();
       return;
     }
@@ -2061,15 +2064,18 @@ function TourOverlay(props) {
     if (!(runTour && tourRect)) return void 0;
     const previouslyFocused = document.activeElement;
     const timer = setTimeout(() => {
-      const firstAction = tourDialogRef.current?.querySelector("button:not([disabled])");
-      if (firstAction) firstAction.focus();
-      else tourDialogRef.current?.focus();
+      tourDialogRef.current?.focus({ preventScroll: true });
     }, 0);
     return () => {
       clearTimeout(timer);
       if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
     };
   }, [runTour, !!tourRect]);
+  React.useEffect(() => {
+    tourDialogRef.current?.querySelectorAll(".allo-tour-copy").forEach((el) => {
+      el.scrollTop = 0;
+    });
+  }, [tourStep, spotlightMessage]);
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? spotlightMessage.title || t("tour.spotlight_title") : tourSteps[tourStep].title;
   const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : tourSteps[tourStep].text || "";
@@ -2127,7 +2133,7 @@ function TourOverlay(props) {
       path: "M " + ring.map((p) => p.x + " " + p.y).join(" L ") + " Z"
     };
   })();
-  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && _beam && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("style", null, `.allo-tour-copy{min-height:0;overflow-y:auto} [data-tour-layout] button{min-height:44px} [data-tour-layout] button:focus-visible{outline:3px solid #4338ca;outline-offset:3px} .allo-tour-controls{position:sticky;bottom:0;background:white;flex-wrap:wrap;gap:8px;flex-shrink:0;padding-bottom:4px} @media(max-width:600px){[data-tour-layout="main"]{left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;width:auto!important;max-height:55vh;max-height:55dvh;padding:16px!important;border:2px solid #fcd34d;border-radius:18px;gap:12px!important}}`), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && _beam && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
     "radialGradient",
     {
       id: "beamGradient",
@@ -2180,6 +2186,8 @@ function TourOverlay(props) {
       "aria-label": tourAccessibleTitle,
       tabIndex: -1,
       onKeyDown: containTourFocus,
+      "data-tour-layout": compactTour ? "compact" : "main",
+      style: { boxSizing: "border-box", maxWidth: "calc(100vw - 24px)", overflowWrap: "anywhere" },
       className: compactTour ? (
         // Compact placement for modal-context tours (2026-06-10,
         // maintainer feedback): the full-height 500px drawer covered
@@ -2190,7 +2198,7 @@ function TourOverlay(props) {
       ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
     },
     /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, tourAccessibleTitle, ". ", tourAccessibleText),
-    spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
+    spotlightMessage ? /* @__PURE__ */ React.createElement("div", { className: "allo-tour-copy" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-3" });
       const formatText = (text) => {
@@ -2227,7 +2235,7 @@ function TourOverlay(props) {
         return /* @__PURE__ */ React.createElement("div", { key: i, className: "grid grid-cols-[24px_1fr] gap-1 mb-2 items-start group" }, /* @__PURE__ */ React.createElement("div", { className: "mt-2 h-2 w-2 rounded-full bg-amber-400 group-hover:bg-amber-500 transition-colors mx-auto shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700 text-lg font-medium leading-relaxed" }, formatText(bulletText)));
       }
       return /* @__PURE__ */ React.createElement("p", { key: i, className: "text-slate-800 text-xl font-medium leading-relaxed mb-4" }, formatText(cleanLine));
-    }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg" }, tourSteps[tourStep].title), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full" }, tourStep + 1, " / ", tourSteps.length)), /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 text-sm leading-relaxed flex flex-col gap-2" }, (tourSteps[tourStep].text || "").split(/\r?\n/).map((line, i) => {
+    }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start shrink-0" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg" }, tourSteps[tourStep].title), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full" }, tourStep + 1, " / ", tourSteps.length)), /* @__PURE__ */ React.createElement("div", { className: "allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2" }, (tourSteps[tourStep].text || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-2" });
       const formatText = (text) => {
@@ -2256,9 +2264,10 @@ function TourOverlay(props) {
       }
       return /* @__PURE__ */ React.createElement("p", { key: i, className: "text-slate-600 text-sm leading-relaxed mb-2" }, formatText(cleanLine));
     }))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center pt-2 mt-2 border-t border-slate-100" }, spotlightMessage ? /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "allo-tour-controls flex justify-between items-center pt-2 mt-2 border-t border-slate-100" }, spotlightMessage ? /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "data-help-ignore": "true",
         style: { pointerEvents: "all", zIndex: 9999 },
         onClick: (e) => {
@@ -2268,23 +2277,25 @@ function TourOverlay(props) {
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
       },
       t("common.close")
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: handleSetRunTourToFalse, className: "text-xs font-bold text-slate-600 hover:text-slate-600" }, t("common.skip")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetRunTourToFalse, className: "text-xs font-bold text-slate-600 hover:text-slate-600" }, t("tour.exit") || "Exit tour"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.continue"),
+        type: "button",
+        "aria-label": t("common.back") || "Back",
         onClick: handlePrevTourStep,
-        disabled: tourStep === 0,
+        disabled: !canGoBack,
         className: "text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
       },
       t("common.back")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.next"),
+        type: "button",
+        "aria-label": !canGoForward ? t("common.finish") || "Finish" : t("common.next") || "Next",
         onClick: handleNextTourStep,
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2"
       },
-      tourStep === tourSteps.length - 1 ? t("common.finish") : t("common.next"),
+      !canGoForward ? t("common.finish") : t("common.next"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
     ))))

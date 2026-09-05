@@ -1,5 +1,11 @@
 
 function WordSoundsPreviewView(props) {
+  function label(key, fallback, values) {
+    var fullKey = 'word_sounds.' + key;
+    var translated = typeof props.t === 'function' ? props.t(fullKey, values || {}) : '';
+    var text = typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
+    return text.replace(/\{(\w+)\}/g, function(match, name) { return values && values[name] != null ? String(values[name]) : match; });
+  }
   var generatedContent = props.generatedContent;
   var wsActivitySequence = props.wsActivitySequence;
   var setWordSoundsActivity = props.setWordSoundsActivity;
@@ -31,21 +37,21 @@ function WordSoundsPreviewView(props) {
                   <div className="space-y-6">
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
                       <div className="text-4xl mb-3">🎵</div>
-                      <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>
-                      <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || 'Ready to practice'}</p>
-                      {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{generatedContent.data.length} words loaded</p>}
+                      <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('preview_title', 'Word Sounds Studio')}</h3>
+                      <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
+                      {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
                       {isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && (
                         <p
                           role="status"
                           aria-live="polite"
                           className={`mt-2 text-xs font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-700'}`}
                         >
-                          Audio ready: {wordSoundsAudioCoverage.ready}/{wordSoundsAudioCoverage.total} required clips
-                          {!wordSoundsAudioCoverage.complete && ' - Review missing audio before sending to students'}
+                          {label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips', wordSoundsAudioCoverage)}
+                          {!wordSoundsAudioCoverage.complete && (' — ' + label('preview_review_missing', 'Review missing audio before sending to students'))}
                           {!wordSoundsAudioCoverage.complete && missingAudioLabels.length > 0 && (
                             <span className="mt-1 block font-medium text-amber-800">
-                              Missing: {missingAudioLabels.slice(0, 5).join(', ')}
-                              {missingAudioLabels.length > 5 && `, plus ${missingAudioLabels.length - 5} more`}
+                              {label('preview_missing', 'Missing: {labels}', { labels: missingAudioLabels.slice(0, 5).join(', ') })}
+                              {missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', { count: missingAudioLabels.length - 5 })}
                             </span>
                           )}
                         </p>
@@ -70,9 +76,9 @@ function WordSoundsPreviewView(props) {
                             className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-white text-violet-800 font-bold rounded-xl border-2 border-violet-300 hover:bg-violet-100 hover:border-violet-500 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
                           >
                             <BookOpen size={20} aria-hidden="true" />
-                            <span className="text-left">
-                              <span className="block">Teacher: Review Words &amp; Audio</span>
-                              <span className="block text-xs font-medium text-violet-600">Check or edit the lesson before students begin</span>
+                            <span className="text-start">
+                              <span className="block">{label('preview_teacher_review', 'Teacher: Review Words & Audio')}</span>
+                              <span className="block text-xs font-medium text-violet-600">{label('preview_teacher_hint', 'Check or edit the lesson before students begin')}</span>
                             </span>
                           </button>
                         )}
@@ -92,12 +98,12 @@ function WordSoundsPreviewView(props) {
                             // no-sequence fallback.
                             launchPreparedActivity();
                           }}
-                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
+                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-safe:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
                         >
                           <Play size={20} aria-hidden="true" />
-                          <span className="text-left">
-                            <span className="block">{isTeacherMode ? 'Student: Start Practice' : 'Start Activity'}</span>
-                            <span className="block text-xs font-medium text-indigo-100">Begin the prepared activities now</span>
+                          <span className="text-start">
+                            <span className="block">{isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')}</span>
+                            <span className="block text-xs font-medium text-indigo-100">{label('preview_start_hint', 'Begin the prepared activities now')}</span>
                           </span>
                         </button>
                       </div>

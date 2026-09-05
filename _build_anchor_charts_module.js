@@ -150,12 +150,18 @@ ${compiled}
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+if (process.argv.includes('--check')) {
+  const stale = [OUTPUT, DEPLOY_OUT].filter(file => !fs.existsSync(file) || fs.readFileSync(file,'utf8') !== outputCode);
+  if (stale.length) { console.error('Stale generated modules: ' + stale.join(', ')); process.exit(1); }
+  console.log('Source and generated modules are fresh.'); process.exit(0);
+}
+const writeGeneratedAtomic = require('./dev-tools/write_generated_atomic.cjs');
+writeGeneratedAtomic(OUTPUT, outputCode);
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
         fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    writeGeneratedAtomic(DEPLOY_OUT, outputCode);
 } catch (e) {
     console.warn('[AnchorCharts] Could not sync to desktop/web-app/public/:', e.message);
 }

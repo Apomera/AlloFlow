@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('Geology Explorer sequencing challenge', () => {
   it('defines a process-specific sequence for every scene', () => {
     const challenges = P.sequenceChallenges();
-    expect(Object.keys(challenges)).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
+    expect(Object.keys(challenges)).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision']);
     for (const [scene, challenge] of Object.entries(challenges)) {
       expect(challenge.title, scene).toBeTruthy();
       expect(challenge.prompt, scene).toBeTruthy();

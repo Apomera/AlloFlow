@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlloFlow | Open-Source AI Classroom Assistant</title>
+    <title>AlloFlow | Free AI Tools for Differentiated Instruction</title>
     <meta name="description" content="AlloFlow is a free, open-source AI classroom assistant for differentiated instruction, UDL, accessibility, AAC, STEM/SEL tools, and local-first schools.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AlloFlow">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
-    <meta property="og:title" content="AlloFlow | Open-Source AI Classroom Assistant">
+    <meta property="og:title" content="AlloFlow | Free AI Tools for Differentiated Instruction">
     <meta property="og:description" content="Free, open-source AI classroom tools for differentiated instruction, UDL, accessibility, AAC, STEM/SEL, and local-first schools.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta property="og:image:type" content="image/png">
@@ -20,7 +20,7 @@
     <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/">
-    <meta name="twitter:title" content="AlloFlow | Open-Source AI Classroom Assistant">
+    <meta name="twitter:title" content="AlloFlow | Free AI Tools for Differentiated Instruction">
     <meta name="twitter:description" content="Free, open-source AI classroom tools for differentiated instruction, UDL, accessibility, AAC, STEM/SEL, and local-first schools.">
     <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
@@ -52,7 +52,7 @@
         "https://github.com/Apomera/AlloFlow",
         "https://www.youtube.com/@AlloFlow"
       ],
-      "softwareVersion": "1.2",
+      "softwareVersion": "1.3",
       "license": "https://www.gnu.org/licenses/agpl-3.0.html",
       "isAccessibleForFree": true,
       "offers": {
@@ -78,10 +78,11 @@
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <link rel="stylesheet" href="promo-accessibility-overrides.css">
+    <link rel="stylesheet" href="promo-home.css">
     <script src="tool-catalog-data.js" defer></script>
     <script src="tool-finder.js" defer></script>
     <script src="site.js" defer></script>
-    <script src="https://unpkg.com/lucide@1.31.0"></script>
+    <script src="https://unpkg.com/lucide@1.31.0" defer></script>
 </head>
 
 <body>
@@ -145,33 +146,101 @@
             <div class="blob" style="width:400px;height:400px;background:#5eead4;bottom:-100px;right:-100px"></div>
             <div style="position:relative;z-index:1;max-width:900px;margin:0 auto">
                 <p class="promo-kicker">AlloFlow &middot; open-source AI classroom assistant</p>
-                <!-- The name is an acronym, and this is its canonical expansion:
-                     the same string as ui_strings.js header.tagline / splash.tagline,
-                     CITATION.cff and the desktop README, already translated into all
-                     63 language packs. The homepage was the one place still carrying
-                     a different line. Initials are styled with plain spans, never <b>
-                     or <strong>, so screen readers read the words continuously
-                     instead of announcing emphasis on every first letter. -->
-                <h1 class="promo-acronym" style="font-size:clamp(1.75rem,3.9vw,3rem);font-weight:900;line-height:1.16;margin:18px 0 20px;letter-spacing:-0.02em">
+                <h1 class="promo-home-heading">One lesson. More ways to learn.</h1>
+                <p class="promo-home-lede">Free, open-source AI tools for differentiated instruction. Turn your source material into leveled readings, learning activities, and accessible document alternatives&mdash;then review and adapt them for your learners.</p>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
+                    <a href="launch.html" class="btn-primary" style="text-decoration:none"><i data-lucide="rocket" aria-hidden="true" style="width:18px;height:18px"></i> Launch in Gemini Canvas</a>
+                    <a href="tools.html" class="btn-secondary" style="text-decoration:none"><i data-lucide="search" aria-hidden="true" style="width:18px;height:18px"></i> Find the right tool</a>
+                    <a href="#classroom-example" class="btn-secondary" style="text-decoration:none">See a classroom example</a>
+                </div>
+                <div style="width:92px;height:92px;margin:8px auto 0"><img src="allobot.svg" alt="" aria-hidden="true" style="width:100%;height:100%"></div>
+                <p class="promo-cost-note">No AlloFlow license fee. Optional AI providers, hosting, and support may have costs. <a href="ways-to-use.html">Compare access paths</a>.</p>
+                <p class="hero-path-note">Gemini Canvas is the simplest educator entry point and uses the Gemini access available to your Google account. Browser and Desktop paths are available when a different provider or local-first setup fits better.</p>
+                <!-- Preserve the canonical acronym as supporting brand copy. -->
+                <p class="promo-acronym promo-home-acronym">
                     <span class="acro-half acro-allo"><span class="acro-i">A</span>daptive <span class="acro-i">L</span>evels,
                         <span class="acro-i">L</span>ayers, &amp; <span class="acro-i">O</span>utputs</span>
                     <span class="acro-arrow" aria-hidden="true">➔</span>
                     <span class="acro-half acro-flow"><span class="acro-i">F</span>lexible
                         <span class="acro-i">L</span>earning <span class="acro-i">O</span>ptions for
                         <span class="acro-i">W</span>hole-Student Education</span>
-                </h1>
-                <p style="font-size:1.15rem;color:#526176;max-width:720px;margin:0 auto 30px;line-height:1.72">
-                    Find a STEM lab, adapt classroom material, build a learning resource, or create a more accessible document alternative. AlloFlow shows what each workflow needs before you begin.
                 </p>
-                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
-                    <a href="launch.html" class="btn-primary" style="text-decoration:none"><i data-lucide="rocket" aria-hidden="true" style="width:18px;height:18px"></i> Launch in Gemini Canvas</a>
-                    <a href="tools.html" class="btn-secondary" style="text-decoration:none"><i data-lucide="search" aria-hidden="true" style="width:18px;height:18px"></i> Find the right tool</a>
-                    <a href="ways-to-use.html" class="btn-secondary" style="text-decoration:none">Compare access paths</a>
-                </div>
-                <div style="width:92px;height:92px;margin:8px auto 0"><img src="allobot.svg" alt="" aria-hidden="true" style="width:100%;height:100%"></div>
-                <p class="hero-path-note">Gemini Canvas is the simplest educator entry point and uses the Gemini access available to your Google account. Browser and Desktop paths are available when a different provider or local-first setup fits better.</p>
             </div>
         </header>
+
+        <nav class="home-page-nav" aria-label="On this page">
+            <div class="home-page-nav-inner">
+                <span class="home-page-nav-label">Explore this page</span>
+                <ul>
+                    <li><a href="#classroom-example">Classroom example</a></li>
+                    <li><a href="#home-tool-finder">Find a tool</a></li>
+                    <li><a href="#tutorials">Watch tutorials</a></li>
+                    <li><a href="#pricing">Access &amp; costs</a></li>
+                    <li><a href="#privacy">Data privacy</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <section id="classroom-example" tabindex="-1" class="home-example" aria-labelledby="classroom-example-heading">
+            <div class="home-example-inner">
+                <div class="home-example-heading">
+                    <p class="promo-kicker">From source to student-ready resource</p>
+                    <h2 id="classroom-example-heading">Keep the science. Change the support.</h2>
+                    <p>One water-cycle passage can support shorter sentences, a focused glossary, and more than one way to explain an idea.</p>
+                    <p class="home-example-disclosure"><strong>Illustrative example:</strong> these samples were prepared for this page. They are not a live AI result, a reading-level assessment, or a record of a real student.</p>
+                </div>
+                <div class="home-example-grid">
+                    <article class="home-example-source">
+                        <p class="home-example-step">1 &middot; Bring a source</p>
+                        <h3>A shared learning goal</h3>
+                        <p class="home-example-goal">Explain how the Sun helps water move through evaporation, condensation, precipitation, and collection.</p>
+                        <h4>Sample source passage</h4>
+                        <p id="classroom-example-source">Energy from the Sun warms water in lakes and oceans. During evaporation, liquid water changes into water vapor, a gas. As moist air cools, water vapor can condense into tiny liquid droplets that form clouds. When droplets grow large enough, they fall as rain, a form of precipitation. Water collects in lakes, rivers, and oceans, where it can evaporate again. This describes one possible path through the water cycle.</p>
+                        <div class="home-example-source-actions">
+                            <button id="copy-example-source" class="home-example-copy" type="button" hidden>Copy sample text</button>
+                            <a class="home-example-download" href="assets/examples/water-cycle-source.txt" download="alloflow-water-cycle-source.txt">Download sample text (.txt)</a>
+                        </div>
+                        <p id="copy-example-status" class="home-example-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+                        <p class="home-example-hint">To try it: open AlloFlow, paste this source, and choose a resource. AI generation uses your selected access path.</p>
+                    </article>
+                    <div class="home-example-resources">
+                        <p class="home-example-step">2 &middot; Choose a support</p>
+                        <h3>Explore three sample resources</h3>
+                        <details open>
+                            <summary>Shorter sentences, same process terms</summary>
+                            <div class="home-example-detail">
+                                <p>The Sun warms water in lakes and oceans. Some liquid water becomes water vapor, a gas. This is <strong>evaporation</strong>. Moist air can cool. Water vapor can then become tiny liquid drops. This is <strong>condensation</strong>. The drops form clouds. When drops grow large enough, they fall as rain. Rain is one kind of <strong>precipitation</strong>. Water gathers in lakes, rivers, and oceans. This is <strong>collection</strong>. It can evaporate again. Water can follow other paths, too.</p>
+                                <p class="home-example-review"><strong>Teacher decision:</strong> keep the scientific vocabulary and the idea of a cycle. Check whether shorter sentences help the learners; no grade-level match is assumed.</p>
+                            </div>
+                        </details>
+                        <details>
+                            <summary>A small glossary with familiar examples</summary>
+                            <div class="home-example-detail">
+                                <dl class="home-example-glossary">
+                                    <dt>Evaporation</dt><dd>Liquid water changes into water vapor. Example: a puddle gets smaller as water evaporates.</dd>
+                                    <dt>Condensation</dt><dd>Water vapor changes into liquid water. Example: drops form on the outside of a cold glass.</dd>
+                                    <dt>Precipitation</dt><dd>Water falls from clouds, for example as rain or snow.</dd>
+                                    <dt>Collection</dt><dd>Water gathers in places such as lakes, rivers, and oceans.</dd>
+                                </dl>
+                                <p class="home-example-review"><strong>Teacher decision:</strong> preview the terms needed for this lesson. Explain that the drops on a cold glass come from water vapor in the surrounding air.</p>
+                            </div>
+                        </details>
+                        <details>
+                            <summary>One exit ticket, different response options</summary>
+                            <div class="home-example-detail">
+                                <p><strong>Prompt:</strong> How does the Sun help water move through the water cycle? Use the words evaporation, condensation, precipitation, and collection. Explain one possible path.</p>
+                                <p><strong>Response options:</strong> write a short explanation, explain aloud, or label a diagram and describe the connections using an established communication method.</p>
+                                <p class="home-example-review"><strong>Teacher decision:</strong> apply the same science criteria to each response. Check the Sun's role, changes between liquid and gas, and connections between stages. Do not score handwriting or speaking fluency as science understanding.</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                <div class="home-example-next">
+                    <div><p class="home-example-step">3 &middot; Review before sharing</p><h3>The teacher makes the final call.</h3><p>Compare each resource with the source, check the science, and try the support in the learner's actual reading or response workflow.</p></div>
+                    <div class="home-example-actions"><a class="btn-primary" href="launch.html">Try your own source</a><a href="guide/worked-student-vignette.html">Read the complete teaching example &rarr;</a></div>
+                </div>
+            </div>
+        </section>
 
         <section id="homeEntryPaths" class="home-entry-section" aria-labelledby="home-entry-heading">
             <div class="home-entry-inner">
@@ -188,7 +257,7 @@
             </div>
         </section>
 
-        <section class="home-tool-finder-section" aria-labelledby="home-tool-finder-heading">
+        <section id="home-tool-finder" tabindex="-1" class="home-tool-finder-section" aria-labelledby="home-tool-finder-heading">
             <div class="section-inner home-tool-finder-layout">
                 <div class="home-tool-finder-copy">
                     <h2 id="home-tool-finder-heading">Start with the tool you need</h2>
@@ -232,7 +301,7 @@
             <div class="stats-row">
                 <div class="stat-item">
                     <div class="stat-number" data-target="400" data-suffix="+">400+</div>
-                    <div class="stat-label">Documented Features</div>
+                    <div class="stat-label">Documented Capabilities</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" data-target="147">147</div>
@@ -251,7 +320,7 @@
 
         <!-- Tutorials: tabbed player. Tutorials live in TUTORIALS (bottom of
              this file), adding one is a single array entry, no markup change. -->
-        <div class="section reveal" style="background:#fff;padding-top:0;padding-bottom:60px">
+        <div id="tutorials" tabindex="-1" class="section reveal" style="background:#fff;padding-top:0;padding-bottom:60px">
             <div class="section-header" style="margin-bottom:20px">
                 <h2>Tutorials</h2>
                 <p>Walkthroughs of the real workflow, start to finish.</p>
@@ -501,35 +570,18 @@
         </section>
 
         <!-- How It Works -->
-        <section class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+        <section id="teaching-workflow" class="section reveal home-workflow" aria-labelledby="teaching-workflow-heading">
             <div class="section-inner">
                 <div class="section-header">
-                    <h2>Three Pathways. One Mission.</h2>
-                    <p>Run instantly in Gemini Canvas, deploy a district-controlled Firebase site, or use AlloFlow Desktop for local files, local providers, and same-room Desktop LAN sessions. The Docker School Box stack is an optional server/appliance path for schools that need district-owned infrastructure.</p>
+                    <h2 id="teaching-workflow-heading">From a source to a resource you can teach with.</h2>
+                    <p>Start small: one learning goal, one source, and the support that makes the task more accessible.</p>
                 </div>
-                <div class="grid-3">
-                    <div style="text-align:center">
-                        <div
-                            style="width:80px;height:80px;background:#fff;border:4px solid #eef2ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--indigo);font-family:'Outfit'">
-                            1</div>
-                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Choose Your Path</h3>
-                        <p style="font-size:0.85rem;color:#64748b"><strong>Cloud:</strong> Paste the Canvas link. <strong>Firebase:</strong> Deploy static hosting. <strong>Desktop:</strong> run the local-first app. <strong>Server:</strong> use Docker only for optional School Box infrastructure.</p>
-                    </div>
-                    <div style="text-align:center">
-                        <div
-                            style="width:80px;height:80px;background:#fff;border:4px solid #f3e8ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--purple);font-family:'Outfit'">
-                            2</div>
-                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Configure & Create</h3>
-                        <p style="font-size:0.85rem;color:#64748b">Complete the Quick Start wizard or ask AlloBot to auto-generate a full lesson pack.</p>
-                    </div>
-                    <div style="text-align:center">
-                        <div
-                            style="width:80px;height:80px;background:#fff;border:4px solid #ccfbf1;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--teal);font-family:'Outfit'">
-                            3</div>
-                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Differentiate</h3>
-                        <p style="font-size:0.85rem;color:#64748b">Generate quizzes, games, leveled text, and more. Export or go live instantly.</p>
-                    </div>
-                </div>
+                <ol class="home-workflow-grid">
+                    <li><span class="home-workflow-number" aria-hidden="true">1</span><h3>Bring the source and the goal</h3><p>Paste a short passage or import a supported file. Name what learners should understand and which ideas or terms must stay.</p><a href="guide/prepare-a-lesson.html">Plan a purposeful lesson &rarr;</a></li>
+                    <li><span class="home-workflow-number" aria-hidden="true">2</span><h3>Choose one useful support</h3><p>Try an adapted reading, glossary, organizer, or practice activity. Set the intended language and complexity before generating.</p><a href="tools.html">Find a resource by task &rarr;</a></li>
+                    <li><span class="home-workflow-number" aria-hidden="true">3</span><h3>Review, try, and share</h3><p>Compare the draft with the source, check answer keys, and try the student view. Test exported resources on the device learners will use.</p><a href="guide/review-and-next-steps.html">Use the review routine &rarr;</a></li>
+                </ol>
+                <p class="home-workflow-access">Choosing where to run AlloFlow? <a href="ways-to-use.html">Compare Canvas, browser, Desktop, and school-hosted options</a>.</p>
             </div>
         </section>
 
@@ -537,7 +589,7 @@
         <section class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
             <div class="section-inner">
                 <div class="section-header">
-                    <h2>Eliminating the "Differentiation Tax"</h2>
+                    <h2>Make room for teaching decisions</h2>
                     <p>Educators face a cognitive burden: adapting one curriculum for dozens of unique learning
                         profiles.
                     </p>
@@ -551,11 +603,8 @@
                                 style="width:44px;height:44px;background:var(--indigo);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
                                 <i data-lucide="clock" style="width:22px;height:22px"></i>
                             </div>
-                            <h3 style="font-weight:700;font-size:1.3rem;color:#1e1b4b;margin-bottom:10px">For Teachers:
-                                Speed</h3>
-                            <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Manual
-                                differentiation takes hours. AlloFlow automates text leveling, glossary creation, and
-                                assessment design in seconds.</p>
+                            <h3 style="font-weight:700;font-size:1.3rem;color:#1e1b4b;margin-bottom:10px">For teachers: a starting draft</h3>
+                            <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Draft adapted readings, glossaries, and assessment activities from one source. Focus your review on accuracy, learner fit, and the evidence you want students to show.</p>
                             <ul
                                 style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.85rem;color:#312e81;font-weight:500">
                                 <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
@@ -577,12 +626,8 @@
                                 style="width:44px;height:44px;background:var(--teal);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
                                 <i data-lucide="accessibility" style="width:22px;height:22px"></i>
                             </div>
-                            <h3 style="font-weight:700;font-size:1.3rem;color:#134e4a;margin-bottom:10px">For Students:
-                                Access</h3>
-                            <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Students
-                                receive a
-                                personalized "Lesson Pack" and review material at their own pace with built-in
-                                accommodations.</p>
+                            <h3 style="font-weight:700;font-size:1.3rem;color:#134e4a;margin-bottom:10px">For students: useful access options</h3>
+                            <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Build a lesson pack with the reading, vocabulary, and response supports your learners need. Check each support on their devices and keep the learning goal in view.</p>
                             <ul
                                 style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.85rem;color:#134e4a;font-weight:500">
                                 <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
@@ -608,9 +653,8 @@
                         <i data-lucide="sparkles" style="width:14px;height:14px;color:#9333ea"></i> Powered by
                         Gemini
                     </div>
-                    <h2>Explore the Pedagogy</h2>
-                    <p>Dive deep into the research behind AlloFlow. Listen to our AI podcast overview or tap through the
-                        interactive slide decks.</p>
+                    <h2>Explore the teaching approach</h2>
+                    <p>Explore design ideas through an AI-generated audio overview and illustrated feature tour. These describe intended workflows, not measured learning gains. Read the <a href="whitepaper.html">design rationale</a> and <a href="guide/accessibility-and-udl.html">practical UDL guide</a> for context.</p>
                 </div>
 
                 <div class="grid-2">
@@ -626,7 +670,7 @@
                                 <h3 style="font-weight:800;font-size:1.15rem;margin-bottom:4px">The "Why" Behind
                                     AlloFlow
                                 </h3>
-                                <p style="font-size:0.85rem;color:#64748b;font-weight:600">Audio Overview • 8 mins</p>
+                                <p style="font-size:0.85rem;color:#64748b;font-weight:600">AI-generated audio overview</p>
                             </div>
                         </div>
                         <!-- Real Audio Player -->
@@ -648,565 +692,7 @@
                 <!-- Integrated Architecture Slider -->
                 <div style="margin-top: 4rem; display: flex; justify-content: center;">
 
-                    <style>
-                        /* Slider-scoped styles, do NOT use global selectors here */
 
-                        #slider-container {
-                            width: 100%;
-                            max-width: 1200px;
-                            height: 920px;
-                            border-radius: 20px;
-                            overflow: hidden;
-                            position: relative;
-                            background: linear-gradient(135deg, #090e17 0%, #0f1629 40%, #151a2a 100%);
-                            border: 1px solid rgba(99, 102, 241, 0.15);
-                            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 120px rgba(99, 102, 241, 0.08);
-                            display: flex;
-                            flex-direction: column;
-                        }
-
-                        #slides-viewport {
-                            flex-grow: 1;
-                            position: relative;
-                            overflow: hidden;
-                        }
-
-                        .slide {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            padding: 2rem 3rem;
-                            opacity: 0;
-                            transform: translateX(50px);
-                            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-                            pointer-events: none;
-                            display: flex;
-                            align-items: center;
-                            gap: 3rem;
-                        }
-
-                        .slide.active {
-                            opacity: 1;
-                            transform: translateX(0);
-                            pointer-events: all;
-                        }
-
-                        .slide.prev {
-                            transform: translateX(-50px);
-                        }
-
-                        .slide-content {
-                            flex: 1;
-                        }
-
-                        .slide-visual {
-                            flex: 1;
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            position: relative;
-                        }
-
-                        .slide-visual::before {
-                            content: '';
-                            position: absolute;
-                            width: 280px;
-                            height: 280px;
-                            border-radius: 50%;
-                            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-                            pointer-events: none;
-                        }
-
-                        .slide-tag {
-                            display: inline-flex;
-                            align-items: center;
-                            gap: 8px;
-                            padding: 6px 16px;
-                            background: rgba(99, 102, 241, 0.15);
-                            color: #a5b4fc;
-                            border: 1px solid rgba(99, 102, 241, 0.3);
-                            border-radius: 999px;
-                            font-size: 0.8rem;
-                            font-weight: 700;
-                            letter-spacing: 0.08em;
-                            text-transform: uppercase;
-                            margin-bottom: 16px;
-                        }
-
-                        .slide h3 {
-                            font-family: 'Outfit', sans-serif;
-                            font-size: 2.2rem;
-                            font-weight: 800;
-                            margin-bottom: 12px;
-                            line-height: 1.1;
-                            background: linear-gradient(135deg, #e2e8f0, #64748b);
-                            -webkit-background-clip: text;
-                            background-clip: text;
-                            background-clip: text;
-                            -webkit-text-fill-color: transparent;
-                        }
-
-                        .slide p {
-                            font-size: 1rem;
-                            line-height: 1.6;
-                            color: #64748b;
-                            margin-bottom: 18px;
-                            max-width: 560px;
-                        }
-
-                        .info-box {
-                            background: rgba(15, 23, 42, 0.5);
-                            border: 1px solid rgba(255, 255, 255, 0.08);
-                            padding: 14px 16px;
-                            border-radius: 12px;
-                            margin-bottom: 12px;
-                            backdrop-filter: blur(16px);
-                            -webkit-backdrop-filter: blur(16px);
-                            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.2);
-                            transition: transform 0.25s ease, box-shadow 0.25s ease;
-                        }
-
-                        .info-box:hover {
-                            transform: translateY(-2px);
-                            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.3);
-                        }
-
-                        .info-title {
-                            font-size: 1rem;
-                            font-weight: 700;
-                            color: #f8fafc;
-                            margin-bottom: 4px;
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                        }
-
-                        .info-desc {
-                            font-size: 0.85rem;
-                            color: #64748b;
-                            line-height: 1.5;
-                        }
-
-                        .stat-callout {
-                            display: inline-flex;
-                            align-items: center;
-                            gap: 8px;
-                            padding: 8px 16px;
-                            background: rgba(99, 102, 241, 0.1);
-                            border: 1px solid rgba(99, 102, 241, 0.2);
-                            border-radius: 10px;
-                            margin-top: 8px;
-                            opacity: 0;
-                            transform: translateY(10px);
-                            transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
-                        }
-
-                        .slide.active .stat-callout {
-                            opacity: 1;
-                            transform: translateY(0);
-                        }
-
-                        .stat-callout .stat-number {
-                            font-family: 'Outfit', sans-serif;
-                            font-size: 1.3rem;
-                            font-weight: 800;
-                            background: linear-gradient(135deg, #a5b4fc, #818cf8);
-                            -webkit-background-clip: text;
-                            background-clip: text;
-                            background-clip: text;
-                            -webkit-text-fill-color: transparent;
-                        }
-
-                        .stat-callout .stat-label {
-                            font-size: 0.8rem;
-                            color: #64748b;
-                            font-weight: 600;
-                        }
-
-                        /* Slide-tag shimmer effect */
-                        .slide-tag {
-                            position: relative;
-                            overflow: hidden;
-                        }
-
-                        .slide-tag::after {
-                            content: '';
-                            position: absolute;
-                            top: 0;
-                            left: -100%;
-                            width: 60%;
-                            height: 100%;
-                            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-                            animation: shimmer 3s ease-in-out infinite;
-                        }
-
-                        @keyframes shimmer {
-                            0% {
-                                left: -100%;
-                            }
-
-                            50%,
-                            100% {
-                                left: 150%;
-                            }
-                        }
-
-                        #controls {
-                            padding: 14px 32px;
-                            background: rgba(15, 23, 42, 0.9);
-                            border-top: 1px solid rgba(99, 102, 241, 0.12);
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            z-index: 10;
-                        }
-
-                        .controls-center {
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            gap: 8px;
-                        }
-
-                        .slide-dots {
-                            display: flex;
-                            flex-wrap: wrap;
-                            justify-content: center;
-                            gap: 0;
-                        }
-
-                        /* WCAG 2.5.8: the visible dot stays 5px, drawn by ::before, while the button
-                           itself is a 24x24 pointer target. Centres land 24px apart, which also
-                           satisfies the spacing rule. */
-                        .slide-dots .dot {
-                            display: grid;
-                            place-items: center;
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 50%;
-                            background: transparent;
-                            border: none;
-                            padding: 0;
-                            cursor: pointer;
-                        }
-
-                        .slide-dots .dot::before {
-                            content: "";
-                            width: 5px;
-                            height: 5px;
-                            border-radius: 50%;
-                            background: #334155;
-                            transition: all 0.3s ease;
-                        }
-
-                        .slide-dots .dot.active::before {
-                            background: #818cf8;
-                            box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
-                            transform: scale(1.3);
-                        }
-
-                        .slide-dots .dot:hover:not(.active)::before {
-                            background: #475569;
-                            transform: scale(1.15);
-                        }
-
-                        .slide-title-label {
-                            font-family: 'Outfit', sans-serif;
-                            font-size: 0.75rem;
-                            color: #64748b;
-                            font-weight: 600;
-                            letter-spacing: 0.04em;
-                            text-transform: uppercase;
-                            min-height: 1.1em;
-                            transition: opacity 0.3s;
-                        }
-
-                        .slide-counter {
-                            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                            font-size: 0.7rem;
-                            color: #475569;
-                            letter-spacing: 0.05em;
-                            margin-left: 4px;
-                        }
-
-                        .slide-progress {
-                            width: 100%;
-                            height: 2px;
-                            background: #1e293b;
-                            border-radius: 1px;
-                            overflow: hidden;
-                            margin-top: 8px;
-                        }
-
-                        .slide-progress-bar {
-                            height: 100%;
-                            background: linear-gradient(90deg, #818cf8, #06b6d4);
-                            border-radius: 1px;
-                            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-                        }
-
-                        .btn {
-                            background: transparent;
-                            border: 1px solid #475569;
-                            color: #f8fafc;
-                            width: 44px;
-                            height: 44px;
-                            border-radius: 50%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            cursor: pointer;
-                            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-                        }
-
-                        .btn:hover {
-                            background: rgba(99, 102, 241, 0.2);
-                            border-color: #818cf8;
-                            color: #818cf8;
-                            transform: scale(1.1);
-                            box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
-                        }
-
-                        #indicator {
-                            font-family: 'Outfit';
-                            font-size: 0.9rem;
-                            font-weight: 700;
-                            color: #64748b;
-                            letter-spacing: 0.1em;
-                        }
-
-                        /* Custom Visuals SVG styles */
-                        .svg-container {
-                            width: 100%;
-                            height: 100%;
-                            max-height: 400px;
-                        }
-
-                        .node-box {
-                            fill: #0f172a;
-                            stroke: #334155;
-                            stroke-width: 2;
-                            rx: 12;
-                        }
-
-                        .node-text {
-                            fill: #f8fafc;
-                            font-family: 'Outfit', sans-serif;
-                            font-size: 16px;
-                            font-weight: 600;
-                            text-anchor: middle;
-                        }
-
-                        .node-subtext {
-                            fill: #64748b;
-                            font-family: 'Inter', sans-serif;
-                            font-size: 12px;
-                            text-anchor: middle;
-                        }
-
-                        .path-line {
-                            fill: none;
-                            stroke: #475569;
-                            stroke-width: 2;
-                            stroke-dasharray: 6 4;
-                            animation: march 20s linear infinite;
-                        }
-
-                        .path-solid {
-                            fill: none;
-                            stroke: #6366f1;
-                            stroke-width: 3;
-                        }
-
-                        @keyframes march {
-                            from {
-                                stroke-dashoffset: 200;
-                            }
-
-                            to {
-                                stroke-dashoffset: 0;
-                            }
-                        }
-
-                        .pulse-circle {
-                            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
-                        }
-
-                        @keyframes pulse {
-                            0% {
-                                opacity: 1;
-                                r: 16;
-                            }
-
-                            50% {
-                                opacity: 0.4;
-                                r: 22;
-                            }
-
-                            100% {
-                                opacity: 1;
-                                r: 16;
-                            }
-                        }
-
-                        @keyframes glow-pulse {
-
-                            0%,
-                            100% {
-                                opacity: 0.6;
-                            }
-
-                            50% {
-                                opacity: 1;
-                            }
-                        }
-
-                        @keyframes float {
-
-                            0%,
-                            100% {
-                                transform: translateY(0px);
-                            }
-
-                            50% {
-                                transform: translateY(-6px);
-                            }
-                        }
-
-                        .svg-container rect,
-                        .svg-container circle {
-                            transition: filter 0.3s ease;
-                        }
-
-                        .svg-container rect:hover,
-                        .svg-container circle:hover {
-                            filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
-                        }
-
-                        /* Staggered fadeInUp for info boxes */
-                        @keyframes fadeInUp {
-                            from {
-                                opacity: 0;
-                                transform: translateY(18px);
-                            }
-
-                            to {
-                                opacity: 1;
-                                transform: translateY(0);
-                            }
-                        }
-
-                        .slide.active .info-box:nth-child(1) {
-                            animation: fadeInUp 0.5s ease-out 0.15s both;
-                        }
-
-                        .slide.active .info-box:nth-child(2) {
-                            animation: fadeInUp 0.5s ease-out 0.3s both;
-                        }
-
-                        .slide.active .info-box:nth-child(3) {
-                            animation: fadeInUp 0.5s ease-out 0.45s both;
-                        }
-
-                        /* Progress bar at bottom of controls */
-                        #progress-bar-container {
-                            position: absolute;
-                            bottom: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 3px;
-                            background: rgba(99, 102, 241, 0.1);
-                        }
-
-                        #progress-bar {
-                            height: 100%;
-                            width: 0%;
-                            background: linear-gradient(90deg, #818cf8, #6366f1);
-                            border-radius: 0 2px 2px 0;
-                            transition: width 0.1s linear;
-                        }
-
-                        /* Indicator pill styling */
-                        #indicator {
-                            font-family: 'Outfit';
-                            font-size: 0.8rem;
-                            font-weight: 700;
-                            color: #64748b;
-                            letter-spacing: 0.1em;
-                            background: rgba(99, 102, 241, 0.08);
-                            border: 1px solid rgba(99, 102, 241, 0.15);
-                            padding: 4px 14px;
-                            border-radius: 999px;
-                        }
-
-                        /* Enhanced info-box glow on hover */
-                        .info-box {
-                            position: relative;
-                        }
-
-                        .info-box::before {
-                            content: '';
-                            position: absolute;
-                            inset: 0;
-                            border-radius: 12px;
-                            opacity: 0;
-                            transition: opacity 0.3s ease;
-                            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), transparent);
-                            pointer-events: none;
-                        }
-
-                        .info-box:hover::before {
-                            opacity: 1;
-                        }
-
-                        /* Orbit animation for SVG decorative elements */
-                        @keyframes orbit {
-                            0% {
-                                transform: rotate(0deg) translateX(8px) rotate(0deg);
-                            }
-
-                            100% {
-                                transform: rotate(360deg) translateX(8px) rotate(-360deg);
-                            }
-                        }
-
-                        /* Responsive: stack slides vertically on mobile */
-                        @media (max-width: 768px) {
-                            #slider-container {
-                                height: auto;
-                                min-height: 580px;
-                            }
-
-                            .slide {
-                                flex-direction: column;
-                                padding: 1.5rem 1.2rem;
-                                gap: 1.5rem;
-                            }
-
-                            .slide h3 {
-                                font-size: 1.6rem;
-                            }
-
-                            .slide p {
-                                font-size: 0.9rem;
-                            }
-
-                            .slide-visual {
-                                max-height: 220px;
-                            }
-
-                            #controls {
-                                padding: 10px 16px;
-                            }
-
-                            .slide-title-label {
-                                font-size: 0.65rem;
-                            }
-                        }
-                    </style>
                     <div id="slider-container">
                         <div id="slides-viewport">
 
@@ -1225,26 +711,22 @@
 
                                     <div class="info-box" style="border-left: 4px solid #10b981;">
                                         <div class="info-title">🌐 Online: AI Generation</div>
-                                        <div class="info-desc">Features that generate new content, like Adventure Mode
-                                            worlds, DOK Leveled Quizzes, and Text Rewriting, require an active connection
-                                            to the Gemini Canvas API.</div>
+                                        <div class="info-desc">Generating new worlds, quizzes, or rewritten text uses the selected AI provider. Cloud providers need a network connection; local models need a configured runtime.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #34d399;">
                                         <div class="info-title">⚡ Offline: Interactive Play</div>
-                                        <div class="info-desc">After assets are loaded, many STEM, game, Word Sounds, and Immersive Reader interactions can run locally in the browser. AI generation, cloud providers, and hosted-session features remain connection-dependent.</div>
+                                        <div class="info-desc">After assets are loaded, many STEM, game, Word Sounds, and Immersive Reader interactions can run locally in the browser. Cloud AI generation and hosted-session features remain network-dependent.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #059669;">
                                         <div class="info-title">📥 The Bridge: HTML Bundles</div>
-                                        <div class="info-desc">Teachers can generate lessons online, then click "Export
-                                            to HTML". This bundles the entire interactive experience into a single file
-                                            that students can play completely offline.</div>
+                                        <div class="info-desc">Supported resources can be exported as HTML for offline use. Open the exported file on the student device and test the activities; external media, AI generation, and connected features may still need a network.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">0*</span>
-                                            <span class="stat-label">Server round-trips for offline core play</span>
+                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">Local</span>
+                                            <span class="stat-label">Prepared resources for offline practice</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.08);">
@@ -1314,41 +796,37 @@
                                     <div class="slide-tag">Differentiation</div>
                                     <h3
                                         style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text; background-clip: text;">
-                                        Instant Leveled Text</h3>
-                                    <p>Adapting a single reading passage for five different reading levels previously
-                                        took hours. AlloFlow's <strong>Bimodal Generative Pipeline</strong> reconstructs
-                                        raw texts dynamically, one click, multiple outputs.</p>
+                                        Adapted Reading Drafts</h3>
+                                    <p>Generate multiple reading drafts from a shared source. Choose the intended complexity, then check vocabulary, meaning, and learner fit before sharing.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #0ea5e9;">
-                                        <div class="info-title">🔬 Syntax &amp; Semantic Downgrading</div>
-                                        <div class="info-desc">The AI doesn't just swap synonyms, it restructures
-                                            compound-complex sentences into simple S-V-O patterns while preserving the
-                                            narrative "Golden Thread" across all levels.</div>
+                                        <div class="info-title">🔬 Sentence and Vocabulary Support</div>
+                                        <div class="info-desc">Generation can shorten sentences and explain vocabulary. Compare the draft with the source to check that important relationships and nuance remain intact.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #38bdf8;">
                                         <div class="info-title">🧵 Golden Thread Preservation</div>
-                                        <div class="info-desc">Every leveled version retains the same core narrative,
-                                            characters, and key vocabulary so all students can participate in the same
-                                            class discussion.</div>
+                                        <div class="info-desc">Generation instructions aim to preserve the core narrative,
+                                            characters, and key vocabulary across versions. Review each reading against
+                                            the source before using it in a shared class discussion.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #0284c7;">
                                         <div class="info-title">📚 Dolch Word DB Integration</div>
-                                        <div class="info-desc">Lower levels automatically substitute vocabulary from the
-                                            Dolch high-frequency word list, ensuring emerging readers encounter
-                                            sight words they're actively learning in class.</div>
+                                        <div class="info-desc">Lower-level generation can draw on Dolch high-frequency
+                                            vocabulary. Check the result against the words and decoding patterns your
+                                            learners have been taught; sight-word support is not a decodability guarantee.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(14, 165, 233, 0.3); background: rgba(14, 165, 233, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text; background-clip: text;">5</span>
-                                            <span class="stat-label">Reading levels from one source</span>
+                                            <span class="stat-label">Illustrative reading versions</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text; background-clip: text;">&lt;60s</span>
-                                            <span class="stat-label">Generation time per level</span>
+                                                style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text; background-clip: text;">AI-assisted</span>
+                                            <span class="stat-label">Timing varies by model and source</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1371,7 +849,7 @@
                                         <path
                                             d="M50 20 h60 a10 10 0 0 1 10 10 v90 a10 10 0 0 1 -10 10 h-60 a10 10 0 0 1 -10 -10 v-90 a10 10 0 0 1 10 -10 z"
                                             fill="#1e293b" stroke="#0ea5e9" stroke-width="2" />
-                                        <text x="80" y="48" class="node-text" font-size="12">11th Grade</text>
+                                        <text x="80" y="48" class="node-text" font-size="12">Shared</text>
                                         <text x="80" y="68" class="node-subtext">Source Text</text>
                                         <line x1="55" y1="82" x2="105" y2="82" stroke="#475569" stroke-width="3"
                                             stroke-linecap="round" />
@@ -1414,31 +892,29 @@
                                         <rect x="300" y="44" width="90" height="30" rx="6" fill="#0f172a"
                                             stroke="#0ea5e9" />
                                         <text x="345" y="63" font-size="9" fill="#f8fafc" font-family="Outfit"
-                                            text-anchor="middle">Grade 8 (ESL)</text>
+                                            text-anchor="middle">Draft A</text>
                                         <!-- Lexile 3: Grade 5 IEP -->
                                         <rect x="300" y="80" width="90" height="30" rx="6" fill="#0f172a"
                                             stroke="#0ea5e9" />
                                         <text x="345" y="99" font-size="9" fill="#f8fafc" font-family="Outfit"
-                                            text-anchor="middle">Grade 5 (IEP)</text>
+                                            text-anchor="middle">Draft B</text>
                                         <!-- Lexile 4: Grade 2 RTI -->
                                         <rect x="300" y="116" width="90" height="30" rx="6" fill="#0f172a"
                                             stroke="#0ea5e9" />
                                         <text x="345" y="135" font-size="9" fill="#f8fafc" font-family="Outfit"
-                                            text-anchor="middle">Grade 2 (RTI)</text>
-                                        <!-- Lexile 5: Grade K-1 -->
+                                            text-anchor="middle">Draft C</text>
+                                        <!-- Lexile 5: Draft D -->
                                         <rect x="300" y="150" width="90" height="30" rx="6" fill="#0f172a"
                                             stroke="#0ea5e9" />
                                         <text x="345" y="169" font-size="9" fill="#f8fafc" font-family="Outfit"
-                                            text-anchor="middle">Grade K-1 🌱</text>
+                                            text-anchor="middle">Draft D 🌱</text>
 
                                         <!-- Difficulty indicator bar -->
                                         <rect x="395" y="15" width="4" height="160" rx="2" fill="#1e293b" />
                                         <rect x="395" y="15" width="4" height="160" rx="2" fill="url(#lexG)"
                                             opacity="0.6" />
-                                        <text x="400" y="8" font-size="6" fill="#7dd3fc" text-anchor="middle"
-                                            font-family="Inter">HARD</text>
-                                        <text x="400" y="188" font-size="6" fill="#7dd3fc" text-anchor="middle"
-                                            font-family="Inter">EASY</text>
+
+
 
                                         <!-- Dictionary DB with richer visual -->
                                         <rect x="130" y="200" width="140" height="40" rx="8" fill="#0f172a"
@@ -1452,8 +928,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="265" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Same content → 5 reading levels in under 60
-                                            seconds</text>
+                                            font-family="Inter">One source → requested versions → teacher review</text>
                                     </svg>
                                 </div>
                             </div>
@@ -1558,7 +1033,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="210" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Same standard → infinite modalities</text>
+                                            font-family="Inter">One source → multiple resource formats</text>
                                     </svg>
                                 </div>
                             </div>
@@ -1572,20 +1047,16 @@
                                         Phonemic Precision</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(251,113,133,0.08)); border: 1px solid rgba(244,63,94,0.3);">
-                                        <span class="stat-number" style="color:#fb7185;">44</span>
-                                        <span class="stat-label">IPA phonemes mapped to orthography</span>
+                                        <span class="stat-number" style="color:#fb7185;">Sounds</span>
+                                        <span class="stat-label">sound-symbol practice with available pronunciation models</span>
                                     </div>
-                                    <p>English spelling frequently violates spoken rules. The Word Sounds Studio bridges
-                                        orthography
-                                        with auditory IPA sounds through synchronized playback, aligned with the Science
-                                        of Reading's phonemic awareness pillar.</p>
+                                    <p>Explore how written letters relate to speech sounds. Word Sounds Studio offers sound-symbol activities and available audio models for teacher-guided practice.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #f43f5e;">
                                         <div class="info-title">Advanced Audio Orchestration</div>
                                         <div class="info-desc">To prevent TTS "ghost loops", audio strings are cached in
                                             proxy layers
-                                            and sequenced perfectly to prevent overlapping reads during rapid student
-                                            interactions.
+                                            and sequenced to reduce overlapping reads during rapid student interactions.
                                         </div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fb7185;">
@@ -1598,8 +1069,7 @@
                                         <div class="info-title">🎯 Multi-Sensory Strategy Alignment</div>
                                         <div class="info-desc">Visual letter highlighting, auditory IPA playback, and
                                             kinesthetic tap-to-segment actions combine three modalities in a single
-                                            exercise, aligning with Orton-Gillingham and structured literacy best
-                                            practices.</div>
+                                            exercise, for teacher-guided practice. Choose activities that match the skills and sound patterns being taught.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -1683,36 +1153,31 @@
                                     </div>
                                     <p>Allobot is an <strong>embodied pedagogical agent</strong>. Rather than passively
                                         chatting, it
-                                        parses JSON to physically manipulate the DOM, guiding students visually to
-                                        exactly what they
-                                        need, reducing cognitive load for learners who struggle with navigation.</p>
+                                        parses JSON to physically manipulate the DOM, highlighting supported controls and offering step-by-step guidance. Check whether that guidance helps the learner navigate the current task.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #f59e0b;">
                                         <div class="info-title">data-help-key Binding</div>
-                                        <div class="info-desc">Every element is tagged. The AI generates deterministic
-                                            coordinates for
-                                            the Bot Avatar to scroll to, open drawers, and highlight targets in sync
-                                            with
-                                            Text-To-Speech.</div>
+                                        <div class="info-desc">Supported interface targets use help keys so the guide can
+                                            locate controls, scroll to them, and highlight the next step. Available
+                                            targets and spoken guidance depend on the current view and settings.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fbbf24;">
                                         <div class="info-title">Multi-Sensory Navigation</div>
                                         <div class="info-desc">Visual highlighting, spoken narration, and animated
-                                            scrolling combine to guide students through features, fulfilling UDL's
-                                            multiple means of representation.</div>
+                                            scrolling combine to guide students through features, offering alternative ways to follow instructions. Match the guidance to the learner and task.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #d97706;">
                                         <div class="info-title">♿ Accessibility-First Navigation</div>
-                                        <div class="info-desc">Screen-reader-compatible ARIA labels are auto-injected
-                                            by the tour engine. Every highlighted element receives focus management
-                                            and keyboard-navigable controls, aligning with RTI Tier 1 scaffolding.</div>
+                                        <div class="info-desc">The guide includes focus management and keyboard controls.
+                                            Check the complete workflow with the learner's assistive technology;
+                                            automated checks do not establish accessibility for every interaction.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">100%</span>
-                                            <span class="stat-label">Keyboard accessible</span>
+                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">Keyboard</span>
+                                            <span class="stat-label">Guided navigation controls</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.08);">
@@ -1827,10 +1292,7 @@
 
                                     <div class="info-box" style="border-left: 4px solid #14b8a6;">
                                         <div class="info-title">Local Context Compression</div>
-                                        <div class="info-desc">All quiz scores, XPS, and RTI metrics are heavily
-                                            compressed (via
-                                            LZ-String) and persisted explicitly inside the district's local browser
-                                            context.</div>
+                                        <div class="info-desc">Local workspace paths can retain progress data in browser or device storage, with compression used for some records. Connected sessions, exports, and providers have separate destinations and access rules.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #2dd4bf;">
                                         <div class="info-title">FERPA/COPPA Support Depends on Deployment</div>
@@ -1945,8 +1407,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="275" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">All Data → LZ-String Compression → localStorage
-                                            Only</text>
+                                            font-family="Inter">Local workspace shown; connected paths vary</text>
                                     </svg>
                                 </div>
                             </div>
@@ -1966,13 +1427,13 @@
                                     <p>Response to Intervention (RTI) thrives when families are involved, but high-tier
                                         educational software is usually gatekept by district licensing fees.
                                         AlloFlow lowers this barrier with <strong>free software access</strong> for
-                                        families, 63 mirrored language-pack files, and AI-assisted content translation.</p>
+                                        families, 63 language-pack files, and AI-assisted content translation.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ef4444;">
                                         <div class="info-title">💰 The $0 Software Extension</div>
                                         <div class="info-desc">Parents can practice identical phonics strategies and
                                             manipulatives at the kitchen table that teachers use in the classroom,
-                                            ensuring continuity of care across all settings.</div>
+                                            with teacher-selected resources and guidance for home practice.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #f87171;">
                                         <div class="info-title">🔄 Consistent Strategies Across Settings</div>
@@ -1982,16 +1443,14 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #dc2626;">
                                         <div class="info-title">🌐 Multilingual Family Support</div>
-                                        <div class="info-desc">Parents and guardians can view all lesson content in
-                                            their native language via the built-in translation layer, bridging the
-                                            school-to-home gap for multilingual households without external tools.</div>
+                                        <div class="info-desc">Families can use available interface languages and AI-assisted content translation. Review important directions and learning materials with a fluent speaker when possible.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; background-clip: text;">63</span>
-                                            <span class="stat-label">mirrored language-pack files</span>
+                                            <span class="stat-label">language-pack files</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08);">
@@ -2085,8 +1544,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="285" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Same Student → Same Lesson → Two Settings → Reviewed
-                                            Language Packs</text>
+                                            font-family="Inter">Shared lesson → home practice → review language support</text>
                                     </svg>
                                 </div>
                             </div>
@@ -2100,8 +1558,8 @@
                                         Interactive STEM Lab</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.08)); border: 1px solid rgba(16,185,129,0.3);">
-                                        <span class="stat-number" style="color:#34d399;">65</span>
-                                        <span class="stat-label">interactive tools spanning 9 disciplines</span>
+                                        <span class="stat-number" style="color:#34d399;">STEM</span>
+                                        <span class="stat-label">interactive tools across subjects</span>
                                     </div>
                                     <p>A full virtual lab covering math, advanced math, life science,
                                         earth & space science, physics & chemistry, computer science,
@@ -2116,22 +1574,16 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #059669;">
                                         <div class="info-title">🐠 Immersive Simulations</div>
-                                        <div class="info-desc">Explore a virtual aquarium with 30+ AI-driven species,
-                                            a human anatomy explorer with 129 structures across 10 body systems, a neuroscience
-                                            atlas with 30+ brain regions, a pharmacology lab with 20+ neurotransmitter pathways,
-                                            and a geology collection with 30+ mineral specimens.</div>
+                                        <div class="info-desc">Explore aquarium, anatomy, brain, pharmacology, and geology activities. These use instructional models; review each model's assumptions and limits as part of the lesson.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #34d399;">
                                         <div class="info-title">📐 Cross-Curricular Coverage</div>
-                                        <div class="info-desc">From K-2 base-ten blocks to high school function
-                                            graphers, chemical equation balancers, and data plotting tools.
-                                            Aligned to NGSS and Common Core Math standards.</div>
+                                        <div class="info-desc">Use activities alongside your mathematics and science curriculum. Check the selected model, task, and evidence of learning against the specific standard you intend to teach.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #6ee7b7;">
                                         <div class="info-title">⚡ CDN-Powered Loading</div>
                                         <div class="info-desc">The entire STEM Lab loads as a single external module
-                                            via jsDelivr CDN. Zero impact on the core app's performance, tools are
-                                            fetched only when selected by the user.</div>
+                                            via jsDelivr CDN. Loading tools on demand can reduce initial downloads; module size, network speed, and device capacity still affect performance.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -2236,12 +1688,12 @@
                                         BehaviorLens Clinical Suite</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(190,24,93,0.15), rgba(236,72,153,0.08)); border: 1px solid rgba(190,24,93,0.3);">
-                                        <span class="stat-number" style="color:#ec4899;">18+</span>
-                                        <span class="stat-label">clinical tools across 8 categories</span>
+                                        <span class="stat-number" style="color:#ec4899;">Tools</span>
+                                        <span class="stat-label">for behavioral data, planning, and review</span>
                                     </div>
                                     <p>A comprehensive ABA and behavioral assessment toolkit built for
                                         <strong>BCBAs, school psychologists, and special educators</strong>.
-                                        Every tool runs locally, no student data ever leaves the device.</p>
+                                        Local tools and AI-assisted workflows have different data paths. Check the selected deployment and provider before entering sensitive information.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #be185d;">
                                         <div class="info-title">📊 Data Collection & Analysis</div>
@@ -2265,8 +1717,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(190, 24, 93, 0.3); background: rgba(190, 24, 93, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #be185d, #ec4899); -webkit-background-clip: text; background-clip: text;">18+</span>
-                                            <span class="stat-label">Clinical tool types</span>
+                                                style="background: linear-gradient(135deg, #be185d, #ec4899); -webkit-background-clip: text; background-clip: text;">Tools</span>
+                                            <span class="stat-label">Professional support workflows</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.08);">
@@ -2312,7 +1764,7 @@
                                             <text x="110" y="84" font-size="12" text-anchor="middle">✅</text>
                                         </g>
                                         <text x="200" y="280" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Clinical Workflows → 8 Categories → District-Controlled Data Paths → Local Mode</text>
+                                            font-family="Inter">Behavioral data → professional review → storage choices</text>
                                     </svg>
                                 </div>
                             </div>
@@ -2327,39 +1779,33 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(126,34,206,0.15), rgba(168,85,247,0.08)); border: 1px solid rgba(126,34,206,0.3);">
                                         <span class="stat-number" style="color:#a855f7;">10</span>
-                                        <span class="stat-label">step wizard with AI accuracy verification</span>
+                                        <span class="stat-label">step wizard with reviewer checks and AI-assisted audits</span>
                                     </div>
                                     <p>A psychoeducational report wizard purpose-built for
-                                        <strong>school psychologists</strong>. Triangulated generation with
-                                        self-healing accuracy verification ensures every claim is traceable
-                                        to your original data, the safest AI-assisted clinical report tool that exists.</p>
+                                        <strong>school psychologists</strong>. Source-linked drafting and automated
+                                        consistency checks help reviewers compare a draft with their original data.
+                                        A qualified professional must verify every score, interpretation, and conclusion
+                                        before a report is used or shared.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #7e22ce;">
                                         <div class="info-title">🔒 Fact-Chunk Accuracy Pipeline</div>
-                                        <div class="info-desc">Scores are extracted as immutable facts. The AI generates
-                                            N parallel drafts, selects the most evidence-grounded one, then runs
-                                            score-text verification, cross-section consistency checking, and a
-                                            self-healing dual-pass audit that auto-fixes errors and re-verifies.</div>
+                                        <div class="info-desc">Score entries and AI-extracted background facts begin unverified. A reviewer checks, rejects, or locks them before drafting. Configurable generation passes and consistency audits can flag discrepancies; reviewers must verify the evidence and any proposed correction.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a855f7;">
-                                        <div class="info-title">📝 17 Assessment Presets + Multi-Format Export</div>
-                                        <div class="info-desc">WISC-V, WIAT-4, BASC-3, Vineland-3, BRIEF-2, Conners-4,
-                                            and 11 more. Generate reports at technical, parent, or student reading levels.
-                                            PII is scrubbed from all AI-facing pipelines with developmental norms
-                                            cross-referencing (attention span, tantrums, social play, vocabulary by age).</div>
+                                        <div class="info-title">📝 Assessment Presets + Custom Entry</div>
+                                        <div class="info-desc">Presets include WISC-V, WIAT-4, BASC-3 parent and teacher forms, Vineland-3, BRIEF-2, and Conners-4, plus a custom-entry option. Use the selected measure's official scoring guidance and review any adapted report language.
+                                            De-identification safeguards and developmental reference checks support review. Inspect what will be sent to the selected provider; automated scrubbing can miss identifying details.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(126, 34, 206, 0.3); background: rgba(126, 34, 206, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #7e22ce, #a855f7); -webkit-background-clip: text; background-clip: text;">PII</span>
-                                            <span class="stat-label">Auto-scrubbed from AI pipelines</span>
+                                            <span class="stat-label">Review de-identification before AI use</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.08);">
-                                            <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #7e22ce, #a855f7); -webkit-background-clip: text; background-clip: text;">3</span>
-                                            <span class="stat-label">Reading levels per report</span>
+                                            <span class="stat-label">Audience-specific section rewrites</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2401,9 +1847,9 @@
                                         <!-- PII scrub indicator -->
                                         <circle cx="200" cy="250" r="22" fill="#0f172a" stroke="#a855f7" stroke-width="2" />
                                         <text x="200" y="247" font-size="14" text-anchor="middle">🔒</text>
-                                        <text x="200" y="260" font-size="6" fill="#d8b4fe" text-anchor="middle">PII Scrubbed</text>
+                                        <text x="200" y="260" font-size="6" fill="#d8b4fe" text-anchor="middle">PII Review</text>
                                         <text x="200" y="288" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Fact-Chunk → AI Generation → Audit Verification → Export</text>
+                                            font-family="Inter">Illustrative checks; professional review required</text>
                                     </svg>
                                 </div>
                             </div>
@@ -2417,18 +1863,16 @@
                                         Research Suite</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(129,140,248,0.08)); border: 1px solid rgba(79,70,229,0.3);">
-                                        <span class="stat-number" style="color:#818cf8;">1-Click</span>
-                                        <span class="stat-label">study setup with automated data collection</span>
+                                        <span class="stat-number" style="color:#818cf8;">Study</span>
+                                        <span class="stat-label">settings for logging and survey prompts</span>
                                     </div>
-                                    <p>AlloFlow includes a complete <strong>clinical research infrastructure</strong>
+                                    <p>AlloFlow includes tools for study organization, data collection, and export
                                         built directly into the platform for core study setup and collection; external analysis tools remain optional.
                                         Design a study, collect data, and export CSV files for analysis.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #4f46e5;">
                                         <div class="info-title">🔬 Research Mode</div>
-                                        <div class="info-desc">Name your study, set an IRB number, and configure
-                                            auto-survey frequency (every 3/5/10/15 sessions). Research Mode automatically
-                                            logs configured sessions automatically after setup.</div>
+                                        <div class="info-desc">Use available study settings to name the project and configure collection behavior. Check sample records and survey prompts. Recording an IRB number does not establish research approval or participant consent.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #818cf8;">
                                         <div class="info-title">📊 Embedded Surveys & CBM</div>
@@ -2452,8 +1896,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(129, 140, 248, 0.3); background: rgba(129, 140, 248, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #4f46e5, #818cf8); -webkit-background-clip: text; background-clip: text;">0</span>
-                                            <span class="stat-label">External tools needed</span>
+                                                style="background: linear-gradient(135deg, #4f46e5, #818cf8); -webkit-background-clip: text; background-clip: text;">CSV</span>
+                                            <span class="stat-label">Export for further analysis</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2516,11 +1960,10 @@
                                         Modular Architecture</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(34,211,238,0.08)); border: 1px solid rgba(6,182,212,0.3);">
-                                        <span class="stat-number" style="color:#22d3ee;">0</span>
-                                        <span class="stat-label">lines of backend code required for new modules</span>
+                                        <span class="stat-number" style="color:#22d3ee;">APIs</span>
+                                        <span class="stat-label">shared interfaces for supported modules</span>
                                     </div>
-                                    <p>AlloFlow's <strong>"app-within-an-app"</strong> framework lets developers
-                                        build independent educational modules that inherit the full AI infrastructure, translation, Gemini access, data storage, with zero backend code.</p>
+                                    <p>Educational modules can use supported host APIs for AI generation, translation, and storage. Dependencies, permissions, and deployment requirements vary by module.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #06b6d4;">
                                         <div class="info-title">🔌 Hub-and-Spoke Model</div>
@@ -2530,15 +1973,11 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #22d3ee;">
                                         <div class="info-title">📦 CDN-Based Off-loading</div>
-                                        <div class="info-desc">Modules are hosted on GitHub and served via jsDelivr CDN.
-                                            Only the modules a user selects are loaded, ensuring scalability even with
-                                            50,000+ lines of community-contributed code.</div>
+                                        <div class="info-desc">Modules can load separately from the main application. Review their downloads, dependencies, and behavior on the target devices; modular loading does not guarantee performance or scalability.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #67e8f9;">
                                         <div class="info-title">🤖 Agentic Development</div>
-                                        <div class="info-desc">This architecture is optimized for AI-assisted "vibe
-                                            coding." Developers can use agents like Antigravity to build robust tools
-                                            on top of the existing, battle-tested AlloFlow foundation.</div>
+                                        <div class="info-desc">Developers can use coding assistants to help build and maintain modules. Human review, integration checks, and accessibility testing remain part of development.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -2685,16 +2124,13 @@
                                         <span class="stat-number" style="color:#a78bfa;">5</span>
                                         <span class="stat-label">narrative rooms per quest with boss battles</span>
                                     </div>
-                                    <p>Reading becomes an <strong>interactive RPG</strong>. Students navigate
-                                        through themed rooms, answer comprehension questions to unlock doors,
-                                        collect inventory items, and face boss battles, all generated from
-                                        any lesson content.</p>
+                                    <p>Build a reading activity around a themed adventure. Students can answer questions, make choices, and use supported game elements. Preview the generated story and questions against the learning goal.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #7c3aed;">
                                         <div class="info-title">🎲 3D Dice & XP Progression</div>
-                                        <div class="info-desc">Physical dice rolls determine battle outcomes.
+                                        <div class="info-desc">On-screen dice rolls can affect game events.
                                             Students earn XP, level up character portraits, and unlock
-                                            achievements, creating intrinsic motivation to read deeply.</div>
+                                            achievements, providing game-based practice opportunities. Check engagement and comprehension rather than assuming the rewards improve either.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a78bfa;">
                                         <div class="info-title">📖 Storybook Export</div>
@@ -2704,9 +2140,7 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #c4b5fd;">
                                         <div class="info-title">🏰 Dynamic Room Generation</div>
-                                        <div class="info-desc">Gemini AI generates themed rooms, NPC dialogue,
-                                            obstacle logic, and boss encounters from any standard or
-                                            reading passage, with reduced setup time after the lesson content is configured.</div>
+                                        <div class="info-desc">AI-assisted generation can draft rooms, dialogue, and encounters from configured lesson content. Review the narrative, instructions, and answers before assigning a quest.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -2823,18 +2257,16 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.08)); border: 1px solid rgba(236,72,153,0.3);">
                                         <span class="stat-number" style="color:#f472b6;">63</span>
-                                        <span class="stat-label">mirrored language-pack files</span>
+                                        <span class="stat-label">language-pack files</span>
                                     </div>
                                     <p>Multilingual learners deserve tools in their home language.
-                                        AlloFlow mirrors UI keys across the current language-pack files and supports
+                                        AlloFlow provides interface language packs and supports
                                         AI-assisted content translation. Native review is still important for
                                         institution-facing use.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ec4899;">
-                                        <div class="info-title">🌐 Full UI Translation</div>
-                                        <div class="info-desc">Every button, menu, tooltip, and instruction
-                                            translates automatically. Students interact with the entire app
-                                            in their native language, not just the lesson content.</div>
+                                        <div class="info-title">🌐 Interface Language Packs</div>
+                                        <div class="info-desc">Available packs translate supported interface text. Some labels may remain in English, and generated content uses a separate translation process. Check coverage, terminology, and the learner's preferred language variety.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #f472b6;">
                                         <div class="info-title">📝 Bilingual Views</div>
@@ -2955,18 +2387,11 @@
                                         <span class="stat-number" style="color:#fb923c;">8+</span>
                                         <span class="stat-label">game types generated from any lesson</span>
                                     </div>
-                                    <p>Every lesson can become a game. AlloFlow generates
-                                        <strong>Review Games, Bingo, Memory Match, Crossword, Word Search,
-                                            Escape Room, Team Showdown, and Concept Sort</strong>, all from the same
-                                        academic
-                                        content, with minimal setup after the content is selected.
-                                    </p>
+                                    <p>Choose from supported review activities such as Bingo, Memory Match, Crossword, Word Search, Escape Room, Team Showdown, and Concept Sort. Match the format to the content and review the generated items.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ea580c;">
                                         <div class="info-title">🎮 Zero-Code Game Generation</div>
-                                        <div class="info-desc">Gemini AI converts any reading passage, vocabulary
-                                            list, or standard into ready-to-play games. Teachers select a game
-                                            type and the content is mapped automatically.</div>
+                                        <div class="info-desc">Select a supported activity and provide suitable lesson content. Preview prompts, vocabulary, and answer keys; some source material needs editing before it works well as a game.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fb923c;">
                                         <div class="info-title">🏆 Escape Room Engine</div>
@@ -3072,123 +2497,29 @@
                             <div class="slide">
                                 <div class="slide-content">
                                     <div class="slide-tag">Computer Science</div>
-                                    <h3
-                                        style="background: linear-gradient(135deg, #6d28d9, #8b5cf6); -webkit-background-clip: text; background-clip: text;">
-                                        Gemini Coding Bridge</h3>
-                                    <div class="stat-callout"
-                                        style="background: linear-gradient(135deg, rgba(109,40,217,0.15), rgba(139,92,246,0.08)); border: 1px solid rgba(109,40,217,0.3);">
-                                        <span class="stat-number" style="color:#8b5cf6;">3</span>
-                                        <span class="stat-label">sandbox environments: Python, React, p5.js</span>
-                                    </div>
-                                    <p>Gemini AI auto-generates <strong>sandboxed coding environments</strong>
-                                        directly from lesson content. A reading passage about ecosystems becomes
-                                        a p5.js simulation; a math lesson becomes a Python calculator.</p>
-
-                                    <div class="info-box" style="border-left: 4px solid #6d28d9;">
-                                        <div class="info-title">💻 Instant Sandbox Generation</div>
-                                        <div class="info-desc">One click converts any lesson into a live coding
-                                            environment with pre-written starter code, instructions, and
-                                            expected outputs, ready for students immediately.</div>
-                                    </div>
-                                    <div class="info-box" style="border-left: 4px solid #8b5cf6;">
-                                        <div class="info-title">🎨 Cross-Curricular Coding</div>
-                                        <div class="info-desc">Art becomes p5.js sketches. Math becomes Python
-                                            functions. Science becomes data visualizations. CS integration
-                                            happens naturally within existing curriculum.</div>
-                                    </div>
-                                    <div class="info-box" style="border-left: 4px solid #a78bfa;">
-                                        <div class="info-title">🔒 Safe Execution</div>
-                                        <div class="info-desc">All code runs in sandboxed iframes with no access
-                                            to the parent application, student data, or external networks.
-                                            Students experiment freely without security risk.</div>
-                                    </div>
-                                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                                        <div class="stat-callout"
-                                            style="border-color: rgba(109, 40, 217, 0.3); background: rgba(109, 40, 217, 0.08);">
-                                            <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #6d28d9, #8b5cf6); -webkit-background-clip: text; background-clip: text;">AI</span>
-                                            <span class="stat-label">Generated code</span>
-                                        </div>
-                                        <div class="stat-callout"
-                                            style="border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.08);">
-                                            <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #6d28d9, #8b5cf6); -webkit-background-clip: text; background-clip: text;">🔒</span>
-                                            <span class="stat-label">Sandboxed execution</span>
-                                        </div>
-                                    </div>
+                                    <h3>Coding Playground</h3>
+                                    <p>Explore sequencing, loops, and debugging through Turtle drawing and Robot grid challenges in the STEAM Lab.</p>
+                                    <div class="info-box"><div class="info-title">Turtle drawing</div><div class="info-desc">Build a program that moves, turns, and draws. Predict the shape, run the program, and compare the result with your plan.</div></div>
+                                    <div class="info-box"><div class="info-title">Robot challenges</div><div class="info-desc">Plan a route through a grid. Use the available commands and challenges to practice sequence, repetition, and problem solving.</div></div>
+                                    <div class="info-box"><div class="info-title">Choose an editor</div><div class="info-desc">Use supported visual blocks, step lists, or text controls. Preview the selected mode and device before teaching, and choose a challenge that fits the concepts learners are practicing.</div></div>
+                                    <div class="stat-callout"><span class="stat-number">2</span><span class="stat-label">Turtle and Robot playgrounds</span></div>
                                 </div>
                                 <div class="slide-visual">
                                     <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
-                                        <defs>
-                                            <radialGradient id="codeGlow" cx="50%" cy="50%" r="50%">
-                                                <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.12" />
-                                                <stop offset="100%" stop-color="#6d28d9" stop-opacity="0" />
-                                            </radialGradient>
-                                        </defs>
-
-                                        <circle cx="200" cy="150" r="140" fill="url(#codeGlow)">
-                                            <animate attributeName="r" values="130;145;130" dur="4s"
-                                                repeatCount="indefinite" />
-                                        </circle>
-
-                                        <!-- Terminal window -->
-                                        <rect x="100" y="60" width="200" height="140" rx="8" fill="#0f172a"
-                                            stroke="#6d28d9" stroke-width="2" />
-                                        <!-- Title bar -->
-                                        <rect x="100" y="60" width="200" height="22" rx="8" fill="#1e1b4b" />
-                                        <circle cx="116" cy="71" r="4" fill="#ef4444" />
-                                        <circle cx="130" cy="71" r="4" fill="#eab308" />
-                                        <circle cx="144" cy="71" r="4" fill="#22c55e" />
-
-                                        <!-- Code lines (animated typing) -->
-                                        <rect x="115" y="92" width="0" height="3" rx="1" fill="#8b5cf6">
-                                            <animate attributeName="width" values="0;120;120" dur="3s"
-                                                repeatCount="indefinite" />
-                                        </rect>
-                                        <rect x="115" y="102" width="0" height="3" rx="1" fill="#a78bfa">
-                                            <animate attributeName="width" values="0;0;85" dur="3s" begin="1s"
-                                                repeatCount="indefinite" />
-                                        </rect>
-                                        <rect x="115" y="112" width="0" height="3" rx="1" fill="#c4b5fd">
-                                            <animate attributeName="width" values="0;0;140" dur="3s" begin="1.5s"
-                                                repeatCount="indefinite" />
-                                        </rect>
-                                        <rect x="115" y="122" width="0" height="3" rx="1" fill="#8b5cf6">
-                                            <animate attributeName="width" values="0;0;60" dur="3s" begin="2s"
-                                                repeatCount="indefinite" />
-                                        </rect>
-
-                                        <!-- Output arrow -->
-                                        <text x="115" y="150" font-size="8" fill="#22c55e">▶ Output: ✓</text>
-                                        <rect x="115" y="155" width="160" height="30" rx="4" fill="#064e3b"
-                                            stroke="#22c55e" stroke-width="1" opacity="0.8" />
-                                        <text x="195" y="174" font-size="8" fill="#34d399"
-                                            text-anchor="middle">Simulation running...</text>
-
-                                        <!-- Language badges -->
-                                        <rect x="70" y="230" width="70" height="24" rx="12" fill="#1e1b4b"
-                                            stroke="#8b5cf6" stroke-width="1.5" />
-                                        <text x="105" y="246" font-size="9" fill="#a78bfa" text-anchor="middle">🐍
-                                            Python</text>
-
-                                        <rect x="165" y="230" width="70" height="24" rx="12" fill="#1e1b4b"
-                                            stroke="#8b5cf6" stroke-width="1.5" />
-                                        <text x="200" y="246" font-size="9" fill="#a78bfa" text-anchor="middle">⚛️
-                                            React</text>
-
-                                        <rect x="260" y="230" width="70" height="24" rx="12" fill="#1e1b4b"
-                                            stroke="#8b5cf6" stroke-width="1.5" />
-                                        <text x="295" y="246" font-size="9" fill="#a78bfa" text-anchor="middle">🎨
-                                            p5.js</text>
-
-                                        <text x="200" y="290" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Lesson Content → AI Code Gen → Safe Sandbox →
-                                            Instant CS</text>
+                                        <rect x="18" y="36" width="164" height="206" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="2"/>
+                                        <text x="100" y="66" text-anchor="middle" fill="#e2e8f0" font-size="16">Plan a square</text>
+                                        <text x="38" y="112" fill="#cbd5e1" font-size="13">repeat 4 times</text>
+                                        <text x="48" y="148" fill="#cbd5e1" font-size="13">move forward</text>
+                                        <text x="48" y="184" fill="#cbd5e1" font-size="13">turn 90 degrees</text>
+                                        <path d="M198 138h26m-8-8 8 8-8 8" fill="none" stroke="#a5b4fc" stroke-width="3"/>
+                                        <rect x="246" y="80" width="116" height="116" fill="none" stroke="#5eead4" stroke-width="4"/>
+                                        <circle cx="246" cy="80" r="6" fill="#5eead4"/>
+                                        <text x="302" y="229" text-anchor="middle" fill="#e2e8f0" font-size="14">Run and compare</text>
+                                        <text x="200" y="281" text-anchor="middle" fill="#cbd5e1" font-size="12">Illustrative program: predict, run, revise</text>
                                     </svg>
                                 </div>
                             </div>
 
-                            <!-- Slide 14: Oral Fluency Coach -->
                             <div class="slide">
                                 <div class="slide-content">
                                     <div class="slide-tag">RTI Monitoring</div>
@@ -3200,9 +2531,7 @@
                                         <span class="stat-number" style="color:#fb7185;">WCPM</span>
                                         <span class="stat-label">calculated automatically from speech</span>
                                     </div>
-                                    <p>Students read aloud and the AI calculates <strong>Words Correct Per Minute
-                                            (WCPM)</strong> with a color-coded accuracy heat map. Results feed directly
-                                        into RTI progress monitoring dashboards.</p>
+                                    <p>Students can read aloud for an automated fluency estimate and word-level feedback. A teacher can review and correct the record before using it for progress monitoring.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #e11d48;">
                                         <div class="info-title">🎙️ Speech-to-Text Analysis</div>
@@ -3213,21 +2542,18 @@
                                     <div class="info-box" style="border-left: 4px solid #fb7185;">
                                         <div class="info-title">🗺️ Accuracy Heat Map</div>
                                         <div class="info-desc">Each word displays a color-coded overlay: green
-                                            for accurate, yellow for hesitation, red for errors. Teachers
-                                            instantly see fluency patterns without manual running records.</div>
+                                            for accurate, yellow for hesitation, red for errors. The word-level display supports review; it does not replace listening to the reading or checking the record.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fda4af;">
                                         <div class="info-title">📈 RTI Data Integration</div>
-                                        <div class="info-desc">WCPM scores are automatically logged to the local
-                                            progress monitoring dashboard. Track growth across sessions, set
-                                            benchmark goals, and export data for IEP documentation.</div>
+                                        <div class="info-desc">Saved fluency results can support progress review and export. Check the recording, timing, passage, and review status before comparing sessions or including results in school documentation.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(225, 29, 72, 0.3); background: rgba(225, 29, 72, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #e11d48, #fb7185); -webkit-background-clip: text; background-clip: text;">0</span>
-                                            <span class="stat-label">Manual running records</span>
+                                                style="background: linear-gradient(135deg, #e11d48, #fb7185); -webkit-background-clip: text; background-clip: text;">Review</span>
+                                            <span class="stat-label">Teacher review of running records</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(251, 113, 133, 0.3); background: rgba(251, 113, 133, 0.08);">
@@ -3336,8 +2662,7 @@
                                         <text x="242" y="278" font-size="7" fill="#64748b">Error</text>
 
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Read Aloud → AI Analysis → Heat Map → RTI
-                                            Dashboard</text>
+                                            font-family="Inter">Illustrative display: review automated scores</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3354,10 +2679,7 @@
                                         <span class="stat-number" style="color:#22d3ee;">Live</span>
                                         <span class="stat-label">class voting with group-level differentiation</span>
                                     </div>
-                                    <p>Students <strong>vote on story directions, vocabulary choices, and
-                                            lesson paths</strong> in real time. The system then pushes different
-                                        leveled content to different groups based on their votes and
-                                        reading levels, true democratic learning.</p>
+                                    <p>Use supported live-session voting to invite student choices about story or lesson directions. Preview the participation route and decide how votes will inform the lesson.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #0891b2;">
                                         <div class="info-title">🗳️ Live Classroom Voting</div>
@@ -3367,28 +2689,24 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #22d3ee;">
                                         <div class="info-title">🔀 Group-Level Differentiation</div>
-                                        <div class="info-desc">After voting, the system automatically pushes
-                                            different content to different groups. Advanced readers get
-                                            enrichment while emerging readers get scaffolded versions, same lesson, different paths.</div>
+                                        <div class="info-desc">Prepare appropriate supports for the groups you teach. Check which grouping and delivery options are available in the selected live-session path before planning different versions.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #67e8f9;">
                                         <div class="info-title">🤝 Student Agency</div>
-                                        <div class="info-desc">Students own the direction of their learning.
-                                            Choices create investment. Investment creates engagement.
-                                            Engagement creates retention. Democracy Mode closes the loop.</div>
+                                        <div class="info-desc">Offer meaningful choices, make voting accessible, and explain how the class decision will be used. Use discussion and student work to check engagement and understanding.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(8, 145, 178, 0.3); background: rgba(8, 145, 178, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #0891b2, #22d3ee); -webkit-background-clip: text; background-clip: text;">100%</span>
+                                                style="background: linear-gradient(135deg, #0891b2, #22d3ee); -webkit-background-clip: text; background-clip: text;">Choice</span>
                                             <span class="stat-label">Student voice</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(34, 211, 238, 0.3); background: rgba(34, 211, 238, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #0891b2, #22d3ee); -webkit-background-clip: text; background-clip: text;">Auto</span>
-                                            <span class="stat-label">Group differentiation</span>
+                                                style="background: linear-gradient(135deg, #0891b2, #22d3ee); -webkit-background-clip: text; background-clip: text;">Plan</span>
+                                            <span class="stat-label">Group supports and delivery</span>
                                         </div>
                                     </div>
                                 </div>
@@ -3484,8 +2802,7 @@
                                             text-anchor="middle">Scaffolded</text>
 
                                         <text x="200" y="298" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Vote → Differentiate → Deliver → Every Student
-                                            Wins</text>
+                                            font-family="Inter">Vote → discuss choices → choose supports → review learning</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3502,22 +2819,18 @@
                                         <span class="stat-number" style="color:#60a5fa;">WCAG 2.2</span>
                                         <span class="stat-label">AA-oriented accessibility evidence</span>
                                     </div>
-                                    <p>Built-in <strong>Immersive Reader</strong> with Dyslexia-friendly fonts,
+                                    <p>Built-in <strong>Immersive Reader</strong> with font and spacing choices,
                                         line focus masks, syllable splitting, grammar color-coding, and
-                                        picture dictionary, all students read independently and
-                                        comfortably.</p>
+                                        picture dictionary, with adjustable supports. Review whether the selected settings improve access for the individual learner.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #2563eb;">
-                                        <div class="info-title">🔤 Dyslexia-Optimized Fonts</div>
-                                        <div class="info-desc">OpenDyslexic and other specialized typefaces
-                                            increase letter spacing, weight bottoms of characters, and reduce
-                                            visual confusion, toggle-able per student without affecting others.</div>
+                                        <div class="info-title">🔤 Font and Spacing Choices</div>
+                                        <div class="info-desc">Available fonts and display settings offer different letter shapes and spacing. Let learners compare options; no font is a universal solution for reading difficulty.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #60a5fa;">
                                         <div class="info-title">📏 Line Focus & Reading Masks</div>
                                         <div class="info-desc">Configurable reading ruler highlights 1, 3, or 5
-                                            lines at a time while dimming surrounding text. Reduces visual
-                                            overwhelm for students with attention or tracking difficulties.</div>
+                                            lines at a time while dimming surrounding text. Try the focus setting with the learner and adjust it if it hides useful context or makes navigation harder.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #93c5fd;">
                                         <div class="info-title">🎨 Grammar Highlighting</div>
@@ -3530,7 +2843,7 @@
                                             style="border-color: rgba(37, 99, 235, 0.3); background: rgba(37, 99, 235, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #2563eb, #60a5fa); -webkit-background-clip: text; background-clip: text;">♿</span>
-                                            <span class="stat-label">Keyboard + SR parity</span>
+                                            <span class="stat-label">Keyboard and screen-reader review</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.08);">
@@ -3632,8 +2945,7 @@
                                         <text x="200" y="280" font-size="14" text-anchor="middle">♿</text>
 
                                         <text x="200" y="298" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Dyslexia Fonts → Grammar Colors → Line Focus →
-                                            Every Student Reads</text>
+                                            font-family="Inter">Font choices → grammar cues → line focus → learner review</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3648,9 +2960,9 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(13,148,136,0.15), rgba(45,212,191,0.08)); border: 1px solid rgba(13,148,136,0.3);">
                                         <span class="stat-number" style="color:#2dd4bf;">4</span>
-                                        <span class="stat-label">DOK levels with auto-tuned question complexity</span>
+                                        <span class="stat-label">requested DOK levels; review the task demand</span>
                                     </div>
-                                    <p>Gemini AI generates <strong>standards-aligned multiple-choice questions</strong>
+                                    <p>Gemini AI generates <strong>multiple-choice question drafts using the selected standards and complexity settings</strong>
                                         at the teacher's chosen Depth of Knowledge level. Export directly to
                                         Canvas in QTI format or use as in-app exit tickets with
                                         instant grading.</p>
@@ -3659,17 +2971,15 @@
                                         <div class="info-title">📝 AI-Generated Questions</div>
                                         <div class="info-desc">From any passage, Gemini generates DOK 1 (recall),
                                             DOK 2 (skill), DOK 3 (strategic thinking), or DOK 4 (extended
-                                            thinking) questions, teachers choose the cognitive demand.</div>
+                                            thinking) questions, teachers request the intended cognitive demand and review the actual reasoning required. Selecting a label does not establish DOK alignment.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #2dd4bf;">
                                         <div class="info-title">📤 Canvas QTI Export</div>
                                         <div class="info-desc">Export as QTI 2.1 for Canvas, Schoology, or other compatible LMS workflows; verify import settings. Question banks build automatically over time.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #5eead4;">
-                                        <div class="info-title">✅ Instant Grading & Feedback</div>
-                                        <div class="info-desc">In-app exit tickets grade instantly with wrong-answer
-                                            explanations. Teachers see class-wide results in real time, no
-                                            paper, no scanning, no data entry.</div>
+                                        <div class="info-title">✅ Scoring & Feedback</div>
+                                        <div class="info-desc">Supported responses can be scored against a prepared answer key, with feedback where available. Review the key and explanations first; live results depend on the selected session and response format.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -3681,8 +2991,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(45, 212, 191, 0.3); background: rgba(45, 212, 191, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #0d9488, #2dd4bf); -webkit-background-clip: text; background-clip: text;">0s</span>
-                                            <span class="stat-label">Grading time</span>
+                                                style="background: linear-gradient(135deg, #0d9488, #2dd4bf); -webkit-background-clip: text; background-clip: text;">Varies</span>
+                                            <span class="stat-label">Timing depends on the workflow</span>
                                         </div>
                                     </div>
                                 </div>
@@ -3800,10 +3110,7 @@
 
                                     <div class="info-box" style="border-left: 4px solid #d97706;">
                                         <div class="info-title">📊 Class-Wide Analytics</div>
-                                        <div class="info-desc">See class averages, score distributions, and
-                                            completion rates across all activities at a glance. Identify
-                                            struggling students and celebrate growth, powered by local
-                                            data only.</div>
+                                        <div class="info-desc">Review available averages, score distributions, and completion records from the activities that provide data. Review patterns and decide what evidence is missing. Data sources and storage depend on the selected deployment and connected services.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fbbf24;">
                                         <div class="info-title">👤 Individual Learner Profiles</div>
@@ -3926,8 +3233,7 @@
                                             Growth Trend ▲</text>
 
                                         <text x="200" y="298" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Local Analytics → RTI Tiers → Progress Trends →
-                                            IEP-Ready</text>
+                                            font-family="Inter">Illustrative dashboard: review recorded evidence</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3964,8 +3270,7 @@
                                     <div class="info-box" style="border-left: 4px solid #a5b4fc;">
                                         <div class="info-title">🤝 Community Contributions Welcome</div>
                                         <div class="info-desc">Educators can submit feature requests, custom games,
-                                            and lesson packs via GitHub. Every contribution is reviewed and merged
-                                            to benefit the entire community, turning teachers into co-developers.</div>
+                                            and lesson packs via GitHub. Contributions are considered through project review; acceptance depends on scope, quality, and maintenance needs.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -4103,25 +3408,20 @@
                                         <span class="stat-number" style="color:#a3e635;">3-Pass</span>
                                         <span class="stat-label">research, outline, and citation pipeline</span>
                                     </div>
-                                    <p>AlloFlow's Source Generator uses a <strong>multi-pass AI pipeline</strong> with
-                                        optional Google Search grounding. Content is researched, outlined,
-                                        written section-by-section, and fact-checked, producing
-                                        <strong>citation-backed lessons</strong> from any topic.
-                                    </p>
+                                    <p>The Source Generator offers AI-assisted drafting with optional search grounding where supported. Outlines and citations can help organize review; check the source material and each cited claim before teaching from the result.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #84cc16;">
                                         <div class="info-title">🔍 Google Search Grounding</div>
                                         <div class="info-desc">Toggle "Verify Facts" and Gemini searches the live
                                             web before writing. Sources are cited inline with numbered
-                                            references: ensuring lesson accuracy for science, history, and
-                                            current events content.</div>
+                                            references to support source checking. Review whether each source supports the claim, especially for current or contested topics.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a3e635;">
                                         <div class="info-title">📄 Multi-Pass Writing Pipeline</div>
                                         <div class="info-desc">Pass 1 researches and gathers sources. Pass 2
                                             builds a structural outline. Pass 3 writes each section with
                                             smooth transitions and embedded citations, producing
-                                            publication-quality educational content.</div>
+                                            a structured draft for teacher review.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #65a30d;">
                                         <div class="info-title">🎯 Teacher-Controlled Parameters</div>
@@ -4266,8 +3566,7 @@
                                             stroke-dasharray="3 3" opacity="0.5" />
 
                                         <text x="200" y="268" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Topic → Research → Outline → Write → Cite →
-                                            Verified Lesson</text>
+                                            font-family="Inter">Topic → research → draft → citations → teacher review</text>
                                     </svg>
                                 </div>
                             </div>
@@ -4284,26 +3583,17 @@
                                         <span class="stat-number" style="color:#fcd34d;">4</span>
                                         <span class="stat-label">phonemic game modes with voice input</span>
                                     </div>
-                                    <p>The Word Sounds Studio transforms phonics practice into
-                                        <strong>interactive game modes</strong>: Spelling Bee with
-                                        microphone input, Sight & Spell orthography drills, Elkonin
-                                        sound boxes, and Word Sorting, all aligned to
-                                        the Science of Reading.
-                                    </p>
+                                    <p>Use supported activities such as Spelling Bee, Sight &amp; Spell, sound boxes, and Word Sorting for focused literacy practice. Choose words and patterns learners have been taught, and review recognition or scoring errors.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ca8a04;">
                                         <div class="info-title">🎤 Voice-Powered Spelling Bee</div>
-                                        <div class="info-desc">Students hear a word via TTS, then spell it
-                                            aloud using their microphone. Speech-to-text validates
-                                            each letter in real time, with streak tracking,
-                                            difficulty progression, and instant corrective feedback.</div>
+                                        <div class="info-desc">Available speech features can support hearing words and responding aloud. Check microphone access, pronunciation models, and recognition results before treating a response as a spelling error.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fcd34d;">
                                         <div class="info-title">👁️ Sight & Spell Orthography</div>
                                         <div class="info-desc">Students see a word briefly, it disappears,
                                             and they must reconstruct it from scrambled letter tiles.
-                                            AI-generated distractors ensure phonetically plausible
-                                            wrong answers, testing true orthographic memory.</div>
+                                            Review distractors for the target spelling pattern and interpret responses alongside other learning evidence.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a16207;">
                                         <div class="info-title">💡 Adaptive Hint System</div>
@@ -4322,8 +3612,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(252, 211, 77, 0.3); background: rgba(252, 211, 77, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #ca8a04, #fcd34d); -webkit-background-clip: text; background-clip: text;">SoR</span>
-                                            <span class="stat-label">Aligned activities</span>
+                                                style="background: linear-gradient(135deg, #ca8a04, #fcd34d); -webkit-background-clip: text; background-clip: text;">Review</span>
+                                            <span class="stat-label">Match practice to taught skills</span>
                                         </div>
                                     </div>
                                 </div>
@@ -4438,9 +3728,7 @@
                                         <span class="stat-label">organizer types with AI-generated decodable
                                             readers</span>
                                     </div>
-                                    <p>Transform any lesson into <strong>visual thinking tools</strong>: Venn diagrams, KWL charts, cause/effect maps, timelines, concept
-                                        webs, and T-Charts. Plus, generate <strong>Science of Reading-aligned
-                                            decodable readers</strong> with controlled phonics patterns.</p>
+                                    <p>Create organizer drafts such as Venn diagrams, KWL charts, cause-and-effect maps, timelines, and concept webs. For generated reading practice, check every word against the intended phonics pattern and taught vocabulary.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #d946ef;">
                                         <div class="info-title">🗺️ AI-Generated Visual Organizers</div>
@@ -4459,9 +3747,7 @@
                                     <div class="info-box" style="border-left: 4px solid #a855f7;">
                                         <div class="info-title">🎓 UDL Multiple Representations</div>
                                         <div class="info-desc">The same content appears as text, visual
-                                            organizer, decodable story, and interactive quiz, giving
-                                            every learner a pathway that matches their cognitive
-                                            strengths and developmental stage.</div>
+                                            organizer, decodable story, and interactive quiz, offering formats the teacher can compare with learner needs and the shared learning goal.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -4473,7 +3759,7 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(232, 121, 249, 0.3); background: rgba(232, 121, 249, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #d946ef, #e879f9); -webkit-background-clip: text; background-clip: text;">SoR</span>
+                                                style="background: linear-gradient(135deg, #d946ef, #e879f9); -webkit-background-clip: text; background-clip: text;">Review</span>
                                             <span class="stat-label">Decodable readers</span>
                                         </div>
                                     </div>
@@ -4736,7 +4022,7 @@
                             </button>
                             <div class="controls-center">
                                 <div class="slide-dots">
-                                    <button type="button" class="dot active" data-slide="0" aria-label="Go to slide 1"></button>
+                                    <button type="button" class="dot active" data-slide="0" aria-label="Go to slide 1" aria-current="step"></button>
                                     <button type="button" class="dot" data-slide="1" aria-label="Go to slide 2"></button>
                                     <button type="button" class="dot" data-slide="2" aria-label="Go to slide 3"></button>
                                     <button type="button" class="dot" data-slide="3" aria-label="Go to slide 4"></button>
@@ -4759,10 +4045,13 @@
                                     <button type="button" class="dot" data-slide="20" aria-label="Go to slide 21"></button>
                                     <button type="button" class="dot" data-slide="21" aria-label="Go to slide 22"></button>
                                     <button type="button" class="dot" data-slide="22" aria-label="Go to slide 23"></button>
+                                    <button type="button" class="dot" data-slide="23" aria-label="Go to slide 24"></button>
+                                    <button type="button" class="dot" data-slide="24" aria-label="Go to slide 25"></button>
+                                    <button type="button" class="dot" data-slide="25" aria-label="Go to slide 26"></button>
                                 </div>
                                 <div class="slide-title-label" id="slide-title">Equity First, Local-First Architecture
                                 </div>
-                                <span class="slide-counter" id="slide-counter">Slide 1 of 22</span>
+                                <span class="slide-counter" id="slide-counter">Slide 1 of 26</span>
                             </div>
 
                             <div style="display:flex;align-items:center;gap:12px;">
@@ -4794,35 +4083,24 @@
 
                 <script>
                     const s = document.querySelectorAll('.slide');
-                    const dots = document.querySelectorAll('.slide-dots .dot');
+                    const dotContainer = document.querySelector('.slide-dots');
+                    const dots = Array.from(s, function (slide, index) {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'dot' + (index === 0 ? ' active' : '');
+                        button.dataset.slide = String(index);
+                        button.setAttribute('aria-label', 'Go to slide ' + (index + 1));
+                        return button;
+                    });
+                    dotContainer.replaceChildren(...dots);
                     const titleLabel = document.getElementById('slide-title');
-                    const slideTitles = [
-                        'Equity First, Local-First Architecture',
-                        'Differentiation, Instant Leveled Text',
-                        'Engagement, Multi-Modal Workflows',
-                        'Science of Reading, Phonemic Precision',
-                        'Scaffolding, Interactive Tour Engine',
-                        'Privacy, FERPA-Aligned Data Paths',
-                        'Community, Empowering Families',
-                        'Clinical, BehaviorLens Suite',
-                    'Clinical, Report Writer',
-                    'Research, Built-In Research Suite',
-                    'STEM & Science, Interactive STEM Lab',
-                        'Developer Ecosystem, Modular Architecture',
-                        'Gamification, Adventure Mode',
-                        'Multilingual, 63 Language-Pack Files',
-                        'Engagement, Interactive Game Modes',
-                        'Computer Science, Gemini Coding Bridge',
-                        'RTI Monitoring, Oral Fluency Coach',
-                        'Collaboration, Democracy Mode',
-                        'Accessibility, Immersive Reader',
-                        'Assessment, Exit Tickets & Quiz Engine',
-                        'Analytics, Teacher Dashboard',
-                        'Mission, The Open-Source Commitment',
-                        'AI Generation, AI Research Engine',
-                        'Literacy, Spelling Bee & Word Games',
-                        'Visual Learning, Organizers & Decodable Readers'
-                    ];
+                    const slideTitles = Array.from(s, function (slide) {
+                        const tag = slide.querySelector('.slide-tag');
+                        const heading = slide.querySelector('h3');
+                        return [tag, heading].filter(Boolean).map(function (node) {
+                            return node.textContent.replace(/\s+/g, ' ').trim();
+                        }).join(', ');
+                    });
                     let cur = 0;
                     let autoplayInterval = null;
 
@@ -4834,6 +4112,7 @@
                         });
                         dots.forEach((dot, i) => {
                             dot.classList.toggle('active', i === cur);
+                            dot.setAttribute('aria-current', i === cur ? 'step' : 'false');
                         });
                         if (titleLabel && slideTitles[cur]) {
                             titleLabel.textContent = slideTitles[cur];
@@ -4953,7 +4232,7 @@
                             <i data-lucide="book-open" style="width:18px;height:18px"></i> Leveled Text
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Rewrites text for K-12 levels with Immersive Reader,
-                            Dyslexia Fonts, and Grammar Highlights.</p>
+                            font choices, and Grammar Highlights.</p>
                     </div>
                     <div class="card">
                         <div
@@ -4967,11 +4246,9 @@
                     <div class="card">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#6d28d9">
-                            <i data-lucide="code-2" style="width:18px;height:18px"></i> Gemini Bridge
+                            <i data-lucide="code-2" style="width:18px;height:18px"></i> Coding Playground
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">Auto-generates sandboxed coding environments with
-                            Python,
-                            React, and p5.js, directly from lesson content.</p>
+                        <p style="font-size:0.85rem;color:#475569">Practice sequencing, loops, and debugging with Turtle drawing and Robot grid challenges, using supported visual or text controls.</p>
                     </div>
                     <div class="card">
                         <div
@@ -4987,8 +4264,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#e11d48">
                             <i data-lucide="mic" style="width:18px;height:18px"></i> Oral Fluency Coach
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">Students read aloud, AI calculates WCPM and shows a
-                            color-coded accuracy heat map for RTI monitoring.</p>
+                        <p style="font-size:0.85rem;color:#475569">Automated fluency estimates and word-level feedback support teacher review, corrections, and progress monitoring.</p>
                     </div>
                     <div class="card">
                         <div
@@ -5004,16 +4280,14 @@
                             <i data-lucide="puzzle" style="width:18px;height:18px"></i> Modular Architecture
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Hub-and-spoke framework lets developers build
-                            independent modules that inherit Gemini AI, translation, and data storage, zero backend
-                            required.</p>
+                            modules that use supported host APIs for generation, translation, and storage, with deployment-specific dependencies.</p>
                     </div>
                     <div class="card">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#db2777">
                             <i data-lucide="globe" style="width:18px;height:18px"></i> 63 Language-Pack Files
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">UI keys are mirrored across the current language
-                            pack files, with bilingual views and AI-assisted content translation where configured.
+                        <p style="font-size:0.85rem;color:#475569">Language-pack files provide supported interface text, with bilingual views and AI-assisted content translation where configured. File counts do not establish complete translation coverage or native review.
                         </p>
                     </div>
                     <div class="card">
@@ -5057,8 +4331,7 @@
                             <i data-lucide="file-text" style="width:18px;height:18px"></i> Report Writer
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Psychoeducational report wizard with Fact-Chunk
-                            accuracy pipeline: extracts scores, scrubs PII, and generates clinically-accurate
-                            narrative sections with AI audit verification. Multi-language export included.</p>
+                            drafting pipeline: extracts scores, applies de-identification safeguards, and checks narrative consistency. Qualified professionals must verify scores, interpretations, and identifying details before use.</p>
                     </div>
                     <div class="card">
                         <div
@@ -5074,7 +4347,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#7c3aed">
                             <i data-lucide="file-image" style="width:18px;height:18px"></i> AlloStudio
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">Create born-accessible visual documents with real text, reading-order controls, alt/decorative image states, and transparent process history.</p>
+                        <p style="font-size:0.85rem;color:#475569">Create visual documents with accessibility controls with real text, reading-order controls, alt/decorative image states, and transparent process history.</p>
                     </div>
                     <div class="card">
                         <div
@@ -5156,7 +4429,7 @@
         </section>
 
         <!-- Pricing -->
-        <section id="pricing" class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+        <section id="pricing" tabindex="-1" class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
             <div class="section-inner">
                 <div class="section-header">
                     <h2>Simple, Transparent Access</h2>
@@ -5198,7 +4471,7 @@
         </section>
 
         <!-- Privacy -->
-        <section id="privacy" class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
+        <section id="privacy" tabindex="-1" class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
             <div class="section-inner" style="max-width:800px">
                 <div class="section-header">
                     <div
@@ -5213,14 +4486,7 @@
                         <h3 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
                                 data-lucide="folder-down" style="width:18px;height:18px;color:#3b82f6"></i> File-Based
                             Persistence</h3>
-                        <p style="font-size:0.85rem;color:#475569;line-height:1.7">Because Gemini Canvas environments
-                            don't
-                            persist internal databases across sessions, AlloFlow uses a "sneakernet" architecture. You
-                            save
-                            and load your activities directly as standard <strong>JSON files</strong> to your hard
-                            drive.
-                            This makes sharing custom lessons with other teachers or deploying activities to students as
-                            simple as sharing a file.</p>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.7">Use <strong>Save Project</strong> to keep a JSON copy you can reopen or share. Available recovery and storage depend on the workspace and device profile; clearing browser data or resetting a device can remove local work. <a href="guide/saving-and-storage.html">Read the saving and recovery guide</a>.</p>
                     </div>
                     <div class="card">
                         <h3 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
@@ -5228,13 +4494,12 @@
                             Education
                             Infrastructure
                         </h3>
-                        <p style="font-size:0.85rem;color:#475569;line-height:1.7">By running as an artifact within
-                            Gemini
-                            Canvas, AlloFlow piggybacks entirely on your district's existing <strong>Google Workspace
-                                for
-                                Education</strong> security agreements. API calls happen directly through Google's
-                            infrastructure; privacy obligations still depend on your district's Google Workspace
-                            configuration, contracts, retention settings, and actual use.</p>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.7">The Gemini Canvas path uses the
+                            Gemini access available to your Google account. Your district should verify which
+                            services and features its <strong>Google Workspace for Education</strong> agreements cover,
+                            along with account settings, data handling, and retention. Opening AlloFlow inside Canvas
+                            does not itself establish approval for student data.
+                            <a href="ways-to-use.html">Compare data paths and setup requirements</a>.</p>
                     </div>
                 </div>
                 <div
@@ -5244,7 +4509,7 @@
                         <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
                     </h3>
                     <p style="font-size:0.85rem;color:#7f1d1d">Student progress, XP, quiz scores, and session data can stay on-device in local-first paths. Cloud, hosted-session, and provider-backed paths vary by deployment. Teachers can export data as JSON files for record-keeping. The Student Portal uses
-                        generated codenames instead of real names, keeping learner identities private by default.
+                        generated codenames to reduce the need for real names. Codenames do not make linked work or session records anonymous.
                     </p>
                 </div>
             </div>
@@ -5253,15 +4518,12 @@
         <!-- CTA Footer -->
         <section class="section" style="background:var(--slate-900);color:#fff;text-align:center">
             <div style="max-width:700px;margin:0 auto">
-                <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;margin-bottom:16px">Ready to Transform
-                    Your
-                    Classroom?</h2>
-                <p style="color:#94a3b8;font-size:1rem;margin-bottom:28px">Join a growing community of educators saving
-                    time
-                    and reaching every learner.</p>
+                <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;margin-bottom:16px">Start with one lesson.</h2>
+                <p style="color:#94a3b8;font-size:1rem;margin-bottom:28px">Bring a short source text, choose a learning goal, and review your first resource. The Teacher Guide walks you through it.</p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                    <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
-                            style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
+                    <a href="launch.html" class="btn-primary"><i data-lucide="rocket"
+                            style="width:18px;height:18px" aria-hidden="true"></i> Launch AlloFlow</a>
+                    <a href="guide/start-here.html" class="btn-secondary" style="border-color:#475569;color:#fff;background:transparent">Follow the quick start</a>
                     <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="btn-secondary"
                         style="border-color:#475569;color:#fff;background:transparent" rel="noopener noreferrer"><i data-lucide="star"
                             style="width:18px;height:18px"></i> Star on GitHub</a>
@@ -5296,145 +4558,10 @@
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 
-    <style>
-        @keyframes pulse {
 
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: 0.4
-            }
-        }
-
-        /* Hero acronym lockup. The two halves stack on narrow screens so the
-           arrow never leaves a single word stranded on its own line. */
-        .promo-acronym .acro-half {
-            display: inline-block;
-        }
-
-        /* The initial letters are the whole point, so both halves are solid text
-           rather than a gradient: a gradient runs across the phrase and flattens
-           the very letters it needs to distinguish. ALLO and FLOW each take one
-           brand colour, which also separates the two words of the name.
-           Both pass AA on the hero background (#3730a3 8.9:1, #0f766e 4.9:1). */
-        .promo-acronym .acro-allo {
-            color: #1e293b;
-        }
-
-        .promo-acronym .acro-allo .acro-i {
-            color: #3730a3;
-        }
-
-        .promo-acronym .acro-flow {
-            color: #1e293b;
-        }
-
-        .promo-acronym .acro-flow .acro-i {
-            color: #0f766e;
-        }
-
-        .promo-acronym .acro-arrow {
-            color: #64748b;
-            margin: 0 6px;
-            font-weight: 700;
-        }
-
-        @media (max-width: 720px) {
-            .promo-acronym .acro-half {
-                display: block;
-            }
-
-            .promo-acronym .acro-arrow {
-                display: block;
-                margin: 2px 0;
-                font-size: 0.8em;
-            }
-        }
-
-        /* Tutorial chooser. Tabs rather than a carousel: every tutorial title
-           stays readable at once, the player keeps its full width, and adding
-           one is an array entry. Scrolls horizontally once the titles outgrow
-           the row, so more tutorials never break the layout. */
-        .tutorial-tabs {
-            display: flex;
-            gap: 8px;
-            margin: 0 0 14px;
-            overflow-x: auto;
-            scrollbar-width: thin;
-            padding-bottom: 2px;
-        }
-
-        .tutorial-tab {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            padding: 9px 16px;
-            border-radius: 999px;
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            /* #475569 on white is 7.4:1; the muted #64748b used elsewhere sits
-               close to the 4.5:1 floor and these are small, bold labels. */
-            color: #475569;
-            font-family: inherit;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, color 0.15s;
-        }
-
-        .tutorial-tab:hover {
-            border-color: #c7d2fe;
-            background: #f8fafc;
-        }
-
-        .tutorial-tab .tutorial-tab-meta {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #64748b;
-        }
-
-        .tutorial-tab.is-active {
-            background: #4338ca;
-            border-color: #4338ca;
-            color: #fff;
-        }
-
-        .tutorial-tab.is-active .tutorial-tab-meta {
-            color: #e0e7ff;
-        }
-
-        /* Selection must not be carried by colour alone (WCAG 1.4.1). */
-        .tutorial-tab.is-active::before {
-            content: "";
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: currentColor;
-            align-self: center;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .tutorial-tab {
-                transition: none;
-            }
-        }
-
-        @media (max-width: 640px) {
-            /* The strip must start on the same edge as the player frame; the
-               section already supplies the page gutter, so no extra margin. */
-            .tutorial-tab {
-                padding: 8px 13px;
-                font-size: 0.8rem;
-            }
-        }
-    </style>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
         // Scroll Reveal

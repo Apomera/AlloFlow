@@ -2260,6 +2260,10 @@
           '@keyframes stemXpShimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }',
           '@keyframes stemXpBadgePulse { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }',
           '@keyframes stemXpFloat { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-38px); } }',
+          // Tutorial step card: a soft breathing glow + a light sweep. Opacity never
+          // moves, so the text stays readable while the card still draws the eye.
+          '@keyframes stemTutGlow { 0%,100% { box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 0 0 0 var(--stem-tut-glow, rgba(129,140,248,0)); } 50% { box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 0 0 6px var(--stem-tut-glow, rgba(129,140,248,0.35)); } }',
+          '@keyframes stemTutSheen { 0% { transform: translateX(-160%) skewX(-18deg); } 55%,100% { transform: translateX(260%) skewX(-18deg); } }',
           // WCAG 2.4.7: Focus visible outlines for keyboard navigation
           '.stem-lab-modal button:focus-visible, .stem-lab-modal input:focus-visible, .stem-lab-modal select:focus-visible, .stem-lab-modal textarea:focus-visible, .stem-lab-modal [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
           '.stem-lab-modal canvas:focus-visible { outline: 3px solid #6366f1 !important; outline-offset: 2px !important; }',
@@ -2286,10 +2290,10 @@
           '.stem-tool-catalog { width: min(100%, 1120px); }',
           '.stem-tool-searchbar { position: sticky; top: 0; z-index: 12; padding-top: 8px; padding-bottom: 10px; backdrop-filter: blur(10px); }',
           '.stem-catalog-context { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -4px 0 12px; flex-wrap: wrap; }',
-          '.stem-catalog-status { display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(148,163,184,0.28); }',
-          '.stem-catalog-clear { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(99,102,241,0.35); }',
+          '.stem-catalog-status { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 900; border: 1px solid rgba(148,163,184,0.28); }',
+          '.stem-catalog-clear { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 900; border: 1px solid rgba(99,102,241,0.35); }',
           '.stem-catalog-quickbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }',
-          '.stem-catalog-row-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; margin-right: 2px; }',
+          '.stem-catalog-row-label { font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; margin-right: 2px; }',
           '.stem-catalog-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 11px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(148,163,184,0.34); box-shadow: 0 6px 14px rgba(15,23,42,0.06); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
           '.stem-catalog-chip:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(15,23,42,0.10); border-color: rgba(99,102,241,0.55); }',
           '.stem-catalog-chip-icon { font-size: 14px; line-height: 1; }',
@@ -2805,12 +2809,12 @@
 
       // Quest type definitions
       var QUEST_TYPES = [
-        { id: 'xpThreshold', label: 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP' },
-        { id: 'timeSpent', label: 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min' },
-        { id: 'discoveryCount', label: 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items' },
-        { id: 'quizScore', label: 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts' },
-        { id: 'freeResponse', label: 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
-        { id: 'toolQuest', label: 'Tool-Specific', icon: '\uD83C\uDFC6', paramLabel: 'Quest', defaultVal: '', unit: '' }
+        { id: 'xpThreshold', label: t('stem.tools_menu.earn_xp') || 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP' },
+        { id: 'timeSpent', label: t('stem.tools_menu.spend_time') || 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min' },
+        { id: 'discoveryCount', label: t('stem.tools_menu.discover_items') || 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items' },
+        { id: 'quizScore', label: t('stem.tools_menu.quiz_score') || 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts' },
+        { id: 'freeResponse', label: t('stem.tools_menu.written_response') || 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'toolQuest', label: t('stem.tools_menu.tool_specific') || 'Tool-Specific', icon: '\uD83C\uDFC6', paramLabel: 'Quest', defaultVal: '', unit: '' }
       ];
 
       // Get available tool-specific quests for a given tool ID
@@ -3594,6 +3598,13 @@
 
       // ── Tutorial Overlay Helper ──
       var _tutorialSeen = labToolData._tutorialSeen || {};
+      function resetTutorialSeen(toolId) {
+        setLabToolData(function (prev) {
+          var seen = Object.assign({}, prev._tutorialSeen || {});
+          delete seen[toolId];
+          return Object.assign({}, prev, { _tutorialSeen: seen, _tutorialStep: 0 });
+        });
+      }
       function markTutorialSeen(toolId) {
         setLabToolData(function (prev) {
           var seen = Object.assign({}, prev._tutorialSeen || {});
@@ -4401,7 +4412,23 @@
         ctx.fillText(_drawnLines.length + ' segments', W - 114, H - 9);
       }, [stemLabTab, stemLabTool, labToolData]);
       function renderTutorial(toolId, steps) {
-        if (_tutorialSeen[toolId]) return null;
+        // Chrome strings go through t() when the host has a pack key; the English
+        // fallback keeps older hosts (and the smoke harness, whose t() echoes keys) readable.
+        function _tutT(key, fallback) { var v = t(key); return (v && v !== key) ? v : fallback; }
+        if (_tutorialSeen[toolId]) {
+          // Dismissed tours used to be gone for good. Leave a small pill in the tool's
+          // corner so a learner (or a teacher demoing) can bring the steps back.
+          if (!steps || !steps.length) return null;
+          var _pillStyle = isContrast ? { backgroundColor: '#000', color: '#fbbf24', border: '2px solid #fbbf24' }
+            : isDark ? { backgroundColor: '#312e81', color: '#e0e7ff', border: '1px solid #818cf8' }
+              : { backgroundColor: '#4f46e5', color: '#fff', border: '1px solid #818cf8' };
+          return React.createElement("button", {
+            type: "button", "data-stem-tutorial-replay": toolId,
+            title: _tutT('stem.tutorial.replay_aria', 'Show tutorial'),
+            onClick: function () { resetTutorialSeen(toolId); },
+            className: "absolute z-40 bottom-2 right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-md", style: _pillStyle
+          }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDCA1 "), _tutT('stem.tutorial.replay', 'Tips'));
+        }
         var step = labToolData._tutorialStep || 0;
         if (step >= steps.length) {
           // Defer the setState to useEffect to avoid setState-during-render
@@ -4419,13 +4446,48 @@
           : isDark ? { backgroundColor: '#e0e7ff', color: '#312e81' }
             : { backgroundColor: '#fff', color: '#4f46e5' };
         var _tutSkip = isContrast ? { color: '#fbbf24' } : { color: '#a5b4fc' };
-        return React.createElement("div", { className: "absolute z-50 animate-in fade-in duration-300", style: { top: s.top || '50%', left: s.left || '50%', transform: 'translate(-50%,-50%)', maxWidth: '280px' } },
-          React.createElement("div", { className: "rounded-xl p-3 shadow-xl", style: Object.assign({}, _tutBg, { animation: 'pulse 2s infinite' }) },
-            React.createElement("p", { className: "text-xs font-bold mb-1" }, "\uD83D\uDCA1 Step " + (step + 1) + " of " + steps.length),
-            React.createElement("p", { className: "text-xs leading-relaxed" }, s.text),
-            React.createElement("div", { className: "flex gap-2 mt-2 justify-end" },
-              React.createElement("button", { "aria-label": "Skip", onClick: function () { markTutorialSeen(toolId); setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: 0 }); }); }, className: "px-2 py-1 text-[10px]", style: _tutSkip }, "Skip"),
-              React.createElement("button", { "aria-label": step < steps.length - 1 ? "Next tutorial step" : "Finish tutorial", onClick: function () { setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: (p._tutorialStep || 0) + 1 }); }); }, className: "px-3 py-1 text-[10px] font-bold rounded-lg", style: _tutBtn }, step < steps.length - 1 ? "Next \u2192" : "Got it! \u2705")
+        // Glow ring colour follows the theme; the sheen is a translucent light bar
+        // that sweeps across the card (amber in contrast mode so it stays on-palette).
+        // Sheen alpha is capped at 0.12 on the indigo cards: at 0.28 the white text
+        // under the light bar dipped to 3.55:1 (light) / 4.08:1 (dark), below the 4.5:1
+        // AA floor for 15px text. 0.12 keeps it >= 4.9:1 in every theme.
+        var _tutGlow = isContrast ? 'rgba(251,191,36,0.45)' : 'rgba(129,140,248,0.4)';
+        var _tutSheen = isContrast
+          ? 'linear-gradient(90deg, rgba(251,191,36,0) 0%, rgba(251,191,36,0.22) 50%, rgba(251,191,36,0) 100%)'
+          : 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%)';
+        var _isLast = step >= steps.length - 1;
+        var _stepLabel = _tutT('stem.tutorial.step_of', 'Step {current} of {total}').replace('{current}', step + 1).replace('{total}', steps.length);
+        // Steps are authored as centre points, but a card anchored at top: 85% with a
+        // -50% translate hangs half its height below the tool. Anchor the card's
+        // bottom edge instead when the author put it low, and its top edge when high.
+        var _topPct = parseFloat(s.top || '50');
+        var _tutY = isNaN(_topPct) ? '-50%' : _topPct >= 65 ? '-100%' : _topPct <= 35 ? '0' : '-50%';
+        function _tutNext() { setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: (p._tutorialStep || 0) + 1 }); }); }
+        function _tutBack() { setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: Math.max(0, (p._tutorialStep || 0) - 1) }); }); }
+        function _tutSkipAll() { markTutorialSeen(toolId); setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: 0 }); }); }
+        return React.createElement("div", {
+          className: "absolute z-50 animate-in fade-in duration-300",
+          role: "region", "aria-label": _tutT('stem.tutorial.region', 'Tour') + ': ' + _stepLabel, "aria-live": "polite",
+          // Escape dismisses the tour, but only while focus is inside the card so tool
+          // shortcuts (galaxy's arrow keys, etc.) are never intercepted.
+          onKeyDown: function (e) { if (e.key === 'Escape') { e.stopPropagation(); _tutSkipAll(); } },
+          style: { top: s.top || '50%', left: s.left || '50%', transform: 'translate(-50%,' + _tutY + ')', maxWidth: '380px', width: 'calc(100% - 24px)' }
+        },
+          React.createElement("div", { className: "rounded-2xl p-4 shadow-xl relative overflow-hidden", style: Object.assign({}, _tutBg, { '--stem-tut-glow': _tutGlow, animation: 'stemTutGlow 3.2s ease-in-out infinite' }) },
+            React.createElement("div", { "aria-hidden": "true", className: "absolute inset-y-0 left-0 pointer-events-none", style: { width: '45%', background: _tutSheen, animation: 'stemTutSheen 4.5s ease-in-out infinite' } }),
+            React.createElement("div", { className: "flex items-center justify-between mb-1.5 relative" },
+              React.createElement("p", { className: "text-sm font-bold" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDCA1 "), _stepLabel),
+              React.createElement("div", { "aria-hidden": "true", className: "flex gap-1" }, steps.map(function (_, i) {
+                return React.createElement("span", { key: i, className: "inline-block rounded-full", style: { width: i === step ? 14 : 6, height: 6, backgroundColor: 'currentColor', opacity: i === step ? 1 : 0.45, transition: 'width 200ms' } });
+              }))
+            ),
+            React.createElement("p", { className: "text-[15px] leading-relaxed relative" }, s.text),
+            React.createElement("div", { className: "flex gap-2 mt-3 items-center relative" },
+              React.createElement("button", { type: "button", onClick: _tutSkipAll, className: "px-3 py-1.5 text-xs font-semibold mr-auto", style: _tutSkip }, _tutT('stem.tutorial.skip', 'Skip')),
+              step > 0 ? React.createElement("button", { type: "button", onClick: _tutBack, className: "px-3 py-1.5 text-xs font-semibold", style: _tutSkip }, React.createElement("span", { "aria-hidden": "true" }, "\u2190 "), _tutT('stem.tutorial.back', 'Back')) : null,
+              React.createElement("button", { type: "button", onClick: _tutNext, className: "px-4 py-1.5 text-xs font-bold rounded-lg", style: _tutBtn },
+                _isLast ? _tutT('stem.tutorial.finish', 'Got it!') : _tutT('stem.tutorial.next', 'Next'),
+                React.createElement("span", { "aria-hidden": "true" }, _isLast ? " \u2705" : " \u2192"))
             )
           )
         );
@@ -4438,16 +4500,11 @@
         { text: 'Switch between Left Riemann, Right Riemann, Midpoint, and Trapezoidal methods to see how they approximate the integral differently.', top: '70%', left: '50%' },
         { text: 'The convergence mini-chart below shows how the error shrinks as the number of rectangles increases. Try it!', top: '85%', left: '50%' }
       ];
-      var _tutWave = [
-        { text: 'Welcome to the Wave Simulator! Drag the Amplitude and Frequency sliders to shape your wave.', top: '30%', left: '50%' },
-        { text: 'Switch wave types — Sine, Square, Triangle, or Sawtooth — to explore different waveforms.', top: '50%', left: '50%' },
-        { text: 'Enable the second wave to see superposition — two waves combining into one!', top: '65%', left: '50%' },
-        { text: 'Use keyboard shortcuts: Arrow Up/Down for amplitude, Left/Right for frequency, +/- for speed.', top: '80%', left: '50%' }
-      ];
+      // (wave has no list here: stem_tool_wave.js ships its own localStorage-persisted first-run tour.)
       var _tutPhysics = [
         { text: 'Welcome to the Projectile Physics Lab! Adjust the angle and velocity sliders to set up your launch.', top: '25%', left: '50%' },
         { text: 'Click "Launch" (or press Space) to fire the projectile. Watch it trace a parabolic arc!', top: '45%', left: '50%' },
-        { text: 'Tweak gravity and wind to see how forces change the trajectory. Use WASD keys for fine control.', top: '65%', left: '50%' },
+        { text: 'Tweak gravity and wind to see how forces change the trajectory. Use the arrow keys for fine control.', top: '65%', left: '50%' },
         { text: 'Check the flight stats panel for max height, range, and flight time. Try challenge mode to predict landings!', top: '85%', left: '50%' }
       ];
       var _tutGalaxy = [
@@ -4462,6 +4519,8 @@
         { text: 'Watch the Soil Dashboard — nitrogen, moisture, and temperature all change as the plants grow together.', top: '65%', left: '50%' },
         { text: 'Use the Compare button to see how the Three Sisters garden compares to a monoculture plot. Try the quiz to earn XP!', top: '80%', left: '50%' }
       ];
+      // NOT wired into ctx: step 3 promises mouse-wheel zoom and drag panning, and the
+      // tool has neither (0 onWheel / drag handlers). Rewrite against the real UI before passing it.
       var _tutGraphCalc = [
         { text: 'Welcome to the Graphing Calculator! Type a function like y = 2x + 3 in the expression panel and watch it appear on the graph.', top: '25%', left: '50%' },
         { text: 'Use the Table view to see exact (x, y) values for your function. Great for checking homework answers!', top: '45%', left: '50%' },
@@ -4472,24 +4531,24 @@
         { text: 'Welcome to the Coding Playground! Add blocks from the Toolbox on the left to build your program.', top: '30%', left: '50%' },
         { text: 'Each block is a command: move the turtle, turn, change colors, or use loops. Set values with the number inputs.', top: '45%', left: '50%' },
         { text: 'Click ▶ Run to watch your program execute step-by-step. The turtle draws on the canvas as it moves!', top: '55%', left: '50%' },
-        { text: 'Try Variables (set $myVar) and If/Else blocks for advanced programs. Use Undo/Redo to experiment fearlessly!', top: '65%', left: '50%' },
+        { text: 'Try Variables and If/Else blocks for advanced programs. Use Undo/Redo to experiment fearlessly!', top: '65%', left: '50%' },
         { text: 'Pick a Starter Template to load a prebuilt program, or tackle Challenges to earn XP. Switch to Code mode for JavaScript-like syntax!', top: '80%', left: '50%' }
       ];
 
       var _activeToolFallbackMeta = {
-        heatLab: { label: 'Heat & Thermodynamics Lab', icon: '\uD83C\uDF21\uFE0F' },
-        nuclearLab: { label: 'Nuclear & Radiation Lab', icon: '\u2622\uFE0F' },
-        volume: { label: '3D Volume Explorer', icon: 'ðŸ“¦' },
-        numberline: { label: 'Number Line', icon: 'ðŸ“' },
-        areamodel: { label: 'Area Model', icon: 'ðŸŸ§' },
-        fractionViz: { label: 'Fraction Lab', icon: 'ðŸ•' },
-        chemBalance: { label: 'Chemistry Lab', icon: 'âš–ï¸' },
-        opticsLab: { label: 'Optics Lab', icon: 'ðŸ”†' },
-        codingPlayground: { label: 'Coding Playground', icon: 'ðŸ’»' },
-        graphCalc: { label: 'Graphing Calculator', icon: 'ðŸ“ˆ' },
-        solarSystem: { label: 'Solar System Explorer', icon: 'ðŸª' },
-        anatomy: { label: 'Human Anatomy', icon: 'ðŸ«€' },
-        titrationLab: { label: 'Titration Lab', icon: 'ðŸ§ª' }
+        heatLab: { label: t('stem.tools_menu.heat_thermodynamics_lab') || 'Heat & Thermodynamics Lab', icon: '\uD83C\uDF21\uFE0F' },
+        nuclearLab: { label: t('stem.tools_menu.nuclear_radiation_lab') || 'Nuclear & Radiation Lab', icon: '\u2622\uFE0F' },
+        volume: { label: t('stem.tools_menu.3d_volume_explorer') || '3D Volume Explorer', icon: 'ðŸ“¦' },
+        numberline: { label: t('stem.assessment.number_line') || 'Number Line', icon: 'ðŸ“' },
+        areamodel: { label: t('stem.assessment.area_model') || 'Area Model', icon: 'ðŸŸ§' },
+        fractionViz: { label: t('stem.assessment.fraction_lab') || 'Fraction Lab', icon: 'ðŸ•' },
+        chemBalance: { label: t('stem.tools_menu.chemistry_lab') || 'Chemistry Lab', icon: 'âš–ï¸' },
+        opticsLab: { label: t('stem.optics.optics_lab') || 'Optics Lab', icon: 'ðŸ”†' },
+        codingPlayground: { label: t('stem.coding.coding_playground') || 'Coding Playground', icon: 'ðŸ’»' },
+        graphCalc: { label: t('stem.tools_menu.graphing_calculator') || 'Graphing Calculator', icon: 'ðŸ“ˆ' },
+        solarSystem: { label: t('stem.solarsystem.solar_system_explorer_2') || 'Solar System Explorer', icon: 'ðŸª' },
+        anatomy: { label: t('stem.tools_menu.human_anatomy') || 'Human Anatomy', icon: 'ðŸ«€' },
+        titrationLab: { label: t('stem.titration.titration_lab') || 'Titration Lab', icon: 'ðŸ§ª' }
       };
       function _formatStemToolId(id) {
         return String(id || 'Tool').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
@@ -4595,9 +4654,10 @@
         }, "\uD83E\uDDEE", /*#__PURE__*/React.createElement("span", { className: "hidden lg:inline" }, t('math_create.title') || 'Math Studio')), /*#__PURE__*/React.createElement("button", {
           onClick: () => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          "aria-label": "Toggle theme",
+          // Announce the CURRENT theme so a screen-reader user knows what the next press leaves.
+          "aria-label": (isContrast ? 'Theme: high contrast' : isDark ? 'Theme: dark' : 'Theme: light') + '. Switch theme',
           title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
-        }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+        }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => {
             var next = !_narrationOn;
@@ -4606,9 +4666,10 @@
             if (typeof addToast === 'function') addToast(next ? '🔊 Canvas narration ON — tools will speak descriptions' : '🔇 Canvas narration OFF', 'info');
           },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-pressed": _narrationOn,
           "aria-label": "Toggle canvas narration TTS",
           title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
-        }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
+        }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
         // ✨ AI-extras pill (W7): when no AI backend is reachable, the hints
         // toggle below would be a dead control, so it is replaced by one quiet
         // indicator. Neutral wording on purpose — the sims are fully functional
@@ -4620,7 +4681,7 @@
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": 'AI extras are off. No AI backend is set up. Click to see the ways to turn AI on.',
           title: 'AI extras (hints, coaching) are off because no AI backend is set up. The lab itself works fully without them. Click to set one up, or use AlloFlow inside Gemini Canvas for free AI.'
-        }, '✨', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, 'AI extras: off')),
+        }, '✨', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, 'AI extras: off')),
         isTeacherMode && !!callGemini && /*#__PURE__*/React.createElement("button", {
           onClick: async () => {
             if (!_aiHintsOn) {
@@ -4660,7 +4721,7 @@
           "aria-pressed": _aiHintsOn,
           "aria-label": _aiHintsOn ? 'AI hints are ON for students \u2014 click to turn off' : 'AI hints are OFF \u2014 click to enable (teacher control)',
           title: _aiHintsOn ? 'AI hints ON: a stuck student can request an AI hint (their answer is sent to the AI). Practice only \u2014 turn OFF for graded work.' : 'AI hints OFF. Click to enable AI hints for stuck students (sends their answer to the AI; keep off during graded work).'
-        }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
+        }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => _setShowKeyHelp(v => !v),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
@@ -5003,28 +5064,28 @@
             className: "text-[10px] text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
-              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', chip: 'math', palette: ['blue', 'cyan', 'indigo'], category: true },
+              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals') || 'Math Fundamentals', desc: '', color: 'slate', chip: 'math', palette: ['blue', 'cyan', 'indigo'], category: true },
               {
                 id: 'numberline',
                 icon: '📏',
-                label: t('stem.assessment.number_line'),
-                desc: 'Interactive number line with draggable markers. Great for addition, subtraction, fractions.',
+                label: t('stem.assessment.number_line') || 'Number Line',
+                desc: t('stem.tools_menu.interactive_number_line_with_draggable_markers') || 'Interactive number line with draggable markers. Great for addition, subtraction, fractions.',
                 color: 'blue',
                 ready: true
               },
               {
                 id: 'areamodel',
                 icon: '🟧',
-                label: t('stem.assessment.area_model'),
-                desc: 'Visual multiplication and division with color-coded rows and columns.',
+                label: t('stem.assessment.area_model') || 'Area Model',
+                desc: t('stem.tools_menu.visual_multiplication_and_division_with_color') || 'Visual multiplication and division with color-coded rows and columns.',
                 color: 'amber',
                 ready: true
               },
               {
                 id: 'arithmeticStudio',
                 icon: '➕',
-                label: 'Arithmetic Strategy Studio',
-                desc: 'Learn all four operations through models, strategies, estimation, and mistake analysis.',
+                label: t('stem.tools_menu.arithmetic_strategy_studio') || 'Arithmetic Strategy Studio',
+                desc: t('stem.tools_menu.learn_all_four_operations_through_models') || 'Learn all four operations through models, strategies, estimation, and mistake analysis.',
                 color: 'blue',
                 ready: true
               },
@@ -5032,8 +5093,8 @@
                 id: 'fractionViz',
                 aliases: ['fractions'],
                 icon: '🍕',
-                label: t('stem.assessment.fraction_lab'),
-                desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
+                label: t('stem.assessment.fraction_lab') || 'Fraction Lab',
+                desc: t('stem.tools_menu.compare_fractions_side_by_side_compare') || 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
                 color: 'rose',
                 ready: true
               },
@@ -5041,8 +5102,8 @@
                 // @tool base10
                 id: 'base10',
                 icon: '🧮',
-                label: 'Math Manipulatives',
-                desc: 'Base-10 blocks, abacus & slide rule. Explore place value, counting, and multiplication with hands-on tools.',
+                label: t('stem.tools_menu.math_manipulatives') || 'Math Manipulatives',
+                desc: t('stem.tools_menu.base_10_blocks_abacus_slide_rule') || 'Base-10 blocks, abacus & slide rule. Explore place value, counting, and multiplication with hands-on tools.',
                 color: 'orange',
                 ready: true
               },
@@ -5051,79 +5112,79 @@
                 // @tool multtable
                 id: 'multtable',
                 icon: '🔢',
-                label: t('stem.tools_menu.multiplication_table'),
-                desc: 'Interactive times table grid. Spot patterns, practice facts with challenges.',
+                label: t('stem.tools_menu.multiplication_table') || 'Multiplication Table',
+                desc: t('stem.tools_menu.interactive_times_table_grid_spot_patterns') || 'Interactive times table grid. Spot patterns, practice facts with challenges.',
                 color: 'pink',
                 ready: true
               },
               {
                 id: 'ratioLab',
                 icon: '➗',
-                label: 'Ratios, Rates & Proportions Lab',
-                desc: 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',
+                label: t('stem.tools_menu.ratios_rates_proportions_lab') || 'Ratios, Rates & Proportions Lab',
+                desc: t('stem.tools_menu.explore_ratio_tables_double_number_lines') || 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',
                 color: 'indigo',
                 ready: true
               },
               {
-                id: 'moneyMath', icon: '💵', label: 'Money Math',
-                desc: 'Coins, bills, making change, grocery store sim, money word problems, and currency exchange. Multi-currency with USD, EUR, GBP & more.',
+                id: 'moneyMath', icon: '💵', label: t('stem.tools_menu.money_math') || 'Money Math',
+                desc: t('stem.tools_menu.coins_bills_making_change_grocery_store') || 'Coins, bills, making change, grocery store sim, money word problems, and currency exchange. Multi-currency with USD, EUR, GBP & more.',
                 color: 'emerald', ready: true
               },
 
               {
-                id: 'unitConvert', icon: '🔄', label: t('stem.tools_menu.unit_converter'),
-                desc: 'Convert between metric and imperial units for length, mass, volume, and more.',
+                id: 'unitConvert', icon: '🔄', label: t('stem.tools_menu.unit_converter') || 'Unit Converter',
+                desc: t('stem.tools_menu.convert_between_metric_and_imperial_units') || 'Convert between metric and imperial units for length, mass, volume, and more.',
                 color: 'teal', ready: true
               },
               {
                 id: 'timeSchedule',
                 icon: '\uD83D\uDD70\uFE0F',
-                label: 'Time & Schedule Lab',
-                desc: 'Link clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.',
+                label: t('stem.timeschedule.time_schedule_lab') || 'Time & Schedule Lab',
+                desc: t('stem.tools_menu.link_clocks_model_elapsed_time_reason') || 'Link clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.',
                 color: 'sky',
                 ready: true
               },
-              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', chip: 'math', palette: ['indigo', 'violet'], category: true },
+              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math') || 'Advanced Math', desc: '', color: 'slate', chip: 'math', palette: ['indigo', 'violet'], category: true },
               {
                 // @tool funcGrapher
-                id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher'),
-                desc: 'Plot linear, quadratic, and trig functions. Adjust coefficients in real-time.',
+                id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher') || 'Function Grapher',
+                desc: t('stem.tools_menu.plot_linear_quadratic_and_trig_functions') || 'Plot linear, quadratic, and trig functions. Adjust coefficients in real-time.',
                 aliases: ['trigonometry', 'sine', 'cosine', 'amplitude', 'period'], color: 'indigo', ready: true
               },
               {
-                id: 'inequality', icon: '↕️', label: t('stem.tools_menu.inequality_grapher'),
-                desc: t('stem.tools_menu.graph_inequalities_on_number_lines'),
+                id: 'inequality', icon: '↕️', label: t('stem.tools_menu.inequality_grapher') || 'Inequality Grapher',
+                desc: t('stem.tools_menu.graph_inequalities_on_number_lines') || 'Graph inequalities on number lines and coordinate planes.',
                 color: 'fuchsia', ready: true
               },
               {
-                id: 'calculus', icon: '∫', label: t('stem.tools_menu.calculus_visualizer'),
-                desc: 'Riemann sums, area under curves, and derivative tangent lines.',
+                id: 'calculus', icon: '∫', label: t('stem.tools_menu.calculus_visualizer') || 'Calculus Visualizer',
+                desc: t('stem.tools_menu.riemann_sums_area_under_curves_and') || 'Riemann sums, area under curves, and derivative tangent lines.',
                 color: 'red', ready: true
               },
               {
-                id: 'algebraCAS', icon: '🔣', label: 'Algebra Solver',
-                desc: 'Step-by-step equation solving, factoring, simplification — powered by AI. See every algebraic rule applied.',
+                id: 'algebraCAS', icon: '🔣', label: t('stem.tools_menu.algebra_solver') || 'Algebra Solver',
+                desc: t('stem.tools_menu.step_by_step_equation_solving_factoring') || 'Step-by-step equation solving, factoring, simplification — powered by AI. See every algebraic rule applied.',
                 color: 'amber', ready: true
               },
               {
-                id: 'graphCalc', icon: '📟', label: 'Graphing Calculator',
-                desc: 'Type equations, plot functions, explore data. Learn what every button really does.',
+                id: 'graphCalc', icon: '📟', label: t('stem.tools_menu.graphing_calculator') || 'Graphing Calculator',
+                desc: t('stem.tools_menu.type_equations_plot_functions_explore_data') || 'Type equations, plot functions, explore data. Learn what every button really does.',
                 color: 'indigo', ready: true
               },
-              { id: '_cat_GeometryMeasurement', icon: '', label: '\uD83D\uDCD0 Geometry & Measurement', desc: '', color: 'slate', chip: 'math', palette: ['cyan', 'blue', 'indigo'], category: true },
+              { id: '_cat_GeometryMeasurement', icon: '', label: t('stem.tools_menu.geometry_measurement') || '\uD83D\uDCD0 Geometry & Measurement', desc: '', color: 'slate', chip: 'math', palette: ['cyan', 'blue', 'indigo'], category: true },
               {
                 id: 'volume',
                 icon: '📦',
-                label: '3D Volume Explorer',
-                desc: 'Build rectangular prisms with unit cubes. Rotate, zoom, explore layers.',
+                label: t('stem.tools_menu.3d_volume_explorer') || '3D Volume Explorer',
+                desc: t('stem.tools_menu.build_rectangular_prisms_with_unit_cubes') || 'Build rectangular prisms with unit cubes. Rotate, zoom, explore layers.',
                 color: 'emerald',
                 ready: true
               },
               {
                 id: 'areaPerimeter',
                 icon: '🟦',
-                label: 'Area & Perimeter Lab',
-                desc: 'Tile, compare, decompose, and investigate 2-D shapes while building measurement reasoning.',
+                label: t('stem.tools_menu.area_perimeter_lab') || 'Area & Perimeter Lab',
+                desc: t('stem.tools_menu.tile_compare_decompose_and_investigate_2') || 'Tile, compare, decompose, and investigate 2-D shapes while building measurement reasoning.',
                 color: 'teal',
                 ready: true
               },
@@ -5131,8 +5192,8 @@
                 // @tool coordinate
                 id: 'coordinate',
                 icon: '📍',
-                label: t('stem.tools_menu.coordinate_grid'),
-                desc: t('stem.tools_menu.plot_points_draw_lines_and'),
+                label: t('stem.tools_menu.coordinate_grid') || 'Coordinate Grid',
+                desc: t('stem.tools_menu.plot_points_draw_lines_and') || 'Plot points, draw lines, and explore the coordinate plane.',
                 color: 'cyan',
                 ready: true
               },
@@ -5140,27 +5201,27 @@
                 // @tool protractor
                 id: 'protractor',
                 icon: '📐',
-                label: t('stem.tools_menu.angle_explorer'),
-                desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
+                label: t('stem.tools_menu.angle_explorer') || 'Angle Explorer',
+                desc: t('stem.tools_menu.measure_and_construct_angles_classify_acute') || 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
                 color: 'purple',
                 ready: true
               },
               {
-                id: 'geoSandbox', icon: '\uD83D\uDD37', label: 'Geometry Sandbox',
-                desc: 'Build 3D shapes, measure properties, and export STL files for 3D printing.',
+                id: 'geoSandbox', icon: '\uD83D\uDD37', label: t('stem.tools_menu.geometry_sandbox') || 'Geometry Sandbox',
+                desc: t('stem.tools_menu.build_3d_shapes_measure_properties_and') || 'Build 3D shapes, measure properties, and export STL files for 3D printing.',
                 color: 'sky', ready: true
               },
-              { id: 'geometryProver', icon: '🔺', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
-              { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
-              { id: '_cat_DataStatsProbability', icon: '', label: '\uD83D\uDCCA Data, Statistics & Probability', desc: '', color: 'slate', chip: 'math', palette: ['blue', 'indigo', 'cyan'], category: true },
+              { id: 'geometryProver', icon: '🔺', label: t('stem.tools_menu.geometry_prover') || 'Geometry Prover', desc: t('stem.tools_menu.construct_geometric_proofs_step_by_step') || 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
+              { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: t('stem.geometryworld.tool_name') || 'Geometry World', desc: t('stem.tools_menu.explore_a_3d_world_where_geometry') || 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
+              { id: '_cat_DataStatsProbability', icon: '', label: t('stem.tools_menu.data_statistics_probability') || '\uD83D\uDCCA Data, Statistics & Probability', desc: '', color: 'slate', chip: 'math', palette: ['blue', 'indigo', 'cyan'], category: true },
               {
-                id: 'probability', icon: '\uD83C\uDFB2', label: t('stem.tools_menu.probability'),
-                desc: 'Coin flips, dice rolls, and spinners. Visualize outcomes and explore chance.',
+                id: 'probability', icon: '\uD83C\uDFB2', label: t('stem.tools_menu.probability') || 'Probability',
+                desc: t('stem.tools_menu.coin_flips_dice_rolls_and_spinners') || 'Coin flips, dice rolls, and spinners. Visualize outcomes and explore chance.',
                 color: 'sky', ready: true
               },
               {
-                id: 'statsLab', icon: '🔎', label: 'Statistical Tests',
-                desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
+                id: 'statsLab', icon: '🔎', label: t('stem.tools_menu.statistical_tests') || 'Statistical Tests',
+                desc: t('stem.tools_menu.inferential_statistics_t_tests_anova_correlation') || 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
                 color: 'sky', ready: true
               },
               {
@@ -5170,175 +5231,175 @@
                 // own; it is listed in intentionallyHiddenRegisteredIds in
                 // dev-tools/check_stem_tile_catalog.cjs. The alias keeps deep links and
                 // searches for the old name working.
-                id: 'dataStudio', icon: '📊', label: 'Charts & Graphs',
+                id: 'dataStudio', icon: '📊', label: t('stem.tools_menu.charts_graphs') || 'Charts & Graphs',
                 aliases: ['dataPlot'],
-                desc: 'Bar, pie, line, scatter, box & histogram charts. Import CSV or enter your own data. Switch to Regression mode for curve fitting, R², residuals and outlier analysis.',
+                desc: t('stem.tools_menu.bar_pie_line_scatter_box_histogram') || 'Bar, pie, line, scatter, box & histogram charts. Import CSV or enter your own data. Switch to Regression mode for curve fitting, R², residuals and outlier analysis.',
                 color: 'cyan', ready: true
               },
               {
-                id: 'dataLab', icon: '\uD83D\uDDC2\uFE0F', label: 'CODAP Data Science',
-                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees your column summaries and a bounded row sample and asks questions instead of giving answers.',
+                id: 'dataLab', icon: '\uD83D\uDDC2\uFE0F', label: t('stem.tools_menu.codap_data_science') || 'CODAP Data Science',
+                desc: t('stem.tools_menu.real_data_science_in_codap_the') || 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees your column summaries and a bounded row sample and asks questions instead of giving answers.',
                 color: 'indigo', ready: true
               },
               {
                 // @tool lumen
-                id: 'lumen', icon: '💡', label: 'Lumen Research Canvas',
-                desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
+                id: 'lumen', icon: '💡', label: t('stem.tools_menu.lumen_research_canvas') || 'Lumen Research Canvas',
+                desc: t('stem.tools_menu.reactive_research_canvas_collect_analyze_present') || 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
                 color: 'amber', ready: true
               },
-              { id: '_cat_LifeScienceGenetics', icon: '', label: '\uD83E\uDDEC Life Science & Genetics', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan'], category: true },
+              { id: '_cat_LifeScienceGenetics', icon: '', label: t('stem.tools_menu.life_science_genetics') || '\uD83E\uDDEC Life Science & Genetics', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan'], category: true },
               {
                 // @tool cell
-                id: 'cell', icon: '🔬', label: t('stem.tools_menu.cell_simulator'),
-                desc: 'Microscope mode: observe, control, and quiz on living organisms. Earn XP!',
+                id: 'cell', icon: '🔬', label: t('stem.tools_menu.cell_simulator') || 'Cell Simulator',
+                desc: t('stem.tools_menu.microscope_mode_observe_control_and_quiz') || 'Microscope mode: observe, control, and quiz on living organisms. Earn XP!',
                 color: 'green', ready: true
               },
               {
-                id: 'dissection', icon: '🐸', label: 'Dissection Lab',
-                desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
+                id: 'dissection', icon: '🐸', label: t('stem.tools_menu.dissection_lab') || 'Dissection Lab',
+                desc: t('stem.tools_menu.virtual_frog_dissection_peel_back_layers') || 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'treeLab', icon: '🌳', label: 'Tree Life Lab',
-                desc: 'Photosynthesis at the whole-tree scale in 3D: what limits the rate hour to hour, what a big tree spends just staying alive, why rings narrow with age, and how trees make more of themselves with seeds and without.',
+                id: 'treeLab', icon: '🌳', label: t('stem.treelab.title') || 'Tree Life Lab',
+                desc: t('stem.tools_menu.photosynthesis_at_the_whole_tree_scale') || 'Photosynthesis at the whole-tree scale in 3D: what limits the rate hour to hour, what a big tree spends just staying alive, why rings narrow with age, and how trees make more of themselves with seeds and without.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'cellAtlasLab', icon: '\u2237', label: 'Cell Atlas Lab',
-                desc: 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
+                id: 'cellAtlasLab', icon: '\u2237', label: t('stem.tools_menu.cell_atlas_lab') || 'Cell Atlas Lab',
+                desc: t('stem.tools_menu.classify_human_pancreatic_cell_types_from') || 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
                 color: 'cyan', ready: true
               },
-              { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
+              { id: 'dnaLab', icon: '🧬', label: t('stem.tools_menu.dna_lab') || 'DNA Lab', desc: t('stem.tools_menu.extract_sequence_and_analyze_dna_explore') || 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
               {
-                id: 'punnett', icon: '👪', label: t('stem.tools_menu.punnett_square'),
-                desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
+                id: 'punnett', icon: '👪', label: t('stem.tools_menu.punnett_square') || 'Punnett Square',
+                desc: t('stem.tools_menu.genetic_crosses_with_alleles_predict_genotype') || 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
                 color: 'violet', ready: true
               },
-              { id: 'microbiology', icon: '\uD83E\uDD7C', label: 'Microbiology Lab', desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
-              { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
+              { id: 'microbiology', icon: '\uD83E\uDD7C', label: t('stem.microbiology.microbiology_lab') || 'Microbiology Lab', desc: t('stem.tools_menu.ngss_ms_ls1_hs_ls1_hs') || 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
+              { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: t('stem.tools_menu.epidemic_simulator') || 'Epidemic Simulator', desc: t('stem.tools_menu.model_disease_spread_with_sir_seir') || 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
               {
-                id: 'evoLab', icon: '🦎', label: 'EvoLab: Evolution',
-                desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
+                id: 'evoLab', icon: '🦎', label: t('stem.tools_menu.evolab_evolution') || 'EvoLab: Evolution',
+                desc: t('stem.tools_menu.evolution_natural_selection_selection_sandbox_galpagos') || 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'organismId', icon: '🧬', label: 'Taxonomy Explorer',
-                desc: 'Walk the ranked tree of life, meet the lookalike pairs that fool experienced foragers, and learn why the boxes keep moving — Linnaean ranks vs cladistics, what a species even is, and the organisms that break the system. Photo identification is built but held back pending expert review of its hazard copy.',
+                id: 'organismId', icon: '🧬', label: t('stem.organismid.title') || 'Taxonomy Explorer',
+                desc: t('stem.tools_menu.walk_the_ranked_tree_of_life') || 'Walk the ranked tree of life, meet the lookalike pairs that fool experienced foragers, and learn why the boxes keep moving — Linnaean ranks vs cladistics, what a species even is, and the organisms that break the system. Photo identification is built but held back pending expert review of its hazard copy.',
                 color: 'emerald', ready: true,
                 aliases: ['taxonomy', 'classification', 'organism id', 'identify organism', 'linnaean', 'cladistics', 'species', 'lookalikes', 'mimicry', 'tree of life', 'dichotomous key']
               },
-              { id: 'dinoLab', icon: '🦕', label: 'Dino Lab', desc: 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
+              { id: 'dinoLab', icon: '🦕', label: t('stem.tools_menu.dino_lab') || 'Dino Lab', desc: t('stem.tools_menu.explore_360_dinosaurs_across_deep_time') || 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
               {
-                id: 'alphaFoldExplorer', icon: '\u03B1', label: 'AlphaFold Explorer',
-                desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, inspect them in Mol*, import downloaded prediction files, and prepare AlphaFold Server-ready JSON with guardrails for public or synthetic classroom sequences only.',
+                id: 'alphaFoldExplorer', icon: '\u03B1', label: t('stem.alphaFold.title') || 'AlphaFold Explorer',
+                desc: t('stem.tools_menu.look_up_public_alphafold_db_protein') || 'Look up public AlphaFold DB protein structures by UniProt/accession, inspect them in Mol*, import downloaded prediction files, and prepare AlphaFold Server-ready JSON with guardrails for public or synthetic classroom sequences only.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_HumanBodyHealth', icon: '', label: '\uD83E\uDEC0 Human Body, Health & Safety', desc: '', color: 'slate', chip: 'science', palette: ['rose', 'violet', 'orange', 'rose', 'orange'], category: true },
+              { id: '_cat_HumanBodyHealth', icon: '', label: t('stem.tools_menu.human_body_health_safety') || '\uD83E\uDEC0 Human Body, Health & Safety', desc: '', color: 'slate', chip: 'science', palette: ['rose', 'violet', 'orange', 'rose', 'orange'], category: true },
               {
-                id: 'anatomy', icon: '🫀', label: t('stem.tools_menu.human_anatomy'),
-                desc: 'Explore all 11 body systems with interactive canvas — skeletal, muscular, circulatory, nervous, and more.',
+                id: 'anatomy', icon: '🫀', label: t('stem.tools_menu.human_anatomy') || 'Human Anatomy',
+                desc: t('stem.tools_menu.explore_all_11_body_systems_with') || 'Explore all 11 body systems with interactive canvas — skeletal, muscular, circulatory, nervous, and more.',
                 color: 'rose', ready: true
               },
               {
-                id: 'brainAtlas', icon: '🧠', label: t('stem.tools_menu.brain_atlas'),
-                desc: 'Detailed cerebral regions, lobes, nuclei and clinical correlations. Lateral, medial, inferior & coronal views.',
+                id: 'brainAtlas', icon: '🧠', label: t('stem.tools_menu.brain_atlas') || 'Brain Atlas',
+                desc: t('stem.tools_menu.detailed_cerebral_regions_lobes_nuclei_and') || 'Detailed cerebral regions, lobes, nuclei and clinical correlations. Lateral, medial, inferior & coronal views.',
                 color: 'purple', ready: true
               },
               {
-                id: 'nutritionLab', icon: '🥗', label: 'NutritionLab: Nutrition Science',
-                desc: 'Adolescent-safe nutrition science: macros, micros, food labels, metabolism, digestion, food + mental health, eating-disorder awareness. Physiology-first framing — NOT weight-loss. Sources: USDA / NIH / Harvard / AAP / NEDA.',
+                id: 'nutritionLab', icon: '🥗', label: t('stem.tools_menu.nutritionlab_nutrition_science') || 'NutritionLab: Nutrition Science',
+                desc: t('stem.tools_menu.adolescent_safe_nutrition_science_macros_micros') || 'Adolescent-safe nutrition science: macros, micros, food labels, metabolism, digestion, food + mental health, eating-disorder awareness. Physiology-first framing — NOT weight-loss. Sources: USDA / NIH / Harvard / AAP / NEDA.',
                 color: 'green', ready: true
               },
               {
-                id: 'firstResponse', icon: '🚑', label: 'First Response Lab',
-                desc: 'Recognize + respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only.',
+                id: 'firstResponse', icon: '🚑', label: t('stem.tools_menu.first_response_lab') || 'First Response Lab',
+                desc: t('stem.tools_menu.recognize_respond_to_medical_emergencies_hands') || 'Recognize + respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only.',
                 color: 'rose', ready: true
               },
               {
-                id: 'kitchenLab', icon: '🍳', label: 'Kitchen Lab',
-                desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
+                id: 'kitchenLab', icon: '🍳', label: t('stem.kitchenlab.kitchen_lab') || 'Kitchen Lab',
+                desc: t('stem.tools_menu.cooking_life_skills_culinary_science_usda') || 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
                 color: 'orange', ready: true
               },
-              { id: '_cat_EcologyEnvironment', icon: '', label: '\uD83C\uDF0D Ecology, Environment & Animals', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan', 'amber'], category: true },
+              { id: '_cat_EcologyEnvironment', icon: '', label: t('stem.tools_menu.ecology_environment_animals') || '\uD83C\uDF0D Ecology, Environment & Animals', desc: '', color: 'slate', chip: 'science', palette: ['emerald', 'cyan', 'amber'], category: true },
               {
                 // @tool ecosystem
-                id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem',
-                desc: 'Predator-prey dynamics with Lotka-Volterra simulation. Adjust birth and death rates.',
+                id: 'ecosystem', icon: '\uD83D\uDC3A', label: t('stem.tools_menu.ecosystem') || 'Ecosystem',
+                desc: t('stem.tools_menu.predator_prey_dynamics_with_lotka_volterra') || 'Predator-prey dynamics with Lotka-Volterra simulation. Adjust birth and death rates.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'companionPlanting', icon: '\uD83C\uDF31', label: 'Companion Planting Lab',
-                desc: 'Explore the ancient milpa / Three Sisters system \u2014 corn, beans, and squash growing in symbiosis. Soil chemistry, nitrogen cycles, and 7,000 years of agricultural science.',
+                id: 'companionPlanting', icon: '\uD83C\uDF31', label: t('stem.companionplanting.companion_planting_lab_2') || 'Companion Planting Lab',
+                desc: t('stem.tools_menu.explore_the_ancient_milpa_three_sisters') || 'Explore the ancient milpa / Three Sisters system \u2014 corn, beans, and squash growing in symbiosis. Soil chemistry, nitrogen cycles, and 7,000 years of agricultural science.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'beehive', icon: '\uD83D\uDC1D', label: 'Beehive Colony Simulator',
-                desc: 'Manage a living honeybee colony \u2014 nectar economics, waggle dances, seasonal cycles, threats, and the science of superorganisms. Connected to Companion Planting!',
+                id: 'beehive', icon: '\uD83D\uDC1D', label: t('stem.tools_menu.beehive_colony_simulator') || 'Beehive Colony Simulator',
+                desc: t('stem.tools_menu.manage_a_living_honeybee_colony_nectar') || 'Manage a living honeybee colony \u2014 nectar economics, waggle dances, seasonal cycles, threats, and the science of superorganisms. Connected to Companion Planting!',
                 color: 'amber', ready: true
               },
               {
-                id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
-                desc: 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
+                id: 'climateExplorer', icon: '\uD83C\uDF0D', label: t('stem.climateExplorer.climate_explorer') || 'Climate Explorer',
+                desc: t('stem.tools_menu.carbon_calculator_renewables_impact_simulator_climate') || 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'stewardshipHub', icon: '♻️', label: 'Environmental Stewardship Campaigns',
-                desc: 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
+                id: 'stewardshipHub', icon: '♻️', label: t('stem.tools_menu.environmental_stewardship_campaigns') || 'Environmental Stewardship Campaigns',
+                desc: t('stem.tools_menu.fifteen_environmental_stewardship_campaigns_across_eleven') || 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
-                desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
+                id: 'fireEcology', icon: '\uD83D\uDD25', label: t('stem.fireecology.fire_ecology_indigenous_stewardship') || 'Fire Ecology & Indigenous Stewardship',
+                desc: t('stem.tools_menu.explore_65_000_years_of_indigenous') || 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
               },
               {
-                id: 'renewablesLab', icon: '\u26A1', label: 'Renewables Lab',
-                desc: 'How each renewable source actually generates electricity. Live sliders for solar PV, wind (Betz limit + cube of wind speed), hydro (head x flow), geothermal (depth x gradient), CSP, wave/tidal, biomass, and storage. Cited to NREL, IEA, IRENA.',
+                id: 'renewablesLab', icon: '\u26A1', label: t('stem.tools_menu.renewables_lab') || 'Renewables Lab',
+                desc: t('stem.tools_menu.how_each_renewable_source_actually_generates') || 'How each renewable source actually generates electricity. Live sliders for solar PV, wind (Betz limit + cube of wind speed), hydro (head x flow), geothermal (depth x gradient), CSP, wave/tidal, biomass, and storage. Cited to NREL, IEA, IRENA.',
                 color: 'green', ready: true
               },
               {
-                id: 'aquarium', icon: '🐠', label: 'Aquaculture & Ocean Lab',
-                desc: 'Manage aquarium tanks, simulate sustainable fishing, and explore marine ecosystems. Water chemistry, population dynamics and species studies.',
+                id: 'aquarium', icon: '🐠', label: t('stem.tools_menu.aquaculture_ocean_lab') || 'Aquaculture & Ocean Lab',
+                desc: t('stem.tools_menu.manage_aquarium_tanks_simulate_sustainable_fishing') || 'Manage aquarium tanks, simulate sustainable fishing, and explore marine ecosystems. Water chemistry, population dynamics and species studies.',
                 color: 'cyan', ready: true
               },
-              { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
-              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: 'Raptor Hunt: Predator Physics + Biology', desc: 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
-              { id: 'migration', icon: '\uD83E\uDDED', label: 'Animal Migration Lab', desc: 'Explore 3D migration routes, navigation, climate triggers, conservation challenges, and an explicit monarch butterfly simulation.', color: 'teal', ready: true },
+              { id: 'birdLab', icon: '\uD83D\uDC26', label: t('stem.tools_menu.birdlab_i_spy_ornithology') || 'BirdLab: I-Spy Ornithology', desc: t('stem.tools_menu.layered_habitat_i_spy_with_animated') || 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
+              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: t('stem.raptorhunt.raptor_hunt_predator_physics_biology') || 'Raptor Hunt: Predator Physics + Biology', desc: t('stem.tools_menu.three_js_stoop_simulator_deep_science') || 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
+              { id: 'migration', icon: '\uD83E\uDDED', label: t('stem.tools_menu.animal_migration_lab') || 'Animal Migration Lab', desc: t('stem.tools_menu.explore_3d_migration_routes_navigation_climate') || 'Explore 3D migration routes, navigation, climate triggers, conservation challenges, and an explicit monarch butterfly simulation.', color: 'teal', ready: true },
               {
-                id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
-                desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
+                id: 'cephalopodLab', icon: '🐙', label: t('stem.cephalopodlab.cephalopod_lab') || 'Cephalopod Lab',
+                desc: t('stem.tools_menu.marine_biology_behavioral_science_of_octopuses') || 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
                 color: 'indigo', ready: true
               },
               {
-                id: 'petsLab', icon: '🐾', label: 'Science of Pets Lab',
-                desc: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
+                id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.science_of_pets_lab') || 'Science of Pets Lab',
+                desc: t('stem.tools_menu.companion_animal_science_physiology_ethology_nutrition') || 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
                 color: 'amber', ready: true
               },
               {
-                id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
+                id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer') || 'Decomposer', desc: t('stem.tools_menu.break_materials_into_elements') || 'Break materials into elements',
                 color: 'lime', ready: true
               },
-              { id: '_cat_EarthSpaceScience', icon: '', label: '\uD83C\uDF0E Earth & Space Science', desc: '', color: 'slate', chip: 'science', palette: ['amber', 'orange', 'cyan'], paletteBreaks: { astronomy: ['indigo', 'blue', 'violet'] }, category: true },
+              { id: '_cat_EarthSpaceScience', icon: '', label: t('stem.tools_menu.earth_space_science') || '\uD83C\uDF0E Earth & Space Science', desc: '', color: 'slate', chip: 'science', palette: ['amber', 'orange', 'cyan'], paletteBreaks: { astronomy: ['indigo', 'blue', 'violet'] }, category: true },
               // @tool rocks
-              { id: 'rocks', icon: '🪨', label: t('stem.tools_menu.rocks_minerals'), desc: t('stem.tools_menu.interactive_rock_cycle_mineral_properties'), color: 'amber', ready: true },
+              { id: 'rocks', icon: '🪨', label: t('stem.tools_menu.rocks_minerals') || 'Rocks & Minerals', desc: t('stem.tools_menu.interactive_rock_cycle_mineral_properties') || 'Interactive rock cycle, mineral properties & geology', color: 'amber', ready: true },
               {
-                id: 'rockCycle', icon: '🔁', label: t('stem.tools_menu.rock_cycle'),
-                desc: 'Trace the transformation of igneous, sedimentary, and metamorphic rocks.',
+                id: 'rockCycle', icon: '🔁', label: t('stem.tools_menu.rock_cycle') || 'Rock Cycle',
+                desc: t('stem.tools_menu.trace_the_transformation_of_igneous_sedimentary') || 'Trace the transformation of igneous, sedimentary, and metamorphic rocks.',
                 color: 'stone', ready: true
               },
               {
-                id: 'waterCycle', icon: '💧', label: t('stem.tools_menu.water_cycle'),
-                desc: 'Follow water through evaporation, condensation, precipitation, and collection.',
+                id: 'waterCycle', icon: '💧', label: t('stem.tools_menu.water_cycle') || 'Water Cycle',
+                desc: t('stem.tools_menu.follow_water_through_evaporation_condensation_precipitation') || 'Follow water through evaporation, condensation, precipitation, and collection.',
                 color: 'cyan', ready: true
               },
               {
-                id: 'weatherSystems', icon: '\uD83C\uDF26\uFE0F', label: 'Weather Systems & Forecasting',
-                desc: 'Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.',
+                id: 'weatherSystems', icon: '\uD83C\uDF26\uFE0F', label: t('stem.tools_menu.weather_systems_forecasting') || 'Weather Systems & Forecasting',
+                desc: t('stem.tools_menu.explore_fronts_pressure_humidity_wind_radar') || 'Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.',
                 color: 'sky', ready: true
               },
-              { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', aliases: ['convection', 'mantle convection', 'heat transfer'], color: 'orange', ready: true },
-              { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
-              { id: 'geoQuiz', icon: '🗺️', label: 'Geography Explorer', desc: 'Find countries on a live map, quiz capitals, continents and landmarks, compare sizes, estimate distances, and spin a 3D globe.', color: 'sky', ready: true },
+              { id: 'plateTectonics', icon: '🌋', label: t('stem.platetectonics.plate_tectonics') || 'Plate Tectonics', desc: t('stem.tools_menu.explore_tectonic_plates_earthquakes_volcanoes_and') || 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', aliases: ['convection', 'mantle convection', 'heat transfer'], color: 'orange', ready: true },
+              { id: 'geologyExplorer', icon: '⛰️', label: t('stem.geology.title') || 'Geology Explorer', desc: t('stem.tools_menu.dig_a_3d_voxel_cross_section') || 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
+              { id: 'geoQuiz', icon: '🗺️', label: t('stem.geo.geography_explorer') || 'Geography Explorer', desc: t('stem.tools_menu.find_countries_on_a_live_map') || 'Find countries on a live map, quiz capitals, continents and landmarks, compare sizes, estimate distances, and spin a 3D globe.', color: 'sky', ready: true },
               // gisStudio registers itself in stem_tool_gisstudio.js but had NO tile here,
               // so a finished, tested, mirrored tool was unreachable from the picker —
               // check_stem_tile_catalog and stem_plugin_fallback_allowlist were both red
@@ -5346,130 +5407,130 @@
               // its own icon) so it cannot be re-encoded into mojibake.
               // NB: no apostrophes in comments inside this array — the catalog gate
               // tracks quote state as it scans and an unpaired one blinds it.
-              { id: 'gisStudio', icon: '🌐', label: 'GIS Studio', desc: 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
-              { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
+              { id: 'gisStudio', icon: '🌐', label: t('stem.gisstudio.title') || 'GIS Studio', desc: t('stem.tools_menu.build_compare_compose_sequence_annotate_and') || 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
+              { id: 'astronomy', icon: '🔭', label: t('stem.astronomy.night_sky_astronomy') || 'Night Sky & Astronomy', desc: t('stem.tools_menu.earth_space_science_constellations_with_wabanaki') || 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
               {
                 // @tool solarSystem
-                id: 'solarSystem', icon: '🪐', label: 'Solar System',
-                desc: '3D interactive solar system with orbit, zoom, planet facts and quiz.',
+                id: 'solarSystem', icon: '🪐', label: t('stem.tools_menu.solar_system') || 'Solar System',
+                desc: t('stem.tools_menu.3d_interactive_solar_system_with_orbit') || '3D interactive solar system with orbit, zoom, planet facts and quiz.',
                 color: 'blue', ready: true
               },
               {
                 // @tool moonMission
-                id: 'moonMission', icon: '\uD83D\uDE80', label: 'Moon Mission',
-                desc: 'Full Apollo mission simulator — launch, orbit, land on the Moon, walk in 1/6 gravity, collect rocks, and splash down!',
+                id: 'moonMission', icon: '\uD83D\uDE80', label: t('stem.tools_menu.moon_mission') || 'Moon Mission',
+                desc: t('stem.tools_menu.full_apollo_mission_simulator_launch_orbit') || 'Full Apollo mission simulator — launch, orbit, land on the Moon, walk in 1/6 gravity, collect rocks, and splash down!',
                 color: 'slate', ready: true
               },
               {
                 // @tool spaceStation
-                id: 'spaceStation', icon: '🛰️', label: 'Space Station',
-                desc: 'Explore a clickable 3D map of the ISS, live an astronaut’s day, trace the water and air recycling loops, and run real orbital mechanics in the Orbit Lab.',
+                id: 'spaceStation', icon: '🛰️', label: t('stem.tools_menu.space_station') || 'Space Station',
+                desc: t('stem.tools_menu.explore_a_clickable_3d_map_of') || 'Explore a clickable 3D map of the ISS, live an astronaut’s day, trace the water and air recycling loops, and run real orbital mechanics in the Orbit Lab.',
                 color: 'sky', ready: true
               },
               {
                 // @tool galaxy
-                id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer'),
-                desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
+                id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer') || 'Galaxy Explorer',
+                desc: t('stem.tools_menu.fly_through_a_3d_milky_way') || 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
                 color: 'indigo', ready: true
               },
               {
-                id: 'universe', icon: '\uD83C\uDF20', label: t('stem.tools_menu.universe_timelapse'),
-                desc: 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
+                id: 'universe', icon: '\uD83C\uDF20', label: t('stem.tools_menu.universe_timelapse') || 'Universe Time-Lapse',
+                desc: t('stem.tools_menu.experience_13_8_billion_years_of') || 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
                 color: 'violet', ready: true
               },
-              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', chip: 'science', palette: ['cyan', 'orange', 'violet'], paletteBreaks: { molecule: ['amber', 'emerald', 'violet'] }, category: true },
+              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry') || 'Physics & Chemistry', desc: '', color: 'slate', chip: 'science', palette: ['cyan', 'orange', 'violet'], paletteBreaks: { molecule: ['amber', 'emerald', 'violet'] }, category: true },
               {
                 // @tool wave
-                id: 'wave', icon: '🌊', label: t('stem.tools_menu.wave_simulator'),
-                desc: 'Adjust frequency, amplitude, wavelength. Explore interference patterns.',
+                id: 'wave', icon: '🌊', label: t('stem.tools_menu.wave_simulator') || 'Wave Simulator',
+                desc: t('stem.tools_menu.adjust_frequency_amplitude_wavelength_explore_interference') || 'Adjust frequency, amplitude, wavelength. Explore interference patterns.',
                 color: 'cyan', ready: true
               },
-              { id: 'heatLab', icon: '🌡️', label: 'Heat & Thermodynamics Lab', desc: 'Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve; and why no heat engine reaches 100%.', aliases: ['thermodynamics', 'heat', 'heat transfer', 'conduction', 'convection', 'radiation', 'insulation', 'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'carnot', 'heat engine', 'thermal', 'temperature', 'second law'], color: 'orange', ready: true },
-              { id: 'nuclearLab', icon: '☢️', label: 'Nuclear & Radiation Lab', desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, fission and fusion, radiation doses on a readable scale, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, the waste question, and where small modular reactors really stand.', aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'isotope', 'decay', 'fission', 'fusion', 'reactor', 'SMR', 'small modular reactor', 'uranium', 'plutonium', 'carbon dating', 'chernobyl', 'fukushima', 'sievert', 'dose', 'radiation safety', 'shielding', 'nuclear waste', 'alpha', 'beta', 'gamma', 'radon', 'meltdown', 'enrichment', 'nuclear power', 'linear no-threshold', 'LNT', 'hormesis', 'low-dose risk', 'radiation risk', 'collective dose', 'person-sievert', 'risk coefficient', 'ICRP', 'radiation epidemiology', 'is a small dose dangerous'], color: 'violet', ready: true },
-              { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
+              { id: 'heatLab', icon: '🌡️', label: t('stem.tools_menu.heat_thermodynamics_lab') || 'Heat & Thermodynamics Lab', desc: t('stem.tools_menu.conduction_convection_and_radiation_on_a') || 'Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve; and why no heat engine reaches 100%.', aliases: ['thermodynamics', 'heat', 'heat transfer', 'conduction', 'convection', 'radiation', 'insulation', 'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'carnot', 'heat engine', 'thermal', 'temperature', 'second law'], color: 'orange', ready: true },
+              { id: 'nuclearLab', icon: '☢️', label: t('stem.tools_menu.nuclear_radiation_lab') || 'Nuclear & Radiation Lab', desc: t('stem.tools_menu.half_life_and_decay_you_can') || 'Half-life and decay you can run, what actually stops alpha, beta and gamma, fission and fusion, radiation doses on a readable scale, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, the waste question, and where small modular reactors really stand.', aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'isotope', 'decay', 'fission', 'fusion', 'reactor', 'SMR', 'small modular reactor', 'uranium', 'plutonium', 'carbon dating', 'chernobyl', 'fukushima', 'sievert', 'dose', 'radiation safety', 'shielding', 'nuclear waste', 'alpha', 'beta', 'gamma', 'radon', 'meltdown', 'enrichment', 'nuclear power', 'linear no-threshold', 'LNT', 'hormesis', 'low-dose risk', 'radiation risk', 'collective dose', 'person-sievert', 'risk coefficient', 'ICRP', 'radiation epidemiology', 'is a small dose dangerous'], color: 'violet', ready: true },
+              { id: 'echolocation', icon: '\uD83E\uDD87', label: t('stem.echolocation.echolocation_lab') || 'Echolocation Lab', desc: t('stem.tools_menu.see_the_world_through_sound_sonar') || 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
               {
                 // @tool magnetism
-                id: 'magnetism', icon: '🧲', label: 'Magnetism Lab',
-                desc: 'See magnetic field lines with a live compass, build an electromagnet, spin a DC motor, generate electricity with Faraday’s law, and explore Earth’s magnetic shield.',
+                id: 'magnetism', icon: '🧲', label: t('stem.tools_menu.magnetism_lab') || 'Magnetism Lab',
+                desc: t('stem.tools_menu.see_magnetic_field_lines_with_a') || 'See magnetic field lines with a live compass, build an electromagnet, spin a DC motor, generate electricity with Faraday’s law, and explore Earth’s magnetic shield.',
                 color: 'rose', ready: true
               },
               {
                 // @tool physics
-                id: 'physics', icon: '🎯', label: t('stem.tools_menu.physics_simulator'),
-                desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
+                id: 'physics', icon: '🎯', label: t('stem.tools_menu.physics_simulator') || 'Physics Simulator',
+                desc: t('stem.tools_menu.projectile_motion_velocity_vectors_and_trajectory') || 'Projectile motion, velocity vectors, and trajectory visualization.',
                 color: 'sky', ready: true
               },
               {
-                id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
-                desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+                id: 'opticsLab', icon: '🔆', label: t('stem.tools_menu.opticslab_ap') || 'OpticsLab AP',
+                desc: t('stem.tools_menu.ap_physics_2_geometric_wave_optics') || 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
                 aliases: ['Optics Lab', 'optics', 'light lab', 'lenses', 'mirrors', 'reflection', 'refraction', 'Snell', 'AP Physics 2'],
                 color: 'sky', ready: true
               },
               {
-                id: 'particleLab3d', icon: '\u2728', label: 'Particle Lab 3D',
-                desc: 'Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.',
+                id: 'particleLab3d', icon: '\u2728', label: t('stem.tools_menu.particle_lab_3d') || 'Particle Lab 3D',
+                desc: t('stem.tools_menu.run_fully_3d_particle_experiments_with') || 'Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.',
                 color: 'cyan', ready: true
               },
               {
                 // @tool coasterLab
-                id: 'coasterLab', icon: '🎢', label: 'Coaster Lab',
-                desc: 'Design a roller coaster in full 3D, predict its speeds and g-forces with real physics, pass the certification inspection, and ride onboard with checkpoint questions.',
+                id: 'coasterLab', icon: '🎢', label: t('stem.tools_menu.coaster_lab') || 'Coaster Lab',
+                desc: t('stem.tools_menu.design_a_roller_coaster_in_full') || 'Design a roller coaster in full 3D, predict its speeds and g-forces with real physics, pass the certification inspection, and ride onboard with checkpoint questions.',
                 color: 'amber', ready: true
               },
               {
-                id: 'molecule', icon: '⚛️', label: t('stem.tools_menu.molecule_builder'),
-                desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
+                id: 'molecule', icon: '⚛️', label: t('stem.tools_menu.molecule_builder') || 'Molecule Builder',
+                desc: t('stem.tools_menu.build_molecules_with_atoms_and_bonds') || 'Build molecules with atoms and bonds. Explore molecular geometry.',
                 color: 'stone', ready: true
               },
               {
                 // @tool chemBalance
-                id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer'),
-                desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
+                id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer') || 'ChemLab: Reactions & Elements',
+                desc: t('stem.tools_menu.balance_chemical_equations_with_visual') || 'Balance chemical equations with visual atom counting.',
                 aliases: ['Chemistry Lab', 'chem lab', 'chemical equations', 'equation balancing', 'stoichiometry', 'chemical reactions', 'periodic table', 'elements', 'element properties', 'atomic number', 'equation balancer', 'balance equations', 'chemlab', 'safety', 'GHS', 'hazard', 'pictogram'],
                 color: 'lime', ready: true
               },
               {
-                id: 'titrationLab', icon: '🧪', label: 'Titration Lab',
-                desc: 'Virtual titration with live S-curve graphing, indicator selection, and pH calculation.',
+                id: 'titrationLab', icon: '🧪', label: t('stem.titration.titration_lab') || 'Titration Lab',
+                desc: t('stem.tools_menu.virtual_titration_with_live_s_curve') || 'Virtual titration with live S-curve graphing, indicator selection, and pH calculation.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'bakingScience', icon: '🥐', label: 'Baking Lab',
-                desc: 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
+                id: 'bakingScience', icon: '🥐', label: t('baking.title') || 'Baking Lab',
+                desc: t('stem.tools_menu.leavening_chemistry_emulsions_recipe_scaling_oven') || 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
                 color: 'amber', ready: true
               },
-              { id: '_cat_EngineeringDesign', icon: '', label: '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', palette: ['amber', 'orange', 'cyan'], category: true },
+              { id: '_cat_EngineeringDesign', icon: '', label: t('stem.tools_menu.engineering_design') || '\u2699\uFE0F Engineering & Design', desc: '', color: 'slate', chip: 'engineering', palette: ['amber', 'orange', 'cyan'], category: true },
               {
                 // @tool machineLab
-                id: 'machineLab', icon: '\u2699\uFE0F', label: 'Machine Lab',
-                desc: 'Levers, pulleys, ramps, wedges and screws. See how simple machines trade distance for force, and prove it with your own predictions.',
+                id: 'machineLab', icon: '\u2699\uFE0F', label: t('stem.machinelab.title') || 'Machine Lab',
+                desc: t('stem.tools_menu.levers_pulleys_ramps_wedges_and_screws') || 'Levers, pulleys, ramps, wedges and screws. See how simple machines trade distance for force, and prove it with your own predictions.',
                 color: 'amber', ready: true
               },
               {
                 // @tool circuit
-                id: 'circuit', icon: '🔌', label: t('stem.tools_menu.circuit_builder'),
-                desc: 'Build circuits with resistors and batteries. Calculate voltage and current.',
+                id: 'circuit', icon: '🔌', label: t('stem.tools_menu.circuit_builder') || 'Circuit Builder',
+                desc: t('stem.tools_menu.build_circuits_with_resistors_and_batteries') || 'Build circuits with resistors and batteries. Calculate voltage and current.',
                 color: 'yellow', ready: true
               },
               {
                 // @tool semiconductor
-                id: 'semiconductor', icon: '💠', label: 'Semiconductor Lab',
-                desc: 'Explore transistors, logic gates, silicon doping, and chip design fundamentals.',
+                id: 'semiconductor', icon: '💠', label: t('stem.semiconductor.semiconductor_lab') || 'Semiconductor Lab',
+                desc: t('stem.tools_menu.explore_transistors_logic_gates_silicon_doping') || 'Explore transistors, logic gates, silicon doping, and chip design fundamentals.',
                 color: 'cyan', ready: true
               },
-              { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
-              { id: 'printLab', icon: '\uD83D\uDDA8\uFE0F', label: '3D Print Lab', desc: 'Design or import a model, inspect scale and printability, compare materials, and prepare a reviewed school-store print request.', aliases: ['3D printing', 'Minecraft GLB', 'STL', 'additive manufacturing', 'PHA', 'slicing', 'makerspace'], color: 'teal', ready: true },
-              { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', aliases: ['simple machines', 'lever', 'mechanical advantage', 'screw press'], color: 'amber', ready: true },
+              { id: 'bridgeLab', icon: '\uD83C\uDF09', label: t('stem.bridgelab.bridge_engineering_lab') || 'Bridge Engineering Lab', desc: t('stem.tools_menu.ngss_ms_ets1_hs_ets1_hs') || 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
+              { id: 'printLab', icon: '\uD83D\uDDA8\uFE0F', label: t('stem.tools_menu.3d_print_lab') || '3D Print Lab', desc: t('stem.tools_menu.design_or_import_a_model_inspect') || 'Design or import a model, inspect scale and printability, compare materials, and prepare a reviewed school-store print request.', aliases: ['3D printing', 'Minecraft GLB', 'STL', 'additive manufacturing', 'PHA', 'slicing', 'makerspace'], color: 'teal', ready: true },
+              { id: 'printingPress', icon: '\uD83D\uDCDC', label: t('stem.tools_menu.printingpress') || 'PrintingPress', desc: t('stem.tools_menu.the_gutenberg_style_screw_press_as') || 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', aliases: ['simple machines', 'lever', 'mechanical advantage', 'screw press'], color: 'amber', ready: true },
               {
-                id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
-                desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
+                id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: t('stem.tools_menu.architecture_studio') || 'Architecture Studio',
+                desc: t('stem.tools_menu.3d_building_with_blocks_columns_arches') || '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
                 color: 'amber', ready: true
               },
               {
                 // @tool openBim. This is an accessible planning and exchange
                 // companion for Bonsai, not a browser reimplementation of it.
-                id: 'openBim', icon: '\u2302', label: 'OpenBIM Companion',
-                desc: 'Turn a building idea into a reviewed semantic IFC proposal, then prepare an open project for the Bonsai authoring environment.',
+                id: 'openBim', icon: '\u2302', label: t('stem.tools_menu.openbim_companion') || 'OpenBIM Companion',
+                desc: t('stem.tools_menu.turn_a_building_idea_into_a') || 'Turn a building idea into a reviewed semantic IFC proposal, then prepare an open project for the Bonsai authoring environment.',
                 aliases: ['Bonsai', 'BIM', 'OpenBIM', 'IFC', 'building information modeling', 'accessible architecture'],
                 color: 'teal', ready: true
               },
@@ -5479,59 +5540,59 @@
                 // student design a settlement under constraints that genuinely conflict.
                 // Indicators are tiered: measured, modelled, and a contested tier that is
                 // deliberately never produced as a number. See docs/city_planning_lab_design.md
-                id: 'cityLab', icon: '\uD83C\uDFD9\uFE0F', label: 'City Planning Lab',
-                desc: 'NGSS MS-ETS1 + HS-ETS1-3 + MS-ESS3-3. Design a town on a 144-parcel grid against requirements that genuinely conflict. Three towns, each with a different binding constraint: Riverbend, where stormwater and the bond bite; Mesa Hollow, where the aquifer is fixed and the farms are drinking it; and Harborlight, where the plan has to still work in 2050. Rational-method runoff, water balance, sea-level allowance, network walk distance and a costed road network, each openable to show its formula. The Assumption Lab reruns one plan under two published parameter sets so students can see which conclusions survive both. Map, editable parcel table and a 3D model of the same plan. Discussion prompts and documented history carry the questions the tool refuses to model. No score and no answer key.',
+                id: 'cityLab', icon: '\uD83C\uDFD9\uFE0F', label: t('stem.tools_menu.city_planning_lab') || 'City Planning Lab',
+                desc: t('stem.tools_menu.ngss_ms_ets1_hs_ets1_3') || 'NGSS MS-ETS1 + HS-ETS1-3 + MS-ESS3-3. Design a town on a 144-parcel grid against requirements that genuinely conflict. Three towns, each with a different binding constraint: Riverbend, where stormwater and the bond bite; Mesa Hollow, where the aquifer is fixed and the farms are drinking it; and Harborlight, where the plan has to still work in 2050. Rational-method runoff, water balance, sea-level allowance, network walk distance and a costed road network, each openable to show its formula. The Assumption Lab reruns one plan under two published parameter sets so students can see which conclusions survive both. Map, editable parcel table and a 3D model of the same plan. Discussion prompts and documented history carry the questions the tool refuses to model. No score and no answer key.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_ComputingAI', icon: '', label: '\uD83D\uDCBB Computing, AI & Digital Literacy', desc: '', color: 'slate', chip: 'engineering', palette: ['indigo', 'violet', 'cyan'], category: true },
+              { id: '_cat_ComputingAI', icon: '', label: t('stem.tools_menu.computing_ai_digital_literacy') || '\uD83D\uDCBB Computing, AI & Digital Literacy', desc: '', color: 'slate', chip: 'engineering', palette: ['indigo', 'violet', 'cyan'], category: true },
               {
-                id: 'codingPlayground', icon: '🖥️', label: 'Coding Playground',
-                desc: 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
+                id: 'codingPlayground', icon: '🖥️', label: t('stem.coding.coding_playground') || 'Coding Playground',
+                desc: t('stem.tools_menu.visual_block_coding_with_turtle_graphics') || 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
                 color: 'indigo', ready: true
               },
               {
-                id: 'trajectoryComputing', icon: '\uD83D\uDDA5\uFE0F', label: 'Trajectory Computing Lab',
-                desc: 'Calculate a flight path by hand, debug FORTRAN-style code, sequence punch cards, run a batch job, and independently verify the machine result.',
+                id: 'trajectoryComputing', icon: '\uD83D\uDDA5\uFE0F', label: t('stem.trajectorycomputing.trajectory_computing_lab') || 'Trajectory Computing Lab',
+                desc: t('stem.tools_menu.calculate_a_flight_path_by_hand') || 'Calculate a flight path by hand, debug FORTRAN-style code, sequence punch cards, run a batch job, and independently verify the machine result.',
                 aliases: ['human computers', 'FORTRAN', 'punch cards', 'coding history', 'trajectory'],
                 color: 'emerald', ready: true
               },
-              { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
-              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
-              { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
-              { id: 'cellularLab', icon: '🟩', label: 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
+              { id: 'gameStudio', icon: '🎮', label: t('stem.tools_menu.game_studio') || 'Game Studio', desc: t('stem.tools_menu.design_build_and_test_your_own') || 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
+              { id: 'appLab', icon: '\uD83D\uDCF1', label: t('stem.tools_menu.applab_ai_app_generator') || 'AppLab: AI App Generator', desc: t('stem.tools_menu.describe_what_you_want_and_ai') || 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
+              { id: 'logicLab', icon: '\uD83E\uDDE9', label: t('stem.logiclab.logic_lab') || 'Logic Lab', desc: t('stem.tools_menu.logic_gates_truth_tables_and_boolean') || 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
+              { id: 'cellularLab', icon: '🟩', label: t('stem.tools_menu.cellular_automaton_lab') || 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
               {
-                id: 'cyberDefense', icon: '\uD83D\uDEE1\uFE0F', label: 'Cyber Defense Lab',
-                desc: 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
+                id: 'cyberDefense', icon: '\uD83D\uDEE1\uFE0F', label: t('stem.tools_menu.cyber_defense_lab') || 'Cyber Defense Lab',
+                desc: t('stem.tools_menu.spot_phishing_emails_forge_strong_passwords') || 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
                 color: 'rose', ready: true
               },
               {
-                id: 'a11yAuditor', icon: '\u267F', label: 'Digital Accessibility Lab',
-                desc: 'Audit websites for WCAG 2.1 AA compliance. Learn how accessibility barriers affect people with disabilities and how to fix them.',
+                id: 'a11yAuditor', icon: '\u267F', label: t('stem.tools_menu.digital_accessibility_lab') || 'Digital Accessibility Lab',
+                desc: t('stem.tools_menu.audit_websites_for_wcag_2_1') || 'Audit websites for WCAG 2.1 AA compliance. Learn how accessibility barriers affect people with disabilities and how to fix them.',
                 color: 'teal', ready: true
               },
               {
-                id: 'llmLiteracy', icon: '🤖', label: 'AI Literacy Lab',
-                desc: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
+                id: 'llmLiteracy', icon: '🤖', label: t('stem.llm_literacy.ai_literacy_lab') || 'AI Literacy Lab',
+                desc: t('stem.tools_menu.how_llms_actually_work_when_they') || 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
                 color: 'violet', ready: true
               },
               {
-                id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
-                desc: 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
+                id: 'accessLens', icon: '\uD83D\uDCF7', label: t('stem.tools_menu.access_lens') || 'Access Lens',
+                desc: t('stem.tools_menu.point_your_camera_at_the_world') || 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
                 color: 'sky', ready: true
               },
               {
-                id: 'typingPractice', icon: '\u2328\uFE0F', label: 'Typing Practice',
-                desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
+                id: 'typingPractice', icon: '\u2328\uFE0F', label: t('stem.typingpractice.typing_practice_6') || 'Typing Practice',
+                desc: t('stem.tools_menu.disability_first_keyboarding_dyslexia_font_high') || 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
                 color: 'violet', ready: true
               },
               {
-                id: 'simShelf', icon: '🗄️', label: 'Sim Shelf',
-                desc: 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
+                id: 'simShelf', icon: '🗄️', label: t('stem.tools_menu.sim_shelf') || 'Sim Shelf',
+                desc: t('stem.tools_menu.sixteen_hand_picked_phet_simulations_university') || 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
                 color: 'amber', ready: true
               },
               {
-                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
-                desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
+                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: t('stem.tools_menu.zoom_gallery') || 'Zoom Gallery',
+                desc: t('stem.tools_menu.zoom_deep_into_real_openly_licensed') || 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
               },
               { id: '_cat_ArtsMusic', icon: '', label: t('stem.tools_menu.arts_music', 'Arts & Music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
@@ -5539,88 +5600,88 @@
               {
 
                 // @tool musicSynth
-                id: 'musicSynth', icon: '🎹', label: t('stem.tools_menu.music_synthesizer'),
+                id: 'musicSynth', icon: '🎹', label: t('stem.tools_menu.music_synthesizer') || 'Music Synthesizer',
 
-                desc: 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
+                desc: t('stem.tools_menu.play_a_piano_build_beats_and') || 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
 
                 color: 'violet', ready: true
 
               },
 
               {
-                id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio'),
-                desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
+                id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio') || 'Art & Design Studio',
+                desc: t('stem.tools_menu.explore_color_theory_mix_colors_draw') || 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
                 color: 'rose', ready: true
               },
               {
-                id: 'sourcebook', icon: '\u25A7', label: 'Sourcebook',
-                desc: 'Find open textures and visual assets for educational materials or artwork, with source and reuse information.',
+                id: 'sourcebook', icon: '\u25A7', label: t('stem.tools_menu.sourcebook') || 'Sourcebook',
+                desc: t('stem.tools_menu.find_open_textures_and_visual_assets') || 'Find open textures and visual assets for educational materials or artwork, with source and reuse information.',
                 color: 'teal', ready: true,
                 aliases: ['textures', 'visual assets', 'open images', 'contour maps', 'blueprints', 'wood grain', 'scientific diagrams', 'archival materials']
               },
               {
-                id: 'wheelAndFire', icon: '\uD83C\uDFFA', label: 'Wheel & Fire: Pottery Lab',
-                desc: 'Shape clay by wheel or hand, investigate wall and coil stability, control kiln heatwork, test fired performance, and compare pottery technologies in specific cultural contexts.',
+                id: 'wheelAndFire', icon: '\uD83C\uDFFA', label: t('stem.tools_menu.wheel_fire_pottery_lab') || 'Wheel & Fire: Pottery Lab',
+                desc: t('stem.tools_menu.shape_clay_by_wheel_or_hand') || 'Shape clay by wheel or hand, investigate wall and coil stability, control kiln heatwork, test fired performance, and compare pottery technologies in specific cultural contexts.',
                 color: 'amber', ready: true
               },
               {
-                id: 'freeForms', icon: '\uD83C\uDFDB\uFE0F', label: 'Free Forms',
-                desc: 'Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone\u2026) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.',
+                id: 'freeForms', icon: '\uD83C\uDFDB\uFE0F', label: t('stem.freeforms.title') || 'Free Forms',
+                desc: t('stem.tools_menu.build_your_own_world_of_forms') || 'Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone\u2026) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.',
                 color: 'violet', ready: true
               },
-              { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
-              { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
+              { id: 'singing', icon: '\uD83C\uDFB5', label: t('stem.tools_menu.voice_singing_lab') || 'Voice & Singing Lab', desc: t('stem.tools_menu.vocal_range_exploration_pitch_matching_breathing') || 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
+              { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: t('stem.tools_menu.oratory_speech_lab') || 'Oratory & Speech Lab', desc: t('stem.tools_menu.practice_public_speaking_with_real_time') || 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
               {
-                id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
-                desc: 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
+                id: 'echoTrainer', icon: '🎧', label: t('stem.tools_menu.echo_navigator') || 'Echo Navigator',
+                desc: t('stem.tools_menu.navigate_virtual_spaces_using_only_spatial') || 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
                 color: 'indigo', ready: true
               },
               {
-                id: 'worldBuilder', icon: '✍️', label: 'WriteCraft',
-                desc: 'Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose. Your eloquence IS your superpower.',
+                id: 'worldBuilder', icon: '✍️', label: t('stem.tools_menu.writecraft') || 'WriteCraft',
+                desc: t('stem.tools_menu.literary_rpg_explore_worlds_craft_items') || 'Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose. Your eloquence IS your superpower.',
                 color: 'violet', ready: true
               },
-              { id: '_cat_LearningBehavioral', icon: '', label: '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', palette: ['indigo', 'violet', 'rose'], category: true },
+              { id: '_cat_LearningBehavioral', icon: '', label: t('stem.tools_menu.learning_behavioral_science') || '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', palette: ['indigo', 'violet', 'rose'], category: true },
               {
-                id: 'behaviorLab', icon: '\uD83D\uDC2D', label: 'Behavior Shaping Lab',
-                desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
+                id: 'behaviorLab', icon: '\uD83D\uDC2D', label: t('stem.tools_menu.behavior_shaping_lab') || 'Behavior Shaping Lab',
+                desc: t('stem.tools_menu.train_a_virtual_mouse_using_operant') || 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
                 color: 'amber', ready: true
               },
               {
-                id: 'schoolBehaviorToolkit', icon: '\uD83C\uDFEB', label: 'School Behavior Toolkit',
-                desc: 'Applied K-12 behavior practice \u2014 what school psychs and educators actually do with the science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin\'s seven-phase Acting-Out Cycle, Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab.',
+                id: 'schoolBehaviorToolkit', icon: '\uD83C\uDFEB', label: t('stem.schoolbehaviortoolkit.school_behavior_toolkit') || 'School Behavior Toolkit',
+                desc: t('stem.tools_menu.applied_k_12_behavior_practice_what') || 'Applied K-12 behavior practice \u2014 what school psychs and educators actually do with the science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin\'s seven-phase Acting-Out Cycle, Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab.',
                 color: 'teal', ready: true
               },
               {
-                id: 'learningLab', icon: '🎓', label: 'Learning Lab: How Learning Works',
-                desc: 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
+                id: 'learningLab', icon: '🎓', label: t('stem.tools_menu.learning_lab_how_learning_works') || 'Learning Lab: How Learning Works',
+                desc: t('stem.tools_menu.bloom_s_taxonomy_udl_framework_metacognition') || 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
                 color: 'indigo', ready: true
               },
               {
-                id: 'consciousnessLab', icon: '💭', label: 'Consciousness Theory Lab',
-                desc: 'Compare scientific theories and philosophical views of consciousness through evidence, predictions, real cases, and thought experiments. Reading depth and knowledge checks adapt from K-2 through graduate study.',
+                id: 'consciousnessLab', icon: '💭', label: t('stem.tools_menu.consciousness_theory_lab') || 'Consciousness Theory Lab',
+                desc: t('stem.tools_menu.compare_scientific_theories_and_philosophical_views') || 'Compare scientific theories and philosophical views of consciousness through evidence, predictions, real cases, and thought experiments. Reading depth and knowledge checks adapt from K-2 through graduate study.',
                 color: 'violet', ready: true,
                 aliases: ['consciousness', 'mind', 'awareness', 'phenomenal consciousness', 'global workspace', 'integrated information']
               },
               {
-                id: 'assessmentLiteracy', icon: '📋', label: 'Assessment Literacy Lab',
-                desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
+                id: 'assessmentLiteracy', icon: '📋', label: t('stem.tools_menu.assessment_literacy_lab') || 'Assessment Literacy Lab',
+                desc: t('stem.tools_menu.how_cognitive_personality_career_and_employer') || 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
                 color: 'fuchsia', ready: true
               },
               {
-                id: 'lawNavigator', icon: '🏛️', label: 'Education Law Navigator',
-                desc: 'Read what special-education law actually says, in its own words. The real text of IDEA Part B and Section 504, fetched from eCFR and date-stamped, searchable, with federal and state rules side by side. Nothing is paraphrased or generated — if the official text is not loaded, the tool says so instead of guessing.',
+                id: 'lawNavigator', icon: '🏛️', label: t('stem.lawNav.title') || 'Education Law Navigator',
+                desc: t('stem.tools_menu.read_what_special_education_law_actually') || 'Read what special-education law actually says, in its own words. The real text of IDEA Part B and Section 504, fetched from eCFR and date-stamped, searchable, with federal and state rules side by side. Nothing is paraphrased or generated — if the official text is not loaded, the tool says so instead of guessing.',
                 color: 'indigo', ready: true
               },
               {
-                id: 'parentingLab', icon: '🫂', label: 'Science of Parenting Lab',
-                desc: 'What the parenting literature actually says — warmth and structure as two dials, with a strength-of-evidence badge on every claim (RCT-supported to popular-but-unsupported). Strengths-based and non-diagnostic. Sister tool to BehaviorLab and Learning Lab.',
+                id: 'parentingLab', icon: '🫂', label: t('stem.parentingLab.title') || 'Science of Parenting Lab',
+                desc: t('stem.tools_menu.what_the_parenting_literature_actually_says') || 'What the parenting literature actually says — warmth and structure as two dials, with a strength-of-evidence badge on every claim (RCT-supported to popular-but-unsupported). Strengths-based and non-diagnostic. Sister tool to BehaviorLab and Learning Lab.',
                 color: 'rose', ready: true
               },
-              { id: '_cat_LifeSkillsCareers', icon: '', label: '\uD83D\uDCB0 Life Skills, Careers & Economics', desc: '', color: 'slate', chip: 'applied', palette: ['emerald', 'amber', 'orange', 'cyan'], category: true },
+              { id: '_cat_LifeSkillsCareers', icon: '', label: t('stem.tools_menu.life_skills_careers_economics') || '\uD83D\uDCB0 Life Skills, Careers & Economics', desc: '', color: 'slate', chip: 'applied', palette: ['emerald', 'amber', 'orange', 'cyan'], category: true },
               {
-                id: 'economicsLab', icon: '💰', label: 'Economics Lab',
-                desc: 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
+                id: 'economicsLab', icon: '💰', label: t('stem.tools_menu.economics_lab') || 'Economics Lab',
+                desc: t('stem.tools_menu.supply_demand_curves_personal_finance_life') || 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
                 color: 'emerald', ready: true
               },
               {
@@ -5630,13 +5691,13 @@
                 // NOTE: no apostrophes in comments inside this array \u2014
                 // check_stem_tile_catalog scans it string-aware but comment-blind,
                 // so a lone quote in a comment desyncs its bracket matcher.
-                id: 'paperTrail', icon: '\uD83D\uDCC4', label: 'PaperTrail: Official Documents',
-                desc: 'Practice reading and completing the documents adult life runs on \u2014 job applications, W-4s, leases, medical intake, driver permits, and your own IEP meeting invitation. Every field decoded in plain language, the boxes that can cost you flagged, pressure scenarios for when someone wants you to sign now, and scripts for asking for time. All practice uses a made-up person, never your real information.',
+                id: 'paperTrail', icon: '\uD83D\uDCC4', label: t('stem.paperTrail.title') || 'PaperTrail: Official Documents',
+                desc: t('stem.tools_menu.practice_reading_and_completing_the_documents') || 'Practice reading and completing the documents adult life runs on \u2014 job applications, W-4s, leases, medical intake, driver permits, and your own IEP meeting invitation. Every field decoded in plain language, the boxes that can cost you flagged, pressure scenarios for when someone wants you to sign now, and scripts for asking for time. All practice uses a made-up person, never your real information.',
                 color: 'amber', ready: true
               },
               {
-                id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
-                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, resume building, portfolio proof organization, interview practice, communication skills, time management, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
+                id: 'lifeSkills', icon: '\uD83E\uDDED', label: t('stem.tools_menu.life_skills_lab') || 'Life Skills Lab',
+                desc: t('stem.tools_menu.tax_paycheck_calculator_data_literacy_decision') || 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, resume building, portfolio proof organization, interview practice, communication skills, time management, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
               {
@@ -5645,67 +5706,67 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'autoRepair', icon: '🔧', label: 'Auto Repair Shop',
-                desc: 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
+                id: 'autoRepair', icon: '🔧', label: t('stem.autorepair.auto_repair_shop') || 'Auto Repair Shop',
+                desc: t('stem.tools_menu.diagnose_fix_a_vehicle_obd_ii') || 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
                 color: 'slate', ready: true
               },
               {
-                id: 'weldLab', icon: '⚒️', label: 'WeldLab: Welding & Metal Joining',
-                desc: 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
+                id: 'weldLab', icon: '⚒️', label: t('stem.tools_menu.weldlab_welding_metal_joining') || 'WeldLab: Welding & Metal Joining',
+                desc: t('stem.tools_menu.mig_tig_stick_oxy_fuel_processes') || 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
                 color: 'orange', ready: true
               },
               {
-                id: 'bikeLab', icon: '🚲', label: 'BikeLab: Physics & Repair',
-                desc: '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
+                id: 'bikeLab', icon: '🚲', label: t('stem.tools_menu.bikelab_physics_repair') || 'BikeLab: Physics & Repair',
+                desc: t('stem.tools_menu.2d_side_view_physics_sandbox_force') || '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
                 aliases: ['gears', 'gear ratio', 'mechanical advantage'], color: 'amber', ready: true
               },
 
               {
-                id: 'flightSim', icon: '✈️', label: 'SkySchool',
-                desc: 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports with real physics.',
+                id: 'flightSim', icon: '✈️', label: t('stem.tools_menu.skyschool') || 'SkySchool',
+                desc: t('stem.tools_menu.educational_flight_simulator_learn_aerodynamics_navigation') || 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports with real physics.',
                 color: 'sky', ready: true
               },
               {
-                id: 'atcTower', icon: '🗼', label: 'ATC Tower',
-                desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
+                id: 'atcTower', icon: '🗼', label: t('stem.tools_menu.atc_tower') || 'ATC Tower',
+                desc: t('stem.tools_menu.air_traffic_control_simulator_manage_approaching') || 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
                 color: 'emerald', ready: true
               },
               {
-                id: 'fisherLab', icon: '🎣', label: 'FisherLab: Boating & Fishing Sim',
-                desc: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn IALA-B buoyage (red-right-returning), COLREGS rules of the road, charts, tides, and weather while fishing for cod, haddock, pollock, striper, and pulling lobster traps. Full 3D three.js sim with Maine-default DMR regs and a region toggle.',
+                id: 'fisherLab', icon: '🎣', label: t('stem.tools_menu.fisherlab_boating_fishing_sim') || 'FisherLab: Boating & Fishing Sim',
+                desc: t('stem.tools_menu.pilot_a_maine_skiff_from_portland') || 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn IALA-B buoyage (red-right-returning), COLREGS rules of the road, charts, tides, and weather while fishing for cod, haddock, pollock, striper, and pulling lobster traps. Full 3D three.js sim with Maine-default DMR regs and a region toggle.',
                 color: 'cyan', ready: true
               },
               {
-                id: 'aquacultureLab', icon: '🦪', label: 'AquacultureLab: Mussel Farm Sim',
-                desc: 'Run a Maine shellfish farm. Pilot your skiff out to a Bagaduce River lease, deploy seeded longlines, monitor water quality (DO, salinity, pH, temp, chlorophyll-a), harvest mussels and oysters, navigate weather and tides. Full 3D three.js sim teaching boating navigation alongside aquaculture fundamentals.',
+                id: 'aquacultureLab', icon: '🦪', label: t('stem.tools_menu.aquaculturelab_mussel_farm_sim') || 'AquacultureLab: Mussel Farm Sim',
+                desc: t('stem.tools_menu.run_a_maine_shellfish_farm_pilot') || 'Run a Maine shellfish farm. Pilot your skiff out to a Bagaduce River lease, deploy seeded longlines, monitor water quality (DO, salinity, pH, temp, chlorophyll-a), harvest mussels and oysters, navigate weather and tides. Full 3D three.js sim teaching boating navigation alongside aquaculture fundamentals.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_SportsMovement', icon: '', label: '\uD83C\uDFC5 Sports & Movement Science', desc: '', color: 'slate', chip: 'applied', palette: ['orange', 'cyan', 'emerald'], category: true },
+              { id: '_cat_SportsMovement', icon: '', label: t('stem.tools_menu.sports_movement_science') || '\uD83C\uDFC5 Sports & Movement Science', desc: '', color: 'slate', chip: 'applied', palette: ['orange', 'cyan', 'emerald'], category: true },
               {
-                id: 'throwlab', icon: '⚾', label: 'ThrowLab: Sports Physics',
-                desc: 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
+                id: 'throwlab', icon: '⚾', label: t('stem.tools_menu.throwlab_sports_physics') || 'ThrowLab: Sports Physics',
+                desc: t('stem.tools_menu.pitcher_s_mound_dial_spin_speed') || 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
                 color: 'amber', ready: true
               },
               {
-                id: 'skatelab', icon: '🛹', label: 'SkateLab: Skate + BMX Physics',
-                desc: 'The physics that lands a 720: kickflips, halfpipe pumps, gap jumps. Energy conservation + angular momentum, made for kids who learn through tricks.',
+                id: 'skatelab', icon: '🛹', label: t('stem.tools_menu.skatelab_skate_bmx_physics') || 'SkateLab: Skate + BMX Physics',
+                desc: t('stem.tools_menu.the_physics_that_lands_a_720') || 'The physics that lands a 720: kickflips, halfpipe pumps, gap jumps. Energy conservation + angular momentum, made for kids who learn through tricks.',
                 color: 'amber', ready: true
               },
               {
-                id: 'playlab', icon: '🏈', label: 'PlayLab: Strategy on the Field',
-                desc: 'Football + soccer play design: drag-to-place routes, animated simulation, Coach Mode coverage analysis, drills + saved plays. Built for athletic kids.',
+                id: 'playlab', icon: '🏈', label: t('stem.tools_menu.playlab_strategy_on_the_field') || 'PlayLab: Strategy on the Field',
+                desc: t('stem.tools_menu.football_soccer_play_design_drag_to') || 'Football + soccer play design: drag-to-place routes, animated simulation, Coach Mode coverage analysis, drills + saved plays. Built for athletic kids.',
                 color: 'lime', ready: true
               },
               {
-                id: 'swimLab', icon: '🏊', label: 'SwimLab',
-                desc: 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Educational only — find a Water Safety Instructor for actual swim training.',
+                id: 'swimLab', icon: '🏊', label: t('stem.tools_menu.swimlab') || 'SwimLab',
+                desc: t('stem.tools_menu.how_swimming_works_stroke_physics_survival') || 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Educational only — find a Water Safety Instructor for actual swim training.',
                 color: 'cyan', ready: true
               },
-              { id: '_cat_Strategy', icon: '', label: '\u2694\uFE0F Strategy Games', desc: '', color: 'slate', chip: 'strategy', palette: ['violet', 'indigo'], category: true },
-              { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
-              { id: 'spaceColony', label: 'Kepler Colony', icon: '🛖', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
-              { id: 'spaceExplorer', label: 'Space Explorer', icon: '🛸', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
-              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
+              { id: '_cat_Strategy', icon: '', label: t('stem.tools_menu.strategy_games') || '\u2694\uFE0F Strategy Games', desc: '', color: 'slate', chip: 'strategy', palette: ['violet', 'indigo'], category: true },
+              { id: 'arccity', icon: '🌆', label: t('arccity.title') || 'Arc City', desc: t('stem.tools_menu.author_functions_re_light_a_neon') || 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
+              { id: 'spaceColony', label: t('stem.tools_menu.kepler_colony') || 'Kepler Colony', icon: '🛖', desc: t('stem.tools_menu.colonize_an_alien_planet_turn_based') || 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+              { id: 'spaceExplorer', label: t('stem.allobotsage.space_explorer') || 'Space Explorer', icon: '🛸', desc: t('stem.tools_menu.roguelike_missions_across_the_solar_system') || 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
+              { id: 'alloBotSage', label: t('stem.allobotsage.allobot_starbound_sage') || 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: t('stem.tools_menu.cozy_sci_fi_roguelite_allobot_s') || 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
 
             // Category palettes are the visual source of truth. Cycling a small
@@ -5863,13 +5924,13 @@
             }
             // Category filter (from chip buttons)
             var _categoryFilterOptions = [
-              { id: '', label: 'All', icon: '\u2B50' },
-              { id: 'science', label: 'Science', icon: '\uD83E\uDDEA' },
-              { id: 'math', label: 'Math', icon: '\uD83D\uDCCA' },
-              { id: 'engineering', label: 'Engineering', icon: '\u2699\uFE0F' },
-              { id: 'creative', label: 'Creative', icon: '\uD83C\uDFA8' },
-              { id: 'applied', label: 'Applied', icon: '\uD83D\uDE80' },
-              { id: 'strategy', label: 'Games', icon: '\uD83C\uDFAE' }
+              { id: '', label: t('stem.tools_menu.all') || 'All', icon: '\u2B50' },
+              { id: 'science', label: t('stem.tools_menu.science') || 'Science', icon: '\uD83E\uDDEA' },
+              { id: 'math', label: t('stem.tools_menu.math') || 'Math', icon: '\uD83D\uDCCA' },
+              { id: 'engineering', label: t('stem.tools_menu.engineering') || 'Engineering', icon: '\u2699\uFE0F' },
+              { id: 'creative', label: t('stem.tools_menu.creative') || 'Creative', icon: '\uD83C\uDFA8' },
+              { id: 'applied', label: t('stem.tools_menu.applied') || 'Applied', icon: '\uD83D\uDE80' },
+              { id: 'strategy', label: t('stem.tools_menu.games') || 'Games', icon: '\uD83C\uDFAE' }
             ];
             function _categoryFilterLabel(id) {
               var found = _categoryFilterOptions.find(function (cat) { return cat.id === id; });
@@ -6018,19 +6079,19 @@
               return Math.min(27, verified);
             };
             var _atlasEntries = [
-              { id: 'birdLab', icon: '🪶', label: 'BirdLab Life List',
+              { id: 'birdLab', icon: '🪶', label: t('stem.tools_menu.birdlab_life_list') || 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
                 slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
                 count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
-              { id: 'petsLab', icon: '🐾', label: 'PetsLab Decoder',
+              { id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.petslab_decoder') || 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
                 count: function () { return _countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')); } },
-              { id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+              { id: 'opticsLab', icon: '🔆', label: t('stem.tools_menu.opticslab_ap') || 'OpticsLab AP',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
                 count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
-              { id: 'statsLab', icon: '📊', label: 'StatsLab AP',
+              { id: 'statsLab', icon: '📊', label: t('stem.tools_menu.statslab_ap') || 'StatsLab AP',
                 color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
                 slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
                 count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
@@ -6038,35 +6099,35 @@
                 color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
                 slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
                 count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
-              { id: 'renewablesLab', icon: '☀️', label: 'Energy Mastery',
+              { id: 'renewablesLab', icon: '☀️', label: t('stem.renewables.energy_mastery') || 'Energy Mastery',
                 color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
                 slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
                 count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
-              { id: 'firstResponse', icon: '🚑', label: 'Responder Mastery',
+              { id: 'firstResponse', icon: '🚑', label: t('stem.firstresponse.responder_mastery') || 'Responder Mastery',
                 color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
                 slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
                 count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
-              { id: 'throwlab', icon: '⚾', label: 'Pitch Locker',
+              { id: 'throwlab', icon: '⚾', label: t('stem.throwlab.pitch_locker') || 'Pitch Locker',
                 color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
                 slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
                 count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
-              { id: 'playlab', icon: '🏈', label: 'Play Catalog',
+              { id: 'playlab', icon: '🏈', label: t('stem.playlab.play_catalog') || 'Play Catalog',
                 color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
                 slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
                 count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
-              { id: 'roadReady', icon: '🚗', label: 'Permit Mastery',
+              { id: 'roadReady', icon: '🚗', label: t('stem.roadready.permit_mastery') || 'Permit Mastery',
                 color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
                 slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
                 count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
-              { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
+              { id: 'assessmentLiteracy', icon: '🔍', label: t('stem.tools_menu.junk_science') || 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
                 count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } },
-              { id: 'fisherLab', icon: '🎣', label: 'Fisher Life Log',
+              { id: 'fisherLab', icon: '🎣', label: t('stem.tools_menu.fisher_life_log') || 'Fisher Life Log',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowFisherLab', lsKey: 'fisherLab.state.v1', total: 8,
                 count: function () { var s = _readSlot('__alloflowFisherLab', 'fisherLab.state.v1'); if (!s) return 0; var caught = s.speciesCaught || {}; return Object.keys(caught).length; } },
-              { id: 'aquacultureLab', icon: '🦪', label: 'Farm Log',
+              { id: 'aquacultureLab', icon: '🦪', label: t('stem.tools_menu.farm_log') || 'Farm Log',
                 color: '#14b8a6', accent: 'rgba(20,184,166,0.15)',
                 slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
                 count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0; } }
@@ -6610,7 +6671,7 @@
                         });
                         autoQuests = autoQuests.concat(hookQuests.slice(0, 3));
                         // Add a reflection
-                        autoQuests.push({ type: 'freeResponse', toolId: null, label: 'What did you learn?', params: { prompt: 'What was the most interesting thing you discovered today?', minLength: 30 } });
+                        autoQuests.push({ type: 'freeResponse', toolId: null, label: t('stem.tools_menu.what_did_you_learn') || 'What did you learn?', params: { prompt: 'What was the most interesting thing you discovered today?', minLength: 30 } });
                         _setStationQuests(autoQuests);
                         if (addToast) addToast('\uD83E\uDD16 Smart quests generated! ' + autoQuests.length + ' quests based on your tools.', 'success');
                       },
@@ -6619,28 +6680,28 @@
                   })(),
                   React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
                     [
-                      { name: 'Quick Explore', icon: '\uD83D\uDC63', desc: 'XP + time in each tool', quests: function() {
+                      { name: 'Quick Explore', icon: '\uD83D\uDC63', desc: t('stem.tools_menu.xp_time_in_each_tool') || 'XP + time in each tool', quests: function() {
                         var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                         return tools.slice(0, 3).map(function(tid) {
                           return { type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 30 }), params: { threshold: 30 } };
                         }).concat([{ type: 'timeSpent', toolId: tools[0] || null, label: _questAutoLabel('timeSpent', tools[0] || null, { minutes: 3 }), params: { minutes: 3 } }]);
                       }},
-                      { name: 'Deep Dive', icon: '\uD83D\uDD2C', desc: 'XP + quiz + reflection', quests: function() {
+                      { name: 'Deep Dive', icon: '\uD83D\uDD2C', desc: t('stem.tools_menu.xp_quiz_reflection') || 'XP + quiz + reflection', quests: function() {
                         var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                         var t0 = tools[0] || null;
                         return [
                           { type: 'xpThreshold', toolId: t0, label: _questAutoLabel('xpThreshold', t0, { threshold: 75 }), params: { threshold: 75 } },
                           { type: 'timeSpent', toolId: t0, label: _questAutoLabel('timeSpent', t0, { minutes: 8 }), params: { minutes: 8 } },
-                          { type: 'freeResponse', toolId: null, label: 'What was the most important thing you learned?', params: { prompt: 'What was the most important thing you learned and why?', minLength: 50 } }
+                          { type: 'freeResponse', toolId: null, label: t('stem.tools_menu.what_was_the_most_important_thing') || 'What was the most important thing you learned?', params: { prompt: 'What was the most important thing you learned and why?', minLength: 50 } }
                         ];
                       }},
-                      { name: 'Research Report', icon: '\uD83D\uDCDD', desc: 'Explore + document', quests: function() {
+                      { name: 'Research Report', icon: '\uD83D\uDCDD', desc: t('stem.tools_menu.explore_document') || 'Explore + document', quests: function() {
                         var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                         return tools.slice(0, 2).map(function(tid) {
                           return { type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 50 }), params: { threshold: 50 } };
                         }).concat([
-                          { type: 'freeResponse', toolId: null, label: 'Compare what you learned from each tool', params: { prompt: 'Compare what you learned from each tool. How do they connect?', minLength: 80 } },
-                          { type: 'freeResponse', toolId: null, label: 'Write a question you still have', params: { prompt: 'Write a question you still have after exploring.', minLength: 20 } }
+                          { type: 'freeResponse', toolId: null, label: t('stem.tools_menu.compare_what_you_learned_from_each') || 'Compare what you learned from each tool', params: { prompt: 'Compare what you learned from each tool. How do they connect?', minLength: 80 } },
+                          { type: 'freeResponse', toolId: null, label: t('stem.tools_menu.write_a_question_you_still_have') || 'Write a question you still have', params: { prompt: 'Write a question you still have after exploring.', minLength: 20 } }
                         ]);
                       }}
                     ].map(function(preset) {
@@ -7631,6 +7692,12 @@
             },
             renderTutorial: typeof renderTutorial === 'function' ? renderTutorial : function() { return null; },
             _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : [],
+            // companionplanting reads ctx._tutCompanionPlanting; it was never passed, so
+            // its tour resolved to [] and auto-marked itself seen without ever showing.
+            _tutCompanionPlanting: typeof _tutCompanionPlanting !== 'undefined' ? _tutCompanionPlanting : [],
+            _tutCalculus: typeof _tutCalculus !== 'undefined' ? _tutCalculus : [],
+            _tutPhysics: typeof _tutPhysics !== 'undefined' ? _tutPhysics : [],
+            _tutCoding: typeof _tutCoding !== 'undefined' ? _tutCoding : [],
             beep: typeof stemBeep === 'function' ? stemBeep : function() {},
             callTTS: typeof callTTS === 'function' ? function stemSpeakTTS(text, voice, speed, opts) {
               // Header mute button is the master gate. Tools can pass { force: true }

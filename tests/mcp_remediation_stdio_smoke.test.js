@@ -4,13 +4,17 @@
 // argument validation fires before the driver is touched, and the missing-key
 // gate fires before any browser work — both pinned below, because they are the
 // properties that keep a misconfigured client from spending quota or hanging.
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+
+// The outer test deadline must exceed the 20-second IPC deadline below.
+// Windows file verification and child startup can exceed Vitest's 5-second default.
+vi.setConfig({ testTimeout: 30000 });
 
 const requireCjs = createRequire(import.meta.url);
 
@@ -148,7 +152,7 @@ describe('remediation MCP: protocol + tool registry', () => {
   it('lists exactly the registered tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
-      'apply_form_fields', 'audit_html', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields',
+      'apply_form_fields', 'audit_html', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields', 'document_narrate_start', 'document_narration_preflight', 'document_narration_voices',
       'export_accessible_office', 'export_alt_format',
       'extract_document_text', 'fix_contrast', 'generate_conformance_report', 'generate_resource_pack',
       'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_remediate',
@@ -156,7 +160,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',
       'pdf_validate_ua',
       'redact_document',
-      'remediation_agent_cancel', 'remediation_agent_requests', 'remediation_agent_respond',
+      'remediation_agent_cancel', 'remediation_agent_requests', 'remediation_agent_respond', 'remediation_agent_respond_batch', 'remediation_agent_resume', 'remediation_agent_runs',
       'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_diagnostics', 'remediation_job_result', 'remediation_job_status',
       'remediation_selftest', 'remediation_setup', 'remediation_verify_key',
       'simplify_accessible_html', 'transcribe_media', 'translate_accessible_html',
@@ -193,7 +197,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(pendingItem.promptTotalChars.type).toBe('number');
     expect(pendingItem.promptNextOffset.type).toEqual(['number', 'null']);
     expect(agentRequests.outputSchema.properties.omittedImages.type).toBe('array');
-    expect(tools.find((t) => t.name === 'remediation_agent_respond').inputSchema.properties.text.maxLength).toBe(8000000);
+    expect(tools.find((t) => t.name === 'remediation_agent_respond').inputSchema.properties.text.maxLength).toBe(3000000);
 
     // OCR input uses the same fail-closed language contract as the remote MCP. The JSON Schema
     // must not advertise legacy Tesseract codes which the runtime rejects.
@@ -238,14 +242,14 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.geminiRequiredToolNames).toContain('pdf_remediate');
     expect(cap.geminiRequiredToolNames).not.toContain('pdf_validate_ua');
     expect(cap.keylessToolNames).toContain('generate_resource_pack');
-    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(35);
+    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(41);
     // The agent-bridge lane is keyless by construction — the client's model is the engine —
     // and its description-level honesty (prompts surface to the client) rides the note field.
     expect(cap.keylessToolNames).toContain('pdf_remediate_agent_start');
     expect(cap.dataHandling.offlineToolNames).toContain('remediation_agent_requests');
-    expect(cap.dataHandling.note).toMatch(/agent-bridge tools .* surface document-derived prompts to the MCP CLIENT/i);
+    expect(cap.dataHandling.note).toMatch(/tools surface document-derived prompts to the MCP CLIENT/i);
     expect(cap.dataHandling.publicDependencyDownloadToolNames.sort()).toEqual([
-      'export_accessible_office', 'export_alt_format', 'remediation_setup',
+      'document_narrate_start', 'export_accessible_office', 'export_alt_format', 'pdf_remediate_agent_start', 'remediation_agent_resume', 'remediation_setup',
     ]);
     expect(cap.dataHandling.offlineToolNames).toContain('redact_document');
     expect(cap.dataHandling.offlineToolNames).toContain('remediation_selftest');
@@ -258,8 +262,8 @@ describe('remediation MCP: protocol + tool registry', () => {
       cap.dataHandling.credentialCheckToolNames,
       cap.dataHandling.geminiDocumentEgressToolNames,
     ];
-    expect(new Set(privacyGroups.flat()).size).toBe(35);
-    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(35); // disjoint, not merely exhaustive
+    expect(new Set(privacyGroups.flat()).size).toBe(41);
+    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(41); // disjoint, not merely exhaustive
     // A key check contacts Gemini but sends no document content, so it must be in
     // neither the offline list nor the document-egress list.
     expect(cap.dataHandling.credentialCheckToolNames).toEqual(['remediation_verify_key']);
@@ -350,7 +354,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     const staged = join(tmp, 'clean-mcpb-layout');
     built.stageBundle(staged);
     const manifest = JSON.parse(readFileSync(join(staged, 'manifest.json'), 'utf8'));
-    expect(manifest.tools).toHaveLength(35);
+    expect(manifest.tools).toHaveLength(41);
     expect(readFileSync(join(staged, 'server', 'vendor', 'manifest.json'), 'utf8')).toContain('"schema": 1');
     expect(readFileSync(join(staged, 'server', 'vendor', 'THIRD_PARTY_NOTICES.md'), 'utf8')).toMatch(/axe-core/i);
 
@@ -391,7 +395,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'clean-stage', version: '1' } });
       expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
       const listed = await rpc(2, 'tools/list', {});
-      expect(listed.result.tools).toHaveLength(35);
+      expect(listed.result.tools).toHaveLength(41);
       const capabilities = await rpc(3, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
       const cleanCap = capabilities.result.structuredContent;
       expect(cleanCap.vendorAssets.present).toBe(true);
@@ -815,7 +819,7 @@ describe('remediation MCP: folder triage (pdf_batch_audit_start)', () => {
     writeFileSync(join(emptyDir, 'x-tagged.pdf'), '%PDF-1.4\n%%EOF\n'); // our own output — must not count as input
     const empty = await request('tools/call', { name: 'pdf_batch_audit_start', arguments: { dir_path: emptyDir } });
     expect(empty.error.code).toBe(-32602);
-    expect(empty.error.message).toContain('No .pdf files found');
+    expect(empty.error.message).toContain('No supported document files found');
 
     // A real folder, but no key → in-band error naming the key, and still no job minted.
     const res = await callTool('pdf_batch_audit_start', { dir_path: tmp });
@@ -960,7 +964,7 @@ describe('remediation MCP: job tools (no key, no browser — lifecycle edges onl
     writeFileSync(join(batchDir, 'already-tagged.pdf'.replace('already-', 'x-')), '%PDF-1.4\n%%EOF\n'); // x-tagged.pdf → excluded as our own output
     const msg = await request('tools/call', { name: 'pdf_batch_remediate_start', arguments: { dir_path: batchDir } });
     expect(msg.error.code).toBe(-32602);
-    expect(msg.error.message).toContain('No .pdf files found');
+    expect(msg.error.message).toContain('No supported document files found');
   });
 
   it('status / result / cancel of an unknown job id → honest in-band not-found (not a protocol error)', async () => {

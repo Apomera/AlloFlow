@@ -83,7 +83,7 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
 describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
   it('crust stays the default scene and its generator is unchanged (registry is behavior-preserving)', () => {
     expect(P.sceneId()).toBe('crust');
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision']);
     P.setScene('crust');
     expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
@@ -121,7 +121,7 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
 
 describe('Geology Explorer — Deep Earth scene (radial structure + honest geotherm)', () => {
   it('is registered as a third scene without disturbing the crust default', () => {
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision']);
     expect(P.sceneId()).toBe('crust');                       // still the default after beforeEach
   });
 
@@ -287,7 +287,7 @@ describe('Geology Explorer — first-person explorer (grounded mining + Deep Ear
   });
 
   it('chooses grounded mining for surface scenes and flight only for radial Deep Earth', () => {
-    ['crust', 'geode', 'subduction', 'ridge', 'hotspot'].forEach((sceneId) => {
+    ['crust', 'geode', 'subduction', 'ridge', 'hotspot', 'collision'].forEach((sceneId) => {
       expect(P.fpExplorerMode(sceneId)).toBe('mine');
     });
     expect(P.fpExplorerMode('deepEarth')).toBe('fly');
@@ -402,7 +402,7 @@ describe('Geology Explorer — directional core rig', () => {
     const depths = P.coreRigDepths(); depths.push(99);
     expect(P.coreRigAngles().vertical).toBe(90);
     expect(P.coreRigDepths()).toEqual([6, 9, 12]);
-    ['crust', 'geode', 'subduction', 'ridge', 'hotspot'].forEach((sceneId) => expect(P.coreRigSupported(sceneId)).toBe(true));
+    ['crust', 'geode', 'subduction', 'ridge', 'hotspot', 'collision'].forEach((sceneId) => expect(P.coreRigSupported(sceneId)).toBe(true));
     expect(P.coreRigSupported('deepEarth')).toBe(false);
   });
 
@@ -1222,7 +1222,7 @@ describe('Geology Explorer — directional core rig', () => {
 
 describe('Geology Explorer — Subduction zone scene (convergent margin + thermal anomaly)', () => {
   it('is registered as a fourth scene and leaves crust the default', () => {
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision']);
     expect(P.sceneId()).toBe('crust');
   });
 
@@ -1490,12 +1490,12 @@ describe('Geology Explorer — Field Runs gameplay loop', () => {
     expect(entries.find((entry) => entry.key === 'agate').discovered).toBe(false);
 
     const empty = P.fieldJournalSummary({});
-    expect(empty).toMatchObject({ found: 0, percent: 0, scenesComplete: 0, sceneTotal: 6 });
+    expect(empty).toMatchObject({ found: 0, percent: 0, scenesComplete: 0, sceneTotal: 7 });
     expect(empty.total).toBeGreaterThan(0);
 
     const completeBook = {};
     for (const id of P.scenes()) completeBook[id] = P.fieldCollectibleKeys(id);
-    expect(P.fieldJournalSummary(completeBook)).toMatchObject({ found: empty.total, total: empty.total, percent: 100, scenesComplete: 6, sceneTotal: 6 });
+    expect(P.fieldJournalSummary(completeBook)).toMatchObject({ found: empty.total, total: empty.total, percent: 100, scenesComplete: 7, sceneTotal: 7 });
   });
 
   it('starts either chosen assignment and retires it without losing completed-run history', () => {

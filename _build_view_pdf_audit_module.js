@@ -34,7 +34,7 @@ const entry = `
 ${source}
 `;
 
-fs.writeFileSync(TMP, entry, 'utf-8');
+writeBuildFile(TMP, entry, 'utf-8');
 
 console.log('[ViewPdfAudit] Compiling with esbuild...');
 try {
@@ -99,17 +99,23 @@ window.AlloModules.AltFormatExports = {
   plainText: _altFmtHtmlToPlainText,
   validateEpub: validateEpubStructure,
 };
+// Shared narration semantics for the app and the MCP adapter.
+window.AlloModules.DocumentNarrationExports = {
+  naturalText: _audioReadyText, accessibleText: _srStyleTextFromHtml,
+  sanitize: _viewSanitizeMarkupForExport, concat: _concatAudioBlobs,
+  epubAudio: _epubCoreAudioBlob, smil: _buildMoSmil, opf: _buildMoOpf,
+};
 window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+writeBuildFile(OUTPUT, outputCode, 'utf-8');
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
         fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    writeBuildFile(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
     console.warn('[ViewPdfAudit] Could not sync to desktop/web-app/public/:', e.message);
 }
@@ -125,3 +131,31 @@ try {
 const lineCount = outputCode.split('\n').length;
 console.log('[ViewPdfAudit] Built ' + OUTPUT + ' (' + lineCount + ' lines)');
 console.log('[ViewPdfAudit] Synced to ' + DEPLOY_OUT);
+
+// Tree-shaken pure narration helpers: preflight needs no React or network libraries.
+const textEntry = path.join(ROOT, '_tmp_narration_text.jsx');
+const textOutput = path.join(ROOT, 'document_narration_text_module.js');
+try {
+    const ast=require('@babel/parser').parse(source,{sourceType:'script',plugins:['jsx']});
+    const declarations=new Map();
+    for(const node of ast.program.body) {
+        if(node.type==='FunctionDeclaration' && node.id)declarations.set(node.id.name,node);
+        if(node.type==='VariableDeclaration')for(const declaration of node.declarations)if(declaration.id.type==='Identifier')declarations.set(declaration.id.name,node);
+    }
+    const needed=new Set();
+    const collect=name=>{const node=declarations.get(name);if(!node||needed.has(node))return;needed.add(node);const walk=value=>{if(!value||typeof value!=='object')return;if(value.type==='Identifier'&&declarations.has(value.name))collect(value.name);for(const [key,child] of Object.entries(value))if(key!=='loc'&&key!=='comments')if(Array.isArray(child))child.forEach(walk);else if(child&&typeof child==='object')walk(child);};walk(node);};
+    ['_audioReadyText','_srStyleTextFromHtml','_viewSanitizeMarkupForExport'].forEach(collect);
+    const helperSource=[...needed].sort((a,b)=>a.start-b.start).map(node=>source.slice(node.start,node.end)).join('\n');
+    writeBuildFile(textEntry, helperSource + '\nexport { _audioReadyText as naturalText, _srStyleTextFromHtml as accessibleText, _viewSanitizeMarkupForExport as sanitize };\n');
+    require('esbuild').buildSync({entryPoints:[textEntry],outfile:textOutput,bundle:true,format:'iife',globalName:'AlloNarrationText',treeShaking:true,jsxFactory:'React.createElement',jsxFragment:'React.Fragment',target:'es2020'});
+    const deployed = path.join(ROOT, 'desktop/web-app/public/document_narration_text_module.js');
+    fs.copyFileSync(textOutput,deployed+'.edit-tmp');fs.renameSync(deployed+'.edit-tmp',deployed);
+    console.log('[ViewPdfAudit] Built offline narration helpers');
+} finally {try{fs.unlinkSync(textEntry);}catch(_){}}
+
+// Keep the previous generated module intact if a synced-folder write fails.
+function writeBuildFile(file,contents,encoding) {
+  const temporary=file+'.build-'+process.pid+'.tmp';
+  try { fs.writeFileSync(temporary,contents,encoding); fs.renameSync(temporary,file); }
+  finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+}

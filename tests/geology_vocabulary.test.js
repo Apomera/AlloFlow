@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('Geology Explorer vocabulary bridge', () => {
   it('provides three observation-linked terms for every scene', () => {
     const vocabulary = P.vocabulary();
-    expect(Object.keys(vocabulary)).toHaveLength(6);
+    expect(Object.keys(vocabulary)).toHaveLength(P.scenes().length);
     for (const [scene, entries] of Object.entries(vocabulary)) {
       expect(entries, scene).toHaveLength(3);
       entries.forEach((entry) => {

@@ -148,6 +148,9 @@ describe('agent-bridge remediation (client-model transport, keyless)', () => {
     // The honesty surfaces are intact, not bypassed by the transport swap.
     expect(result.verdict && result.verdict.level).toBeTruthy();
     expect(result.verificationHtmlBound).toBe(true);
+    expect(result.contentCoverage).toMatchObject({status:'matched',reviewRequired:false,missingTokens:0});
+    expect(result.contentCoverage.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(result.contentCoverage.htmlSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(result.activeContentScanVerified).toBe(true);
     expect(typeof result.afterScore).toBe('number');
     // Real artifacts on disk: tagged PDF bytes start with %PDF-, report parses.

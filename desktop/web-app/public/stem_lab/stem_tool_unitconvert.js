@@ -365,6 +365,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       { id: 'streak_5', label: 'Reach a 5-answer streak', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
     ],
     render: function(ctx) {
+      // The tab strip and the word-problem header sit on the HOST surface -
+      // white in light and dark, pure BLACK in the contrast theme, where the
+      // inactive tabs measured 2.77:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -430,6 +435,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             : { valid: true, message: '' };
         var result = temperatureCheck.valid ? convert(conversionValue, d.fromUnit, d.toUnit) : NaN;
         var fmtResult = Number.isFinite(result) ? fmt(result) : '—';
+        var predictionEligible = d.category !== 'temperature' && temperatureCheck.valid && conversionValue >= 0 && Number.isFinite(result);
+        var predictionSignature = JSON.stringify([d.category, conversionValue, d.fromUnit, d.toUnit]);
+        var predictingConversion = !!d.predictBeforeConvert && predictionEligible;
+        var predictionChoice = d.conversionPredictionSignature === predictionSignature ? d.conversionPrediction : null;
+        var hideConversionResult = predictingConversion && d.conversionRevealSignature !== predictionSignature;
+        var predictionDirection = conversionValue === 0 || cat.units[d.fromUnit] === cat.units[d.toUnit] ? 'same' : cat.units[d.fromUnit] > cat.units[d.toUnit] ? 'larger' : 'smaller';
+        var predictionLabels = { larger: t('stem.unitconvert.predict_larger', 'Larger'), smaller: t('stem.unitconvert.predict_smaller', 'Smaller'), same: t('stem.unitconvert.predict_same', 'The same') };
+        function predictionExplanation() {
+          if (conversionValue === 0) return t('stem.unitconvert.predict_zero_reason', 'Zero stays zero when changing between these units.');
+          if (cat.units[d.fromUnit] === cat.units[d.toUnit]) return t('stem.unitconvert.predict_same_reason', 'These units have the same size, so the numerical value stays the same.');
+          return cat.units[d.toUnit] < cat.units[d.fromUnit]
+            ? t('stem.unitconvert.predict_smaller_unit_reason', 'The new unit is smaller. More of those units are needed to name the same quantity, so the number is larger.')
+            : t('stem.unitconvert.predict_larger_unit_reason', 'The new unit is larger. Fewer of those units are needed to name the same quantity, so the number is smaller.');
+        }
         var temperatureReasoning = d.category === 'temperature' && temperatureCheck.valid
           ? describeTemperatureConversion(conversionValue, d.fromUnit, d.toUnit)
           : null;
@@ -892,12 +911,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   ),
                   h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.unitconvert.unit_converter', '\uD83D\uDCCF Unit Converter')),
                   h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-teal-100' }, 'Preserve the quantity while changing its unit, and verify every step through dimensional reasoning.'),
-                  h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-teal-200' }, 'Recommended next move'),
-                    h('p', { className: 'mt-1 text-sm font-semibold text-white' }, unitNext)
-                  )
+                  h('p', { className: 'mt-2 text-sm text-white' }, unitNext)
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
                   [
                     { label: 'Focus', value: tabLabel },
                     { label: 'Category', value: cat.label },
@@ -910,7 +926,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   })
                 )
               ),
-              h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Unit conversion reasoning pathway' },
+              h('details', { className: 'mt-3 text-white' }, h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.unitconvert.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Unit conversion reasoning pathway' },
                 [
                   { n: '1', title: 'Select', detail: 'Name the given and target units.' },
                   { n: '2', title: 'Convert', detail: 'Apply a factor equal to one.' },
@@ -921,7 +937,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-teal-200' }, step.detail))
                   );
                 })
-              )
+              ))
             )
           ),
 
@@ -999,12 +1015,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem'], ['magHunt', '\u2699\uFE0F Magnitude']].map(function(item, idx) {
               return h('button', { key: item[0],
                 id: 'stem-unitconvert-tab-' + item[0],
+                style: { color: ctx.isContrast ? '#00ff00' : undefined },
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
                 'aria-controls': 'stem-unitconvert-panel-' + item[0],
                 tabIndex: tab === item[0] ? 0 : -1,
                 onKeyDown: function(e) { unitConvertTabKeyDown(e, idx); },
-                className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'transition-colors text-slate-600 hover:text-slate-700'),
+                className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : ('transition-colors text-slate-600 hover:text-slate-700' + onHostInk)),
                 title: (idx + 1) + ' key'
               }, item[1]);
             })
@@ -1045,6 +1062,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // ═══ TAB: CONVERT ═══
           tab === 'convert' && h('div', { key: 'convert' },
+            h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 mb-3', 'aria-label': t('stem.unitconvert.prediction_activity', 'Conversion prediction') },
+              h('label', { className: 'flex gap-2 items-center text-sm font-bold text-cyan-900' },
+                h('input', { type: 'checkbox', checked: !!d.predictBeforeConvert, onChange: function(e) { upd({ predictBeforeConvert: e.target.checked, conversionRevealSignature: null, conversionPredictionSignature: null }); } }),
+                t('stem.unitconvert.predict_before_converting', 'Predict before revealing the result')),
+              d.predictBeforeConvert && !predictionEligible && h('p', { className: 'mt-2 text-sm text-slate-700' }, t('stem.unitconvert.predict_supported_quantities', 'Choose a valid nonnegative quantity outside the temperature category to compare unit sizes.')),
+              predictingConversion && h('div', { className: 'mt-3 space-y-3' },
+                h('p', { className: 'text-sm text-slate-800' }, t('stem.unitconvert.predict_question', 'Will the numerical value become larger, smaller, or stay the same? Think about the size of one unit.')),
+                h('div', { role: 'group', 'aria-label': t('stem.unitconvert.your_prediction', 'Your prediction'), className: 'flex flex-wrap gap-2' }, ['larger','smaller','same'].map(function(choice) {
+                  return h('button', { key: choice, type: 'button', disabled: !hideConversionResult, 'aria-pressed': predictionChoice === choice, onClick: function() { upd({ conversionPredictionSignature: predictionSignature, conversionPrediction: choice }); }, className: 'rounded-lg border border-cyan-700 px-3 py-2 text-sm font-bold ' + (predictionChoice === choice ? 'bg-cyan-800 text-white' : 'bg-white text-cyan-900') }, predictionLabels[choice]);
+                })),
+                hideConversionResult && h('button', { type: 'button', disabled: !predictionChoice, onClick: function() { upd('conversionRevealSignature', predictionSignature); }, className: 'rounded-lg bg-cyan-800 text-white px-3 py-2 text-sm font-bold disabled:opacity-50' }, t('stem.unitconvert.check_prediction', 'Compare with my prediction')),
+                !hideConversionResult && h('p', { role: 'status', className: 'rounded-lg border border-cyan-300 bg-white p-3 text-sm text-slate-800' }, (predictionChoice === predictionDirection ? t('stem.unitconvert.prediction_matches', 'Your prediction matches. ') : t('stem.unitconvert.prediction_revisit', 'Revisit your prediction. ')) + predictionExplanation())
+              )
+            ),
 
             h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-6 shadow-sm' },
 
@@ -1061,12 +1092,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     onChange: function(e) { updateConversionValueDraft(e.target.value); },
                     onBlur: reportConversionValueError,
                     onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
+                    style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight',
                     step: '0.01'
                   }),
                   h('select', {
                     'aria-label': t('stem.unitconvert.from_unit', 'From unit'), value: d.fromUnit,
                     onChange: function(e) { upd('fromUnit', e.target.value); },
+                    style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
                     className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
                   }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
                 ),
@@ -1091,13 +1124,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     role: 'status',
                     'aria-live': 'polite',
                     'aria-atomic': 'true',
-                    'aria-label': temperatureCheck.valid ? 'Converted result: ' + fmtResult + ' ' + d.toUnit : temperatureCheck.message,
+                    'aria-label': hideConversionResult ? t('stem.unitconvert.result_waiting', 'Result hidden while you predict') : temperatureCheck.valid ? 'Converted result: ' + fmtResult + ' ' + d.toUnit : temperatureCheck.message,
                     className: 'text-2xl font-black text-cyan-700 py-1 tracking-tight',
                     style: { animation: 'ucResultPop 0.3s ease-out' }
-                  }, fmtResult),
+                  }, hideConversionResult ? '?' : fmtResult),
                   h('select', {
                     'aria-label': t('stem.unitconvert.to_unit', 'To unit'), value: d.toUnit,
                     onChange: function(e) { upd('toUnit', e.target.value); },
+                    style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
                     className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
                   }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
                 )
@@ -1111,7 +1145,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               // Formula + display precision
               h('div', { className: 'mt-3 flex flex-wrap items-center justify-center gap-3 rounded-lg bg-slate-50 p-2' },
-                h('span', { className: 'text-[11px] font-mono text-slate-600' }, '📊 ' + getFormula()),
+                h('span', { className: 'text-[11px] font-mono text-slate-600' }, hideConversionResult ? t('stem.unitconvert.formula_after_prediction', 'The equation will appear after you compare your prediction.') : '📊 ' + getFormula()),
                 h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-slate-600' },
                   t('stem.unitconvert.display_precision', 'Display:'),
                   h('select', {
@@ -1130,7 +1164,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               // \u2500\u2500 Dimensional-analysis cancellation card \u2500\u2500
               // Shows the canonical chem/physics technique: multiply by (1 toUnit / N fromUnit)
               // and watch the fromUnit cancel. Skipped for temperature (additive offset).
-              d.category !== 'temperature' && temperatureCheck.valid && (function() {
+              !hideConversionResult && d.category !== 'temperature' && temperatureCheck.valid && (function() {
                 var fF = cat.units[d.fromUnit] || 1;
                 var tF = cat.units[d.toUnit] || 1;
                 if (fF === tF) return null;
@@ -1197,9 +1231,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               // Save / Pin / AI buttons
               h('div', { className: 'flex justify-center gap-2 mt-3' },
                 h('button', { 'aria-label': t('stem.unitconvert.save', 'Save'),
-                  disabled: !temperatureCheck.valid,
+                  disabled: !temperatureCheck.valid || hideConversionResult,
                   onClick: function() {
-                    if (!temperatureCheck.valid) return;
+                    if (!temperatureCheck.valid || hideConversionResult) return;
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
                     var newSaveCount = historySaveCount + 1;
                     setLabToolData(function(prev) {
@@ -1231,31 +1265,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             ),
 
-            // Visual comparison bars (non-temperature)
-            d.category !== 'temperature' && temperatureCheck.valid && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.visual_comparison', '\uD83D\uDCCA Visual Comparison')),
-              (function() {
-                var fF = cat.units[d.fromUnit] || 1;
-                var tF = cat.units[d.toUnit] || 1;
-                var ratio = fF / tF;
-                var rawFrom = 100, rawTo = Math.min(Math.max(rawFrom * (1 / ratio), 5), 300);
-                var maxV = Math.max(rawFrom, rawTo);
-                var normF = rawFrom / maxV * 100, normT = rawTo / maxV * 100;
-                return h('div', { className: 'space-y-2' },
-                  h('div', null,
-                    h('p', { className: 'text-[11px] font-bold text-cyan-800 mb-1' }, d.value + ' ' + d.fromUnit),
-                    h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(normF), 'aria-label': 'From value: ' + d.value + ' ' + d.fromUnit, className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
+            // The representation conserves quantity: changing units never changes its length.
+            !hideConversionResult && d.category !== 'temperature' && temperatureCheck.valid && h('figure', { className: 'mt-3 bg-slate-50 rounded-xl border p-3', 'data-unit-equality-model': true },
+              h('figcaption', { className: 'text-sm font-bold text-slate-800 mb-3', style: { color: isContrast ? '#ffffff' : '#1e293b' } }, t('stem.unitconvert.same_quantity', 'Same quantity; different units')),
+              h('div', { role: 'img', 'aria-label': d.value + ' ' + d.fromUnit + ' = ' + fmtResult + ' ' + d.toUnit, className: 'space-y-3' },
+                [d.value + ' ' + d.fromUnit, fmtResult + ' ' + d.toUnit].map(function(label, index) {
+                  return h('div', { key: index },
+                    h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, label),
+                    h('div', { style: { height: 28, border: '2px solid #475569', borderRadius: 4, background: '#ffffff', overflow: 'hidden' } },
+                      h('div', { 'data-equal-quantity-bar': index, style: { height: '100%', width: Number(d.value) === 0 ? '0%' : '100%', background: index ? '#4338ca' : '#0e7490', backgroundImage: 'repeating-linear-gradient(90deg,transparent,transparent calc(10% - 1px),#ffffff calc(10% - 1px),#ffffff 10%)' } })
                     )
-                  ),
-                  h('div', null,
-                    h('p', { className: 'text-[11px] font-bold text-indigo-600 mb-1' }, fmtResult + ' ' + d.toUnit),
-                    h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(normT), 'aria-label': 'Converted to: ' + fmtResult + ' ' + d.toUnit, className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
-                    )
-                  )
-                );
-              })()
+                  );
+                })
+              ),
+              h('p', { className: 'text-sm text-slate-700 mt-2' }, Number(d.value) === 0 ? t('stem.unitconvert.zero_quantity', 'Zero in either unit: neither bar is filled.') : t('stem.unitconvert.equal_length_explanation', 'Both bars represent the same quantity. The unit changes how we name it, not how much there is. Divisions show equal tenths of that quantity.'))
             ),
 
             // Temperature thermometer visual
@@ -1287,7 +1310,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Real-world reference
-            refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
+            !hideConversionResult && refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
               h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
@@ -1341,7 +1364,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Conversion history
-            d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+            !hideConversionResult && d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '\uD83D\uDCDD History')),
                 h('button', { 'aria-label': t('stem.unitconvert.clear', 'Clear'), onClick: function() { upd('history', []); }, className: 'transition-colors text-[11px] text-red-400 hover:text-red-600 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
@@ -1517,9 +1540,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'flex items-center justify-between gap-3 mb-3' },
               h('div', null,
-                h('p', { className: 'text-sm font-bold text-slate-700' },
+                h('p', { className: 'text-sm font-bold text-slate-700' + onHostInk },
                   t('stem.unitconvert.practice_before_reveal', 'Practice first, then reveal')),
-                h('p', { className: 'text-xs text-slate-600 mt-0.5' },
+                h('p', { className: 'text-xs text-slate-600 mt-0.5' + onHostInk },
                   t('stem.unitconvert.word_problem_flow_description', 'Try the conversion, request up to two hints, and reveal the worked answer only when you choose.'))
               ),
               h('button', {

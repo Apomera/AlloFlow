@@ -147,6 +147,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     if (!Object.values(capabilities.pipelineModulesPresent || {}).every(Boolean)) throw new Error('Extracted artifact is missing remediation pipeline modules');
     if (!capabilities.keylessModeAvailable) throw new Error('Extracted artifact did not expose keyless mode');
     if (options.requirePlaywright && !capabilities.playwrightAvailable) throw new Error('Distribution artifact does not contain a resolvable Playwright runtime');
+    if(options.requirePlaywright && (!capabilities.narration?.epubVerification?.epubcheck?.installed || !capabilities.narration?.epubVerification?.ace?.installed))throw new Error('Distribution artifact is missing its EPUB verification runtimes');
     return {
       bundle,
       version: manifest.version,

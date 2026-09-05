@@ -54,7 +54,11 @@ describe('AlloBot friendly-copy translation contract', () => {
       expect(value.trim(), name).not.toBe('');
       expect(value, name).not.toContain('AlloBot');
     }
-  }, 30_000);
+  // Reads ui_strings.js, its mirror, and 63 locale packs plus their mirrors:
+  // about 35s of disk I/O on a synced OneDrive tree. At 30s it reported a
+  // timeout instead of the mismatch it exists to find. Budget the I/O so a
+  // failure names the file.
+  }, 180_000);
 
   it('keeps English authoring, translation memory, handoffs, and staleness hash aligned', () => {
     const englishSource = readJson(resolve(I18N, 'stem_allobotsage_en.json'));

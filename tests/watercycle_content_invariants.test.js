@@ -107,9 +107,16 @@ describe('waterCycle — option shuffle defeats position bias', () => {
 });
 
 describe('waterCycle — data colors are concrete', () => {
-  it('uses no var(--allo-stem-*) strings (canvas fillStyle and parseInt cannot read them)', () => {
+  it('keeps CSS variables in the stylesheet, outside canvas and data colors', () => {
     const src = fs.readFileSync(SRC_PATH, 'utf8');
-    expect((src.match(/var\(--allo-stem/g) || []).length).toBe(0);
+    // CSS custom properties are valid in the stylesheet (including contrast-theme
+    // fixes), but canvas fillStyle and numeric color parsing cannot resolve them.
+    const start = src.indexOf('    st.textContent = [');
+    const end = src.indexOf("    ].join('');", start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const runtime = src.slice(0, start) + src.slice(end);
+    expect((runtime.match(/var\(--allo-stem/g) || []).length).toBe(0);
   });
 
   it('routes every quiz construction site through the shuffle', () => {

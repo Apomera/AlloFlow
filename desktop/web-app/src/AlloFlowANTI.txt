@@ -1585,16 +1585,27 @@ function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount =
 // mailbox poll and the WebRTC channel feed the same store, and `applied`
 // dedups the double delivery (channel-fast copy + mailbox replay copy).
 function _alloCollectResChunk(store, v) {
-    if (!v || v.kind !== 'res' || !v.rid || !(v.part >= 1) || !(v.of >= 1)) return null;
+    if (!store || !v || v.kind !== 'res' || typeof v.rid !== 'string' || !v.rid
+        || !Number.isSafeInteger(v.part) || !Number.isSafeInteger(v.of)
+        || v.part < 1 || v.of < 1 || v.part > v.of || typeof v.data !== 'string') return null;
     if (store.applied && store.applied.has(v.rid)) return null;
-    const slots = store.parts || (store.parts = {});
-    const slot = slots[v.rid] || (slots[v.rid] = { of: v.of, got: {} });
-    slot.got[v.part] = String(v.data || '');
-    if (Object.keys(slot.got).length < slot.of) return null;
-    const assembled = Array.from({ length: slot.of }, (_, i) => slot.got[i + 1] || '').join('');
+    const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+    const slots = store.parts || (store.parts = Object.create(null));
+    if (!own(slots, v.rid)) Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null) }, enumerable: true, configurable: true });
+    const slot = slots[v.rid];
+    // Replayed chunks may be identical, but cannot change the declared size
+    // or replace a part already received through the other delivery channel.
+    if (slot.of !== v.of || (own(slot.got, v.part) && slot.got[v.part] !== v.data)) return null;
+    slot.got[v.part] = v.data;
+    if (Object.keys(slot.got).length !== slot.of) return null;
+    const parts = [];
+    for (let part = 1; part <= slot.of; part += 1) {
+        if (!own(slot.got, part)) return null;
+        parts.push(slot.got[part]);
+    }
     delete slots[v.rid];
     if (store.applied) store.applied.add(v.rid);
-    return assembled;
+    return parts.join('');
 }
 // Non-trickle ICE: over slow mailbox signaling, one complete SDP each way
 // beats dribbling candidates through 2.5s polls.
@@ -2753,6 +2764,32 @@ const __alloPushLog = (level, args) => {
 };
 const debugLog = (...args) => { __alloPushLog('debug', args); if (DEBUG_LOG) console.log(...args); };
 const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args); };
+// BEGIN ALLO_LIFECYCLE_DIAGNOSTICS
+// Window scope survives another execution of this bundle; instance IDs survive effect
+// replay. Only effects are called mounts: abandoned renders may leave harmless ID gaps.
+const _alloLifecycleState = (() => {
+  const prior = typeof window !== 'undefined' && window.__alloLifecycleDiagnostics;
+  if (prior && prior.version === 1) return prior;
+  const state = { version: 1, realmId: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), nextId: 0, sequence: 0, events: [], roots: new WeakMap() };
+  if (typeof window !== 'undefined') window.__alloLifecycleDiagnostics = state;
+  return state;
+})();
+const _alloLifecycleNextId = (kind) => kind + '-' + (++_alloLifecycleState.nextId);
+const _alloLifecycleBundleId = _alloLifecycleNextId('bundle');
+const _alloLifecycleRecord = (event, detail = {}) => {
+  try {
+    const entry = { ...detail, event, bundleId: _alloLifecycleBundleId, realmId: _alloLifecycleState.realmId,
+      sequence: ++_alloLifecycleState.sequence, at: Date.now(),
+      build: typeof window !== 'undefined' && window.__alloBuildStamp ? window.__alloBuildStamp.hash : null,
+      hidden: typeof document !== 'undefined' ? document.hidden : null };
+    _alloLifecycleState.events.push(entry);
+    if (_alloLifecycleState.events.length > 200) _alloLifecycleState.events.splice(0, _alloLifecycleState.events.length - 200);
+    __alloPushLog('info', ['[Lifecycle]', entry]);
+    console.info('[Lifecycle]', JSON.stringify(entry));
+  } catch (_) {} // Diagnostics must never interfere with mounting or an audit.
+};
+_alloLifecycleRecord('bundle executed');
+// END ALLO_LIFECYCLE_DIAGNOSTICS
 // Activating a STEM tool is not the same as loading it: the plugin lives on the CDN
 // and only __alloEnsureStemPluginLoaded requests it. Every entry point that sets the
 // active tool routes through here, so a tool opened from the command palette, a hub
@@ -2927,7 +2964,7 @@ const quizAnswerMatches = (option, key) => {
   return a !== '' && a === b;
 };
 window.quizAnswerMatches = quizAnswerMatches;
-const STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
+
 const STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
 const STYLE_TEXT_SHADOW_WHITE = { textShadow: '0 2px 4px rgba(255,255,255,1)' };
 const STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
@@ -3047,11 +3084,20 @@ const TEACHER_ONLY_TYPES = [
 // resource with an id — teacher-only types included, merely hidden
 // client-side — while the mailbox pack excluded them entirely. All channels
 // now share this rule (module-backed, inline fallback identical).
+const _alloProjectStudentActivityResource = (item) => {
+    const view = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.BrainstormView;
+    return view && typeof view.projectStudentActivityResource === 'function' ? view.projectStudentActivityResource(item) : null;
+};
 const _alloStudentSafeResources = (items) => {
     const ST = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
-    if (ST && typeof ST.studentSafeResources === 'function') return ST.studentSafeResources(items, TEACHER_ONLY_TYPES);
-    return (Array.isArray(items) ? items : []).filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type));
+    if (ST && typeof ST.studentSafeResources === 'function') return ST.studentSafeResources(items, TEACHER_ONLY_TYPES, _alloProjectStudentActivityResource);
+    return (Array.isArray(items) ? items : []).map(item => {
+        if (!item || !item.id || !item.type) return null;
+        if (item.type === 'brainstorm') return _alloProjectStudentActivityResource(item);
+        return TEACHER_ONLY_TYPES.includes(item.type) ? null : item;
+    }).filter(Boolean);
 };
+const _alloIsStudentSafeResource = (item) => _alloStudentSafeResources([item]).length > 0;
 // ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
 // Backward-compatible: directions.data is a legacy markdown STRING or
 // { body, objectives[] }. One normalizer for every reader; one pure evaluator
@@ -4826,19 +4872,27 @@ const CDNModuleGate = (function () {
     React.useEffect(function () {
       if (!isOpen) return undefined;
       if (resolve()) return undefined;
+      var refresh = function () { setTick(function (v) { return v + 1; }); };
+      if (props.loaderName) {
+        window.addEventListener('alloflow:module-registry-changed', refresh);
+        try { window[props.loaderName]?.(); } catch (_) {}
+      }
       var id = setInterval(function () {
         if (resolve()) {
           setTick(function (v) { return v + 1; });
           clearInterval(id);
         }
       }, 200);
-      return function () { clearInterval(id); };
-    }, [isOpen, moduleKey, !!Mod]);
+      return function () { clearInterval(id); window.removeEventListener('alloflow:module-registry-changed', refresh); };
+    }, [isOpen, moduleKey, props.loaderName, !!Mod]);
 
     if (!isOpen) return null;
     if (Mod) return typeof children === 'function' ? children(Mod) : (children || null);
 
+    var failed = !!props.loaderName && window.__alloModuleRegistry?.[String(moduleKey).split('.')[0]]?.status === 'failed';
+    var retryButton = failed ? <button type="button" onClick={() => { try { window[props.loaderName]?.(); } catch (_) {} }} className="mt-4 min-h-11 px-4 py-2 bg-indigo-700 text-white font-bold rounded-lg text-sm">{tr(t, 'common.retry', null, 'Retry loading')}</button> : null;
     var loadingLabel = tr(t, 'common.loading_module', { name: displayName }, 'Loading ' + displayName + '...');
+    if (failed) loadingLabel = displayName + ' could not load. Your work is preserved.';
     var hintLabel = (hintVariant === 'short')
       ? tr(t, 'common.cdn_loading_hint_short', null, 'Module loading from CDN.')
       : tr(t, 'common.cdn_loading_hint_long', null, 'Module loading from CDN. If this persists, check your connection.');
@@ -4852,7 +4906,7 @@ const CDNModuleGate = (function () {
             <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-xl">{icon}</div>
           </div>
           <p className="text-sm font-bold text-slate-700">{loadingLabel}</p>
-          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>
+          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>{retryButton}
         </div>
       );
     }
@@ -4866,7 +4920,7 @@ const CDNModuleGate = (function () {
             <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">{icon}</div>
           </div>
           <p className="text-lg font-bold text-slate-700">{loadingLabel}</p>
-          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>
+          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>{retryButton}
           {onClose && <button onClick={onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
         </div>
       </div>
@@ -7918,6 +7972,128 @@ const buildPublishedResourceFingerprintMap = ({ resources, publishedIds, getFing
     });
     return Object.fromEntries(entries);
 };
+// Bounded recovery for one current lesson snapshot. The host serializes writes.
+// Share pending downloads across roster snapshots; only the newest snapshot applies them.
+// Listener errors terminate snapshot delivery; retain the retry budget across reattachments.
+function createLiveSessionConnectionRecovery({ stateRef, sessionKey, onState, reconnect }) {
+  if (stateRef.current?.sessionKey !== sessionKey) stateRef.current = { sessionKey, attempt: 0, blocked: false };
+  let disposed = false, failed = false, requested = false, timer = null, connected = false;
+  const clear = () => { if (timer !== null) clearTimeout(timer); timer = null; };
+  const report = status => {
+    stateRef.current.status = status;
+    onState({ status, attempt: stateRef.current.attempt, code: stateRef.current.code || '' });
+  };
+  const attach = () => {
+    if (disposed || requested) return;
+    requested = true;
+    clear();
+    report('connecting');
+    reconnect();
+  };
+  report('connecting');
+  return {
+    connected() {
+      if (disposed || failed || connected) return;
+      connected = true;
+      clear();
+      Object.assign(stateRef.current, { attempt: 0, blocked: false, code: '' });
+      report('connected');
+    },
+    fail(error) {
+      if (disposed || failed) return;
+      failed = true;
+      clear();
+      const code = String(error?.code || 'unknown').replace(/^firestore\//, '');
+      const retryable = ['unavailable', 'deadline-exceeded', 'aborted', 'internal', 'unknown', 'resource-exhausted'].includes(code);
+      const attempt = stateRef.current.attempt + 1;
+      Object.assign(stateRef.current, { attempt, blocked: !retryable, code });
+      const delays = [2000, 5000, 10000];
+      report(code === 'permission-denied' || code === 'unauthenticated' ? 'access-required' : retryable && attempt <= delays.length ? 'retrying' : 'failed');
+      if (retryable && attempt <= delays.length) timer = setTimeout(attach, delays[attempt - 1]);
+    },
+    retry(automatic = false) {
+      if (disposed || requested || (automatic && stateRef.current.blocked)) return;
+      Object.assign(stateRef.current, { attempt: 0, blocked: false, code: '' });
+      attach();
+    },
+    dispose() { disposed = true; clear(); }
+  };
+}
+
+function createLiveSessionHydrationCoordinator({ attemptsRef, onSourceChange = () => {}, maxAttempts = 3 }) {
+    let active = true, revision = 0, source = '';
+    const pending = new Map();
+    return {
+        beginSnapshot() { const token = ++revision; return () => active && token === revision; },
+        load(signature, fetchResources) {
+            if (source !== signature) { source = signature; onSourceChange(); }
+            if (pending.has(signature)) return pending.get(signature);
+            const prior = attemptsRef.current || {};
+            const count = prior.signature === signature ? prior.count : 0;
+            if (count >= maxAttempts) {
+                return { attempt: count, exhausted: true, promise: Promise.reject(new Error('Resource download retry limit reached')) };
+            }
+            const attempt = count + 1;
+            attemptsRef.current = { signature, count: attempt };
+            const assertCurrentSource = () => {
+                if (!active || source !== signature) { const error = new Error('Resource download superseded'); error.name = 'AbortError'; throw error; }
+            };
+            const task = { attempt, promise: null };
+            task.promise = Promise.resolve().then(() => { assertCurrentSource(); return fetchResources(assertCurrentSource); }).finally(() => {
+                if (pending.get(signature) === task) pending.delete(signature);
+            });
+            pending.set(signature, task);
+            return task;
+        },
+        dispose() { active = false; revision += 1; pending.clear(); },
+    };
+}
+function createLiveSessionRetryController({ publish, onError = () => {}, onRetry = () => {}, eventTarget = window, initialDelay = 1500, retryDelays = [2000, 5000, 10000] }) {
+    let disposed = false, running = false, timer = null, retries = 0, wakePending = false;
+    const schedule = delay => {
+        if (disposed) return;
+        if (timer !== null) clearTimeout(timer);
+        timer = setTimeout(run, delay);
+    };
+    const retryNow = () => {
+        if (disposed) return;
+        retries = 0;
+        if (running) { wakePending = true; return; }
+        schedule(300);
+    };
+    async function run() {
+        timer = null;
+        if (disposed || running) return;
+        running = true;
+        let failed = false;
+        try {
+            const result = await publish();
+            failed = !!(result && (result.failed > 0 || result.referencePublished === false));
+        } catch (error) {
+            failed = error?.name !== 'AbortError';
+            if (!disposed && failed) onError(error);
+        } finally {
+            running = false;
+            if (disposed) return;
+            if (wakePending) { wakePending = false; schedule(300); }
+            else if (failed && retries < retryDelays.length) {
+                const delay = retryDelays[retries++];
+                onRetry({ attempt: retries, delay });
+                schedule(delay);
+            } else if (!failed) retries = 0;
+        }
+    }
+    const onPageShow = event => { if (event?.persisted) retryNow(); };
+    eventTarget?.addEventListener('online', retryNow);
+    eventTarget?.addEventListener('pageshow', onPageShow);
+    schedule(initialDelay);
+    return { retryNow, dispose() {
+        disposed = true;
+        if (timer !== null) clearTimeout(timer);
+        eventTarget?.removeEventListener('online', retryNow);
+        eventTarget?.removeEventListener('pageshow', onPageShow);
+    } };
+}
 const enqueueLiveSessionResourcePublish = ({ queues, sessionKey, publish } = {}) => {
     const safeQueues = queues && typeof queues === 'object' && !Array.isArray(queues) ? queues : null;
     const safeSessionKey = String(sessionKey || '');
@@ -9523,7 +9699,7 @@ const writeToSession = async (sessionRef, payload) => {
   if (Array.isArray(payload.resources)) {
     const prepared = prepareSessionResourcesForWrite(payload.resources);
     safePayload = { ...payload, resources: prepared.resources };
-    _alloSessionSyncTrace('sync:resources-prepared', { kept: prepared.keptCount, of: prepared.originalCount, dropped: prepared.droppedCount, bytes: prepared.byteLength, overLimit: prepared.overLimit });
+    _alloSessionSyncTrace('sync:resources-prepared', { sessionPath: sessionRef.path, kept: prepared.keptCount, of: prepared.originalCount, dropped: prepared.droppedCount, bytes: prepared.byteLength, overLimit: prepared.overLimit });
     if (prepared.droppedCount > 0 || prepared.overLimit) {
       warnLog(
         `[Session Sync] Resource payload trimmed: kept ${prepared.keptCount}/${prepared.originalCount}, ${prepared.byteLength}/${prepared.maxBytes} bytes.`
@@ -9557,7 +9733,7 @@ const writeToSession = async (sessionRef, payload) => {
   }
   if (Object.prototype.hasOwnProperty.call(safePayload, 'hostPresence')
       && !validLiveHostPresenceValue(safePayload.hostPresence)) {
-    _alloSessionSyncTrace('sync:REFUSED-invalid-host-presence', null);
+    _alloSessionSyncTrace('sync:REFUSED-invalid-host-presence', { sessionPath: sessionRef.path });
     return Promise.reject(new Error('writeToSession: invalid host presence lease'));
   }
   const organizerProgressPaths = Object.keys(safePayload).filter(path => String(path).split('.').pop() === 'organizerProgress');
@@ -9566,7 +9742,7 @@ const writeToSession = async (sessionRef, payload) => {
     for (const path of organizerProgressPaths) {
       const normalizedProgress = normalizeLiveOrganizerProgress(nextPayload[path]);
       if (!normalizedProgress) {
-        _alloSessionSyncTrace('sync:REFUSED-invalid-organizer-progress', { path });
+        _alloSessionSyncTrace('sync:REFUSED-invalid-organizer-progress', { sessionPath: sessionRef.path, path });
         return Promise.reject(new Error('writeToSession: invalid organizer progress receipt'));
       }
       nextPayload[path] = normalizedProgress;
@@ -9579,7 +9755,7 @@ const writeToSession = async (sessionRef, payload) => {
     for (const path of activityProgressPaths) {
       const normalizedProgress = normalizeLiveActivityProgress(nextPayload[path]);
       if (!normalizedProgress) {
-        _alloSessionSyncTrace('sync:REFUSED-invalid-activity-progress', { path });
+        _alloSessionSyncTrace('sync:REFUSED-invalid-activity-progress', { sessionPath: sessionRef.path, path });
         return Promise.reject(new Error('writeToSession: invalid live activity progress receipt'));
       }
       nextPayload[path] = normalizedProgress;
@@ -9636,12 +9812,12 @@ const writeToSession = async (sessionRef, payload) => {
       '[AlloFlow Privacy] Refusing Tier-2 sync to session doc. Fields:', violations,
       '\nKeep this data local-only, add the field to SESSION_TIER1_LEAVES with justification, or use a WebRTC peer channel.'
     );
-    _alloSessionSyncTrace('sync:REFUSED-tier2', { fields: violations });
+    _alloSessionSyncTrace('sync:REFUSED-tier2', { sessionPath: sessionRef.path, fields: violations });
     return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
   }
   return updateDoc(sessionRef, safePayload).then(
-    (result) => { _alloSessionSyncTrace('sync:write-ok', { keys: Object.keys(safePayload).slice(0, 12) }); return result; },
-    (error) => { _alloSessionSyncTrace('sync:write-failed', { keys: Object.keys(safePayload).slice(0, 12), error: String((error && error.message) || error).substring(0, 120) }); throw error; }
+    (result) => { _alloSessionSyncTrace('sync:write-ok', { sessionPath: sessionRef.path, keys: Object.keys(safePayload).slice(0, 12) }); return result; },
+    (error) => { _alloSessionSyncTrace('sync:write-failed', { sessionPath: sessionRef.path, keys: Object.keys(safePayload).slice(0, 12), error: String((error && error.message) || error).substring(0, 120) }); throw error; }
   );
 };
 if (typeof window !== 'undefined') {
@@ -10964,6 +11140,8 @@ const AlloFlowContent = () => {
   const lastAdventureSyncRevisionRef = useRef({ sessionKey: '', revision: 0 });
   const liveResourceHydrationAttemptsRef = useRef({ signature: '', count: 0 });
   const liveResourceHydrationRetryTimerRef = useRef(null);
+  const liveSessionConnectionAttemptsRef = useRef(null);
+  const liveSessionConnectionRecoveryRef = useRef(null);
   const isBotSpeakingRef = useRef(false);
   const isPlayingRef = useRef(false);
   const isSystemAudioActiveRef = useRef(false);
@@ -11388,9 +11566,10 @@ const AlloFlowContent = () => {
     setGuidedDeliveryEvidence(prev => prev?.[key] ? prev : { ...(prev || {}), [key]: true });
   };
   const completeGuidedDelivery = (key) => {
-    if (!guidedMode) return;
+    if (!guidedMode || !GUIDED_DELIVERY_EVIDENCE_KEYS.includes(key)) return;
     markGuidedDeliveryEvidence(key);
-    if (guidedActiveSteps[guidedStep]?.id === 'package-deliver') markGuidedStepDone('package-deliver');
+    const delivered = ['exportCreated', 'shareCreated', 'liveStarted'].includes(key);
+    if (delivered && guidedActiveSteps[guidedStep]?.id === 'package-deliver') markGuidedStepDone('package-deliver');
   };
   const toggleGuidedStepId = (id) => {
     if (id === 'source-input' || id === 'directions' || id === 'package-deliver' || id === '_final') return; // source, directions, delivery, and final recap are required milestones
@@ -11643,42 +11822,61 @@ const AlloFlowContent = () => {
   useEffect(() => {
     let timer = null;
     let hideTimer = null;
+    let retryTimer = null;
+    let disposed = false;
+    let refreshQueued = false;
+    let published = { pending: [], failed: [], queued: [] };
+    const publish = (snapshot) => {
+      if (disposed) return;
+      const unchanged = ['pending', 'failed', 'queued'].every((key) =>
+        published[key].length === snapshot[key].length
+        && published[key].every((name, index) => name === snapshot[key][index]));
+      if (unchanged) return;
+      published = snapshot;
+      setModuleLoadInfo(snapshot);
+    };
     const refresh = () => {
+      if (disposed) return;
       try {
         if (typeof window.__alloModuleSnapshot === 'function') {
           const snapshot = window.__alloModuleSnapshot();
-          // The pump loads one background script at a time with a short idle
-          // gap between them, so pending drops to 0 for a few hundred ms after
-          // every module. Publish busy states immediately, but hold the last
-          // busy state briefly before clearing so the pill stays up through
-          // the gaps instead of strobing once per module.
-          const busy = snapshot.pending.length > 0 || snapshot.failed.length > 0;
+          // Poll only while work remains. Registry events wake settled loaders;
+          // identical snapshots never schedule a render of the entire shell.
+          const loading = snapshot.pending.length > 0 || snapshot.queued.length > 0;
+          if (loading && !timer) timer = setInterval(refresh, 2000);
+          if (!loading && timer) { clearInterval(timer); timer = null; }
+          const busy = loading || snapshot.failed.length > 0;
           if (busy) {
             if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-            setModuleLoadInfo(snapshot);
+            publish(snapshot);
           } else if (!hideTimer) {
-            hideTimer = setTimeout(() => { hideTimer = null; setModuleLoadInfo(snapshot); }, 1200);
+            hideTimer = setTimeout(() => { hideTimer = null; publish(snapshot); }, 1200);
           }
           // One automatic retry pass post-boot before asking the user to tap.
           if (snapshot.failed.length > 0 && !moduleAutoRetryRef.current) {
             moduleAutoRetryRef.current = true;
-            setTimeout(() => { try { window.__alloRetryFailedModules?.(); } catch (_) {} }, 4000);
+            retryTimer = setTimeout(() => { if (!disposed) { try { window.__alloRetryFailedModules?.(); } catch (_) {} } }, 4000);
           }
+        } else if (!timer) {
+          timer = setInterval(refresh, 2000);
         }
       } catch (_) {}
     };
     const onChange = () => {
       // Defer to a microtask so a load completing mid-render never re-enters
       // React (same discipline as the plugins-changed tick).
-      Promise.resolve().then(refresh);
+      if (refreshQueued || disposed) return;
+      refreshQueued = true;
+      Promise.resolve().then(() => { refreshQueued = false; refresh(); });
     };
     window.addEventListener('alloflow:module-registry-changed', onChange);
-    timer = setInterval(refresh, 2000);
     refresh();
     return () => {
+      disposed = true;
       window.removeEventListener('alloflow:module-registry-changed', onChange);
       if (timer) clearInterval(timer);
       if (hideTimer) clearTimeout(hideTimer);
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, []);
   // The initial audit only needs the pipeline and live Gemini bridge. Keep
@@ -12178,6 +12376,9 @@ Return ONLY JSON in this shape:
   }, []);
   const [studentResponses, setStudentResponses] = useState({});
   const [studentWorkStatus, setStudentWorkStatus] = useState('idle');
+  const [studentWorkSaveAttempt, setStudentWorkSaveAttempt] = useState(0);
+  const studentWorkSaveQueue = useRef(Promise.resolve());
+  const retryStudentWorkSave = useCallback(() => setStudentWorkSaveAttempt(value => value + 1), []);
   const isStudentWorkLoaded = useRef(false);
   useEffect(() => {
       if (!isStudentWorkLoaded.current || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, null)) {
@@ -12185,16 +12386,24 @@ Return ONLY JSON in this shape:
           return;
       }
       setStudentWorkStatus('saving');
+      let active = true;
       const handler = setTimeout(async () => {
           try {
-              await storageDB.set('allo_student_work', studentResponses);
-              setStudentWorkStatus('saved');
+              const write = async () => {
+                  if (!active) return;
+                  const result = await storageDB.set('allo_student_work', studentResponses);
+                  if (result === false) throw new Error('Device storage refused the write');
+              };
+              studentWorkSaveQueue.current = studentWorkSaveQueue.current.catch(() => {}).then(write);
+              await studentWorkSaveQueue.current;
+              if (active) setStudentWorkStatus('saved');
           } catch (e) {
+              if (active) setStudentWorkStatus('error');
               warnLog("Student work save failed", e);
           }
       }, 1000);
-      return () => clearTimeout(handler);
-  }, [studentResponses, isTeacherMode, showStudentEntry]);
+      return () => { active = false; clearTimeout(handler); };
+  }, [studentResponses, isTeacherMode, showStudentEntry, studentWorkSaveAttempt]);
   const [generatedContent, _setGeneratedContent] = useState(null);
   const setGeneratedContent = useCallback((nextContent) => {
       _setGeneratedContent(previous => {
@@ -13034,7 +13243,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '481902a6e';
+    var pluginCdnVersion = '1788580363427';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -13398,31 +13607,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=481902a6e');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=481902a6e');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=481902a6e');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=481902a6e');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=481902a6e');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=481902a6e');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=481902a6e');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
-    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=481902a6e');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=e880c18c');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=481902a6e');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=481902a6e');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=481902a6e');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=481902a6e');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=481902a6e');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=481902a6e');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=5f7f65c4');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=cc0ce96f');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=481902a6e');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=481902a6e');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=481902a6e');
+    loadModule('AlloQuestContract', './allo_quest_contract_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -13435,41 +13644,43 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=481902a6e'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=481902a6e');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=481902a6e');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=481902a6e');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=481902a6e');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=481902a6e');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=481902a6e');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=481902a6e');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=481902a6e');
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', './view_directions_composer_module.js'); };
+    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', './view_persona_workspace_module.js'); };
+    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', './report_writer_module.js'); };
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=481902a6e'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=481902a6e'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=481902a6e'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=481902a6e'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
@@ -13481,68 +13692,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=481902a6e'); }; })();
-    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=481902a6e'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
+    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', './school_rewards_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=481902a6e'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=481902a6e'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=481902a6e');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=481902a6e');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=481902a6e');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=481902a6e'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', './reading_library_module.js'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=481902a6e');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=481902a6e');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=481902a6e');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=481902a6e');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=481902a6e');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=481902a6e');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=481902a6e');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=481902a6e');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=481902a6e');
+      loadModule('QuickStartWizard', './quickstart_module.js');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=481902a6e');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=481902a6e');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=481902a6e'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=481902a6e'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=481902a6e'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=481902a6e'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=481902a6e'); }; })();
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=481902a6e'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', './visual_panel_module.js'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=481902a6e');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=481902a6e');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=af265f93');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=481902a6e');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=481902a6e');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=481902a6e');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=481902a6e');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=481902a6e');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    window.__alloLazyMathFluency = () => { loadModule('MathFluency', './math_fluency_module.js'); };
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=481902a6e'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=481902a6e');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=481902a6e');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=481902a6e'); }; })();
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -13550,7 +13761,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=481902a6e');
+      loadModule('DocPipelineModule', './doc_pipeline_module.js');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -13600,58 +13811,77 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       pending.then(function() { delete __alloLazyEnsurePromises[moduleName]; }, function() { delete __alloLazyEnsurePromises[moduleName]; });
       return pending;
     };
+    // Teaching-script research and editor load only when a teacher opens a plan.
+    window.__alloLazyLessonTeachingScript = function() {
+      const retry = name => window.__alloModuleRegistry?.[name]?.status === 'failed' && window.__alloRetryModule(name);
+      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', './lesson_teaching_script_module.js');
+      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', './lesson_teaching_script_host_module.js');
+      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', './view_lesson_teaching_script_module.js');
+      if (!window.AlloModules?.ResourceContentFingerprint && !retry('ResourceContentFingerprint')) loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
+    };
+    window.__alloLazyLessonTeachingResearch = () => {
+      if (window.AlloModules?.LessonTeachingResearch) return;
+      if (window.__alloModuleRegistry?.LessonTeachingResearchModule?.status === 'failed') window.__alloRetryModule('LessonTeachingResearchModule');
+      else loadModule('LessonTeachingResearchModule', './lesson_teaching_research_module.js');
+    };
+    window.__alloEnsureLessonTeachingScript = () => Promise.all([
+      ['LessonTeachingScriptModule', 'LessonTeachingScript'],
+      ['LessonTeachingScriptHostModule', 'LessonTeachingScriptHost'],
+      ['ViewLessonTeachingScriptModule', 'LessonTeachingScriptView'],
+      ['ResourceContentFingerprint', 'ResourceContentFingerprint']
+    ].map(([name, readyKey]) => window.__alloEnsureLazyModule(name, '__alloLazyLessonTeachingScript', readyKey)));
     window.__alloEnsureDocPipeline = function() {
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=b3668673'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=481902a6e'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=481902a6e'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=481902a6e'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=481902a6e'); }; })();
-    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=481902a6e'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=81c55f6e'); }; })();
-    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=b1e106e9'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=c5c54f3e'); }; })();
-    window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=abe0a8e6'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=481902a6e'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=481902a6e'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=481902a6e'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=481902a6e');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=481902a6e'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', './mailbox_script_source_module.js'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', './view_live_session_dock_module.js'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', './view_full_pack_run_module.js'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', './view_share_session_surfaces_module.js'); }; })();
+    window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', './video_studio_host_bridge_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=481902a6e');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=888ff3fb');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=481902a6e');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=481902a6e');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=481902a6e');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=481902a6e');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=481902a6e');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=481902a6e'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=481902a6e'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=481902a6e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=481902a6e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=481902a6e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=481902a6e'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=481902a6e'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=481902a6e'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=481902a6e'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=481902a6e'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=481902a6e');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=481902a6e');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=481902a6e');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=481902a6e');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=481902a6e');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=481902a6e');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=481902a6e');
+      loadModule('PdfAuditView', './view_pdf_audit_module.js');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -13660,14 +13890,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=481902a6e');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=481902a6e');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=481902a6e');
+      loadModule('ExportPreviewView', './view_export_preview_module.js');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -13676,16 +13906,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=481902a6e');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=481902a6e');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=481902a6e');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=481902a6e');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=481902a6e');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=481902a6e');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=481902a6e');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=481902a6e');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=481902a6e');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=481902a6e');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', './view_sidebar_panels_module.js'); };
+    window.__alloEnsureSidebarPanels();
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -13706,12 +13937,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=5c185b44');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=481902a6e');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=481902a6e');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=481902a6e');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=481902a6e');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -13725,7 +13956,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         try {
           var _loc = window.location || {};
           if (/^(localhost|127\.0\.0\.1)$/i.test(_loc.hostname || '') || /(^|\.)alloflow/i.test(_loc.hostname || '')) {
-            _tiUrl = new URL('/tool_index.json', _loc.origin).toString();
+            // Desktop serves its bundled catalog beside the app under /app/.
+            var _tiPath = /^(localhost|127\.0\.0\.1)$/i.test(_loc.hostname || '') ? './tool_index.json' : '/tool_index.json';
+            _tiUrl = new URL(_tiPath, _loc.href || _loc.origin).toString();
           }
         } catch (_) {}
         fetch(_tiUrl, { cache: 'no-cache' })
@@ -13734,22 +13967,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=481902a6e');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=481902a6e');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=481902a6e');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=481902a6e');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=481902a6e');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=481902a6e');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
+    loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=481902a6e');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=481902a6e');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=481902a6e');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=481902a6e');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=481902a6e');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -13764,75 +13998,80 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=481902a6e');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=481902a6e');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=481902a6e');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=481902a6e');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=481902a6e');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=481902a6e');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=481902a6e');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=481902a6e');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=481902a6e');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=481902a6e');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=481902a6e');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=481902a6e');
-    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=481902a6e');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=481902a6e');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=481902a6e');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=b5585e69');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=481902a6e');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=481902a6e');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=481902a6e');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=481902a6e');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=481902a6e');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=481902a6e');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=481902a6e');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=481902a6e');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=481902a6e');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=481902a6e');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=481902a6e');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bf6237ae'); }; })();
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    // File selection must promote intake ahead of deferred background tools.
+    // The registry handles in-flight deduplication and failed-load retries.
+    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', './misc_handlers_module.js'); };
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('MathManipulativeGraderModule', './math_manipulative_grader_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', './view_simplified_module.js'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=481902a6e');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=481902a6e');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=481902a6e');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=481902a6e');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=481902a6e');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=481902a6e');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=50b12072'); }; })();
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', './view_persona_chat_module.js'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=481902a6e');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=481902a6e');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=481902a6e');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=481902a6e');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=481902a6e');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=481902a6e');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=481902a6e');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=481902a6e');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=481902a6e');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=481902a6e');
-    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=481902a6e');
-    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=481902a6e');
-    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=481902a6e');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=481902a6e');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=481902a6e');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=481902a6e');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=481902a6e');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=481902a6e');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=481902a6e');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('ImageAssetEditorModule', './image_asset_editor_module.js');
+    loadModule('AltTextModule', './alt_text_module.js');
+    loadModule('ResourceReadAloudModule', './resource_read_aloud_module.js');
+    loadModule('StudioResponseModule', './studio_response_module.js');
+    loadModule('MemoryAidModule', './memory_aid_module.js');
+    loadModule('AppliedChallengeModule', './applied_challenge_module.js');
+    window.__alloLazyLivePolling = () => { loadModule('LivePolling', './live_polling_module.js'); };
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     window.__alloLazyMathJs = (function() { var started=false; return function() {
       if (started || window.math) return;
       started = true;
@@ -18010,6 +18249,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [activeSessionCode]);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   const [liveResourceLoadState, setLiveResourceLoadState] = useState({ status: 'idle', attempt: 0 });
+  const [liveSessionConnectionState, setLiveSessionConnectionState] = useState({ status: 'idle', attempt: 0, code: '' });
+  const retryLiveSessionConnection = () => liveSessionConnectionRecoveryRef.current?.retry();
   const [liveResourceRetryEpoch, setLiveResourceRetryEpoch] = useState(0);
   const retryLiveSessionResources = () => {
     if (liveResourceHydrationRetryTimerRef.current) clearTimeout(liveResourceHydrationRetryTimerRef.current);
@@ -18682,7 +18923,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const _resolveTourEl = (step) => {
     if (!step) return null;
     if (step.id) { const el = document.getElementById(step.id); if (el) return el; }
-    if (step.helpKey) { try { return document.querySelector('[data-help-key="' + step.helpKey + '"]'); } catch (_) {} }
+    if (step.helpKey) { try { return Array.from(document.querySelectorAll('[data-help-key="' + step.helpKey + '"]')).find(el => el.getClientRects().length > 0) || null; } catch (_) {} }
     return null;
   };
   // The pipeline guided tours (2026-06-12). Two short tours because the two
@@ -18707,10 +18948,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [botSpotlightPos, setBotSpotlightPos] = useState(null);
   const DOM_TO_TOOL_ID_MAP = (window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {};
     const tourSteps = [
+      { id: 'tour-guided-mode', helpKey: 'header_rerun_wizard', text: t('tour.guided_workflow_text') || "Build a lesson step by step from Start & setup → Guided Mode. Choose Adapt a reading for a focused path, another preset, or Plan with AI and review the proposed steps. Add source text, review each result, write or draft student directions, then open the current lesson in Document Builder. Preview the learner experience and complete the readiness checks before teaching. Resume later saves your place on this device.", title: t('tour.guided_workflow_title') || 'Build your first lesson with Guided Mode' },
       { id: 'tour-input-panel', text: t('tour.input_panel_text'), title: t('tour.input_panel_title') },
       // Discovery step for the remediation pipeline (2026-06-12): the most
       // consequential feature was invisible in the tour.
-      { id: 'tour-upload-source', text: t('tour.upload_accessibility_text') || 'Make any document accessible: upload a PDF, Word, or PowerPoint file here and AlloFlow audits it for accessibility barriers, fixes what it can, and hands back ready-to-share copies — including a screen-reader-ready Tagged PDF that looks identical to the original. One click ("Make Accessible") runs the whole pipeline; you can also batch a folder of files at once from the Educator Hub.', title: t('tour.upload_accessibility_title') || 'Turn any document accessible' },
+      { id: 'tour-upload-source', text: t('tour.upload_accessibility_text') || "Upload a PDF, Word, or PowerPoint file to check for accessibility barriers. Make Accessible runs the available audit and repair steps; review the results, unresolved issues, and exported document before sharing. Available output formats depend on the source and processing options. Batch tools are also available in the Educator Hub.", title: t('tour.upload_accessibility_title') || 'Check and improve document accessibility' },
       // Anchors that existed but had no step (2026-07-29). The AI Guide is the
       // conversational path to a whole lesson pack; Universal Settings governs
       // grade + language for every generator, so a teacher who never opens it
@@ -18748,7 +18990,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // N3: Assignment Directions shipped with a tour anchor (#tour-tool-directions)
       // but no tour step, so the one card in the column that AlloFlow does not write
       // for you was the one card the tour never mentioned.
-      { id: 'tour-tool-directions', text: t('tour.directions_text') || 'This is the one card you fill in yourself. Write the steps students follow, the learning goal, when it is due, and what a good result looks like. AlloFlow does not generate these: they are in your voice, to your class. Read them once as a learner before you assign them.', title: t('tour.directions_title') || 'Directions you write' },
+      { id: 'tour-tool-directions', text: t('tour.directions_text') || "Write student directions yourself, or use Draft for me to start from your lesson plan and resource pack. Review and edit the steps, learning goal, due date, and success criteria for your class, then save. Read the directions as a learner before assigning them.", title: t('tour.directions_title') || 'Prepare student directions' },
       { id: 'tour-tool-fullpack', text: t('tour.fullpack_text'), title: t('tour.fullpack_title') },
       { id: 'tour-header-utils', text: t('tour.utils_text'), title: t('tour.utils_title') },
       { id: 'tour-header-tools', text: t('tour.dashboard_text'), title: t('tour.dashboard_title') },
@@ -19076,13 +19318,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
     };
   }, [isHelpMode, theme]);
+  // A delayed measurement belongs to the tour/step that requested it.
+  const _tourRunContext = useMemo(() => ({}), [runTour, tourStep, customTourSteps, spotlightMessage]);
+  const _tourRunContextRef = useRef(null);
+  _tourRunContextRef.current = _tourRunContext;
+  const _tourTravelDirectionRef = useRef(1);
+  useEffect(() => { if (!runTour) _tourTravelDirectionRef.current = 1; }, [runTour]);
+  const _findTourStepIndex = (steps, current, direction) => {
+      if (!Array.isArray(steps) || !Number.isInteger(current) || ![-1, 1].includes(direction)) return -1;
+      for (let index = current + direction; index >= 0 && index < steps.length; index += direction) {
+          const candidate = steps[index];
+          // Modal tours may need onEnter to reveal their target first.
+          const canReveal = candidate && (typeof candidate.onEnter === 'function' || candidate.id === 'tour-history-panel' || DOM_TO_TOOL_ID_MAP[candidate.id]);
+          if (candidate && (canReveal || _resolveTourEl(candidate))) return index;
+      }
+      return -1;
+  };
   const updateTourMetrics = useCallback(() => {
       if (!runTour) return;
       if (spotlightMessage) return;
       const step = (customTourSteps || tourSteps)[tourStep];
       if (!step) return;
+      const requestContext = _tourRunContextRef.current;
       try { if (step.onEnter) step.onEnter(); } catch (_) {}
       setTimeout(() => {
+          if (requestContext !== _tourRunContextRef.current) return;
           const el = _resolveTourEl(step);
           if (el) {
               const tallPanels = ['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary', 'tour-tool-wordsounds'];
@@ -19126,9 +19386,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               // kept the PREVIOUS step's highlight, looking broken).
               // Bounded: ends the tour rather than looping.
               const _stepsArr = (customTourSteps || tourSteps);
-              let _next = tourStep + 1;
-              while (_next < _stepsArr.length && !_resolveTourEl(_stepsArr[_next])) _next++;
-              if (_next < _stepsArr.length) setTourStep(_next);
+              const _next = _findTourStepIndex(_stepsArr, tourStep, _tourTravelDirectionRef.current);
+              if (_next >= 0) setTourStep(_next);
               else { setRunTour(false); setCustomTourSteps(null); }
           }
       }, 600);
@@ -19268,22 +19527,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [isSpotlightMode, runTour]);
   const handleNextTourStep = () => {
-      if (tourStep < (customTourSteps || tourSteps).length - 1) {
-          setTourStep(prev => prev + 1);
-      } else {
-          setRunTour(false);
-          setTourStep(0);
-      }
+      _tourTravelDirectionRef.current = 1;
+      const next = _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1);
+      if (next >= 0) setTourStep(next);
+      else { setRunTour(false); setTourStep(0); }
   };
   const handlePrevTourStep = () => {
-      if (tourStep > 0) {
-          setTourStep(prev => prev - 1);
-      }
+      _tourTravelDirectionRef.current = -1;
+      const previous = _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1);
+      if (previous >= 0) setTourStep(previous);
   };
   useEffect(() => {
       if (!runTour) return;
       const handleTourKeyDown = (e) => {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (e.defaultPrevented || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+          if (e.code === 'Escape') { e.preventDefault(); handleSetRunTourToFalse(); return; }
+          // Native controls keep Space/arrow behavior; shortcuts apply to the tour surface.
+          const target = e.target;
+          if (target?.closest?.('button, input, textarea, select, a[href], summary, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="slider"], [role="combobox"], [role="listbox"], [role="menu"], [role="tablist"]')) return;
           if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowDown') {
               e.preventDefault();
               handleNextTourStep();
@@ -21442,148 +21703,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       return { nodes, edges };
   };
-  const renderFlowShape = (node, isSelected) => {
-    const { type, x, y, text, id } = node;
-    const strokeColor = isSelected ? "#6366f1" : "#94a3b8";
-    const strokeWidth = isSelected ? 3 : 2;
-    const onMouseDown = (e) => !isMapLocked && handleNodeMouseDown(e, id);
-    const onClick = (e) => handleNodeClick(e, id);
-    const onKeyDown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleNodeClick(e, id);
-            return;
-        }
-        if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleDeleteNode(id);
-            return;
-        }
-        const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-        if (!delta || isMapLocked) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const step = e.shiftKey ? 25 : 10;
-        const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
-        const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
-        setConceptMapNodes((nodes) => nodes.map((item) => item.id === id ? {
-            ...item,
-            x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
-            y: Math.max(0, Math.min(height, item.y + delta[1] * step))
-        } : item));
-    };
-    const gProps = {
-        transform: `translate(${x},${y})`,
-        role: 'button',
-        tabIndex: 0,
-        focusable: 'true',
-        'aria-label': text,
-        'aria-pressed': isSelected,
-        onMouseDown,
-        onClick,
-        onKeyDown,
-        className: `${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`,
-        key: id
-    };
-    let shape;
-    switch (type) {
-        case 'flow-start':
-        case 'flow-end':
-            shape = (
-                <g>
-                    <ellipse cx="0" cy="0" rx="60" ry="30" fill="#f0f9ff" stroke={strokeColor} strokeWidth={strokeWidth} />
-                    <text x="0" y="5" textAnchor="middle" className="text-xs font-bold pointer-events-none select-none fill-slate-700 font-sans uppercase tracking-wider">{text}</text>
-                </g>
-            );
-            break;
-        case 'flow-decision':
-            shape = (
-                <g>
-                    <polygon points="0,-50 60,0 0,50 -60,0" fill="#fefce8" stroke={strokeColor} strokeWidth={strokeWidth} />
-                    <foreignObject x="-40" y="-20" width="80" height="40" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-[11px] font-bold leading-tight select-none text-yellow-900 break-words px-1">
-                             {text}
-                         </div>
-                    </foreignObject>
-                </g>
-            );
-            break;
-        case 'flow-note':
-            shape = (
-                <g>
-                    <path d="M-50,-30 L35,-30 L50,-15 L50,30 L-50,30 Z" fill="#fff7ed" stroke={strokeColor} strokeWidth={1} strokeDasharray="4 2"/>
-                    <path d="M35,-30 L35,-15 L50,-15" fill="none" stroke={strokeColor} strokeWidth={1} />
-                    <foreignObject x="-45" y="-25" width="90" height="50" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-[11px] text-slate-600 italic select-none px-1">
-                             {text}
-                         </div>
-                    </foreignObject>
-                </g>
-            );
-            break;
-        case 'flow-process':
-        default:
-            shape = (
-                <g>
-                    <rect x="-75" y="-30" width="150" height="60" rx="6" fill="white" stroke={strokeColor} strokeWidth={strokeWidth} />
-                    <foreignObject x="-70" y="-25" width="140" height="50" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-xs font-bold select-none px-1 text-indigo-900 break-words line-clamp-3">
-                             {text}
-                         </div>
-                    </foreignObject>
-                </g>
-            );
-    }
-    return (
-        <g {...gProps}>
-            {shape}
-            {!isChallengeActive && isTeacherMode && !isMapLocked && (
-               <g
-                 aria-hidden="true"
-                 focusable="false"
-                 className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity cursor-pointer"
-                 onClick={(e) => { e.stopPropagation(); handleDeleteNode(id); }}
-                 transform="translate(45, -35)"
-               >
-                   <title>{t('concept_map.tooltips.delete_node')}</title>
-                   <circle r="12" fill="#ef4444" stroke="white" strokeWidth="1"/>
-                   <text textAnchor="middle" dy="3" fill="white" fontSize="10" fontWeight="bold">×</text>
-               </g>
-            )}
-        </g>
-    );
-  };
-  const getElbowPath = (sourceNode, targetNode) => {
-    if (!sourceNode || !targetNode) return "";
-    const startX = sourceNode.x;
-    const startY = sourceNode.y + (sourceNode.type === 'flow-decision' ? 50 : 30);
-    const endX = targetNode.x;
-    const endY = targetNode.y - (targetNode.type === 'flow-decision' ? 50 : 30);
-    const midY = (startY + endY) / 2;
-    return `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
-  };
-  const calculateFlowLayout = (nodes, containerWidth = 800) => {
-    const centerX = containerWidth / 2;
-    let currentY = 50;
-    return nodes.map(node => {
-        let newX = centerX;
-        let newY = currentY;
-        if (node.type === 'flow-start') {
-            newY = 50;
-            currentY = 150;
-        } else if (node.type === 'flow-end') {
-            newY = currentY + 50;
-        } else if (node.type === 'flow-note') {
-            newX = centerX + 200;
-            newY = currentY - 80;
-        } else {
-            newY = currentY;
-            currentY += 120;
-        }
-        return { ...node, x: newX, y: newY };
-    });
-  };
+
+
+
   // Shared deps for every CmapHandlers wrapper (deduped 2026-07-20 v2;
   // majority union of 6 wrappers).
   // Built fresh per call; module destructuring ignores unused keys.
@@ -21603,7 +21725,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       isTeacherMode,
       setIsProcessing,
       setGenerationStep,
-      calculateFlowLayout,
       callGemini,
       safeJsonParse,
       t,
@@ -21885,7 +22006,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setNodeInputText,
       mapContainerRef,
       addToast,
-      getElbowPath,
       handleAddManualNode,
       handleAutoLayout,
       handleCheckChallengeRouter,
@@ -21900,7 +22020,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       handleRetryChallenge,
       handleSetIsConceptMapReadyToFalse,
       handleToggleIsMapLocked,
-      renderFlowShape,
       setConceptMapNodes,
       handleConceptSpacePersist,
       t,
@@ -22626,17 +22745,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [history]);
   const notebookEntryCount = React.useMemo(() => {
       if (!history) return 0;
-      // The Notebook overlay surfaces both note-taking AND anchor-chart entries.
-      return history.filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
+      return history.filter(h => h && ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(h.type)).length;
   }, [history]);
   const handleSelectNotebookEntry = React.useCallback((entry) => {
       if (!entry) return;
-      setGeneratedContent(entry);
-      // Route to the correct view based on entry type — note-taking and
-      // anchor-chart are distinct top-level views with their own renderers.
-      setActiveView(entry.type === 'anchor-chart' ? 'anchor-chart' : 'note-taking');
+      if (!['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(entry.type)) return;
+      // The shelf displays learner projections; reopen the canonical template.
+      const canonical = history.find(item => item && String(item.id) === String(entry.id));
+      if (!canonical) return;
+      setGeneratedContent(canonical);
+      setActiveView(canonical.type);
       setShowNotebook(false);
-  }, []);
+  }, [history]);
   const fetchCloudHistory = async () => {
       if (!user || !appId || !isCloudSyncEnabled) {
           setIsCloudInitialized(true);
@@ -23035,12 +23155,48 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (liveResourceHydrationRetryTimerRef.current) clearTimeout(liveResourceHydrationRetryTimerRef.current);
           liveResourceHydrationRetryTimerRef.current = null;
           setLiveResourceLoadState({ status: 'idle', attempt: 0 });
+          liveSessionConnectionAttemptsRef.current = null;
+          setLiveSessionConnectionState({ status: 'idle', attempt: 0, code: '' });
           return;
       }
       debugLog(`Session Sync: Connecting to ${activeSessionCode} as ${isTeacherMode ? 'Teacher' : 'Student'}...`);
       lastResourcesStringRef.current = null;
+      lastPackRefRef.current = null;
+      const clearHydrationRetry = () => {
+          if (liveResourceHydrationRetryTimerRef.current) clearTimeout(liveResourceHydrationRetryTimerRef.current);
+          liveResourceHydrationRetryTimerRef.current = null;
+      };
+      const hydrationCoordinator = createLiveSessionHydrationCoordinator({ attemptsRef: liveResourceHydrationAttemptsRef, onSourceChange: clearHydrationRetry });
+      const connectionRecovery = createLiveSessionConnectionRecovery({
+          stateRef: liveSessionConnectionAttemptsRef,
+          sessionKey: JSON.stringify([activeSessionAppId, activeSessionCode, isTeacherMode, user.uid]),
+          onState: setLiveSessionConnectionState,
+          reconnect: () => setLiveResourceRetryEpoch(value => value + 1)
+      });
+      liveSessionConnectionRecoveryRef.current = connectionRecovery;
+      const scheduleHydrationRetry = attempt => {
+          if (attempt < 3 && !liveResourceHydrationRetryTimerRef.current) {
+              liveResourceHydrationRetryTimerRef.current = setTimeout(() => {
+                  liveResourceHydrationRetryTimerRef.current = null;
+                  setLiveResourceRetryEpoch(value => value + 1);
+              }, 1200 * attempt);
+          }
+      };
+      const retryHydrationOnNetworkReturn = () => {
+          if (isTeacherMode) return;
+          if (liveSessionConnectionAttemptsRef.current?.status !== 'connected') {
+              connectionRecovery.retry(true);
+              return;
+          }
+          clearHydrationRetry();
+          liveResourceHydrationAttemptsRef.current = { signature: '', count: 0 };
+          setLiveResourceRetryEpoch(value => value + 1);
+      };
+      window.addEventListener('online', retryHydrationOnNetworkReturn);
       const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
       const unsubscribe = onSnapshot(sessionRef, async (docSnap) => {
+          const isCurrentSnapshot = hydrationCoordinator.beginSnapshot();
+          if (!isCurrentSnapshot()) return;
           if (docSnap.exists()) {
               const data = docSnap.data();
               // Terminal-state check: handleEndLiveSession soft-ends the session
@@ -23050,6 +23206,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               // overlays still armed) after the teacher ends it from the quiz
               // dashboard. Treat a soft-ended doc exactly like a deleted one.
               if (data && (data.isActive === false || data.status === 'ended')) {
+                  hydrationCoordinator.dispose();
+                  clearHydrationRetry();
                   if (hasConnectedRef.current) {
                       addToast(t('session.toast_ended'), "error");
                   }
@@ -23060,6 +23218,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   lastResourcesStringRef.current = null;
                   return;
               }
+              connectionRecovery.connected();
               if (!hasConnectedRef.current) {
                   hasConnectedRef.current = true;
                   addToast(t('session.toast_connected'), "success");
@@ -23092,13 +23251,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (data.resources && Array.isArray(data.resources)) {
                       const currentResStr = JSON.stringify(data.resources);
                       if (currentResStr !== lastResourcesStringRef.current) {
-                          const priorAttempts = liveResourceHydrationAttemptsRef.current;
-                          const attempt = priorAttempts.signature === currentResStr ? priorAttempts.count + 1 : 1;
-                          liveResourceHydrationAttemptsRef.current = { signature: currentResStr, count: attempt };
-                          setLiveResourceLoadState({ status: 'loading', attempt });
+                          const download = hydrationCoordinator.load('firebase:' + JSON.stringify([activeSessionAppId, activeSessionCode, currentResStr]), () => hydrateSessionAssets(activeSessionAppId, data.resources));
+                          const attempt = download.attempt;
+                          if (!download.exhausted) setLiveResourceLoadState({ status: 'loading', attempt });
                           try {
-                              const hydrated = await hydrateSessionAssets(activeSessionAppId, data.resources);
+                              const hydrated = await download.promise;
+                              if (!isCurrentSnapshot()) return;
+                              liveResourceHydrationAttemptsRef.current = { signature: '', count: 0 };
                               lastResourcesStringRef.current = currentResStr;
+                              lastPackRefRef.current = null;
                               hydratedHistoryRef.current = hydrated;
                               resourcesToRender = hydrated;
                               setHistory(hydrated);
@@ -23107,17 +23268,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                               setLiveResourceLoadState({ status: 'ready', attempt });
                               _alloSessionSyncTrace('sync:resources-hydrated', { count: hydrated.length, attempt });
                           } catch (e) {
+                              if (!isCurrentSnapshot() || e?.name === 'AbortError') return;
                               lastResourcesStringRef.current = null;
                               warnLog("Asset hydration failed:", e);
                               resourcesToRender = hydratedHistoryRef.current;
                               setLiveResourceLoadState({ status: 'failed', attempt });
                               _alloSessionSyncTrace('sync:resources-hydrate-failed', { attempt, code: String(e?.code || 'unavailable').slice(0, 80) });
-                              if (attempt < 3 && !liveResourceHydrationRetryTimerRef.current) {
-                                  liveResourceHydrationRetryTimerRef.current = setTimeout(() => {
-                                      liveResourceHydrationRetryTimerRef.current = null;
-                                      setLiveResourceRetryEpoch(value => value + 1);
-                                  }, 1200 * attempt);
-                              }
+                              scheduleHydrationRetry(attempt);
                           }
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
@@ -23130,40 +23287,48 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       // from data.resources, so a history wipe, a late join, or a
                       // polling-only student that missed ring messages recovers on
                       // the next snapshot.
-                      const packSig = data.packRef.id + ':' + data.packRef.t;
+                      const packSig = JSON.stringify([activeSessionAppId, activeSessionCode, data.packRef.id, data.packRef.k, data.packRef.t]);
                       if (packSig !== lastPackRefRef.current) {
-                          lastPackRefRef.current = packSig;
-                          setLiveResourceLoadState({ status: 'loading', attempt: 1 });
-                          try {
+                          const download = hydrationCoordinator.load('mailbox:' + packSig, async assertCurrentSource => {
                               let assembled = '';
                               let part = 1;
                               let of = 1;
                               do {
+                                  assertCurrentSource();
                                   const gp = await _alloMailboxCall(_alloMbBridgeState.url, { a: 'getpack', id: data.packRef.id, k: data.packRef.k, part });
-                                  assembled += String(gp.data || '');
-                                  of = gp.of || 1;
+                                  assertCurrentSource();
+                                  if (!gp || !Number.isSafeInteger(gp.of) || gp.of < 1 || typeof gp.data !== 'string' || (part > 1 && gp.of !== of)) throw new Error('Mailbox pack parts were incomplete or inconsistent');
+                                  assembled += gp.data;
+                                  of = gp.of;
                                   part += 1;
                               } while (part <= of);
                               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-                              const rawResources = Array.isArray(packet && packet.resources)
-                                  ? packet.resources.filter(it => it && it.id && it.type && !TEACHER_ONLY_TYPES.includes(it.type))
-                                  : [];
-                              if (rawResources.length) {
-                                  const merged = rawResources;
-                                  hydratedHistoryRef.current = merged;
-                                  resourcesToRender = merged;
-                                  setHistory(merged);
-                                  setLiveResourceLoadState({ status: 'ready', attempt: 1 });
-                              } else {
-                                  resourcesToRender = hydratedHistoryRef.current;
-                                  throw new Error('Mailbox pack contained no student-safe resources');
-                              }
+                              assertCurrentSource();
+                              if (!packet || packet.kind !== 'assignment' || !Array.isArray(packet.resources)) throw new Error('Mailbox pack was not a valid assignment');
+                              return _alloStudentSafeResources(packet.resources);
+                          });
+                          const attempt = download.attempt;
+                          if (!download.exhausted) setLiveResourceLoadState({ status: 'loading', attempt });
+                          try {
+                              const merged = await download.promise;
+                              if (!isCurrentSnapshot()) return;
+                              liveResourceHydrationAttemptsRef.current = { signature: '', count: 0 };
+                              lastPackRefRef.current = packSig;
+                              lastResourcesStringRef.current = null;
+                              hydratedHistoryRef.current = merged;
+                              resourcesToRender = merged;
+                              setHistory(merged);
+                              clearHydrationRetry();
+                              setLiveResourceLoadState({ status: 'ready', attempt });
+                              _alloSessionSyncTrace('sync:mailbox-pack-hydrated', { count: merged.length, attempt });
                           } catch (packErr) {
-                              lastPackRefRef.current = null; // let the next snapshot retry (e.g. rate-limited)
+                              if (!isCurrentSnapshot() || packErr?.name === 'AbortError') return;
+                              lastPackRefRef.current = null;
                               warnLog('Mailbox packRef hydrate failed:', packErr?.message);
                               resourcesToRender = hydratedHistoryRef.current;
-                              setLiveResourceLoadState({ status: 'failed', attempt: 1 });
-                              _alloSessionSyncTrace('sync:mailbox-pack-hydrate-failed', { code: 'unavailable' });
+                              setLiveResourceLoadState({ status: 'failed', attempt });
+                              _alloSessionSyncTrace('sync:mailbox-pack-hydrate-failed', { code: 'unavailable', attempt });
+                              scheduleHydrationRetry(attempt);
                           }
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
@@ -23176,6 +23341,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       // unchanged over the mailbox.
                       resourcesToRender = hydratedHistoryRef.current;
                   }
+                  if (!isCurrentSnapshot()) return;
                   if (data.bridgePayload && data.bridgePayload.timestamp) {
                     const payloadTs = data.bridgePayload.timestamp;
                     // Both conditions matter: NEWER than the last one seen (so a
@@ -23488,8 +23654,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   }
               }
           } else {
+              clearHydrationRetry();
               warnLog("Session Sync: Document not found (yet). Waiting...");
               if (hasConnectedRef.current) {
+                 hydrationCoordinator.dispose();
                  addToast(t('session.toast_ended'), "error");
                  setActiveSessionCode(null);
                  setSessionData(null);
@@ -23499,10 +23667,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               }
           }
       }, (err) => {
+          const isCurrentError = hydrationCoordinator.beginSnapshot();
+          if (!isCurrentError()) return;
+          clearHydrationRetry();
+          hydrationCoordinator.dispose();
+          connectionRecovery.fail(err);
           warnLog("Session Sync Error:", err);
           // Reset connection state so a re-attach (e.g., on auth refresh) is possible.
           hasConnectedRef.current = false;
-          if (err.code === 'permission-denied') {
+          if (String(err?.code || '').replace(/^firestore\//, '') === 'permission-denied') {
               addToast(t('toasts.access_denied') || 'Session access denied — please rejoin to reconnect.', "error");
               // Tear down the dead listener; useEffect will re-fire if activeSessionCode changes.
               try { if (sessionUnsubscribeRef.current) { sessionUnsubscribeRef.current(); sessionUnsubscribeRef.current = null; } } catch (_) {}
@@ -23512,6 +23685,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       sessionUnsubscribeRef.current = unsubscribe;
       return () => {
+          hydrationCoordinator.dispose();
+          connectionRecovery.dispose();
+          if (liveSessionConnectionRecoveryRef.current === connectionRecovery) liveSessionConnectionRecoveryRef.current = null;
+          clearHydrationRetry();
+          window.removeEventListener('online', retryHydrationOnNetworkReturn);
           debugLog("Session Sync: Cleaning up listener.");
           unsubscribe();
           sessionUnsubscribeRef.current = null;
@@ -24311,24 +24489,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const [selectedGrammarErrors, setSelectedGrammarErrors] = useState(new Set());
   useEffect(() => {
-    if (activeView === 'analysis' && generatedContent?.type === 'analysis' && generatedContent?.data?.grammar) {
-        const realGrammarErrors = generatedContent?.data.grammar.filter(g => {
-            if (!g || typeof g !== 'string') return false;
-            const clean = g.trim().toLowerCase().replace(/[.,;!]+$/, '');
-            if (['none', 'n/a', 'no errors', 'no issues', 'none detected'].includes(clean)) return false;
-            if (/^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return false;
-            return true;
-        });
-        const indices = realGrammarErrors.map((_, i) => generatedContent?.data.grammar.indexOf(generatedContent?.data.grammar.filter(g => {
-            if (!g || typeof g !== 'string') return false;
-            const clean = g.trim().toLowerCase().replace(/[.,;!]+$/, '');
-            if (['none', 'n/a', 'no errors', 'no issues', 'none detected'].includes(clean)) return false;
-            if (/^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return false;
-            return true;
-        })[i]));
-        setSelectedGrammarErrors(new Set(indices));
-    }
-  }, [generatedContent, activeView]);
+    if (activeView !== 'analysis' || generatedContent?.type !== 'analysis') return;
+    const notes = Array.isArray(generatedContent.data?.grammar) ? generatedContent.data.grammar : [];
+    const indices = [];
+    notes.forEach((note, index) => {
+      if (typeof note !== 'string' || !note.trim() || /^✓ (FIXED|DISMISSED):/.test(note)) return;
+      const clean = note.trim().toLowerCase().replace(/[.,;!]+$/, '');
+      if (['none', 'n/a', 'no errors', 'no issues', 'none detected'].includes(clean)
+          || /^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return;
+      indices.push(index);
+    });
+    setSelectedGrammarErrors(new Set(indices));
+  }, [generatedContent?.id, generatedContent?.data?.grammar, activeView]);
   const toggleGrammarErrorSelection = (index) => {
     setSelectedGrammarErrors(prev => {
         const next = new Set(prev);
@@ -24993,8 +25165,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Resource-first goal picker (2026-07-27): which pack resource the teacher is
   // currently attaching a goal to. '' = none picked, so only the free-text and
   // XP paths show.
-  const [mbDirectionsGoalRes, setMbDirectionsGoalRes] = useState('');
-  const [mbDirectionsGoalText, setMbDirectionsGoalText] = useState('');
+  const directionsGoalEditorState = useRef({ resource: '', text: '' });
   const [directionsDeriving, setDirectionsDeriving] = useState(false);
   // Objectives Phase 1: per-directions progress { [dirId]: { startedAt, xpBaseline, manual: {objId:true}, celebrated } }.
   // Device-local (storageDB) — a formative guide, never a grade; Phase 2 syncs evidence at next join.
@@ -25157,6 +25328,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const mbPeersRef = useRef({});
   const [mbMode, setMbMode] = useState('sync');
   const mbSentPacksRef = useRef({});
+  const mailboxResourcePublishQueuesRef = useRef({});
   const mbPackItemsRef = useRef([]);
   const mbLivePackRef = useRef(null);
   const mbHostedPackFpRef = useRef('');
@@ -25803,12 +25975,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // students dedup by rid. opts.open=false delivers into the student's pack
   // Full-fidelity student-pack serialization belongs to the core LiveAac
   // safety contract; the host contributes only its Firestore sanitizers.
-  const _alloSerializeResourceForStudentPack = (item) => {
+  const _alloSerializeResourceForStudentPack = (item, audioChannel = 'live') => {
       const moduleApi = _alloLiveAacModule();
       if (!moduleApi || typeof moduleApi.serializeResourceForStudentPack !== 'function') {
           throw new Error('[student-pack] LiveAac serializer is not available');
       }
-      return moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined });
+      return moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel });
   };
   const describeSavedFollowUpLiveFailure = (reason) => {
       if (reason === 'inactive-session') return 'Start or resume a live session before sending this follow-up.';
@@ -25961,10 +26133,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
   const _mbPushOneResource = useCallback(async (item, opts = {}) => {
       if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
+      const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
+      assertCurrent();
       const flags = { open: opts.open !== false, quiet: opts.quiet === true };
       const packItem = _alloSerializeResourceForStudentPack(item);
       if (!packItem) return { rtcCount: 0 };
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
+      assertCurrent();
       const parts = _alloSplitPackChunks(encoded);
       const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       let rtcCount = 0;
@@ -25972,12 +26147,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       for (const [, peer] of openPeers) {
           try {
               for (let i = 0; i < parts.length; i += 1) {
+                  assertCurrent();
                   await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
               }
               rtcCount += 1;
-          } catch (dcErr) { warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
+          } catch (dcErr) { if (dcErr?.name === 'AbortError') throw dcErr; warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
       }
       for (let i = 0; i < parts.length; i += 1) {
+          assertCurrent();
           await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
       }
       return { rtcCount };
@@ -25985,11 +26162,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const pushResourceToMailbox = useCallback(async (targetItem, opts = {}) => {
       if (!mbLive || !mbConfig?.url) return;
       const candidates = _alloStudentSafeResources(history);
-      const item = (targetItem && targetItem.id && !TEACHER_ONLY_TYPES.includes(targetItem.type))
-          ? targetItem
-          : ((generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type))
-              ? generatedContent
-              : candidates[candidates.length - 1]);
+      const item = _alloStudentSafeResources([targetItem])[0]
+          || _alloStudentSafeResources([generatedContent])[0] || candidates[candidates.length - 1];
       if (!item) {
           if (!opts.silentTeacher) addToast('Open a student-safe resource first, then push it to the class.', 'info');
           return;
@@ -26146,59 +26320,67 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // resource pack" button remains only as a force-resend for troubleshooting.
   useEffect(() => {
       if (!mbLive || !isTeacherMode || !mbConfig?.url) return undefined;
-      const timeoutId = setTimeout(async () => {
-          try {
+      let cancelled = false;
+      const isCurrent = () => !cancelled;
+      const assertCurrent = () => { if (cancelled) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
+      const sessionKey = JSON.stringify([mbConfig.url, activeSessionAppId, mbLive.code]);
+      const traceSession = (event, detail) => _alloSessionSyncTrace(event, { ...detail, sessionPath: 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + mbLive.code });
+      const retry = createLiveSessionRetryController({
+          publish: () => enqueueLiveSessionResourcePublish({ queues: mailboxResourcePublishQueuesRef.current, sessionKey, publish: async () => {
+              assertCurrent();
               const candidates = _alloStudentSafeResources(history);
               mbPackItemsRef.current = candidates;
               // Unified content channel (SessionTransport stage 2): the pack
               // CYCLE ALGORITHM (removals, fingerprint dedupe with per-item
               // failure isolation, fingerprint-gated hosted-pack refresh) now
               // lives in the module; this host supplies only the primitives.
-              // The inline body below remains as the module-not-loaded
-              // fallback and is retired in stage 3.
               const _stMb = window.AlloModules && window.AlloModules.SessionTransport;
               if (_stMb && typeof _stMb.createMailboxTransport === 'function' && typeof _stMb.runMailboxPackCycle === 'function') {
                   const transport = _stMb.createMailboxTransport({
                       teacherOnlyTypes: TEACHER_ONLY_TYPES,
+                      projectStudentActivityResource: _alloProjectStudentActivityResource,
                       seen: mbSentPacksRef.current,
+                      isCurrent,
                       fingerprint: (item) => _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || ''),
                       packFingerprint: (items) => _alloQuickHash(items.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(it)) || '') || '')).join('|')),
-                      pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true }),
+                      pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true, isCurrent }),
                       onItemError: (item, itemErr) => warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message),
                       sendRemovals: (ids) => _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids } }),
                       getHostedFp: () => mbHostedPackFpRef.current,
                       setHostedFp: (fp) => { mbHostedPackFpRef.current = fp; },
                       hostPack: async (items) => {
+                          assertCurrent();
                           if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
                           const { id, k } = mbLivePackRef.current;
                           const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: items[0]?.id || null, resources: items.map(it => _alloSerializeResourceForStudentPack(it)).filter(Boolean) });
                           const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
                           const parts = _alloSplitPackChunks(encoded);
                           for (let i = 0; i < parts.length; i += 1) {
+                              assertCurrent();
                               await _alloMailboxCallWithRetry(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i] });
                           }
                           return { id, k };
                       },
                       publishPackRef: async (ref) => {
+                          assertCurrent();
                           const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', mbLive.code);
                           await updateDoc(sessionRef, { packRef: { id: ref.id, k: ref.k, n: ref.n, t: ref.t } });
                       },
                       onPackRefError: (prefErr) => warnLog('packRef publish failed:', prefErr?.message),
-                      trace: (event, detail) => _alloSessionSyncTrace(event, detail),
+                      trace: traceSession,
                   });
-                  await transport.publishResources(history);
-                  return;
+                  return transport.publishResources(history);
               }
-              // Stage 3: inline pack-cycle fallback retired (module-owned since
-              // stage 2). A not-yet-loaded module self-heals on the next
-              // history change; surface the miss for the Session tab.
-              _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'mailbox' });
-              warnLog('SessionTransport module not loaded yet; mailbox pack sync deferred to the next history change.');
-          } catch (e) {
+              traceSession('sync:transport-unavailable', { channel: 'mailbox' });
+              throw new Error('SessionTransport module is not loaded yet');
+          } }),
+          onError: e => {
+              traceSession('sync:write-failed', { channel: 'mailbox', code: String(e?.code || 'pack-sync-failed').slice(0, 80) });
               warnLog('Mailbox auto pack sync failed:', e?.message);
-          }
-      }, 1500);
-      return () => clearTimeout(timeoutId);
+          },
+          onRetry: detail => traceSession('mailbox:retry-scheduled', detail),
+      });
+      return () => { cancelled = true; retry.dispose(); };
   }, [history, mbLive, isTeacherMode, mbConfig, _mbPushOneResource, activeSessionAppId]);
   useEffect(() => {
       if (!mbLive || !mbConfig?.url) return undefined;
@@ -26375,7 +26557,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return () => { cancelled = true; };
   }, [mbLive?.joinUrl]);
   const resolveAssignmentResources = useCallback((resourceIds = null) => {
-      const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
+      const fallbackCurrent = _alloStudentSafeResources([generatedContent]);
       const resourceCandidates = _alloStudentSafeResources(history);
       if (Array.isArray(resourceIds)) {
           const requestedIds = new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean).slice(0, 25));
@@ -26400,7 +26582,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           sourceTopic,
           generatedContent,
           homeworkExpiryDays,
-          serializeResourceForStudentPack: _alloSerializeResourceForStudentPack,
+          serializeResourceForStudentPack: item => _alloSerializeResourceForStudentPack(item, 'qr'),
           stripUndefined,
           generateUUID,
           studentAiPolicyForShare,
@@ -26585,7 +26767,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
           // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
           // already delivered/self-healed the resources; this message only flips persistence.
-          const items = (hydratedHistoryRef.current || []).filter(it => it && it.id && it.type && !TEACHER_ONLY_TYPES.includes(it.type));
+          const items = _alloStudentSafeResources(hydratedHistoryRef.current || []);
           if (!items.length) { addToast(t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
           const shelf = {
               v: 1,
@@ -26625,8 +26807,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const assembled = _alloCollectResChunk(store, v);
           if (!assembled) return;
           try {
-              const resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              if (!resource || !resource.id || !resource.type || TEACHER_ONLY_TYPES.includes(resource.type)) return;
+              let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              resource = _alloStudentSafeResources([resource])[0];
+              if (!resource) return;
               setHistory(prev => {
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
                   const next = [...rest, resource];
@@ -27088,6 +27271,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // ref (set at the single increment site) purely so epoch changes become render-visible; every
   // guard keeps reading the ref.
   const [pdfDocumentEpochLive, setPdfDocumentEpochLive] = useState(0);
+  // BEGIN ALLO_PDF_HOST_LIFECYCLE
+  const _pdfHostLifecycleRef = useRef(null);
+  if (!_pdfHostLifecycleRef.current) _pdfHostLifecycleRef.current = {
+    hostId: _alloLifecycleNextId('host'), bundleId: _alloLifecycleBundleId, effectCycle: 0,
+    nextId: _alloLifecycleNextId, record: _alloLifecycleRecord,
+  };
+  const pdfAuditLifecycle = _pdfHostLifecycleRef.current;
+  pdfAuditLifecycle.readEpochs = () => ({ hostId: pdfAuditLifecycle.hostId,
+    hostBundleId: pdfAuditLifecycle.bundleId, hostEffectCycle: pdfAuditLifecycle.effectCycle,
+    refEpoch: pdfDocumentSelectionEpochRef.current, renderEpoch: pdfDocumentEpochLive });
+  useEffect(() => {
+    pdfAuditLifecycle.effectCycle += 1;
+    pdfAuditLifecycle.record('host mounted', pdfAuditLifecycle.readEpochs());
+    return () => pdfAuditLifecycle.record('host unmounted', pdfAuditLifecycle.readEpochs());
+  }, []);
+  useEffect(() => {
+    pdfAuditLifecycle.record('host epoch committed', pdfAuditLifecycle.readEpochs());
+  }, [pdfDocumentEpochLive]);
+  // END ALLO_PDF_HOST_LIFECYCLE
   // ── Epoch-mirror self-heal (2026-08-23, field log) ──────────────────────────────────────
   // Third recurrence of the epoch-desync class (2026-08-16 "no modal until re-upload",
   // 2026-08-18 "modal vanishes mid-audit", and today's field run: modal owned epoch 0 while the
@@ -27103,6 +27305,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const _onEpochHeal = (ev) => {
       try {
         const _e = ev && ev.detail && ev.detail.documentEpoch;
+        if (Number.isInteger(_e) && _e !== pdfDocumentEpochLive) {
+          const _key = String(ev.detail.runId || '') + ':' + _e + ':' + pdfDocumentEpochLive;
+          if (pdfAuditLifecycle.lastMismatch !== _key) {
+            pdfAuditLifecycle.lastMismatch = _key;
+            pdfAuditLifecycle.record('host epoch mismatch', { ...pdfAuditLifecycle.readEpochs(), eventEpoch: _e,
+              runId: ev.detail.runId || null, canHeal: _e === pdfDocumentSelectionEpochRef.current });
+          }
+        }
         if (Number.isInteger(_e)
             && _e === pdfDocumentSelectionEpochRef.current
             && _e !== pdfDocumentEpochLive) {
@@ -27759,6 +27969,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
   const invalidatePdfDocumentOperations = () => {
     const documentIntakeEpoch = ++pdfDocumentSelectionEpochRef.current;
+    pdfAuditLifecycle.record('document epoch advanced', pdfAuditLifecycle.readEpochs());
     setPdfDocumentEpochLive(documentIntakeEpoch); // render-visible mirror — see the note at the ref declaration
     invalidatePdfAuditRun();
     try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
@@ -28858,6 +29069,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // builder on the WRONG document (history, or "no content" in a
   // remediation-only session).
   const [exportPreviewSource, setExportPreviewSource] = useState('history');
+  const [builderResourceIds, setBuilderResourceIds] = useState(null); // null = all History; array = explicit lesson
   const [exportPreviewMode, setExportPreviewMode] = useState('print'); // 'print' | 'worksheet' | 'html'
   // Document Builder Tier 1.3 — single source of truth for default export
   // config. Used both as the initial React state AND as the merge target when
@@ -29073,23 +29285,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_universal_image_style', universalImageStyle); } catch (e) {} }, [universalImageStyle]);
   const [showNotebook, setShowNotebook] = useState(false);
+  // Mutations identify the artifact, never whichever view happens to be open
+  // when an asynchronous operation finishes. Updaters must be pure.
+  const _resourceMutationStateRef = useRef({});
+  _resourceMutationStateRef.current = { history, generatedContent, inputText };
+  const onUpdateResource = useCallback((resourceId, updater) => {
+    if (resourceId == null || typeof updater !== 'function') return false;
+    const id = String(resourceId);
+    const current = _resourceMutationStateRef.current;
+    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id)
+      || (current.generatedContent && String(current.generatedContent.id) === id ? current.generatedContent : null);
+    if (!artifact) return false;
+    const candidate = updater(artifact);
+    if (!candidate || candidate === artifact) return false;
+    const updatedAt = new Date().toISOString();
+    const apply = previous => {
+      if (!previous || String(previous.id) !== id || previous.type !== artifact.type) return previous;
+      const next = previous === artifact ? candidate : updater(previous);
+      if (!next || next === previous) return previous;
+      return { ...next, id: previous.id, type: previous.type, updatedAt };
+    };
+    setHistory(previous => previous.map(apply));
+    setGeneratedContent(apply);
+    return true;
+  }, [setHistory, setGeneratedContent]);
   const handleNoteUpdate = useCallback((key, value) => {
-    setGeneratedContent(prev => {
-      // Shared by note-taking AND anchor charts: the anchor module persists its sections — including
-      // the icon URLs it generates with callImagen — through this handler. Without 'anchor-chart'
-      // here, every anchor update hit `return prev` and was silently dropped, so generated icons
-      // never stuck (the slot kept showing the prompt text). (2026-06-30)
-      // Memory Aid Studio and Applied Challenge Studio use the same active-artifact and history update path.
-      if (!prev || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(prev.type)) return prev;
-      // Accept a functional updater so concurrent writes merge against the LATEST value instead of a
-      // stale snapshot — the anchor auto-gen fires one callImagen per section in parallel, and a
-      // plain-value write would let the last one to resolve clobber the others' icons.
-      const nextVal = typeof value === 'function' ? value(prev.data ? prev.data[key] : undefined) : value;
-      const updated = { ...prev, data: { ...(prev.data || {}), [key]: nextVal } };
-      setHistory(h => h.map(item => item.id === prev.id ? updated : item));
-      return updated;
+    if (!generatedContent || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(generatedContent.type)) return;
+    const resourceId = generatedContent.id;
+    onUpdateResource(resourceId, previous => {
+      const nextValue = typeof value === 'function' ? value(previous.data ? previous.data[key] : undefined) : value;
+      return { ...previous, data: { ...(previous.data || {}), [key]: nextValue } };
     });
-  }, []);
+  }, [generatedContent && generatedContent.id, generatedContent && generatedContent.type, onUpdateResource]);
   const [fillInTheBlank, setFillInTheBlank] = useState(false);
   const [creativeMode, setCreativeMode] = useState(false);
   const [noText, setNoText] = useState(true);
@@ -32710,6 +32937,73 @@ const parseTaggedContent = (text) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ai = React.useMemo(() => AIProvider ? new AIProvider(_aiConfig) : _aiConfig, [_aiConfigKey]);
 
+  // Script runs own a saved plan ID and input snapshot across navigation.
+  const [teachingScriptLoadState, setTeachingScriptLoadState] = React.useState('loading');
+  const [teachingScriptLoadAttempt, setTeachingScriptLoadAttempt] = React.useState(0);
+  const [teachingScriptRuns, setTeachingScriptRuns] = React.useState({});
+  const teachingScriptStateRef = React.useRef({});
+  const teachingScriptControllerRef = React.useRef(null);
+  const teachingScriptTeacher = isTeacherMode && !isParentMode && !isIndependentMode;
+  const teachingScriptActor = String(appId || '') + '|' + String(selectedProfileId || '') + '|' + String(user?.uid || '');
+  const teachingScriptCanGenerate = !!(ai && typeof ai.generateText === 'function' && (
+    _isCanvasEnv || _aiConfig?.apiKey || ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom', 'onnx-npu'].includes(_aiConfig?.backend)
+  ));
+  teachingScriptStateRef.current = {
+    history, generatedContent, isTeacherMode, isParentMode, isIndependentMode,
+    actorKey: teachingScriptActor, canGenerate: teachingScriptCanGenerate,
+    callText: (prompt, signal) => ai.generateText(prompt, { json: true, search: false, signal, maxTokens: 12000 })
+  };
+  React.useEffect(() => {
+    if (!teachingScriptTeacher || activeView !== 'lesson-plan') return undefined;
+    let mounted = true;
+    setTeachingScriptLoadState('loading');
+    Promise.resolve().then(() => {
+      if (typeof window.__alloEnsureLessonTeachingScript !== 'function') throw new Error('Teaching-script loader is unavailable.');
+      return window.__alloEnsureLessonTeachingScript();
+    }).then(() => { if (mounted) setTeachingScriptLoadState('ready'); })
+      .catch(() => { if (mounted) setTeachingScriptLoadState('error'); });
+    return () => { mounted = false; };
+  }, [teachingScriptTeacher, activeView, teachingScriptLoadAttempt]);
+  React.useEffect(() => {
+    return () => {
+      teachingScriptControllerRef.current?.dispose();
+      teachingScriptControllerRef.current = null;
+    };
+  }, [teachingScriptTeacher, teachingScriptActor]);
+  const getTeachingScriptController = () => {
+    if (!teachingScriptControllerRef.current && window.AlloModules?.LessonTeachingScriptHost) {
+      teachingScriptControllerRef.current = window.AlloModules.LessonTeachingScriptHost.createController({
+        getState: () => teachingScriptStateRef.current,
+        core: () => window.AlloModules.LessonTeachingScript,
+        research: () => window.AlloModules.LessonTeachingResearch,
+        ensureResearch: () => window.__alloEnsureLazyModule('LessonTeachingResearchModule', '__alloLazyLessonTeachingResearch', 'LessonTeachingResearch'),
+        callText: (prompt, signal) => teachingScriptStateRef.current.callText(prompt, signal),
+        search: (query, maxResults, searchQueryOverride) => WebSearchProvider?.search ? WebSearchProvider.search(query, maxResults, searchQueryOverride || query) : Promise.resolve({ results: [] }),
+        read: (url, options) => window.AlloModules.LessonTeachingResearch.readPublicGuidance(url, options),
+        updateResource: onUpdateResource,
+        onStatus: status => setTeachingScriptRuns(previous => ({ ...previous, [status.planId]: status }))
+      });
+    }
+    return teachingScriptControllerRef.current;
+  };
+  const onGenerateTeachingScript = settings => {
+    const current = teachingScriptStateRef.current;
+    if (current.generatedContent?.type !== 'lesson-plan') return Promise.resolve({ ok: false, error: 'Open the intended saved lesson plan first.' });
+    const controller = getTeachingScriptController();
+    return controller ? controller.generate(current.generatedContent.id, settings) : Promise.resolve({ ok: false, error: 'Teaching-script tools are still loading. Retry the tools.' });
+  };
+  const onCancelTeachingScript = planId => teachingScriptControllerRef.current?.cancel(planId);
+  const onUpdateTeachingScript = (planId, versionId, steps) => getTeachingScriptController()?.saveEdits(planId, versionId, steps) || { ok: false, error: 'Teaching-script tools are still loading.' };
+  const teachingScriptPlan = history.find(item => item?.type === 'lesson-plan' && String(item.id) === String(generatedContent?.id)) || generatedContent;
+  const teachingScriptMaterials = teachingScriptLoadState === 'ready' && window.AlloModules?.LessonTeachingScriptHost
+    ? window.AlloModules.LessonTeachingScriptHost.availableMaterials(teachingScriptPlan, history) : [];
+  const teachingScriptDefaultSettings = teachingScriptLoadState === 'ready' && window.AlloModules?.LessonTeachingScriptHost
+    ? window.AlloModules.LessonTeachingScriptHost.defaultSettings(teachingScriptPlan, { language: leveledTextLanguage }, teachingScriptMaterials) : {};
+  const onOpenTeachingMaterial = materialId => {
+    const material = teachingScriptMaterials.find(item => String(item.id) === String(materialId));
+    if (teachingScriptTeacher && material) handleRestoreView(material);
+  };
+
   const _sketchVisionBackend = String((_aiConfig && _aiConfig.backend) || 'gemini').trim().toLowerCase();
   const _sketchVisionProviderLabels = {
     gemini: 'Gemini',
@@ -32933,10 +33227,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         // points at the ENGLISH item id — repoint it at the translated copy when that resource
         // was translated in this batch, so auto-checking works for students on the translated pack.
         for (const newItem of newItems) {
-            if (newItem.type !== 'directions' || !newItem.data || typeof newItem.data !== 'object' || !Array.isArray(newItem.data.objectives)) continue;
+            if (newItem.type !== 'directions' || !newItem.data || typeof newItem.data !== 'object') continue;
             newItem.data = {
                 ...newItem.data,
-                objectives: newItem.data.objectives.map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),
+                objectives: (Array.isArray(newItem.data.objectives) ? newItem.data.objectives : []).map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),
+                ...(newItem.data.choiceBoard && typeof newItem.data.choiceBoard === 'object' ? {
+                    choiceBoard: { ...newItem.data.choiceBoard, items: (Array.isArray(newItem.data.choiceBoard.items) ? newItem.data.choiceBoard.items : []).map(card => card && _translatedIdMap[card.resourceId] ? { ...card, resourceId: _translatedIdMap[card.resourceId] } : card) }
+                } : {}),
             };
         }
         setHistory(prev => [...prev, ...newItems]);
@@ -33947,7 +34244,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     try {
       let _m = window.AlloModules && window.AlloModules.MiscHandlers;
       if (!_m || typeof _m.handleFileUpload !== 'function') {
-        try { window.__alloRetryFailedModules?.(); } catch (_) {}
+        try { window.__alloLazyFileIntake?.(); } catch (_) {}
         for (let attempt = 0; attempt < 300 && isPdfDocumentIntakeCurrent(documentIntakeEpoch); attempt++) {
           await new Promise((resolve) => setTimeout(resolve, 100));
           _m = window.AlloModules && window.AlloModules.MiscHandlers;
@@ -33955,7 +34252,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         }
       }
       if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
-      if (!_m || typeof _m.handleFileUpload !== 'function') throw new Error('The file intake module did not finish loading.');
+      if (!_m || typeof _m.handleFileUpload !== 'function') throw new Error('The file intake module did not finish loading. Select Upload and choose the file again to retry.');
       setGenerationStep(t('status_steps.extracting_text'));
       return await _m.handleFileUpload(stableEvent, _alloMiscHandlersDeps(documentIntakeEpoch));
     } catch (err) {
@@ -35243,6 +35540,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   window.__alloEnsureGlossaryEntryIds = _ensureGlossaryReadAloudEntryIds;
   const _enumerateReadAloudResourceSegments = (resource) => {
+    const adapters = window.AlloModules?.ResourceReadAloud;
+    if (adapters?.supports(resource?.type)) return adapters.enumerate(resource);
     if (!resource) return [];
     if (String(resource.type || '').toLowerCase() === 'glossary') {
       const activeResource = _ensureGlossaryReadAloudEntryIds() || resource;
@@ -35960,20 +36259,20 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     timelineImageStyle,
     TIMELINE_MODE_DEFINITIONS,
     t, cleanJson, addToast, callImagen,
-    setGeneratedContent, setHistory, setIsRevisingTimeline, setTimelineRevisionInput,
+    setGeneratedContent, setHistory, onUpdateResource, setIsRevisingTimeline, setTimelineRevisionInput,
   });
   const handleAutoFixTimeline = () => _timelineRevision && _timelineRevision.handleAutoFixTimeline({
     generatedContent,
     TIMELINE_MODE_DEFINITIONS,
     t, cleanJson, addToast,
-    setGeneratedContent, setHistory, setIsAutoFixingTimeline,
+    setGeneratedContent, setHistory, onUpdateResource, setIsAutoFixingTimeline,
   });
   const handleVerifyTimelineAccuracy = () => _timelineRevision && _timelineRevision.handleVerifyTimelineAccuracy({
     generatedContent,
     TIMELINE_MODE_DEFINITIONS,
     gradeLevel,
     t, cleanJson, addToast,
-    setGeneratedContent, setHistory, setIsVerifyingTimeline,
+    setGeneratedContent, setHistory, onUpdateResource, setIsVerifyingTimeline,
   });
   const handleGenerateTimelineItemImage = (index, event, date, customPromptOverride) => _timelineRevision && _timelineRevision.handleGenerateTimelineItemImage({
     index, event, date, customPromptOverride,
@@ -35981,7 +36280,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     timelineImageStyle,
     autoRemoveWords,
     t, addToast, callImagen, callGeminiImageEdit,
-    setGeneratedContent, setHistory, setIsGeneratingTimelineImage,
+    setGeneratedContent, setHistory, onUpdateResource, setIsGeneratingTimelineImage,
   });
   // Rebuild the per-sentence read-aloud store whenever the active resource
   // changes, so the karaoke player serves vetted/persisted audio instantly
@@ -37657,6 +37956,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                       if (ST && typeof ST.createFirebaseTransport === 'function') {
                           const transport = ST.createFirebaseTransport({
                               teacherOnlyTypes: TEACHER_ONLY_TYPES,
+                      projectStudentActivityResource: _alloProjectStudentActivityResource,
                               uploadAssets: (items) => uploadSessionAssets(activeSessionAppId || appId, items, activeSessionCode),
                               prepareResources: (items) => prepareSessionResourcesForWrite(items),
                               write: (payload) => writeToSession(doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode), payload),
@@ -37682,7 +37982,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                       // re-fires on every history change, so a not-yet-loaded module
                       // self-heals on the next tick. Surface the miss instead of
                       // silently duplicating the algorithm.
-                      _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' });
+                      _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase', sessionPath: 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode });
                       warnLog('SessionTransport module not loaded yet; resource sync deferred to the next history change.');
                   } catch (e) {
                       warnLog("Failed to sync resources to session:", e);
@@ -37920,7 +38220,31 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const _builderOpenerElRef = React.useRef(null);
   const _builderDraftRestoreRef = React.useRef(false);
   const _builderRecoverySaveTimerRef = React.useRef(null);
-  const openExportPreview = (mode = 'print') => {
+  // Builder scope helpers are intentionally separate from ordinary History exports.
+  const selectBuilderResources = (items, ids) => {
+    const available = Array.isArray(items) ? items : [];
+    if (ids === null) return { ready: true, items: available, ids: null };
+    if (!Array.isArray(ids) || !ids.length || ids.some(id => typeof id !== 'string' || !id)) return { ready: false, items: [], ids: [] };
+    const selectedIds = [...new Set(ids)];
+    const selected = available.filter(item => item && selectedIds.includes(item.id));
+    const ready = selectedIds.every(id => selected.some(item => item.id === id));
+    return { ready, items: ready ? selected : [], ids: selectedIds };
+  };
+  const getBuilderHistory = () => selectBuilderResources(history, builderResourceIds).items;
+  const getBuilderExportableHistory = () => getExportableHistory(getBuilderHistory());
+  const getBuilderSkippedResources = () => getSkippedResources(getBuilderHistory());
+  const reportBuilderResourceProblem = () => {
+    addToast(t('guided.export_resources_missing') || 'This lesson has no available resources, or some are missing. Review History before opening its package.', 'error');
+    return false;
+  };
+  const openExportPreview = (mode = 'print', resourceIds = null) => {
+    // A restored edited project can retain its scoped document on the first open.
+    const restoredDraft = window.__alloBuilderEditedPack;
+    if (resourceIds === null && restoredDraft?.restoredFromProject && Array.isArray(restoredDraft.resourceIds)) resourceIds = restoredDraft.resourceIds;
+    const selection = selectBuilderResources(history, resourceIds);
+    if (!selection.ready || (resourceIds !== null && !getExportableHistory(selection.items).length)) return reportBuilderResourceProblem();
+    setBuilderResourceIds(selection.ids);
+    if (restoredDraft?.restoredFromProject) restoredDraft.restoredFromProject = false;
     requestExportPreviewModules();
     ensureExportLibraries();
     try { _builderOpenerElRef.current = document.activeElement; } catch (_) {}
@@ -38050,7 +38374,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       } catch (_) {}
       const html = '<!DOCTYPE html>\n' + clone.outerHTML;
       if (exportPreviewSource === 'history') {
-        if (doc.body.getAttribute('data-allo-user-edited') === '1') window.__alloBuilderEditedPack = { html, at: Date.now(), source: 'history', historySignature: _getBuilderHistorySignature() };
+        if (doc.body.getAttribute('data-allo-user-edited') === '1') window.__alloBuilderEditedPack = { html, at: Date.now(), source: 'history', historySignature: _getBuilderHistorySignature(), resourceIds: builderResourceIds };
         return;
       }
       if (exportPreviewSource !== 'remediation') return;
@@ -38091,13 +38415,38 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     setShowExportPreview(v);
   };
   const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'lingua-config', 'lingua-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment', 'video-ref']);
-  const getExportableHistory = (items = history) => (Array.isArray(items) ? items : []).filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
+  const getExportableHistory = (items = history) => (Array.isArray(items) ? items : []).filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type)).map(item => {
+    const studio = window.AlloModules && window.AlloModules.StudioResponse;
+    if (!isTeacherMode && ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type)) {
+      return studio?.supports(item.type) ? (studio.projectForExport || studio.project)(item, studentResponses[item.id]?.studio) : null;
+    }
+    return item;
+  }).filter(Boolean);
   const _getBuilderHistorySignature = (items = history) => {
     let raw = '';
     try { raw = JSON.stringify(getExportableHistory(items)); } catch (_) { raw = String((Array.isArray(items) ? items : []).length); }
     let hash = 2166136261;
     for (let i = 0; i < raw.length; i++) { hash ^= raw.charCodeAt(i); hash = Math.imul(hash, 16777619); }
     return raw.length + ':' + (hash >>> 0).toString(16);
+  };
+  const getBuilderGuidedDeliveryContext = () => {
+    if (!guidedMode || exportPreviewSource !== 'history' || !Array.isArray(builderResourceIds)) return null;
+    if (!Array.isArray(guidedCreatedHistoryIds) || !guidedCreatedHistoryIds.length || guidedCreatedHistoryIds.some(id => typeof id !== 'string' || !id)) return null;
+    const selection = selectBuilderResources(history, builderResourceIds);
+    const runIds = [...new Set(guidedCreatedHistoryIds)].sort();
+    if (!selection.ready || selection.ids.length !== runIds.length || !runIds.every(id => selection.ids.includes(id))) return null;
+    if (!getExportableHistory(selection.items).length) return null;
+    return JSON.stringify({ ids: runIds, source: String(inputText || '').trim(), goal: guidedPlanBrief?.goal || '', resources: _getBuilderHistorySignature(selection.items) });
+  };
+  const builderGuidedDeliveryContext = useMemo(getBuilderGuidedDeliveryContext, [guidedMode, exportPreviewSource, builderResourceIds, guidedCreatedHistoryIds, history, inputText, guidedPlanBrief?.goal, isTeacherMode, studentResponses]);
+  const _builderGuidedDeliveryContextRef = useRef(null);
+  _builderGuidedDeliveryContextRef.current = builderGuidedDeliveryContext;
+  const confirmBuilderGuidedDelivery = (exportContext) => {
+    // Async callbacks retain the context from their starting render. Compare it
+    // with the current lesson before recording evidence or advancing its step.
+    if (!exportContext || exportContext !== _builderGuidedDeliveryContextRef.current) return false;
+    completeGuidedDelivery('exportCreated');
+    return true;
   };
   const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024;
   const BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES = 32 * 1024 * 1024;
@@ -38258,7 +38607,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       const signature = _getBuilderHistorySignature();
       if (!draft || draft.source !== 'history' || draft.historySignature !== signature) return null;
       const cleanDraft = _sanitizeBuilderProjectDraft(draft.html, signature);
-      return cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
+      const packed = cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
+      return packed ? { ...packed, resourceIds: Array.isArray(draft.resourceIds) ? draft.resourceIds : null } : null;
     } catch (_) { return null; }
   };
   const _restoreBuilderDraftFromProject = async (candidate, loadedHistory, ownership = null) => {
@@ -38273,6 +38623,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       if (!restoreIsCurrent()) return false;
       window.__alloBuilderEditedPack = null;
       if (candidate == null) return true;
+      const restoredSelection = selectBuilderResources(loadedHistory, candidate.resourceIds ?? null);
+      if (!restoredSelection.ready) return false;
       const signature = _getBuilderHistorySignature(loadedHistory);
       const unpackedHtml = await _unpackBuilderProjectDraft(candidate, signature);
       if (!restoreIsCurrent()) return false;
@@ -38281,7 +38633,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         addToast(t('toasts.builder_draft_skipped') || 'A saved Document Builder draft was not restored because it was stale or unsafe.', 'info');
         return false;
       }
-      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true, storedVersion: candidate.version };
+      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), resourceIds: restoredSelection.ids, restoredFromProject: true, storedVersion: candidate.version };
       addToast(t('toasts.builder_draft_restored') || 'Document Builder edits were restored with this project.', 'success');
       return true;
     } catch (_) {
@@ -40301,8 +40653,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       studentProgressLog, stickers, wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary,
       wordSoundsBadges, phonemeMastery, wordSoundsDailyProgress, wordSoundsConfusionPatterns,
       wordSoundsScore, canvasRecoveryRevision, canvasRecoveryVaultState.enabled, canvasRecoveryVaultState.locked
-  ]);  const getSkippedResources = () => {
-    const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
+  ]);  const getSkippedResources = (items = history) => {
+    const skipped = items.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
     return skipped.map(item => item.title || getDefaultTitle(item.type, item));
   };
 
@@ -40313,7 +40665,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       _builderDraftRestoreRef.current = true;
       try {
         const draft = window.__alloBuilderEditedPack;
-        if (draft && draft.source === 'history' && draft.historySignature === _getBuilderHistorySignature() && typeof draft.html === 'string' && /<body[\s>]/i.test(draft.html)) return draft.html;
+        if (draft && draft.source === 'history' && draft.historySignature === _getBuilderHistorySignature() && JSON.stringify(draft.resourceIds ?? null) === JSON.stringify(builderResourceIds) && typeof draft.html === 'string' && /<body[\s>]/i.test(draft.html)) return draft.html;
       } catch (_) {}
     }
     // Remediation pathway (Expert mode): render the REMEDIATED document, not
@@ -40343,7 +40695,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     // exportConfig so doc_pipeline embeds it + the Save button in the
     // student HTML. Only the interactive 'print'/'html' modes get this;
     // worksheet (paper) mode skips since kids hand in paper.
-    const exportableResources = getExportableHistory();
+    const exportableResources = getBuilderExportableHistory();
     const offlineAssignmentId = alloStableAssignmentId(exportableResources, sourceTopic || generatedContent?.title || 'AlloFlow assignment');
     const stableClassId = rosterKey?.classId || rosterKey?.submissionKey?.classId || '';
     // Mailbox return leg (2026-08-23): when a non-expired hosted homework share
@@ -40373,11 +40725,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const annotationsByResource = { ...(stickersMapRef.current || {}) };
     if (activeResourceId) annotationsByResource[activeResourceId] = Array.isArray(stickers) ? stickers : [];
     const cfgWithSubmissionKey = { ...cfgBase, annotations: [], annotationsByResource };
-    return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
+    return generateFullPackHTML(exportableResources, sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
   };
   const getSlidesPreviewHTML = () => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
-    if (_m && typeof _m.getSlidesPreviewHTML === 'function') return _m.getSlidesPreviewHTML({ sourceTopic, gradeLevel, getExportableHistory, t });
+    if (_m && typeof _m.getSlidesPreviewHTML === 'function') return _m.getSlidesPreviewHTML({ sourceTopic, gradeLevel, getExportableHistory: getBuilderExportableHistory, t });
     return '';
   };
     const _exportPreviewErrorRef = React.useRef(null);
@@ -40396,7 +40748,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         a11yInspectMode,
     });
     warnLog('[updateExportPreview] ExportPreviewHelpers module not loaded yet — preview refresh deferred.');
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas]);
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas]);
   _docPipelineLiveDepsRef.current.updateExportPreview = updateExportPreview;
 
   React.useEffect(() => {
@@ -40418,7 +40770,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     };
     tryRender();
     return () => { cancelled = true; };
-  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, studentResponses, selectedFont, updateExportPreview]);
+  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, studentResponses, selectedFont, updateExportPreview]);
 
   const setExportConfigAndRefresh = (updater) => {
     setExportConfig(updater);
@@ -40443,16 +40795,17 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     return '';
   };
   const executeExportFromPreview = async () => {
+    if (exportPreviewSource === 'history' && !selectBuilderResources(history, builderResourceIds).ready) return reportBuilderResourceProblem();
     _removeBuilderCropUi(); // the module serializes the live iframe — crop chrome must not ride along
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.executeExportFromPreview === 'function') {
       return _m.executeExportFromPreview({
         _docPipeline, addToast, t,
         exportPreviewMode, exportPreviewRef,
-        generateFullPackHTML, getExportableHistory, getSkippedResources,
-        sourceTopic, studentResponses, exportConfig, history,
+        generateFullPackHTML, getExportableHistory: getBuilderExportableHistory, getSkippedResources: getBuilderSkippedResources,
+        sourceTopic, studentResponses, exportConfig, history: getBuilderHistory(),
         callTTS, selectedVoice,
-        setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides
+        setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides: () => handleExportSlides({ history: getBuilderHistory() })
       });
     }
     addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
@@ -40563,12 +40916,10 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           });
       } else {
           const text = generatedContent?.data.text || "";
+          const frames = window.AlloModules && window.AlloModules.SentenceFramesView;
+          if (frames && typeof frames.isParagraphComplete === 'function') return frames.isParagraphComplete(text, responses);
           const matches = text.match(/\[.*?\]/g);
-          if (!matches || matches.length === 0) return false;
-          return matches.every((_, idx) => {
-              const val = responses[`paragraph-${idx}`];
-              return val && val.trim().length > 0;
-          });
+          return !!matches && matches.length > 0 && matches.every((_, index) => String(responses['paragraph-' + (index * 2 + 1)] || '').trim());
       }
   }, [generatedContent, studentResponses]);
   const downloadSubmissionBackup = (submissionData, filename) => {
@@ -40596,7 +40947,18 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           'litlab-submission', 'lingua-submission',
       ];
       const filteredContent = history.filter(item => relevantTypes.includes(item.type));
-      const cleanContent = sanitizeSubmissionData(filteredContent);
+      const studioApi = window.AlloModules && window.AlloModules.StudioResponse;
+      const cleanContent = sanitizeSubmissionData(filteredContent.filter(item => !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type) || studioApi).map(item =>
+          studioApi && studioApi.supports(item.type) ? studioApi.toSubmission(item, studentResponses[item.id]?.studio) : item
+      ));
+      // Both response aliases use the same bounded adapter; raw images and private
+      // practice must not bypass the content boundary through the autosave lane.
+      const submissionResponses = Object.fromEntries(Object.entries(studentResponses).map(([id, answers]) => {
+          if (!answers || typeof answers !== 'object' || !('studio' in answers)) return [id, answers];
+          const { studio, ...rest } = answers;
+          return [id, rest];
+      }));
+      if (studioApi) filteredContent.filter(item => studioApi.supports(item.type)).forEach(item => Object.assign(submissionResponses, studioApi.toResponseEntries(item, studentResponses[item.id]?.studio)));
       const submissionData = {
           kind: 'alloflow-student-submission',
           schemaVersion: 2,
@@ -40617,8 +40979,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           ...(rosterKey?.classId ? { classId: rosterKey.classId } : {}),
           stats: { ...calculateStudentStats(), summary: summaryStats },
           content: cleanContent,
-          answers: studentResponses,
-          responses: studentResponses,
+          answers: submissionResponses,
+          responses: submissionResponses,
           gameCompletions: gameCompletions,
       };
       // Work Story rides whenever the TEACHER enabled it for this assignment
@@ -41007,7 +41369,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       if (!isTeacherMode || !item || !item.id) return false;
       const liveChannel = activeSessionCode || (mbLive && mbMode === 'sync');
       if (!liveChannel) return false;
-      if (TEACHER_ONLY_TYPES.includes(item.type)) {
+      item = _alloStudentSafeResources([item])[0];
+      if (!item) {
           if (options.blockedToast) addToast(options.blockedToast, 'info');
           return false;
       }
@@ -41217,7 +41580,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack', workStory: packet && packet.workStory === true });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const rawResources = Array.isArray(packet?.resources)
-                  ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
+                  ? _alloStudentSafeResources(packet.resources)
                   : [];
               if (!rawResources.length) throw new Error('Pack has no resources');
               if (cancelled) return;
@@ -41614,7 +41977,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                   mailbox: { url: entry.u, id: entry.id, secret: String(entry.k) },
               } : null);
               const rawResources = Array.isArray(packet?.resources)
-                  ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
+                  ? _alloStudentSafeResources(packet.resources)
                   : [];
               if (!rawResources.length) throw new Error('Pack has no resources');
               setHistory(rawResources);
@@ -41867,36 +42230,48 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_m && typeof _m.handleGenerateLessonPlan === "function") return _m.handleGenerateLessonPlan(switchView, _alloCmapHandlersDeps());
     throw new Error("[handleGenerateLessonPlan] CmapHandlers module not loaded - reload the page");
   };
+  const _extensionGuideRequests = useRef(new Map());
+  useEffect(() => { setIsGeneratingExtensionGuide({}); }, [generatedContent && generatedContent.id]);
   const handleGenerateExtensionGuide = async (index) => {
-    if (!generatedContent || !Array.isArray(generatedContent?.data.extensions)) return;
-    const activity = generatedContent?.data.extensions[index];
-    if (activity.guide) return;
-    setIsGeneratingExtensionGuide(prev => ({...prev, [index]: true}));
+    if (!generatedContent || generatedContent.type !== 'lesson-plan' || !Array.isArray(generatedContent.data?.extensions)) return;
+    const resourceId = generatedContent.id;
+    const activity = generatedContent.data.extensions[index];
+    if (!activity || activity.guide) return;
+    const extensionId = activity.id || ('extension-' + resourceId + '-' + index);
+    const requestKey = String(resourceId) + ':' + extensionId;
+    if (_extensionGuideRequests.current.has(requestKey)) return;
+    const request = {};
+    _extensionGuideRequests.current.set(requestKey, request);
+    onUpdateResource(resourceId, item => ({ ...item, data: { ...item.data,
+      extensions: item.data.extensions.map((extension, i) => i === index && !extension.id
+        ? { ...extension, id: extensionId } : extension)
+    } }));
+    setIsGeneratingExtensionGuide(previous => ({ ...previous, [index]: true }));
     try {
-        const prompt = `
-        Create a concise step-by-step teacher guide for this lesson extension activity: "${activity.title}".
-        Context: ${activity.description}
-        Target Grade: ${gradeLevel}
-        Provide:
-        1. Materials Needed
-        2. Preparation
-        3. Step-by-Step Instructions
-        Format using simple Markdown.
-        `;
-        const guide = await callGemini(prompt);
-        const newData = { ...generatedContent?.data };
-        const newExtensions = [...newData.extensions];
-        newExtensions[index] = { ...activity, guide: guide };
-        newData.extensions = newExtensions;
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-        addToast(t('toasts.guide_generated'), "success");
-    } catch (e) {
-        warnLog("Unhandled error:", e);
-        addToast(t('toasts.guide_generate_failed'), "error");
+      const prompt = 'Create a concise step-by-step teacher guide for this lesson extension activity: "'
+        + activity.title + '".\nContext: ' + activity.description
+        + '\nTarget Grade: ' + (generatedContent.config?.grade || generatedContent.grade || gradeLevel)
+        + '\nProvide materials, preparation, and step-by-step instructions using simple Markdown.';
+      const guide = await callGemini(prompt);
+      if (_extensionGuideRequests.current.get(requestKey) !== request) return;
+      const saved = onUpdateResource(resourceId, item => {
+        if (item.type !== 'lesson-plan' || !Array.isArray(item.data?.extensions)) return item;
+        const at = item.data.extensions.findIndex(extension => extension.id === extensionId);
+        if (at < 0) return item;
+        const latest = item.data.extensions[at];
+        if (latest.title !== activity.title || latest.description !== activity.description || latest.guide) return item;
+        const extensions = item.data.extensions.map((extension, i) => i === at ? { ...extension, guide } : extension);
+        return { ...item, data: { ...item.data, extensions } };
+      });
+      addToast(saved ? t('toasts.guide_generated') : (t('resource_edit.changed_retry') || 'This activity changed. Generate the guide again.'), saved ? 'success' : 'info');
+    } catch (error) {
+      warnLog('Extension guide generation failed', error);
+      addToast(t('toasts.guide_generate_failed'), 'error');
     } finally {
-        setIsGeneratingExtensionGuide(prev => ({...prev, [index]: false}));
+      if (_extensionGuideRequests.current.get(requestKey) === request) _extensionGuideRequests.current.delete(requestKey);
+      if (String(_resourceMutationStateRef.current.generatedContent?.id) === String(resourceId)) {
+        setIsGeneratingExtensionGuide(previous => ({ ...previous, [index]: false }));
+      }
     }
   };
   const handleGenerateProgression = async () => {
@@ -43792,7 +44167,7 @@ ${_alloActivityContext(activity)}
       const evaluated = _alloEvaluateObjectives(normalized.objectives, _alloObjectiveSignals, directionsProgress[assignmentDirections.id]);
       return { title: assignmentDirections.title || (t('directions.title') || 'Assignment Directions'), done: evaluated.filter((goal) => goal.done).length, total: evaluated.length };
     };
-    const getAssignmentMapItems = () => (Array.isArray(history) ? history : []).filter((item) => item && item.id && item.type && item.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(item.type)).slice(0, 12);
+    const getAssignmentMapItems = () => _alloStudentSafeResources(history).filter(item => item.type !== 'directions').slice(0, 12);
     const getNextAssignmentStep = () => {
       if (!assignmentDirections || !assignmentDirections.id) return null;
       const normalized = _alloNormalizeDirectionsData(assignmentDirections.data);
@@ -43847,7 +44222,7 @@ ${_alloActivityContext(activity)}
     const rubricActivityIndex = Array.isArray(generatedContent && generatedContent.data)
       ? generatedContent.data.findIndex((activity) => activity && activity.title && !(activity.rubric && Array.isArray(activity.rubric.criteria) && activity.rubric.criteria.length))
       : -1;
-    const latestResumableWork = (Array.isArray(history) ? history.slice().reverse() : []).find((item) => item && item.id && item.type && (commandAudience !== 'student' || !TEACHER_ONLY_TYPES.includes(item.type))) || null;
+    const latestResumableWork = (Array.isArray(history) ? history.slice().reverse() : []).find((item) => item && item.id && item.type && (commandAudience !== 'student' || _alloIsStudentSafeResource(item))) || null;
     // latestStudentPreviewShare / createGuidedHomeworkShare /
     // previewGuidedStudentAssignment moved to COMPONENT scope (above) —
     // they were defined here but referenced from render JSX (the guided
@@ -44905,8 +45280,8 @@ ${_alloActivityContext(activity)}
       },
       canGenerateCurrentRubric: rubricActivityIndex >= 0,
       generateCurrentRubric: () => rubricActivityIndex >= 0 ? handleGenerateBrainstormRubric(rubricActivityIndex) : Promise.resolve(false),
-      canShareAssignment: getAssignmentMapItems().length > 0 || !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type)),
-      shareResourceCount: Math.max(1, getAssignmentMapItems().length || ((generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type)) ? 1 : 0)),
+      canShareAssignment: getAssignmentMapItems().length > 0 || !!(generatedContent && generatedContent.id && _alloIsStudentSafeResource(generatedContent)),
+      shareResourceCount: Math.max(1, getAssignmentMapItems().length || ((generatedContent && generatedContent.id && _alloIsStudentSafeResource(generatedContent)) ? 1 : 0)),
       shareExpiryDays: homeworkExpiryDays,
       shareStudentAiPolicy: studentAiPolicyForShare,
       shareAssignment: createHomeworkAssignmentLink,
@@ -47387,7 +47762,7 @@ ${_alloActivityContext(activity)}
     throw new Error("[handleGenerateTermEtymology] GlossaryHelpers module not loaded - reload the page");
   };
   const csDocumentId = generatedContent
-      && generatedContent.type === 'concept_sort'
+      && generatedContent.type === 'concept-sort'
       && generatedContent.id != null
       ? String(generatedContent.id)
       : '';
@@ -47517,20 +47892,15 @@ ${_alloActivityContext(activity)}
       }
   }, [gradeLevel, callGemini, callImagen, callGeminiImageEdit, conceptImageMode, universalImageStyle, conceptSortAutoRemoveWords, addToast, t]);
   const csUpdateData = useCallback((mutator, expectedDocumentId = null) => {
-      setGeneratedContent(prev => {
-          if (!prev || !prev.data) return prev;
-          if (expectedDocumentId !== null) {
-              const actualDocumentId = prev.type === 'concept_sort' && prev.id != null ? String(prev.id) : '';
-              if (actualDocumentId !== String(expectedDocumentId)) return prev;
-          }
-          const updated = Object.assign({}, prev, { data: mutator(prev.data) });
-          // Mirror the edit into history so save/load and page reload retain it.
-          // Every other generated-item editor in this file pairs setGeneratedContent
-          // with setHistory; csUpdateData was the lone outlier.
-          setHistory(h => h.map(it => it && it.id === prev.id ? updated : it));
-          return updated;
+      const active = _resourceMutationStateRef.current.generatedContent;
+      if (!active || active.type !== 'concept-sort' || active.id == null || !active.data) return false;
+      if (expectedDocumentId !== null && String(active.id) !== String(expectedDocumentId)) return false;
+      return onUpdateResource(active.id, previous => {
+          if (previous.type !== 'concept-sort' || !previous.data) return previous;
+          const nextData = mutator(previous.data);
+          return nextData === previous.data ? previous : { ...previous, data: nextData };
       });
-  }, [setHistory]);
+  }, [onUpdateResource]);
   const csDeleteItem = useCallback((itemId) => {
       csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
@@ -47642,9 +48012,9 @@ ${_alloActivityContext(activity)}
           }), run.identity);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regenerated') || 'Image regenerated.', 'success');
       } catch (e) {
+          if (!csAsyncRunIsCurrent(run)) return;
           warnLog('csRegenerateItemImage failed', e);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regen_failed') || 'Image regeneration failed. Try again or upload your own.', 'error');
-          if (!csAsyncRunIsCurrent(run)) return;
       } finally {
           if (csAsyncRunIsCurrent(run)) setCsBusyId(null);
       }
@@ -47731,8 +48101,6 @@ ${_alloActivityContext(activity)}
       reader.readAsDataURL(file);
   }, [csUpdateData, addToast, t, csBeginAsyncRun, csAsyncRunIsCurrent]);
   const csClearItemImage = useCallback((itemId) => {
-          cleanupReader();
-          if (!csAsyncRunIsCurrent(run)) return;
       if (!itemId) return;
       csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
@@ -47886,7 +48254,8 @@ ${_alloActivityContext(activity)}
       const validHistory = history.filter(item => item && item.id && item.type);
       let filtered = isTeacherMode
           ? validHistory
-          : validHistory.filter(item => !['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type));
+          : validHistory.filter(item => !['udl-advice', 'alignment-report'].includes(item.type))
+              .map(item => item.type === 'brainstorm' ? _alloProjectStudentActivityResource(item) : item).filter(Boolean);
       if (isTeacherMode) {
           if (activeUnitId === 'uncategorized') {
               filtered = filtered.filter(item => !item.unitId);
@@ -48257,6 +48626,31 @@ ${_alloActivityContext(activity)}
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
+  const onCorrectAnalysisText = (resourceId, expectedOriginalText, correctedText, fixedNotes) => {
+    const state = _resourceMutationStateRef.current;
+    const resource = state.history.find(item => item && String(item.id) === String(resourceId))
+      || (String(state.generatedContent?.id) === String(resourceId) ? state.generatedContent : null);
+    if (!resource || resource.type !== 'analysis' || resource.data?.originalText !== expectedOriginalText) return false;
+    const selectedNotes = new Set(Array.isArray(fixedNotes) ? fixedNotes : []);
+    const accepted = onUpdateResource(resourceId, previous => {
+      if (previous.data?.originalText !== expectedOriginalText) return previous;
+      const evidence = _getFreshTextComplexityEvidence(previous, correctedText);
+      const data = { ...previous.data, originalText: correctedText,
+        grammar: (Array.isArray(previous.data.grammar) ? previous.data.grammar : []).map(note => selectedNotes.has(note) ? '✓ FIXED: ' + note : note)
+      };
+      if (evidence.localStats) data.localStats = evidence.localStats;
+      else delete data.localStats;
+      const next = { ...previous, data, targetGradeLevel: evidence.targetGrade, instructionalText: evidence.instructionalText };
+      delete next.levelCheck;
+      delete next.alignmentCheck;
+      return next;
+    });
+    if (accepted) {
+      _recordTextChange('analysis', resourceId, expectedOriginalText, correctedText);
+      setInputText(previous => previous === expectedOriginalText ? correctedText : previous);
+    }
+    return accepted;
+  };
   // ── Global text undo/redo (2026-07-02) ─────────────────────────────
   // One chronological stack across the three editable text surfaces:
   //   'input'      → the source textarea (inputText): typing, paste, AI
@@ -48594,12 +48988,11 @@ ${_alloActivityContext(activity)}
                  .filter(Boolean)
                  .join('\n\n');
          } else {
-             let pIdx = 0;
-             initialText = generatedContent?.data.text.replace(/\[.*?\]/g, () => {
-                  const val = responses[`paragraph-${pIdx}`];
-                  pIdx++;
-                  return val ? val.trim() : '_____';
-             });
+             const frames = window.AlloModules && window.AlloModules.SentenceFramesView;
+             initialText = frames && typeof frames.serializeParagraph === 'function'
+                 ? frames.serializeParagraph(generatedContent.data.text, responses)
+                 : String(generatedContent.data.text || '').split(/(\[.*?\])/).map((part, index) => index % 2
+                     ? (String(responses['paragraph-' + index] || '').trim() || '_____') : part).join('');
          }
      }
      setGradingSession({
@@ -49014,6 +49407,20 @@ ${_alloActivityContext(activity)}
       badge: 'bg-white/20',
     };
   }, [theme]);
+  // State-based triggers cover buttons, voice commands, restored work, and
+  // live-session joins. Retrying calls the registry loader again; pending and
+  // registered modules are deduplicated there, without a sticky started flag.
+  React.useEffect(() => {
+    if (isAppReady && showReportWriter) window.__alloLazyReportWriter?.();
+  }, [isAppReady, showReportWriter]);
+  React.useEffect(() => {
+    if (isAppReady && mathMode === 'Fluency Probes') window.__alloLazyMathFluency?.();
+  }, [isAppReady, mathMode]);
+  React.useEffect(() => {
+    if (isAppReady && activeSessionCode) window.__alloLazyLivePolling?.();
+  }, [isAppReady, activeSessionCode]);
+  // Share one fresh adapter between command surfaces in this render.
+  const _alloRenderCommandContext = isAppReady && window.AlloModules?.AlloCommands ? _alloCmdCtx() : null;
   return (
     <ActiveViewContext.Provider value={_activeViewCtx}>
     <RoleContext.Provider value={_roleCtx}>
@@ -49847,272 +50254,7 @@ ${_alloActivityContext(activity)}
         </div>
       )}
       {showDirectionsComposer && (
-        <div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
-          <div role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
-              <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
-              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
-            <div className="space-y-2">
-              <input autoFocus value={mbDirectionsDraft?.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder={t('directions.title_placeholder') || "Title (e.g. Tonight's homework)"} aria-label={t('directions.title_aria') || 'Directions title'} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
-              <textarea value={mbDirectionsDraft?.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder={t('directions.body_placeholder') || 'Directions for students: the steps, and what finished work looks like.'} aria-label={t('directions.body_aria') || 'Directions for students'} rows={6} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
-              <input value={mbDirectionsDraft?.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder={t('directions.due_placeholder') || 'Due (optional, e.g. Friday)'} aria-label={t('directions.due_aria') || 'Due date'} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
-              <div className="border-t border-indigo-100 pt-2">
-                <label className="flex items-start gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={mbDirectionsDraft?.choiceBoard?.enabled === true}
-                    onChange={e => setMbDirectionsDraft(p => {
-                      const next = { ...(p || {}) };
-                      if (!e.target.checked) {
-                        delete next.choiceBoard;
-                        return next;
-                      }
-                      next.choiceBoard = {
-                        enabled: true,
-                        title: next.choiceBoard?.title || 'Choose an activity',
-                        prompt: next.choiceBoard?.prompt || 'Pick one activity to work on first. You can return here and choose another later.',
-                        choices: Array.isArray(next.choiceBoard?.choices) ? next.choiceBoard.choices : []
-                      };
-                      return next;
-                    })}
-                    aria-label="Offer an activity choice board"
-                    className="mt-0.5 w-4 h-4 accent-indigo-600 flex-shrink-0"
-                  />
-                  <span className="text-[11px] font-bold text-indigo-900">Offer an activity choice board</span>
-                </label>
-                <p className="text-[10px] text-slate-500 mt-1 ml-6">Students will see these pack activities as large, selectable cards on the directions page.</p>
-                {mbDirectionsDraft?.choiceBoard?.enabled === true && (
-                  <div className="mt-2 ml-6 space-y-2">
-                    <input
-                      value={mbDirectionsDraft.choiceBoard.title || ''}
-                      onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, title: e.target.value } }))}
-                      aria-label="Activity choice board title"
-                      placeholder="Choose an activity"
-                      className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
-                    />
-                    <textarea
-                      value={mbDirectionsDraft.choiceBoard.prompt || ''}
-                      onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, prompt: e.target.value } }))}
-                      aria-label="Activity choice board instructions"
-                      placeholder="Pick one activity to work on first."
-                      rows={2}
-                      className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
-                    />
-                    <div role="group" aria-label="Activities to include in the choice board" className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                      {_alloDirectionsGoalResources.map(it => {
-                        const choices = Array.isArray(mbDirectionsDraft.choiceBoard.choices) ? mbDirectionsDraft.choiceBoard.choices : [];
-                        const included = choices.some(choice => choice.resourceRef === it.id);
-                        const full = choices.length >= 6 && !included;
-                        const station = _alloStationStyle(it.type);
-                        return (
-                          <label key={it.id} className={'flex items-start gap-2 rounded-lg border p-2 cursor-pointer transition-colors ' + (included ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-slate-50 hover:border-indigo-300')}>
-                            <input
-                              type="checkbox"
-                              checked={included}
-                              disabled={full}
-                              onChange={() => setMbDirectionsDraft(p => {
-                                const next = { ...(p || {}) };
-                                const board = { ...(next.choiceBoard || {}), enabled: true };
-                                const current = Array.isArray(board.choices) ? board.choices : [];
-                                board.choices = current.some(choice => choice.resourceRef === it.id)
-                                  ? current.filter(choice => choice.resourceRef !== it.id)
-                                  : current.length >= 6
-                                    ? current
-                                    : [...current, { resourceRef: it.id, label: it.title || station.label, icon: station.icon || '', description: '' }];
-                                next.choiceBoard = board;
-                                return next;
-                              })}
-                              aria-label={'Include ' + (it.title || station.label) + ' in activity choice board'}
-                              className="mt-0.5 w-4 h-4 accent-indigo-600 flex-shrink-0"
-                            />
-                            <span className="min-w-0">
-                              <span className="block text-[11px] font-bold text-slate-800 truncate">{station.icon || '•'} {it.title || station.label}</span>
-                              <span className="block text-[9px] text-slate-500">{station.label}</span>
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                      <p className="text-[10px] text-slate-500">Choose 2–6 activities. Students can return to the directions page and choose another card later.</p>
-                      <button
-                        type="button"
-                        onClick={() => setShowDirectionsChoicePreview(true)}
-                        disabled={!_mbDirectionsChoiceReady}
-                        aria-label="Preview student choice board"
-                        className={'min-h-9 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition-colors ' + (_mbDirectionsChoiceReady ? 'border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100' : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400')}
-                      >
-                        Preview student board
-                      </button>
-                    </div>
-                    {_mbDirectionsChoiceStaleCount > 0 && (
-                      <p role="alert" className="text-[10px] font-bold text-rose-700">{_mbDirectionsChoiceStaleCount} selected activit{_mbDirectionsChoiceStaleCount === 1 ? 'y is' : 'ies are'} no longer available in this pack. Remove {_mbDirectionsChoiceStaleCount === 1 ? 'it' : 'them'} before saving.</p>
-                    )}
-                    {_mbDirectionsChoiceDraftChoices.length === 1 && _mbDirectionsChoiceStaleCount === 0 && (
-                      <p role="alert" className="text-[10px] font-bold text-amber-700">Select one more activity to enable the choice board.</p>
-                    )}
-                    {_mbDirectionsChoiceDraftChoices.length === 0 && _alloDirectionsGoalResources.length > 0 && (
-                      <p role="status" className="text-[10px] text-slate-500">Select at least two activities to preview or save this board.</p>
-                    )}
-                    {_mbDirectionsChoiceDraftChoices.length > 0 && (
-                      <div className="space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2">
-                        <p className="text-[10px] font-bold text-slate-700">Optional card descriptions</p>
-                        {_mbDirectionsChoiceDraftChoices.map(choice => (
-                          <input
-                            key={'description-' + choice.resourceRef}
-                            value={choice.description || ''}
-                            onChange={e => setMbDirectionsDraft(p => ({
-                              ...(p || {}),
-                              choiceBoard: {
-                                ...(p?.choiceBoard || {}),
-                                enabled: true,
-                                choices: (Array.isArray(p?.choiceBoard?.choices) ? p.choiceBoard.choices : []).map(item => item.resourceRef === choice.resourceRef ? { ...item, description: e.target.value } : item)
-                              }
-                            }))}
-                            aria-label={'Description for ' + choice.label}
-                            placeholder="Optional: what students will do here"
-                            className="w-full rounded border border-slate-300 bg-white p-1.5 text-[10px] text-slate-800"
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {showDirectionsChoicePreview && (
-                      <div className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDirectionsChoicePreview(false)}>
-                        <div role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-                          <div className="mb-3 flex items-start gap-3">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-600">Student preview</p>
-                              <h3 id="directions-choice-preview-title" className="text-base font-black text-slate-900">{mbDirectionsDraft.choiceBoard.title || 'Choose an activity'}</h3>
-                              <p className="mt-1 text-xs text-slate-600">{mbDirectionsDraft.choiceBoard.prompt || 'Pick one activity to work on first.'}</p>
-                            </div>
-                            <button type="button" onClick={() => setShowDirectionsChoicePreview(false)} aria-label="Close student choice board preview" className="min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100"><X size={16} aria-hidden="true" /></button>
-                          </div>
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            {_mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
-                              const station = _alloStationStyle(resource.type);
-                              return (
-                                <article key={'preview-' + choice.resourceRef} className="flex min-h-24 items-start gap-3 rounded-xl border-2 border-indigo-100 bg-white p-3 shadow-sm">
-                                  <span aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm">{choice.icon || station.icon || '•'}</span>
-                                  <span className="min-w-0 flex-1">
-                                    <span className="block text-sm font-black text-slate-800">{choice.label}</span>
-                                    <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700">{station.label}</span>
-                                    {choice.description && <span className="mt-1 block text-xs leading-5 text-slate-600">{choice.description}</span>}
-                                    <span className="mt-2 block text-[11px] font-bold text-indigo-700">Open activity <ArrowRight size={12} className="inline" aria-hidden="true" /></span>
-                                  </span>
-                                </article>
-                              );
-                            })}
-                          </div>
-                          <p className="mt-3 text-[10px] text-slate-500">This preview shows the cards students will see on the directions page.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="border-t border-slate-100 pt-2">
-                <p className="text-[11px] font-bold text-slate-600 mb-1">{t('directions.objectives') || 'Goals (auto-check where possible)'}</p>
-                {(mbDirectionsDraft?.objectives || []).map((o, oi) => (
-                  <div key={o.id} className="flex items-center gap-1.5 mb-1">
-                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : (o.kind === 'manual' ? 'bg-slate-100 text-slate-600' : 'bg-sky-50 text-sky-700')))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : (o.kind === 'visited' ? (t('directions.kind_visited') || 'opened') : (o.kind === 'responded' ? (t('directions.kind_responded') || 'answered') : (o.kind === 'completed' ? (t('directions.kind_completed') || 'finished') : (o.kind === 'time' ? (t('directions.kind_time') || 'time') : o.kind))))}</span>
-                    <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
-                    {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    {o.kind === 'time' && <input type="number" min="1" max="240" value={o.minutes || 10} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const mins = Math.max(1, Math.min(240, Number(e.target.value) || 1)); list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-400 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
-                  </div>
-                ))}
-                {/* Write-your-own comes FIRST: most goals a teacher actually wants
-                    ("explain it in your own words") can never be auto-checked, and
-                    burying that behind a row of game chips taught the opposite. */}
-                <div className="flex items-center gap-1.5 mt-1">
-                  <input
-                    value={mbDirectionsGoalText}
-                    onChange={e => setMbDirectionsGoalText(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key !== 'Enter' || !mbDirectionsGoalText.trim()) return;
-                      e.preventDefault();
-                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
-                      setMbDirectionsGoalText('');
-                    }}
-                    placeholder={t('directions.goal_write_placeholder') || 'Write a goal in your own words…'}
-                    aria-label={t('directions.goal_write_label') || 'Write a goal'}
-                    className="flex-1 min-w-0 text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
-                  />
-                  <button
-                    onClick={() => {
-                      if (!mbDirectionsGoalText.trim()) return;
-                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
-                      setMbDirectionsGoalText('');
-                    }}
-                    disabled={!mbDirectionsGoalText.trim()}
-                    className="text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded px-2 py-1 transition-all disabled:opacity-40 flex-shrink-0"
-                  >+ {t('directions.goal_add') || 'Add'}</button>
-                </div>
-                {/* Auto-checking goals are DERIVED from the resource, never a fixed
-                    chip row. A fixed row is how "+ Word Scramble" survived for weeks
-                    pointing at a game that never reported a completion. */}
-                <div className="mt-2">
-                  <label className="block text-[10px] font-bold text-slate-500 mb-1" htmlFor="dir-goal-res">{t('directions.goal_attach') || 'Auto-check against a resource'}</label>
-                  <select
-                    id="dir-goal-res"
-                    value={mbDirectionsGoalRes}
-                    onChange={e => setMbDirectionsGoalRes(e.target.value)}
-                    className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
-                  >
-                    <option value="">{_alloDirectionsGoalResources.length ? (t('directions.goal_pick_resource') || 'Pick something in this pack…') : (t('directions.goal_no_resources') || 'No pack resources yet')}</option>
-                    {_alloDirectionsGoalResources.map(it => (
-                      <option key={it.id} value={it.id}>{(_alloStationStyle(it.type).icon || '') + ' ' + (it.title || it.type)}</option>
-                    ))}
-                  </select>
-                  {mbDirectionsGoalRes && (() => {
-                    const _res = _alloDirectionsGoalResources.find(it => it.id === mbDirectionsGoalRes);
-                    const _opts = _alloGoalOptionsForResource(_res);
-                    if (!_opts.length) return null;
-                    return (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {_opts.map(opt => (
-                          <button
-                            key={opt.kind + ':' + (opt.gameType || '')}
-                            onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), {
-                              id: generateUUID(),
-                              kind: opt.kind,
-                              label: t(opt.labelKey, { title: (_res && _res.title) || '' }) || opt.label,
-                              ...(opt.gameType ? { gameType: opt.gameType } : {}),
-                              ...(opt.minutes ? { minutes: opt.minutes } : {}),
-                              ...(opt.kind === 'manual' ? {} : { resourceRef: mbDirectionsGoalRes })
-                            }] }))}
-                            className={'text-[10px] font-bold rounded-full px-2 py-0.5 border transition-all ' + (opt.kind === 'game' ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:border-emerald-400' : (opt.kind === 'manual' ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-400' : 'text-sky-700 bg-sky-50 border-sky-200 hover:border-sky-400'))}
-                          >+ {opt.label}</button>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
-                {(mbDirectionsDraft?.objectives || []).length > 0 && (
-                  <label className="flex items-center gap-1.5 mt-1 cursor-pointer select-none">
-                    <input type="checkbox" checked={mbDirectionsDraft?.softGate === true} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), softGate: e.target.checked }))} className="w-3.5 h-3.5 accent-amber-600" />
-                    <span className="text-[10px] text-slate-600">{t('directions.soft_gate_label') || 'Gently suggest finishing goals before the rest of the pack (a friendly tip — never a lock)'}</span>
-                  </label>
-                )}
-              </div>
-              <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
-                <Sparkles size={13} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
-              </button>
-              <div className="flex gap-2">
-                <button onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
-                <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
-              </div>
-              <p className="text-[10px] text-slate-400 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
-            </div>
-          </div>
-        </div>
+        <DirectionsComposerView ArrowRight={ArrowRight} ClipboardList={ClipboardList} Sparkles={Sparkles} X={X} _alloDirectionsGoalResources={_alloDirectionsGoalResources} _alloGoalOptionsForResource={_alloGoalOptionsForResource} _alloStationStyle={_alloStationStyle} _mbDirectionsChoiceDraftChoices={_mbDirectionsChoiceDraftChoices} _mbDirectionsChoicePreviewItems={_mbDirectionsChoicePreviewItems} _mbDirectionsChoiceReady={_mbDirectionsChoiceReady} _mbDirectionsChoiceStaleCount={_mbDirectionsChoiceStaleCount} addDirectionsToPack={addDirectionsToPack} deriveDirectionsDraft={deriveDirectionsDraft} directionsDeriving={directionsDeriving} generateUUID={generateUUID} mbDirectionsDraft={mbDirectionsDraft} directionsGoalEditorState={directionsGoalEditorState} setMbDirectionsDraft={setMbDirectionsDraft} setShowDirectionsChoicePreview={setShowDirectionsChoicePreview} setShowDirectionsComposer={setShowDirectionsComposer} showDirectionsChoicePreview={showDirectionsChoicePreview} t={t} />
       )}
       {homeworkShelf && Array.isArray(homeworkShelf.resources) && homeworkShelf.resources.length > 0 && !mbLive && !mbStudent && !activeSessionCode && !isTeacherMode && (
         <div role="region" aria-label={t('takehome.banner_label') || 'Saved homework'} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[390] w-full max-w-md px-4">
@@ -50298,7 +50440,7 @@ ${_alloActivityContext(activity)}
       />
         </div>
       )}
-      {showLiveHostWarning && (
+      {showLiveHostWarning && liveSessionConnectionState.status === 'connected' && (
         <div role={liveHostConnectionState === 'stale' ? 'alert' : 'status'} aria-live="polite" className={
           'fixed top-20 left-1/2 -translate-x-1/2 z-[146] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border px-4 py-3 text-center text-sm font-semibold shadow-xl backdrop-blur no-print ' +
           (liveHostConnectionState === 'stale' ? 'border-rose-300 bg-rose-50/95 text-rose-900' : 'border-amber-300 bg-amber-50/95 text-amber-900')
@@ -50310,7 +50452,15 @@ ${_alloActivityContext(activity)}
           <button type="button" onClick={() => setDismissedLiveHostWarningKey(liveHostWarningKey)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2" aria-label="Dismiss teacher status warning">Dismiss</button>
         </div>
       )}
-      {!isTeacherMode && activeSessionCode && liveHostConnectionState !== 'stale' && (liveResourceLoadState.status === 'loading' || liveResourceLoadState.status === 'failed') && (
+      {!isTeacherMode && activeSessionCode && ['connecting', 'retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status) && (
+        <div role="status" aria-live="polite" className="fixed top-20 left-1/2 -translate-x-1/2 z-[146] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-center text-sm font-semibold text-amber-950 shadow-xl backdrop-blur no-print">
+          <span>{liveSessionConnectionState.status === 'access-required'
+            ? (liveSessionConnectionState.code === 'unauthenticated' ? t('live_connection.sign_in') : t('live_connection.access'))
+            : t('live_connection.' + liveSessionConnectionState.status)}</span>
+          {liveSessionConnectionState.status !== 'connecting' && <button type="button" onClick={retryLiveSessionConnection} className="min-h-[44px] rounded-lg bg-amber-900 px-3 py-2 text-sm font-bold text-white hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2">{t('live_connection.reconnect')}</button>}
+        </div>
+      )}
+      {!isTeacherMode && activeSessionCode && liveSessionConnectionState.status === 'connected' && liveHostConnectionState !== 'stale' && (liveResourceLoadState.status === 'loading' || liveResourceLoadState.status === 'failed') && (
         <div role={liveResourceLoadState.status === 'failed' ? 'alert' : 'status'} aria-live="polite" className={'fixed top-36 left-1/2 -translate-x-1/2 z-[144] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border px-4 py-3 text-center text-sm font-semibold shadow-xl backdrop-blur no-print ' + (liveResourceLoadState.status === 'failed' ? 'border-rose-300 bg-rose-50/95 text-rose-900' : 'border-cyan-300 bg-cyan-50/95 text-cyan-950')}>
           <span>{liveResourceLoadState.status === 'failed' ? 'A class resource did not finish loading. Your last complete resource is still safe.' : 'Loading the latest class resources…'}</span>
           {liveResourceLoadState.status === 'failed' && <button type="button" onClick={retryLiveSessionResources} className="rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{t('mailbox.retry_resources') || 'Retry resources'}</button>}
@@ -50476,10 +50626,17 @@ ${_alloActivityContext(activity)}
         ? React.createElement(window.AlloModules.NotebookOverlay, {
             isOpen: true,
             onClose: () => setShowNotebook(false),
-            history,
+            history: history.map(item => {
+                const studio = window.AlloModules?.StudioResponse;
+                if (!isTeacherMode && ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type)) {
+                    return studio?.supports(item.type) ? studio.project(item, studentResponses[item.id]?.studio) : null;
+                }
+                return item;
+            }).filter(Boolean),
             onSelectEntry: handleSelectNotebookEntry,
             t,
-            callGemini,
+            allowRuntimeAi: !studentAiFeaturesHidden,
+            callGemini: studentAiFeaturesHidden ? null : callGemini,
             addToast,
           })
         : null}
@@ -50710,903 +50867,130 @@ ${_alloActivityContext(activity)}
               </div>
             </section>
           )}
-          {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
+          {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
-          <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
-            <div
-                className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors"
-                onClick={() => toggleTool('source-input')}
-            >
-              <h2 className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
-                <FileText size={16} /> {t('tools.source')}
-              </h2>
-              <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0">
-                 <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
-                     <input aria-label={t('common.upload_file')}
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleSourceFileUpload}
-                        className="hidden"
-                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
-                     />
-                     <button
-                         id="tour-upload-source"
-                         aria-label={t('common.upload_file') || 'Upload file'}
-                        onClick={() => fileInputRef.current.click()}
-                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm"
-                        title={t('input.upload_tooltip')}
-                     >
-                        {isExtracting ? <RefreshCw size={12} className="animate-spin"/> : <Upload size={12} />}
-                        {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
-                     </button>
-                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
-                        <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
-                        <input type="file" accept=".json" className="hidden" onChange={(e) => {
-                          const file = e.target.files?.[0]; if (!file) return;
-                          if (file.size > 64 * 1024 * 1024) { addToast('This project file is larger than the 64 MB browser safety limit.', 'error'); e.target.value = ''; return; }
-                          const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
-                          let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();
-                          const _projectLoadIsCurrent = () => _projectLoadEpoch === pdfProjectLoadEpochRef.current
-                            && isPdfDocumentIntakeCurrent(_projectDocumentEpoch);
-                          const reader = new FileReader();
-                          reader.onload = async (ev) => {
-                            if (!_projectLoadIsCurrent()) return;
-                            try {
-                              const _savedProject = JSON.parse(ev.target.result);
-                              if (!_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
-                              // Ignore any serialized runtime snapshot. Rehydrate makes it live
-                              // only when the persisted SHA-256 digest matches accessibleHtml.
-                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
-                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
-                              const _sanitizedImport = _projectSanitizer(_savedProject);
-                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
-                              if (!_projectLoadIsCurrent()) return;
-                              if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
-                              _projectDocumentEpoch = startNewPdfAudit();
-                              if (!_projectLoadIsCurrent()) return;
-                              setPendingPdfBase64(project.pdfBase64 || null);
-                              if (project.incomplete) {
-                                const _resumeName = project.fileName || 'resumed-project.pdf';
-                                const _resumeDigest = project.docKey || (project.auditResult && project.auditResult.documentDigest) || null;
-                                setPendingPdfFile({
-                                  name: _resumeName,
-                                  size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0,
-                                  documentDigest: _resumeDigest,
-                                });
-                                try {
-                                  if (project.extractedText) window.__resumeExtractedText = { fileName: _resumeName, text: project.extractedText, docKey: _resumeDigest };
-                                } catch (_) {}
-                                setPdfAuditResult(project.auditResult
-                                  ? { ...project.auditResult, documentDigest: project.auditResult.documentDigest || _resumeDigest }
-                                  : {
-                                      documentDigest: _resumeDigest, score: null, scores: [], critical: [], serious: [], moderate: [], minor: [], passes: [],
-                                      summary: 'Resumed from an unfinished session; no numeric baseline is available yet.', pageCount: project.pageCount || 1,
-                                      hasSearchableText: true, hasImages: false, _resumeIncomplete: true,
-                                    });
-                                setPdfFixResult(null);
-                                if (project.extractedText) setInputText(project.extractedText);
-                                if (Array.isArray(project.pageRange) && project.pageRange.length === 2) {
-                                  setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
-                                }
-                                addToast('Resumed “' + _resumeName + '”. Click Make Accessible to finish' + (project.pdfBase64 ? '.' : ' after re-attaching the original PDF.'), 'success');
-                                return;
-                              }
-                              const _derivedProjectVerification = deriveVerificationState({
-                                ai: project.verificationAudit || null,
-                                axe: project.axeAudit || null,
-                                equalAccess: project.secondEngineAudit || null,
-                                aiIncomplete: !!project._aiVerificationIncomplete,
-                                pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
-                              }) || {};
-                              const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;
-                              const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';
-                              const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
-                              const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
-                              const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
-                              const _loadedFidelityLimited = !!project.fidelityLimited;
-                              const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
-                                ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
-                                : (_loadedRequiresManualReview ? 'accessibility' : null));
-                              const _loadedExpertBase = (project._expertReviewBeforeVerification && typeof project._expertReviewBeforeVerification === 'object')
-                                ? project._expertReviewBeforeVerification
-                                : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
-                              setPdfAuditResult({
-                                score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
-                                passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
-                                hasSearchableText: true, hasImages: project.imageCount > 0,
-                              });
-                              const _loadedPdfFixResult = {
-                                accessibleHtml: project.accessibleHtml,
-                                documentDigest: project.documentDigest || project.docKey || null,
-                                beforeScore: project.beforeScore, afterScore: project.afterScore,
-                                axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
-                                secondEngineAudit: project.secondEngineAudit || null,
-                                verificationHtmlBinding: project.verificationHtmlBinding || null,
-                                verificationCoverage: _loadedVerificationCoverage,
-                                verificationState: _loadedVerificationState,
-                                afterScoreVerified: _loadedAfterScoreVerified,
-                                requiresManualReview: _loadedRequiresManualReview,
-                                verificationReviewCount: Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : (Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0),
-                                verificationReasons: Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : (Array.isArray(project.verificationReasons) ? project.verificationReasons : []),
-                                _verificationExpertReview: _loadedRequiresManualReview || project._verificationExpertReview === true,
-                                _expertReviewBeforeVerification: _loadedExpertBase,
-                                _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
-                                _scoreSource: project._scoreSource || null,
-                                docStyle: project.docStyle || null, pageCount: project.pageCount,
-                                imageCount: project.imageCount || 0, needsExpertReview: !!(project.needsExpertReview || _loadedRequiresManualReview || _loadedFidelityLimited),
-                                // Restore the fields older project files didn't carry (fallbacks keep
-                                // backward compatibility): reason-specific banner, integrity indicators,
-                                // Diff inputs (so the Diff works on a loaded project), and stat badges.
-                                expertReviewReason: _loadedExpertReason,
-                                integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-                                integrityWarning: project.integrityWarning || null,
-                                fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
-                                fidelityLimited: project.fidelityLimited || false,
-                                sourceText: project.sourceText || '', finalText: project.finalText || '',
-                                htmlChars: project.htmlChars || project.accessibleHtml.length,
-                                extractedChars: project.extractedChars || 0,
-                                issuesFixed: project.issuesFixed || 0,
-                                remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-                                autoFixPasses: project.autoFixPasses || 0,
-                                humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-                                reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
-                                // Audit 2026-06-13: this input-screen loader dropped the
-                                // companion-lane + score-honesty + resume keys the two
-                                // view-file loaders restore — so a project loaded via THIS
-                                // button silently lost its translation, plain-language copy,
-                                // audio-resume position, and showed an AI-only score even
-                                // when the engine blended. Restored to parity.
-                                _translation: project._translation || null,
-                                _plainLanguage: project._plainLanguage || null,
-                                _audioJobMeta: project._audioJobMeta || null,
-                                _scoreIsBlended: !!project._scoreIsBlended,
-                                chunkState: project.chunkState || null,
-                              };
-                              if (isLiveVerificationHtmlBound(project, project.accessibleHtml)) {
-                                attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
-                              }
-                              setPdfFixResult(_loadedPdfFixResult);
-                              setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0, documentDigest: project.documentDigest || project.docKey || null });
-                              addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
-                            } catch(err) {
-                              if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + err.message, 'error');
-                            }
-                          };
-                          reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (reader.error?.message || 'Unable to read project file'), 'error'); };
-                          reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + 'Project file read was cancelled', 'info'); };
-                          try {
-                            reader.readAsText(file);
-                          } catch (readError) {
-                            if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (readError?.message || 'Unable to start reading project file'), 'error');
-                          }
-                          e.target.value = '';
-                        }} />
-                     </label>
-                     <button
-                        data-help-key="source_link_btn" onClick={() => {
-                            if (!showUrlInput && !expandedTools.includes('source-input')) {
-                                setExpandedTools(prev => [...prev, 'source-input']);
-                            }
-                            setShowUrlInput(!showUrlInput);
-                        }}
-                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
-                     >
-                        <Link size={12} />
-                        {showUrlInput ? t('common.cancel') : t('common.link')}
-                     </button>
-                     <button
-                         aria-label={t('common.generate')}
-                        data-help-key="source_generate_btn" onClick={() => {
-                            if (!showSourceGen && !expandedTools.includes('source-input')) {
-                                setExpandedTools(prev => [...prev, 'source-input']);
-                            }
-                            setShowSourceGen(!showSourceGen);
-                        }}
-                        disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
-                     >
-                        <Sparkles size={12} />
-                        {showSourceGen ? t('common.cancel') : t('input.actions.generate_short')}
-                     </button>
-                     {/* Reading Library as a first-class source: the reader's
-                         "Use as source text" pipes the picked book back here. */}
-                     <button
-                        data-help-key="source_books_btn"
-                        onClick={() => setIsReadingLibraryOpen(true)}
-                        disabled={isExtracting || isGeneratingSource}
-                        title={t('input.actions.books_hint') || 'Open picture books — any book can become your source text'}
-                        className="text-xs flex items-center gap-1 bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors"
-                     >
-                        <span aria-hidden="true">📖</span>
-                        {t('input.actions.books_short') || 'Books'}
-                     </button>
-                 </div>
-                 {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </div>
-            </div>
-            {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-            {expandedTools.includes('source-input') && videoTranscriptSourceContext && (
-              <div className="mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800">
-                      <FileText size={13} />
-                      Video transcript loaded
-                    </div>
-                    <div className="mt-1 truncate text-sm font-bold text-slate-800">
-                      {videoTranscriptSourceContext.title}
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600">
-                      <span>{videoTranscriptSourceContext.wordCount.toLocaleString()} words</span>
-                      {videoTranscriptSourceContext.cueCount > 0 && <span>{videoTranscriptSourceContext.cueCount.toLocaleString()} caption lines</span>}
-                      {videoTranscriptSourceContext.chapterCount > 0 && <span>{videoTranscriptSourceContext.chapterCount} chapters</span>}
-                      {videoTranscriptSourceContext.durationLabel && <span>{videoTranscriptSourceContext.durationLabel}</span>}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleTranscriptSourceAction('dismiss')}
-                    className="shrink-0 rounded-full border border-emerald-200 bg-white p-1.5 text-slate-600 hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                    aria-label={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
-                    title={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {[
-                    { action: 'quiz', label: 'Exit ticket', icon: <CheckSquare size={13} /> },
-                    { action: 'glossary', label: 'Glossary', icon: <Globe size={13} /> },
-                    { action: 'note-taking', label: 'Guided notes', icon: <ClipboardList size={13} /> },
-                    { action: 'anchor-chart', label: 'Anchor chart', icon: <Layout size={13} /> },
-                    { action: 'simplified', label: 'Summary', icon: <BookOpen size={13} /> }
-                  ].map(item => (
-                    <button
-                      key={item.action}
-                      type="button"
-                      onClick={() => handleTranscriptSourceAction(item.action)}
-                      disabled={isProcessing}
-                      className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {item.icon}
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* SourceInputPanel extracted to view_sidebar_panels_module.js (CDN). */}
-            {expandedTools.includes('source-input') && window.AlloModules && window.AlloModules.SourceInputPanel && React.createElement(window.AlloModules.SourceInputPanel, {
-          expandedTools, addToast, aiStandardQuery, aiStandardRegion, callGeminiVision,
-          generationStep, gradeLevel, handleAddStandard, handleAiUrlSearch, handleFindStandards,
-          handleGenerateSource, handleRemoveStandard, handleSelectMainSearchOption, handleSetIsUrlSearchModeToFalse, handleSetIsUrlSearchModeToTrue,
-          handleSetStandardModeToAi, handleSetStandardModeToManual, handleUrlFetch, includeSourceCitations, inputText,
-          isCanvas, isDraftSaving, isExtracting, isFindingStandards, isGeneratingSource,
-          isIndependentMode, isUrlSearchMode, searchOptions, setAiStandardQuery, setAiStandardRegion,
-          setGenerationStep, setIncludeSourceCitations, setInputText, setIsExtracting, setIsUrlSearchMode,
-          setSearchOptions, setSourceCustomInstructions, setSourceLength, setSourceLevel, setSourceTone,
-          setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards, setUrlSearchQuery,
-          setUrlToFetch, showSourceGen, showUrlInput, sourceCustomInstructions, sourceLength,
-          sourceLevel, sourceTone, sourceTopic, sourceVocabulary, standardInputValue,
-          standardMode, suggestedStandards, t, targetStandards, urlSearchQuery,
-          urlToFetch
-            })}
-          </div>
+          <CDNModuleGate moduleKey="SidebarPanels.SourceInputShellView" loaderName="__alloEnsureSidebarPanels" size="inline" displayName="Source input" t={t}>
+  {(View) => React.createElement(View, {
+    BookOpen, CheckSquare, ChevronDown, ChevronUp, ClipboardList, FileDown, FileText, Globe, Layout,
+    Link, RefreshCw, Sparkles, Upload, X, activeView, addToast, aiStandardQuery, aiStandardRegion,
+    attachVerificationHtmlProof, callGeminiVision, capturePdfDocumentIntakeEpoch,
+    deriveVerificationState, expandedTools, fileInputRef, generationStep, gradeLevel, handleAddStandard,
+    handleAiUrlSearch, handleFindStandards, handleGenerateSource, handleRemoveStandard,
+    handleSelectMainSearchOption, handleSetIsUrlSearchModeToFalse, handleSetIsUrlSearchModeToTrue,
+    handleSetStandardModeToAi, handleSetStandardModeToManual, handleSourceFileUpload,
+    handleTranscriptSourceAction, handleUrlFetch, includeSourceCitations, inputText, isCanvas,
+    isDraftSaving, isExtracting, isFindingStandards, isGeneratingSource, isGuidedToolVisible,
+    isIndependentMode, isLiveVerificationHtmlBound, isPdfDocumentIntakeCurrent, isProcessing,
+    isUrlSearchMode, pdfProjectLoadEpochRef, rehydrateVerificationHtmlBinding, searchOptions,
+    setAiStandardQuery, setAiStandardRegion, setExpandedTools, setGenerationStep,
+    setIncludeSourceCitations, setInputText, setIsExtracting, setIsReadingLibraryOpen,
+    setIsUrlSearchMode, setPdfAuditResult, setPdfFixResult, setPdfPageRange, setPendingPdfBase64,
+    setPendingPdfFile, setSearchOptions, setShowSourceGen, setShowUrlInput, setSourceCustomInstructions,
+    setSourceLength, setSourceLevel, setSourceTone, setSourceTopic, setSourceVocabulary,
+    setStandardInputValue, setTargetStandards, setUrlSearchQuery, setUrlToFetch, showSourceGen,
+    showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
+    sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
+    targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
+  })}
+</CDNModuleGate>
           )}
           {isTeacherMode && activeSidebarTab === 'create' && (
-          <div id="tour-generator-actions" data-help-key="generator_actions" className="grid gap-4">
-            <style>{`
-              ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ''}
-              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
-                border-radius: 14px !important;
-                border-width: 1px !important;
-                box-shadow: 0 1px 2px rgba(15,23,42,.06) !important;
-                transition: border-color .16s ease, box-shadow .16s ease !important;
-              }
-              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) > button:first-child,
-              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) > div:first-child > button:first-child {
-                min-height: 48px;
-              }
-              @media (prefers-reduced-motion: reduce) {
-                #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) { transition: none !important; }
-              }
-              @media (forced-colors: active) {
-                #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) { border: 1px solid CanvasText !important; }
-              }
-            `}</style>
-            {!guidedMode && (() => {
-              const ToolCatalogControls = window.AlloModules && window.AlloModules.ToolCatalogControls;
-              const _catalogShown = TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length;
-              const _catalogFiltered = !!String(toolCatalogQuery || '').trim() || toolCatalogGroup !== 'all';
-              // N4: the dismissed state still shows a restore bar, and that bar states the
-              // filter if one is somehow running. Hide is only offered when no filter is
-              // active, so this should read "all tools" every time; it is here because a
-              // hidden panel with a live filter is the one failure Aaron named, and a
-              // guarantee you can see is worth more than one you have to trust.
-              if (ToolCatalogControls && isToolCatalogHidden) return (
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                  <span className="text-[11px] font-semibold text-slate-600">
-                    {_catalogFiltered
-                      ? (t('sidebar.tool_finder_hidden_filtered') || 'A tool filter is on: showing {shown} of {total} tools.').replace('{shown}', String(_catalogShown)).replace('{total}', String(TOOL_CATALOG_GROUPS.all.length))
-                      : (t('sidebar.tool_finder_hidden') || 'Showing all tools.')}
-                  </span>
-                  <button type="button" onClick={() => { setIsToolCatalogHidden(false); setIsToolCatalogExpanded(true); }} className="min-h-10 shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                    {t('sidebar.tool_finder_title') || 'Find a tool'}
-                  </button>
-                </div>
-              );
-              if (ToolCatalogControls) return React.createElement(ToolCatalogControls, {
-                allEditorsExpanded: expandedTools.length >= 18,
-                group: toolCatalogGroup,
-                isExpanded: isToolCatalogExpanded,
-                onCollapse: () => setIsToolCatalogExpanded(false),
-                onGroupChange: (id) => { setToolCatalogQuery(''); setToolCatalogGroup(id); },
-                onOpen: openToolCatalog,
-                onQueryChange: setToolCatalogQuery,
-                onToggleAll: handleToggleAllTools,
-                onHide: () => setIsToolCatalogHidden(true),
-                query: toolCatalogQuery,
-                selectedLabel: selectedToolCatalogLabel,
-                shownCount: _catalogShown,
-                totalCount: TOOL_CATALOG_GROUPS.all.length,
-                t,
-              });
-              return (
-                <section id="tour-tool-finder" data-testid="tool-catalog-controls-fallback" aria-labelledby="tool-catalog-fallback-title" className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 id="tool-catalog-fallback-title" className="text-sm font-black text-slate-900">{t('sidebar.tool_finder_title') || 'Find a tool'}</h2>
-                      <p className="mt-0.5 text-xs leading-relaxed text-slate-700">{t('sidebar.tool_finder_loading') || 'The tool filters are still loading. Every tool is listed below.'}</p>
-                    </div>
-                    <button type="button" onClick={() => { setToolCatalogQuery(''); setToolCatalogGroup('all'); setIsToolCatalogExpanded(true); }} className="inline-flex min-h-11 shrink-0 items-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Show all tools</button>
-                  </div>
-                </section>
-              );
-            })()}
-            {/* -- UniversalSettingsPanel (CDN): cross-resource settings (grade, language, standards, interests, DoK, emoji) extracted from the Text Adaptation card 2026-07-28. Mounts ONCE above the tool accordion; per-control applicability is measured (docs/resource_setting_coverage.json). -- */}
-            {window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
-          InfoTooltip, addInterest, addToast, aiStandardQuery, dokLevel,
-          gradeLevel, handleAddStandard, handleFindStandards, handleUseResolvedStandard, handleInterestKeyDown, handleRemoveStandard,
-          handleSetStandardModeToAi, handleSetStandardModeToManual, interestInput, isFindingStandards, leveledTextLanguage,
-          removeInterest, selectedLanguages, setAiStandardQuery, setDokLevel, setGradeLevel,
-          setInterestInput, setLeveledTextLanguage, setStandardInputValue, setTargetStandards, setUseEmojis,
-          setUniversalImageStyle, standardInputValue, standardMode, studentInterests, suggestedStandards, t,
-          targetStandards, universalImageStyle, useEmojis,
-          // Surprise Me: direct topic seeding + the host's canonical AI fn
-          // (the panel falls back to window.callGemini when absent).
-          setSourceTopic, callGemini,
-          isUniversalSettingsOpen, setIsUniversalSettingsOpen,
-          differentiationRange, setDifferentiationRange,
-          differentiationTypes, setDifferentiationTypes,
-          differentiationCustomGrades, setDifferentiationCustomGrades,
-          languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown,
-          // Translations control. currentUiLanguage is passed as DATA, not as a
-          // generation input: it is what 'auto' resolves the gloss language to,
-          // and the panel needs it to decide whether the control is relevant
-          // at all. The resolver itself is passed in so the panel and the
-          // generators cannot drift into two readings of the same setting.
-          translationMode, setTranslationMode, currentUiLanguage,
-          resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
-            })}
-            <div style={{display: isGuidedToolVisible('analysis') ? undefined : 'none'}} id="tour-tool-analysis" data-help-key="tool_analysis" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'analysis' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
-              `}>
-              <button
-                  aria-label={t('common.search')}
-                data-help-key="tool_analysis"
-                aria-expanded={expandedTools.includes('analysis')} onClick={() => toggleTool('analysis')}
-                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
-              >
-                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Search size={16}/> {t('sidebar.tool_analysis')}</div>
-                {expandedTools.includes('analysis') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </button>
-              {/* ── AnalysisPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-              {expandedTools.includes('analysis') && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
-          expandedTools, checkAccuracyWithSearch, handleGenerate, hasSourceOrAnalysis, isProcessing,
-          setCheckAccuracyWithSearch, t
-              })}
-            </div>
-            <div style={{display: isGuidedToolVisible('glossary') ? undefined : 'none'}} id="ui-tool-glossary" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'glossary' ? 'border-sky-600 shadow-xl shadow-sky-500/20' : 'border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10'}
-              `}>
-              <button
-                data-help-key="tool_glossary"
-                aria-expanded={expandedTools.includes('glossary')} onClick={() => toggleTool('glossary')}
-                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-sky-50 transition-colors"
-              >
-                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                    <Globe size={16}/> {isParentMode ? t('glossary.word_helper') : t('sidebar.tool_glossary')}
-                </div>
-                {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </button>
-                {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
-          expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
-          glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count, gradeLevel,
-          handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
-          leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
-          setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
-          t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('simplified') ? undefined : 'none'}} id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'simplified' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.read')}
-                    data-help-key="tool_simplified"
-                    aria-expanded={expandedTools.includes('simplified')} onClick={() => toggleTool('simplified')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors"
-                >
-                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                        <BookOpen size={16}/> {isParentMode ? t('simplified.parent_mode_label') : t('sidebar.tool_simplified')}
-                    </div>
-                    {expandedTools.includes('simplified') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-              {/* ── SimplifiedPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-              {expandedTools.includes('simplified') && window.AlloModules && window.AlloModules.SimplifiedPanel && React.createElement(window.AlloModules.SimplifiedPanel, {
-          expandedTools, handleGenerate, hasSourceOrAnalysis, includeCharts,
-          isProcessing, keepCitations, leveledTextCustomInstructions, leveledTextLength,
-          setIncludeCharts, setKeepCitations, setLeveledTextCustomInstructions, setLeveledTextLength, setTextFormat,
-          t, textFormat
-              })}
-            </div>
-            <div style={{display: isGuidedToolVisible('ui-tool-wordsounds') ? undefined : 'none'}} id="tour-tool-wordsounds" data-help-key="tool_wordsounds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'ui-tool-wordsounds' ? 'border-pink-600 shadow-xl shadow-pink-500/20' : 'border-slate-200 hover:border-pink-200 shadow-lg shadow-pink-500/10'}
-              `}>
-                <button
-                    aria-label={t('sidebar.tool_wordsounds') || t('word_sounds.title') || 'Word Sounds'}
-                    aria-expanded={expandedTools.includes('ui-tool-wordsounds')}
-                  onClick={() => toggleTool('ui-tool-wordsounds')}
-                  className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-pink-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                      <div className="bg-pink-100 p-1 rounded-md text-pink-700"><Volume2 size={16}/></div>
-                      <div>
-                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_wordsounds') || 'Word Sounds'}</span>
-                      </div>
-                  </div>
-                  {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                 {/* ── UiToolWordsoundsPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                 {expandedTools.includes('ui-tool-wordsounds') && window.AlloModules && window.AlloModules.UiToolWordsoundsPanel && React.createElement(window.AlloModules.UiToolWordsoundsPanel, {
-          expandedTools, handleOpenWordSounds, t
-                 })}
-            </div>
-            <div style={{display: isGuidedToolVisible('outline') ? undefined : 'none'}} id="tour-tool-outline" data-help-key="tool_outline" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'outline' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
-              `}>
-              <button
-                data-help-key="tool_outline"
-                aria-expanded={expandedTools.includes('outline')} onClick={() => toggleTool('outline')}
-                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors"
-              >
-                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Layout size={16}/> {t('sidebar.tool_outline')}</div>
-                {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </button>
-                {/* ── OutlinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('outline') && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
-          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, outlineCustomInstructions,
-          outlineType, setOutlineCustomInstructions, setOutlineType, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('note-taking') ? undefined : 'none'}} id="tour-tool-note-taking" data-help-key="tool_note_taking" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'note-taking' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.toggle_note_taking') || 'Toggle note-taking templates'}
-                    data-help-key="tool_note_taking"
-                    aria-expanded={expandedTools.includes('note-taking')} onClick={() => toggleTool('note-taking')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><BookOpen size={16}/> {t('sidebar.tool_note_taking') || 'Note-Taking Templates'}</div>
-                  {expandedTools.includes('note-taking') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── NoteTakingPanel lives in view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('note-taking') && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
-          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingCustomInstructions, noteTakingTemplateType, setNoteTakingCustomInstructions, setNoteTakingTemplateType, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('anchor-chart') ? undefined : 'none'}} id="tour-tool-anchor-chart" data-help-key="tool_anchor_chart" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'anchor-chart' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.toggle_anchor_chart') || 'Toggle anchor chart'}
-                    data-help-key="tool_anchor_chart"
-                    aria-expanded={expandedTools.includes('anchor-chart')} onClick={() => toggleTool('anchor-chart')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('sidebar.tool_anchor_chart') || 'Anchor Chart'}</div>
-                  {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
-          anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('memory-aid') ? undefined : 'none'}} id="tour-tool-memory-aid" data-help-key="tool_memory_aid" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'memory-aid' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.toggle_memory_aid') || 'Toggle Memory Aid Studio'}
-                    data-help-key="tool_memory_aid"
-                    aria-expanded={expandedTools.includes('memory-aid')} onClick={() => toggleTool('memory-aid')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_memory_aid') || 'Memory Aid Studio'}</div>
-                  {expandedTools.includes('memory-aid') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {expandedTools.includes('memory-aid') && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
-                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
-                  memoryAidSelectionMode, setMemoryAidSelectionMode,
-                  memoryAidTypes, setMemoryAidTypes,
-                  memoryAidAuthorshipMode, setMemoryAidAuthorshipMode,
-                  memoryAidReflectionLevel, setMemoryAidReflectionLevel,
-                  memoryAidReasoningRequired, setMemoryAidReasoningRequired,
-                  memoryAidCount, setMemoryAidCount,
-                  memoryAidIncludeVisuals, setMemoryAidIncludeVisuals,
-                  memoryAidIncludeHookFacts, setMemoryAidIncludeHookFacts,
-                  memoryAidCustomInstructions, setMemoryAidCustomInstructions,
-                  t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('applied-challenge') ? undefined : 'none'}} id='tour-tool-applied-challenge' data-help-key='tool_applied_challenge' className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'applied-challenge' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.toggle_applied_challenge') || 'Toggle Applied Challenge Studio'}
-                    data-help-key='tool_applied_challenge'
-                    aria-expanded={expandedTools.includes('applied-challenge')} onClick={() => toggleTool('applied-challenge')}
-                    className='w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors'
-                >
-                  <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
-                  {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
-                </button>
-                {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
-                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
-                  appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
-                  appliedChallengeFamily, setAppliedChallengeFamily,
-                  appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
-                  appliedChallengeScope, setAppliedChallengeScope,
-                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.toggle_images')}
-                    data-help-key="tool_visual"
-                    aria-expanded={expandedTools.includes('image')} onClick={() => toggleTool('image')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ImageIcon size={16}/> {t('sidebar.tool_visual')}</div>
-                  {expandedTools.includes('image') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── ImagePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('image') && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
-          expandedTools, creativeMode, fillInTheBlank, handleGenerate, hasSourceOrAnalysis,
-          isProcessing, noText, setCreativeMode, setFillInTheBlank, setNoText,
-          setUseLowQualityVisuals, setVisualCustomInstructions, setVisualCustomStyle, setVisualLayoutMode, setVisualStyle, t,
-          universalImageStyle, useLowQualityVisuals, visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('faq') ? undefined : 'none'}} id="tour-tool-faq" data-help-key="tool_faq" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'faq' ? 'border-cyan-600 shadow-xl shadow-cyan-500/20' : 'border-slate-200 hover:border-cyan-200 shadow-lg shadow-cyan-500/10'}
-              `}>
-                <button
-                    data-help-key="tool_faq"
-                    aria-expanded={expandedTools.includes('faq')} onClick={() => toggleTool('faq')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-cyan-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileQuestion size={16}/> {t('sidebar.tool_faq')}</div>
-                  {expandedTools.includes('faq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── FaqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('faq') && window.AlloModules && window.AlloModules.FaqPanel && React.createElement(window.AlloModules.FaqPanel, {
-          expandedTools, faqCount, faqCustomInstructions, handleGenerate, hasSourceOrAnalysis,
-          isProcessing, setFaqCount, setFaqCustomInstructions, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
-              `}>
-                <button
-                    data-help-key="tool_scaffolds"
-                    aria-expanded={expandedTools.includes('sentence-frames')} onClick={() => toggleTool('sentence-frames')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
-                  </div>
-                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
-          expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,
-          isProcessing, setFrameCustomInstructions, setFrameType, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('brainstorm') ? undefined : 'none'}} id="tour-tool-brainstorm" data-help-key="tool_brainstorm" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'brainstorm' ? 'border-yellow-600 shadow-xl shadow-yellow-500/20' : 'border-slate-200 hover:border-yellow-200 shadow-lg shadow-yellow-500/10'}
-              `}>
-                <button
-                    data-help-key="tool_brainstorm"
-                    aria-expanded={expandedTools.includes('brainstorm')} onClick={() => toggleTool('brainstorm')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-yellow-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brainstorm')}</div>
-                  {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── BrainstormPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('brainstorm') && window.AlloModules && window.AlloModules.BrainstormPanel && React.createElement(window.AlloModules.BrainstormPanel, {
-          expandedTools, BRIDGE_MODES, Terminal, brainstormCustomInstructions, bridgeSimType,
-          bridgeStepCount, handleGenerate, hasSourceOrAnalysis, isProcessing, setBrainstormCustomInstructions,
-          setBridgeSimType, setBridgeStepCount, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('persona') ? undefined : 'none'}} id="tour-tool-persona" data-help-key="tool_persona" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'persona' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.history')}
-                    data-help-key="tool_persona"
-                    aria-expanded={expandedTools.includes('persona')} onClick={() => toggleTool('persona')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><History size={16}/> {t('persona.title')}</div>
-                  {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── PersonaPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('persona') && window.AlloModules && window.AlloModules.PersonaPanel && React.createElement(window.AlloModules.PersonaPanel, {
-          expandedTools, ListChecks, MessageCircleQuestion, activeView, generatedContent,
-          handleGeneratePersonas, handleSetActiveViewToPersona, hasSourceOrAnalysis, isGeneratingPersona, isPersonaFreeResponse,
-          isProcessing, personaCustomInstructions, personaState, setActiveView, setIsPersonaFreeResponse,
-          setPersonaCustomInstructions, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('timeline') ? undefined : 'none'}} id="tour-tool-timeline" data-help-key="tool_timeline" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'timeline' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.reorder_list')}
-                    data-help-key="tool_timeline"
-                    aria-expanded={expandedTools.includes('timeline')} onClick={() => toggleTool('timeline')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t('timeline.title')}</div>
-                  {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── TimelinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('timeline') && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
-          expandedTools, TIMELINE_MODE_DEFINITIONS, handleGenerate, hasSourceOrAnalysis, includeTimelineVisuals,
-          isProcessing, setIncludeTimelineVisuals, setTimelineImageStyle, setTimelineItemCount, setTimelineMode,
-          setTimelineTopic, t, timelineImageStyle, timelineItemCount, timelineMode,
-          timelineTopic
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('concept-sort') ? undefined : 'none'}} id="tour-tool-concept-sort" data-help-key="tool_concept_sort" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'concept-sort' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.filter')}
-                    data-help-key="tool_concept_sort"
-                    onClick={() => toggleTool('concept-sort')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Filter size={16}/> {t('concept_sort.title')}</div>
-                  {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── ConceptSortPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('concept-sort') && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
-          expandedTools, addConcept, conceptImageMode, conceptInput, conceptItemCount,
-          conceptSortCustomInstructions, conceptSortImageStyle, handleConceptKeyDown, handleGenerate, hasSourceOrAnalysis, isProcessing,
-          removeConcept, selectedConcepts, setConceptImageMode, setConceptInput, setConceptItemCount,
-          setConceptSortCustomInstructions, setConceptSortImageStyle, t
-                })}
-            </div>
-            {/* ── DBQ Tool Panel ── */}
-            <div style={{display: isGuidedToolVisible('dbq') ? undefined : 'none'}} id="tour-tool-dbq" data-help-key="tool_dbq" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
-              `}>
-                <button
-                    aria-label={t('sidebar.tool_dbq_aria') || 'Document-Based Questions'}
-                    data-help-key="tool_dbq"
-                    onClick={() => toggleTool('dbq')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
-                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                {/* ── DbqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('dbq') && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
-          expandedTools, addToast, callGemini, callGeminiVision, dbqCustomInstructions, fetchAndCleanUrl,
-          handleGenerate, hasSourceOrAnalysis, isProcessing, setDbqCustomInstructions, setExpandedTools, t
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('math') ? undefined : 'none'}} id="tour-tool-math" data-help-key="tool_math" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'math' ? 'border-blue-600 shadow-xl shadow-blue-500/20' : 'border-slate-200 hover:border-blue-200 shadow-lg shadow-blue-500/10'}
-              `}>
-                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-blue-50 transition-colors">
-                  <button
-                    data-help-key="tool_math"
-                    aria-expanded={expandedTools.includes('math')}
-                    onClick={() => toggleTool('math')}
-                    className="flex-1 p-3 flex justify-between items-center text-start"
-                  >
-                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
-                    {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { selectToolFromCatalog('math'); setShowStemLab(true); setStemLabTab('explore'); }}
-                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}
-                  >
-                    🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
-                  </button>
-                </div>
-                {/* ── MathPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('math') && window.AlloModules && window.AlloModules.MathPanel && React.createElement(window.AlloModules.MathPanel, {
-          expandedTools, Calculator, addToast, cubeAnswer, cubeChallenge,
-          cubeDims, cubeDragRef, cubeFeedback, cubeNotch, cubeRotation,
-          cubeScale, cubeShape, cubeShowLayers, exploreDifficulty, getAdaptiveDifficulty,
-          gradeLevel, handleGenerateMath, handleScoreUpdate, hasSourceOrAnalysis, isMathGraphEnabled,
-          isProcessing, mathInput, mathMode, mathQuantity, mathSubject,
-          setActiveView, setCubeAnswer, setCubeChallenge, setCubeDims, setCubeFeedback,
-          setCubeNotch, setCubeRotation, setCubeScale, setCubeShape, setCubeShowLayers,
-          setExploreDifficulty, setGeneratedContent, setHistory, setIsMathGraphEnabled, setMathInput,
-          setMathMode, setMathQuantity, setMathSubject, setUseMathSourceContext, storageDB,
-          t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives,
-          // Primary door to Math Studio (the former STEM Lab Create tab).
-          openMathCreate,
-          // Lets a completed standardized math probe reach the learner's probe
-          // history, the same store the word-sounds probes write to. Without it
-          // Assessment Center's Math DCPM trend could never fill.
-          saveProbeResult
-                })}
-            </div>
-            <div style={{display: isGuidedToolVisible('adventure') ? undefined : 'none'}} id="tour-tool-adventure" data-help-key="tool_adventure" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'adventure' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
-              `}>
-              <button
-                data-help-key="tool_adventure"
-                aria-expanded={expandedTools.includes('adventure')} onClick={() => toggleTool('adventure')}
-                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                    <div className="bg-purple-100 p-1 rounded-md text-purple-700"><MapIcon size={16}/></div>
-                    <div>
-                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_adventure')}</span>
-                    </div>
-                </div>
-                {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-              </button>
-              {/* ── AdventurePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-              {expandedTools.includes('adventure') && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
-          expandedTools, Cloud, CloudOff, Octagon, Package,
-          addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters, adventureCustomArtStyle,
-          adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode,
-          adventureState, enableFactionResources, factionResourceMode, globalPoints, handleResumeAdventure,
-          handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual, handleStartAdventure, hasSourceOrAnalysis,
-          // Lesson-scoped, so Resume never points at a previous lesson's story.
-          hasSavedAdventure: hasSavedAdventureForLesson,
-          isAdventureCloudEnabled, isAdventureStoryMode, isProcessing, isResumingAdventure, isSocialStoryMode,
-          isTeacherMode, safeSetItem, selectedLanguages, setAdventureArtStyle, setAdventureChanceMode,
-          setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions, setAdventureDifficulty, setAdventureFreeResponseEnabled,
-          setAdventureInputMode, setAdventureLanguageMode, setAdventureState, setEnableFactionResources, setIsAdventureCloudEnabled,
-          setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setStudentProjectSettings, setUseLowQualityVisuals,
-          socialStoryFocus, studentProjectSettings, t, universalImageStyle, useLowQualityVisuals
-              })}
-            </div>
-             <div style={{display: isGuidedToolVisible('quiz') ? undefined : 'none'}} id="ui-tool-quiz" data-help-key="tool_quiz" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                ${activeView === 'quiz' ? 'border-emerald-600 shadow-xl shadow-emerald-500/20' : 'border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10'}
-              `}>
-                <button
-                    aria-label={t('common.check')}
-                    data-help-key="tool_quiz"
-                    aria-expanded={expandedTools.includes('quiz')} onClick={() => toggleTool('quiz')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><CheckSquare size={16}/> {t('sidebar.tool_quiz')}</div>
-                  {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                 {/* ── QuizPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                 {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
-          expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
-          hasSourceOrAnalysis, history, imageStyle, isProcessing, mcqVisualMode, quizCustomInstructions,
-          quizMcqCount, quizMode, quizReflectionCount, quizItemTypeMix, setDokLevel, setImageStyle,
-          setMcqVisualMode, setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,
-          setQuizItemTypeMix, t
-                 })}
-             </div>
-             <div style={{display: isGuidedToolVisible('lesson-plan') ? undefined : 'none'}} id="tour-tool-lesson-plan" data-help-key="tool_lesson_plan" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
-                 ${activeView === 'lesson-plan' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
-               `}>
-                 <button
-                     data-help-key="tool_lesson_plan"
-                     onClick={() => toggleTool('lesson-plan')}
-                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors"
-                 >
-                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                     <ClipboardList size={16} className="text-indigo-600"/>
-                     {isIndependentMode ? t('common.study_guide') : (isParentMode ? t('lesson_plan.family_guide') : t('lesson_plan.title'))}
-                   </div>
-                   {expandedTools.includes('lesson-plan') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                 </button>
-                 {/* ── LessonPlanPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                 {expandedTools.includes('lesson-plan') && window.AlloModules && window.AlloModules.LessonPlanPanel && React.createElement(window.AlloModules.LessonPlanPanel, {
-          expandedTools, activeView, handleGenerateLessonPlan, hasSourceOrAnalysis, isProcessing,
-          lessonCustomAdditions, setLessonCustomAdditions, isParentMode, t
-                 })}
-            </div>
-            {/* Directions v2: teacher-AUTHORED (not generated) — the card opens the composer
-                instead of a generation panel. Student-facing by design; sits after Lesson Plan
-                as its student-voice counterpart. */}
-            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
-              <button
-                  data-help-key="tool_directions"
-                  onClick={() => { selectToolFromCatalog('directions'); setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
-                  className="w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors"
-              >
-                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                  <ClipboardList size={16} className="text-amber-600"/>
-                  {t('directions.title') || 'Assignment Directions'}
-                </div>
-                {/* D7 (2026-08-16): this was a rounded amber PILL reading "you write it",
-                    sitting at the right edge of a card that is itself one big button. A
-                    pill is the app's own idiom for something you press, so it read as a
-                    second, disabled-looking control. It is decorative: it says who authors
-                    the directions, not something you can do. Now plain text plus the same
-                    chevron every other openable card uses, so the whole card reads as one
-                    affordance. Nothing else changes; the string keeps its key. */}
-                <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold text-amber-700">
-                  {t('directions.badge') || 'you write it'}
-                  <ChevronRight size={14} className="text-amber-600" aria-hidden="true" />
-                </span>
-              </button>
-            </div>
-            <FullPackRunView
-        __alloDisplayName="Full Pack"
-        __alloOverlay={false}
-        {...{
-        AlertTriangle, ArrowDown, ArrowRight, ArrowUp, ChevronDown, Clock, Copy, Cpu,
-        Download, Eye, EyeOff, GUIDED_DELIVERY_GROUPS, ImageIcon, Plus, RefreshCw, Sparkles,
-        StopCircle, Trash2, _alloDiagnosticReason, _alloGenerationHelpersDeps, aiCapability, createGuidedHomeworkShare, currentUiLanguage, differentiationCustomGrades,
-        differentiationRange, differentiationTypes, dokLevel, fullPackAddType, fullPackRun, fullPackTargetGroup, getDefaultTitle, gradeLevel,
-        guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleCopyFullPackDiagnostics, handleDismissFullPackRun,
-        handleDownloadFullPackDiagnostics, handleEditFullPackPlanResourceDirective, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handlePlanFullPack, handleRemoveFullPackPlanResource, handleRetryFailedFullPack, handleSetFullPackPlanAdaptedTextPolicy,
-        handleStopFullPack, hasSourceOrAnalysis, history, imageAspectRatio, imageGenerationStyle, inputText, isAutoConfigEnabled, isIndependentMode,
-        isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares,
-        resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount,
-        setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat,
-        translationMode, universalImageStyle, useEmojis
-        }}
-      />
-            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
-                <button
-                    data-help-key="tool_alignment"
-                    onClick={() => { selectToolFromCatalog('alignment'); handleGenerate('alignment-report'); }}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
-                    title={t('alignment.generate')}
-                >
-                    <div>
-                        <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2">
-                            {isProcessing && activeView === 'alignment-report' ? <RefreshCw className="animate-spin text-teal-600" size={18} /> : <ShieldCheck size={18} className="text-emerald-500 fill-emerald-100" />}
-                            {isIndependentMode ? (t('alignment.skill_check') || "Skill Check") : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
-                        </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">
-                            {standardsInput ? (isIndependentMode ? (t('alignment.desc_skill_check') || "Verify your mastery against standards.") : (isParentMode ? (t('alignment.desc_parent') || "See how this matches school goals") : (t('alignment.desc_6dim') || "Audits curriculum across 6 dimensions"))) : (t('alignment.desc_5dim') || "Audits curriculum across 5 dimensions (add standards for full audit)")}
-                        </span>
-                    </div>
-                    <ArrowRight size={16} className="text-teal-700 group-hover:text-teal-600" />
-                </button>
-            </div>
-          </div>
+          <CDNModuleGate moduleKey="SidebarPanels.GeneratorActionsView" loaderName="__alloEnsureSidebarPanels" size="inline" displayName="Generator tools" t={t}>
+  {(View) => React.createElement(View, {
+    AlertTriangle, ArrowDown, ArrowRight, ArrowUp, BRIDGE_MODES, BookOpen, Calculator, CheckSquare,
+    ChevronDown, ChevronRight, ChevronUp, ClipboardList, Clock, Cloud, CloudOff, Copy, Cpu, Download,
+    Eye, EyeOff, FileQuestion, FileText, Filter, FullPackRunView, GUIDED_DELIVERY_GROUPS, Globe, History,
+    ImageIcon, InfoTooltip, Layout, Lightbulb, ListChecks, ListOrdered, MapIcon, MessageCircleQuestion,
+    Octagon, Package, Plus, Quote, RefreshCw, Search, ShieldCheck, Sparkles, StopCircle,
+    TIMELINE_MODE_DEFINITIONS, TOOL_CATALOG_GROUPS, Target, Terminal, Trash2, Volume2,
+    _alloDiagnosticReason, _alloGenerationHelpersDeps, activeView, addConcept, addInterest, addLanguage,
+    addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
+    adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty,
+    adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
+    aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
+    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengeFamily,
+    appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
+    brainstormCustomInstructions, bridgeSimType, bridgeStepCount, callGemini, callGeminiVision,
+    checkAccuracyWithSearch, conceptImageMode, conceptInput, conceptItemCount,
+    conceptSortCustomInstructions, conceptSortImageStyle, createGuidedHomeworkShare, creativeMode,
+    cubeAnswer, cubeChallenge, cubeDims, cubeDragRef, cubeFeedback, cubeNotch, cubeRotation, cubeScale,
+    cubeShape, cubeShowLayers, currentUiLanguage, dbqCustomInstructions, differentiationCustomGrades,
+    differentiationRange, differentiationTypes, dokLevel, enableFactionResources, expandedTools,
+    exploreDifficulty, factionResourceMode, faqCount, faqCustomInstructions, fetchAndCleanUrl,
+    fillInTheBlank, frameCustomInstructions, frameType, fullPackAddType, fullPackRun,
+    fullPackTargetGroup, generatedContent, getAdaptiveDifficulty, getDefaultTitle, globalPoints,
+    glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count,
+    gradeLevel, guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource,
+    handleAddStandard, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleConceptKeyDown,
+    handleCopyFullPackDiagnostics, handleDismissFullPackRun, handleDownloadFullPackDiagnostics,
+    handleEditFullPackPlanResourceDirective, handleFindStandards, handleGenerate,
+    handleGenerateLessonPlan, handleGenerateMath, handleGeneratePersonas, handleInterestKeyDown,
+    handleKeyDown, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handleOpenWordSounds,
+    handlePlanFullPack, handleRemoveFullPackPlanResource, handleRemoveStandard, handleResumeAdventure,
+    handleRetryFailedFullPack, handleScoreUpdate, handleSetActiveViewToPersona,
+    handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual,
+    handleSetFullPackPlanAdaptedTextPolicy, handleSetStandardModeToAi, handleSetStandardModeToManual,
+    handleStartAdventure, handleStopFullPack, handleToggleAllTools, handleUseResolvedStandard,
+    hasSavedAdventureForLesson, hasSourceOrAnalysis, hiddenToolCatalogSelector, history,
+    imageAspectRatio, imageGenerationStyle, imageStyle, includeCharts, includeEtymology,
+    includeTimelineVisuals, inputText, interestInput, isAdventureCloudEnabled, isAdventureStoryMode,
+    isAutoConfigEnabled, isFindingStandards, isGeneratingPersona, isGuidedToolVisible, isIndependentMode,
+    isMathGraphEnabled, isParentMode, isPersonaFreeResponse, isProcessing, isResumingAdventure,
+    isSocialStoryMode, isTeacherMode, isToolCatalogExpanded, isToolCatalogHidden,
+    isToolCatalogItemVisible, isTranslationControlRelevant, isUniversalSettingsOpen, keepCitations,
+    languageInput, lessonCustomAdditions, leveledTextCustomInstructions, leveledTextLanguage,
+    leveledTextLength, mathInput, mathMode, mathQuantity, mathSubject, mcqVisualMode,
+    memoryAidAuthorshipMode, memoryAidCount, memoryAidCustomInstructions, memoryAidIncludeHookFacts,
+    memoryAidIncludeVisuals, memoryAidReasoningRequired, memoryAidReflectionLevel,
+    memoryAidSelectionMode, memoryAidTypes, noText, noteTakingCustomInstructions, noteTakingTemplateType,
+    openExportPreview, openMathCreate, openStudentQrPreview, openToolCatalog, outlineCustomInstructions,
+    outlineType, personaCustomInstructions, personaState, qrShareModal, quizCustomInstructions,
+    quizItemTypeMix, quizMcqCount, quizMode, quizReflectionCount, recentQrShares, removeConcept,
+    removeInterest, removeLanguage, resolveTranslationPolicy, resourceCount, rosterKey, safeSetItem,
+    saveProbeResult, selectToolFromCatalog, selectedConcepts, selectedLanguages,
+    selectedToolCatalogLabel, setActiveView, setAdventureArtStyle, setAdventureChanceMode,
+    setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions,
+    setAdventureDifficulty, setAdventureFreeResponseEnabled, setAdventureInputMode,
+    setAdventureLanguageMode, setAdventureState, setAiStandardQuery, setAnchorChartCustomInstructions,
+    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions,
+    setAppliedChallengeFamily, setAppliedChallengeScope, setAppliedChallengeSelectionMode,
+    setAutoAttachManipulatives, setAutoRemoveWords, setBrainstormCustomInstructions, setBridgeSimType,
+    setBridgeStepCount, setCheckAccuracyWithSearch, setConceptImageMode, setConceptInput,
+    setConceptItemCount, setConceptSortCustomInstructions, setConceptSortImageStyle, setCreativeMode,
+    setCubeAnswer, setCubeChallenge, setCubeDims, setCubeFeedback, setCubeNotch, setCubeRotation,
+    setCubeScale, setCubeShape, setCubeShowLayers, setDbqCustomInstructions,
+    setDifferentiationCustomGrades, setDifferentiationRange, setDifferentiationTypes, setDokLevel,
+    setEnableFactionResources, setExpandedTools, setExploreDifficulty, setFaqCount,
+    setFaqCustomInstructions, setFillInTheBlank, setFrameCustomInstructions, setFrameType,
+    setFullPackAddType, setFullPackTargetGroup, setGeneratedContent, setGlossaryCustomInstructions,
+    setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setGradeLevel, setHistory,
+    setImageStyle, setIncludeCharts, setIncludeEtymology, setIncludeTimelineVisuals, setInterestInput,
+    setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsAutoConfigEnabled, setIsMathGraphEnabled,
+    setIsPersonaFreeResponse, setIsSocialStoryMode, setIsToolCatalogExpanded, setIsToolCatalogHidden,
+    setIsUniversalSettingsOpen, setKeepCitations, setLanguageInput, setLessonCustomAdditions,
+    setLeveledTextCustomInstructions, setLeveledTextLanguage, setLeveledTextLength, setMathInput,
+    setMathMode, setMathQuantity, setMathSubject, setMbDirectionsDraft, setMcqVisualMode,
+    setMemoryAidAuthorshipMode, setMemoryAidCount, setMemoryAidCustomInstructions,
+    setMemoryAidIncludeHookFacts, setMemoryAidIncludeVisuals, setMemoryAidReasoningRequired,
+    setMemoryAidReflectionLevel, setMemoryAidSelectionMode, setMemoryAidTypes, setNoText,
+    setNoteTakingCustomInstructions, setNoteTakingTemplateType, setOutlineCustomInstructions,
+    setOutlineType, setPersonaCustomInstructions, setQuizCustomInstructions, setQuizItemTypeMix,
+    setQuizMcqCount, setQuizMode, setQuizReflectionCount, setResourceCount, setShowAIBackendModal,
+    setShowCompletedFullPackRows, setShowDirectionsComposer, setShowSessionStartOptions, setShowStemLab,
+    setSocialStoryFocus, setSourceTopic, setStandardInputValue, setStemLabTab, setStudentProjectSettings,
+    setTargetStandards, setTextFormat, setTimelineImageStyle, setTimelineItemCount, setTimelineMode,
+    setTimelineTopic, setToolCatalogGroup, setToolCatalogQuery, setTranslationMode,
+    setUniversalImageStyle, setUseEmojis, setUseLowQualityVisuals, setUseMathSourceContext,
+    setVisualCustomInstructions, setVisualCustomStyle, setVisualLayoutMode, setVisualStyle,
+    showCompletedFullPackRows, socialStoryFocus, standardInputValue, standardMode, standardsInput,
+    storageDB, studentInterests, studentProjectSettings, suggestedStandards, t, targetStandards,
+    textFormat, timelineImageStyle, timelineItemCount, timelineMode, timelineTopic, toggleTool,
+    toolCatalogGroup, toolCatalogQuery, translationMode, translationTargetChoices, universalImageStyle,
+    useEmojis, useLowQualityVisuals, useMathSourceContext, visualCustomInstructions, visualCustomStyle,
+    visualLayoutMode, visualStyle,
+  })}
+</CDNModuleGate>
           )}
             {!isTeacherMode && !activeSessionCode && <StudentJoinPanel appId={appId} handleSetIsJoinPanelExpandedToFalse={handleSetIsJoinPanelExpandedToFalse} handleSetIsJoinPanelExpandedToTrue={handleSetIsJoinPanelExpandedToTrue} isJoinPanelExpanded={isJoinPanelExpanded} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} t={t} />}
             {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
@@ -52255,6 +51639,7 @@ ${_alloActivityContext(activity)}
               <ErrorBoundary fallbackMessage={t('errors.content_viewer') || 'The content viewer encountered an error. Try regenerating the resource or switching views.'}>
               <div id="screenshot-target" ref={contentRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
                 {activeView === 'analysis' && window.AlloModules && window.AlloModules.AnalysisView && React.createElement(window.AlloModules.AnalysisView, {
+                    onUpdateResource, onCorrectAnalysisText,
                     t, generatedContent, selectedDiscrepancies, selectedGrammarErrors,
                     isTeacherMode, isProcessing, isEditingAnalysis, sourceRefineInstruction,
                     analysisEditorRef,
@@ -52269,7 +51654,7 @@ ${_alloActivityContext(activity)}
                     handleDownloadAudio, downloadingContentId,
                     BilingualFieldRenderer, SourceReferencesPanel
                 })}
-                {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, {
+                {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, { t,
                     generatedContent, wsActivitySequence, isTeacherMode,
                     setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview,
                     prepareWordSoundsSession,
@@ -52740,6 +52125,7 @@ ${_alloActivityContext(activity)}
                     getRows, splitTextToSentences, formatInteractiveText
                 })}
                 {activeView === 'sentence-frames' && window.AlloModules && window.AlloModules.SentenceFramesView && React.createElement(window.AlloModules.SentenceFramesView, {
+                    onRetrySave: retryStudentWorkSave,
                     t, generatedContent, studentWorkStatus, isTeacherMode,
                     isScaffoldComplete, isEditingScaffolds, gradingSession,
                     studentResponses, isIndependentMode, isParentMode,
@@ -52890,32 +52276,63 @@ ${_alloActivityContext(activity)}
                     ErrorBoundary, AdventureAmbience, AdventureShop, AnimatedNumber,
                     ClimaxProgressBar, ConfettiExplosion, InventoryGrid
                 })}
-                {activeView === 'note-taking' && window.AlloModules && window.AlloModules.NoteTakingView && React.createElement(window.AlloModules.NoteTakingView, {
-                    t, generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, handleGenerate,
-                    callGemini, addToast, handleScoreUpdate, inputText, history,
+                {activeView === 'note-taking' && generatedContent?.type === 'note-taking' && window.AlloModules?.NoteTakingView && window.AlloModules?.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
+                    key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode,
+                    View: window.AlloModules.NoteTakingView, generatedContent, isTeacherMode, isProcessing,
+                    studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
+                    onRetrySave: retryStudentWorkSave, allowRuntimeAi: !studentAiFeaturesHidden,
+                    handleNoteUpdate, onUpdateResource, handleGenerate,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini,
+                    addToast, handleScoreUpdate, inputText, history, t,
                 })}
-                {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
-                    t, generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callImagen, callGeminiImageEdit,
-                    activeSessionCode,
-                    onPlayPictionary: handlePlayPictionaryFromAnchorChart,
-                    // Phase 10: interactive grading + XP
-                    callGemini, addXp, addToast,
+                {activeView === 'anchor-chart' && generatedContent?.type === 'anchor-chart' && window.AlloModules?.AnchorChartView && window.AlloModules?.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
+                    key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode,
+                    View: window.AlloModules.AnchorChartView, generatedContent, isTeacherMode, isProcessing,
+                    studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
+                    onRetrySave: retryStudentWorkSave, allowRuntimeAi: !studentAiFeaturesHidden,
+                    handleNoteUpdate, onUpdateResource,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini,
+                    callImagen: studentAiFeaturesHidden ? null : callImagen,
+                    callGeminiImageEdit: studentAiFeaturesHidden ? null : callGeminiImageEdit,
+                    activeSessionCode, onPlayPictionary: handlePlayPictionaryFromAnchorChart,
+                    onPrint: (item, options) => handlePrintResourceSheet(item, options),
+                    addXp, addToast, t,
                 })}
-                {activeView === 'memory-aid' && window.AlloModules && window.AlloModules.MemoryAidView && React.createElement(window.AlloModules.MemoryAidView, {
+                {activeView === 'memory-aid' && window.AlloModules && window.AlloModules.MemoryAidView && window.AlloModules.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
+                    key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode + ':' + (accessibilityReviewSession?.itemId === generatedContent.id ? 'a11y' : ''),
+                    View: window.AlloModules.MemoryAidView, studentResponses, studentWorkStatus,
+                    stopPlayback, voiceSpeed, voiceVolume,
+                    onRetrySave: retryStudentWorkSave,
+                    startInPreview: accessibilityReviewSession?.itemId === generatedContent.id,
+                    onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
+                    allowRuntimeAi: !studentAiFeaturesHidden,
                     generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callGemini, callImagen, callGeminiImageEdit, callGeminiVision,
+                    handleNoteUpdate,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini,
+                    callImagen: studentAiFeaturesHidden ? null : callImagen,
+                    callGeminiImageEdit: studentAiFeaturesHidden ? null : callGeminiImageEdit,
+                    callGeminiVision: studentAiFeaturesHidden ? null : callGeminiVision,
                     handleSpeak, handleDownloadAudio, downloadingContentId,
                     addToast, gradeLevel, universalImageStyle, t,
                     activeProfileId: selectedProfileId,
-                    onPrint: (item) => handlePrintResourceSheet(item, { worksheet: true, teacherKey: isTeacherMode }),
+                    onPrint: (item, options) => handlePrintResourceSheet(item, options || { worksheet: true, teacherKey: false }),
                 })}
-                {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && React.createElement(window.AlloModules.AppliedChallengeView, {
+                {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && window.AlloModules.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
+                    key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode + ':' + (accessibilityReviewSession?.itemId === generatedContent.id ? 'a11y' : ''),
+                    View: window.AlloModules.AppliedChallengeView, studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    stopPlayback, voiceSpeed, voiceVolume,
+                    onRetrySave: retryStudentWorkSave,
+                    startInPreview: accessibilityReviewSession?.itemId === generatedContent.id,
+                    onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
+                    allowRuntimeAi: !studentAiFeaturesHidden,
                     generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callGemini, addToast, gradeLevel, t,
+                    handleNoteUpdate, callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, gradeLevel, t,
+                    onPrint: (item, options) => handlePrintResourceSheet(item, options),
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
+                    onUpdateResource,
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
                     singleImageOverride, isTeacherMode, imageRefinementInput, isProcessing,
                     singleImageFileRef,
@@ -53055,6 +52472,12 @@ ${_alloActivityContext(activity)}
                 {activeView === 'lesson-plan' && generatedContent?.data && window.AlloModules && window.AlloModules.LessonPlanView && React.createElement(window.AlloModules.LessonPlanView, {
                     t, generatedContent, sourceTopic, gradeLevel,
                     isTeacherMode, isIndependentMode, isParentMode,
+                    teachingScriptMaterials, teachingScriptLoadState,
+                    onRetryTeachingScriptLoad: () => setTeachingScriptLoadAttempt(previous => previous + 1),
+                    onGenerateTeachingScript, onCancelTeachingScript, onUpdateTeachingScript, onOpenTeachingMaterial,
+                    capabilities: { canGenerate: teachingScriptCanGenerate, canResearch: typeof window.fetch === 'function' },
+                    defaultSettings: teachingScriptDefaultSettings,
+                    scriptRun: teachingScriptRuns[String(generatedContent?.id)] || {},
                     isEditingLessonPlan, history, isGeneratingExtensionGuide,
                     progressionData, isGeneratingProgression,
                     setActiveStation, setStemLabTool, setShowStemLab, setStemLabTab,
@@ -53113,366 +52536,7 @@ ${_alloActivityContext(activity)}
                     addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS, selectedVoice
                 })}
                 {activeView === 'persona' && (
-                    <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
-                    <div className="h-full flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
-                        <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-sm">
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0">
-                                    <History size={20} />
-                                </div>
-                                <div className="text-start flex-grow">
-                                    <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
-                                    <p className="text-slate-600 text-xs truncate max-w-[300px] hidden sm:block">
-                                        {personaState.mode === 'single'
-                                            ? t('persona.instruction_single')
-                                            : t('persona.instruction_panel', { current: personaState.selectedCharacters.length })
-                                        }
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex bg-white/60 p-1 rounded-lg border border-yellow-200 shrink-0">
-                                <button type="button"
-                                    aria-pressed={personaState.mode === 'single'}
-                                    aria-label={t('persona.mode_single') || 'Single interview'}
-                                    disabled={isProcessing || isGeneratingPersona}
-                                    onClick={() => {
-                                        if (isProcessing || isGeneratingPersona) return;
-                                        setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }));
-                                    }}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
-                                >
-                                    {t('persona.mode_single')}
-                                </button>
-                                <button type="button"
-                                    aria-pressed={personaState.mode === 'panel'}
-                                    aria-label={t('persona.mode_panel') || 'Panel interview'}
-                                    disabled={isProcessing || isGeneratingPersona}
-                                    onClick={() => {
-                                        if (isProcessing || isGeneratingPersona) return;
-                                        setPersonaState(prev => ({ ...prev, mode: 'panel' }));
-                                    }}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
-                                >
-                                    {t('persona.mode_panel')}
-                                </button>
-                            </div>
-                            {isTeacherMode && (
-                                <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
-                                    <span>{t('persona.resume_retention')}</span>
-                                    <select aria-label={t('persona.resume_retention')} disabled={isProcessing || isGeneratingPersona} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60">
-                                        <option value="0">{t('persona.retention_off')}</option>
-                                        <option value="7">7 {t('persona.days')}</option>
-                                        <option value="14">14 {t('persona.days')}</option>
-                                        <option value="30">30 {t('persona.days')}</option>
-                                    </select>
-                                </label>
-                            )}
-                        </div>
-                        {(() => {
-                            const sourceBinding = generatedContent?.config?.personaSource;
-                            const groundingMetadata = sourceBinding?.groundingMetadata
-                                ?? generatedContent?.config?.groundingMetadata;
-                            const grounding = extractPersonaGroundingDisclosure(groundingMetadata);
-                            const sourceTopic = String(sourceBinding?.topic || '').trim().slice(0, 300);
-                            const sourceFingerprint = String(sourceBinding?.fingerprint || '').trim().slice(0, 160);
-                            const sourceExcerpt = String(sourceBinding?.excerpt || '').trim().slice(0, 800);
-                            if (!sourceBinding && grounding.links.length === 0 && grounding.queries.length === 0) return null;
-                            const disclosureCount = grounding.links.length + grounding.queries.length + (sourceBinding ? 1 : 0);
-                            return (
-                                <details className="mx-3 mb-2 max-h-40 shrink-0 overflow-auto rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-slate-700">
-                                    <summary className="cursor-pointer font-bold text-sky-900">
-                                        {t('persona.verified_sources') || 'Sources and search context'} ({disclosureCount})
-                                    </summary>
-                                    {sourceBinding && (
-                                        <div className="mt-2 rounded-md border border-sky-100 bg-white/70 p-2">
-                                            {sourceTopic && <p className="font-bold text-slate-800">{sourceTopic}</p>}
-                                            {sourceFingerprint && (
-                                                <p className="mt-1 break-all font-mono text-[10px] text-slate-500" aria-label={t('persona.source_fingerprint') || 'Source fingerprint'}>
-                                                    {sourceFingerprint}
-                                                </p>
-                                            )}
-                                            {sourceExcerpt && (
-                                                <blockquote className="mt-2 border-s-2 border-sky-200 ps-2 text-slate-600" aria-label={t('persona.bound_source_excerpt') || 'Bound lesson source excerpt'}>
-                                                    {sourceExcerpt}{String(sourceBinding?.excerpt || '').trim().length > sourceExcerpt.length ? '…' : ''}
-                                                </blockquote>
-                                            )}
-                                        </div>
-                                    )}
-                                    {grounding.links.length > 0 && (
-                                        <ul className="mt-2 list-disc space-y-1 ps-5">
-                                            {grounding.links.map((source, sourceIndex) => (
-                                                <li key={source.url}>
-                                                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-800 underline decoration-sky-300 hover:text-sky-950">
-                                                        {source.title || ('Source ' + (sourceIndex + 1))}
-                                                    </a>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {grounding.queries.length > 0 && (
-                                        <div className="mt-2">
-                                            <p className="font-bold text-slate-700">{t('persona.source_queries') || 'Search queries used'}</p>
-                                            <ul className="mt-1 list-disc space-y-1 ps-5">
-                                                {grounding.queries.map(query => <li key={query}>{query}</li>)}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </details>
-                            );
-                        })()}
-                        <div className="flex flex-nowrap gap-6 overflow-auto p-6 custom-scrollbar flex-grow items-center snap-x snap-mandatory z-10 w-full bg-slate-50/50 relative">
-                            {isGeneratingPersona && (
-                                <div role="status" aria-live="polite" className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg">
-                                    <div className="relative">
-                                        <div className="w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin motion-reduce:animate-none"></div>
-                                        <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse motion-reduce:animate-none" />
-                                    </div>
-                                    <p className="mt-6 text-lg font-bold text-slate-700">{t('persona.identifying')}</p>
-                                    <p className="text-sm text-slate-600 mt-1">{t('persona.analyzing_historical_figures') || 'Analyzing content for historical figures...'}</p>
-                                </div>
-                            )}
-                            {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((persona, idx) => {
-                                const isSelectedInPanel = personaState.mode === 'panel' && personaState.selectedCharacters.some(c => c.name === persona.name);
-                                return (
-                                <div
-                                    key={idx}
-                                    className={`
-                                        min-w-[300px] w-[320px] h-[500px] max-h-[75vh] snap-center shrink-0
-                                        bg-white rounded-2xl border-2 transition-all p-6 flex flex-col relative group overflow-hidden cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-2 duration-300
-                                        ${isSelectedInPanel ? 'border-purple-500 ring-4 ring-purple-100' : 'border-slate-100 hover:border-yellow-300'}
-                                    `}
-                                    data-help-key="persona_card"
-                                    aria-disabled={isProcessing || isGeneratingPersona}
-                                    onClick={() => {
-                                        if (isProcessing || isGeneratingPersona) return;
-                                        if (personaState.mode === 'panel') handleTogglePanelSelection(persona);
-                                    }}
-                                >
-                                    <div className="absolute -bottom-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-                                        <History size={120} className="text-indigo-900"/>
-                                    </div>
-                                    <div className="mb-4 relative z-10">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="inline-block bg-yellow-100 text-yellow-800 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-200">
-                                                {persona.year}
-                                            </span>
-                                            {isTeacherMode && (
-                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (isProcessing || isGeneratingPersona) return;
-                                                    openPersonaTeacherEditor(persona, idx);
-                                                }}>{t('common.edit')}</button>
-                                            )}
-                                        </div>
-                                        <h3 className="font-black text-2xl text-slate-800 leading-tight mb-1 group-hover:text-indigo-900 transition-colors line-clamp-2">
-                                            {persona.name}
-                                        </h3>
-                                        <p className="text-xs font-bold text-slate-600 uppercase tracking-wider line-clamp-1">
-                                            {persona.role}
-                                        </p>
-                                    </div>
-                                    <div className="text-sm text-slate-600 leading-relaxed mb-6 flex-grow relative z-10 border-t border-slate-100 pt-3 overflow-y-auto custom-scrollbar">
-                                        {persona.context}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        aria-label={(personaState.mode === 'single' ? (t('common.ask_question') || 'Ask a question') : (isSelectedInPanel ? (t('persona.selected') || 'Selected') : (t('persona.add_to_panel') || 'Add to panel'))) + ': ' + String(persona.name || '')}
-                                        aria-pressed={personaState.mode === 'panel' ? isSelectedInPanel : undefined}
-                                        disabled={isProcessing || isGeneratingPersona}
-                                        data-help-key="persona_select_button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (isProcessing || isGeneratingPersona) return;
-                                            if (personaState.mode === 'single') {
-                                                handleSelectPersona(persona);
-                                            } else {
-                                                handleTogglePanelSelection(persona);
-                                            }
-                                        }}
-                                        className={`w-full py-3 border-2 rounded-xl font-bold text-sm transition-all shadow-sm relative z-10 flex items-center justify-center gap-2 group/btn
-                                        ${personaState.mode === 'single'
-                                            ? 'bg-white border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'
-                                            : isSelectedInPanel
-                                                ? 'bg-purple-600 border-purple-600 text-white'
-                                                : 'bg-white border-purple-100 text-purple-700 hover:bg-purple-50'}
-                                        `}
-                                    >
-                                        {personaState.mode === 'single' ? (
-                                            <><MessageCircleQuestion size={18} className="group-hover/btn:animate-bounce"/> {t('persona.select')}</>
-                                        ) : (
-                                            <>{isSelectedInPanel ? <CheckCircle2 size={18}/> : <Plus size={18}/>} {isSelectedInPanel ? t('persona.selected') : t('persona.add_to_panel')}</>
-                                        )}
-                                    </button>
-                                </div>
-                            )})}
-                            {(!generatedContent?.data || (Array.isArray(generatedContent?.data) && generatedContent?.data.length === 0)) && (
-                                <div className="w-full text-center text-slate-600 py-12 italic">
-                                    {t('persona.no_candidates')}
-                                </div>
-                            )}
-                        </div>
-                        {personaState.mode === 'panel' && (
-                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
-                                <button aria-label={t('common.start_panel_chat')}
-                                    onClick={handleStartPanelChat}
-                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
-                                    className="bg-purple-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95"
-                                >
-                                    {(isProcessing || isGeneratingPersona) ? <RefreshCw className="animate-spin motion-reduce:animate-none"/> : <Users size={24}/>}
-                                    {t('persona.start_panel')}
-                                </button>
-                            </div>
-                        )}
-                        {isTeacherMode && personaTeacherEditor && (
-                            <div
-                                className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
-                                onMouseDown={(event) => { if (event.target === event.currentTarget) setPersonaTeacherEditor(null); }}
-                            >
-                                <div
-                                    ref={personaTeacherEditorRef}
-                                    role="dialog"
-                                    aria-modal="true"
-                                    aria-labelledby="persona-teacher-editor-title"
-                                    tabIndex={-1}
-                                    onKeyDown={(event) => { if (event.key === 'Escape') setPersonaTeacherEditor(null); }}
-                                    className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-indigo-200 bg-white shadow-2xl"
-                                >
-                                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
-                                        <div>
-                                            <h3 id="persona-teacher-editor-title" className="text-lg font-black text-slate-900">
-                                                {t('persona.edit_title') || 'Edit interview character'}
-                                            </h3>
-                                            <p className="text-xs text-slate-600">{personaTeacherEditor.candidateName}</p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            autoFocus
-                                            aria-label={t('common.close')}
-                                            onClick={() => setPersonaTeacherEditor(null)}
-                                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-lg font-bold text-slate-600 hover:bg-slate-100"
-                                        >×</button>
-                                    </div>
-                                    <div className="space-y-5 p-5">
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                            <label className="space-y-1 text-sm font-bold text-slate-700">
-                                                <span>{t('persona.edit_role') || 'Role'}</span>
-                                                <input
-                                                    value={personaTeacherEditor.role}
-                                                    maxLength={200}
-                                                    onChange={(event) => updatePersonaTeacherEditor({ role: event.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                                                />
-                                            </label>
-                                            <label className="space-y-1 text-sm font-bold text-slate-700">
-                                                <span>{t('persona.edit_voice') || 'TTS voice'}</span>
-                                                <select
-                                                    value={personaTeacherEditor.voice}
-                                                    onChange={(event) => updatePersonaTeacherEditor({ voice: event.target.value })}
-                                                    disabled={getPersonaVoiceOptions().length === 0}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
-                                                >
-                                                    {getPersonaVoiceOptions().length === 0
-                                                        ? <option value={personaTeacherEditor.voice}>{personaTeacherEditor.voice || t('persona.no_voice_available') || 'Use the default voice'}</option>
-                                                        : getPersonaVoiceOptions().map(voice => <option key={voice} value={voice}>{voice}</option>)
-                                                    }
-                                                </select>
-                                            </label>
-                                        </div>
-                                        <label className="block space-y-1 text-sm font-bold text-slate-700">
-                                            <span>{t('persona.edit_context') || 'Character context'}</span>
-                                            <textarea
-                                                value={personaTeacherEditor.context}
-                                                maxLength={2000}
-                                                rows={4}
-                                                onChange={(event) => updatePersonaTeacherEditor({ context: event.target.value })}
-                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                                            />
-                                        </label>
-                                        <label className="block space-y-1 text-sm font-bold text-slate-700">
-                                            <span>{t('persona.edit_guardrails') || 'Interview guardrails'}</span>
-                                            <textarea
-                                                value={personaTeacherEditor.guardrails}
-                                                maxLength={1500}
-                                                rows={3}
-                                                onChange={(event) => updatePersonaTeacherEditor({ guardrails: event.target.value })}
-                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                                            />
-                                        </label>
-                                        <fieldset className="space-y-3">
-                                            <legend className="text-sm font-black text-slate-800">{t('persona.edit_quests') || 'Quest objectives'}</legend>
-                                            {(personaTeacherEditor.quests || []).map((quest, questIndex) => (
-                                                <div key={quest.id || questIndex} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-[1fr_150px_auto] md:items-end">
-                                                    <label className="space-y-1 text-xs font-bold text-slate-700">
-                                                        <span>{(t('persona.quest') || 'Quest') + ' ' + (questIndex + 1)}</span>
-                                                        <input
-                                                            value={quest.text}
-                                                            maxLength={500}
-                                                            onChange={(event) => updatePersonaTeacherEditor({
-                                                                quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, text: event.target.value } : item)
-                                                            })}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
-                                                        />
-                                                    </label>
-                                                    <label className="space-y-1 text-xs font-bold text-slate-700">
-                                                        <span>{t('persona.quest_difficulty') || 'Required rapport (0–100)'}</span>
-                                                        <input
-                                                            type="number"
-                                                            min={0}
-                                                            max={100}
-                                                            step={1}
-                                                            value={quest.difficulty}
-                                                            onChange={(event) => updatePersonaTeacherEditor({
-                                                                quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, difficulty: event.target.value } : item)
-                                                            })}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
-                                                        />
-                                                    </label>
-                                                    <button
-                                                        type="button"
-                                                        disabled={quest.isCompleted}
-                                                        title={quest.isCompleted ? (t('persona.completed') || 'Completed quests are preserved') : undefined}
-                                                        onClick={() => updatePersonaTeacherEditor({
-                                                            quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
-                                                        })}
-                                                        className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        {quest.isCompleted ? (t('persona.completed') || 'Completed') : (t('persona.remove_quest') || 'Remove')}
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            <button
-                                                type="button"
-                                                disabled={(personaTeacherEditor.quests || []).length >= 6}
-                                                onClick={() => {
-                                                    const quests = personaTeacherEditor.quests || [];
-                                                    updatePersonaTeacherEditor({
-                                                        quests: [...quests, {
-                                                            id: 'teacher-q-' + Date.now() + '-' + (quests.length + 1),
-                                                            text: '',
-                                                            difficulty: 20,
-                                                            isCompleted: false
-                                                        }]
-                                                    });
-                                                }}
-                                                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                + {t('persona.add_quest') || 'Add quest'}
-                                            </button>
-                                        </fieldset>
-                                    </div>
-                                    <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4">
-                                        <button type="button" onClick={() => setPersonaTeacherEditor(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
-                                            {t('common.cancel')}
-                                        </button>
-                                        <button type="button" onClick={savePersonaTeacherEditor} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
-                                            {t('persona.save_changes') || t('common.save')}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    </ErrorBoundary>
+                    <PersonaWorkspaceView ErrorBoundary={ErrorBoundary} t={t} isProcessing={isProcessing} isGeneratingPersona={isGeneratingPersona} History={History} personaState={personaState} setPersonaState={setPersonaState} isTeacherMode={isTeacherMode} normalizePersonaResumeDays={normalizePersonaResumeDays} clearPersonaResumeSnapshots={clearPersonaResumeSnapshots} addToast={addToast} generatedContent={generatedContent} extractPersonaGroundingDisclosure={extractPersonaGroundingDisclosure} Sparkles={Sparkles} handleTogglePanelSelection={handleTogglePanelSelection} openPersonaTeacherEditor={openPersonaTeacherEditor} handleSelectPersona={handleSelectPersona} MessageCircleQuestion={MessageCircleQuestion} CheckCircle2={CheckCircle2} Plus={Plus} handleStartPanelChat={handleStartPanelChat} RefreshCw={RefreshCw} Users={Users} personaTeacherEditor={personaTeacherEditor} setPersonaTeacherEditor={setPersonaTeacherEditor} personaTeacherEditorRef={personaTeacherEditorRef} updatePersonaTeacherEditor={updatePersonaTeacherEditor} getPersonaVoiceOptions={getPersonaVoiceOptions} savePersonaTeacherEditor={savePersonaTeacherEditor} onBack={() => setActiveView('input')} />
                 )}
               </div>
               </ErrorBoundary>
@@ -53659,7 +52723,9 @@ ${_alloActivityContext(activity)}
       {(runTour && tourRect) && window.AlloModules && window.AlloModules.TourOverlay && React.createElement(window.AlloModules.TourOverlay, {
           botSpotlightPos, handleNextTourStep, handlePrevTourStep, handleSetRunTourToFalse, isSpotlightMode,
           runTour, setIsSpotlightMode, setRunTour, setSpotlightMessage, spotlightMessage,
-          t, tourRect, tourStep, tourSteps: customTourSteps || tourSteps, compactTour: !!customTourSteps
+          t, tourRect, tourStep, tourSteps: customTourSteps || tourSteps, compactTour: !!customTourSteps,
+          canGoBack: _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1) >= 0,
+          canGoForward: _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1) >= 0
       })}
       {isSyntaxGame && generatedContent && (
         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
@@ -53947,7 +53013,7 @@ ${_alloActivityContext(activity)}
         __alloOverlay={false}
         __alloOnClose={() => setShowLiveDock(false)}
         {...{
-        ALLOHAVEN_CLASSROOM_REWARD_REASONS, ALLOHAVEN_RECOGNITION_CAPS, CLASS_GOAL_TEMPLATES, LIVE_SIGNAL_FRESH_MS, TEACHER_ONLY_TYPES, _alloMbBridgeActive, _alloStudentSafeResources, activeSessionCode,
+        ALLOHAVEN_CLASSROOM_REWARD_REASONS, ALLOHAVEN_RECOGNITION_CAPS, CLASS_GOAL_TEMPLATES, LIVE_SIGNAL_FRESH_MS, TEACHER_ONLY_TYPES, _alloMbBridgeActive, _alloStudentSafeResources, activeSessionAppId, activeSessionCode,
         activeSignals, activeUnitId, activeView, addToast, adventureState, broadcastInteractiveOrganizer, checklistMarks, classGoalDraft,
         classifyLiveRosterPresence, clearSignal, dockCardStyle, dockGroupLabel, dockNow, evaluateClassGoalProgress, formatTime, generatedContent,
         getAlloHavenSessionRecognitionTokens, getDefaultTitle, getFilteredHistory, getIconForType, getWordSoundsPortableAudioCoverage, handleAwardClassGoal, handleAwardIndependentGoal, handleRecognizeStudent,
@@ -53967,6 +53033,8 @@ ${_alloActivityContext(activity)}
           </>
         );
       })()}
+      {isTeacherMode && activeSessionCode && showLivePollingPanel && !window.AlloModules?.LivePolling?.HostPanel &&
+        <CDNModuleGate loaderName="__alloLazyLivePolling" moduleKey="LivePolling.HostPanel" displayName="Live Polling" onClose={() => setShowLivePollingPanel(false)} t={t} />}
       {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
         React.createElement(window.AlloModules.LivePolling.HostPanel, {
           key: 'live-poll-host:' + activeSessionCode,
@@ -54387,7 +53455,7 @@ ${_alloActivityContext(activity)}
                 addToast(t('applied_challenge.import.missing_source') || 'The original challenge for this submission is not in this project, so it cannot be opened in the studio.', 'error');
                 return;
               }
-              const imported = studio.fromSubmission(base.data, submission.responses, resourceId);
+              const imported = studio.fromSubmission(base.data, { ...submission.responses, [resourceId]: { studio: submission.content?.find(item => item.id === resourceId && item.type === 'applied-challenge')?.data } }, resourceId);
               if (!imported.matched) {
                 addToast(t('applied_challenge.import.nothing_typed') || 'This submission has no typed workspace text to import.', 'info');
                 return;
@@ -54779,6 +53847,7 @@ ${_alloActivityContext(activity)}
           // then dropped the run and only a re-upload resynced them. Keying off the mirror makes
           // key and prop change in the same commit, so they can never disagree.
           key: 'pdf-audit-document-' + pdfDocumentEpochLive,
+          pdfAuditLifecycle,
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog, applyingRemarkup,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
@@ -55331,8 +54400,8 @@ ${_alloActivityContext(activity)}
           palette — Ctrl/Cmd+K anywhere. ONE registry that the bot chat (S1)
           and voice loop (S2) will reuse; ctx is assembled from the SAME
           named handlers the HeaderBar/FabStack already receive. */}
-      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, { ctx: _alloCmdCtx() })}
-      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.AlloCommandProgress && React.createElement(window.AlloModules.AlloCommands.AlloCommandProgress, { ctx: _alloCmdCtx() })}
+      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, { ctx: _alloRenderCommandContext })}
+      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.AlloCommandProgress && React.createElement(window.AlloModules.AlloCommands.AlloCommandProgress, { ctx: _alloRenderCommandContext })}
       {/* Voice-control indicator (S2): visible + announced whenever the mic is live.
           L7/A5: the state used to be carried by colour and a single fixed word.
           It now names the actual phase in TEXT, so "the mic is closed right now"
@@ -55451,17 +54520,17 @@ ${_alloActivityContext(activity)}
           customExportCSS, deleteExportPreset, diffLibReady, executeExportFromPreview, expertCommandInput,
           exportAuditLoading, exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
           exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle, getExportPreviewHTML,
-          getSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history, isAgentRunning, isGeneratingStyle, pdfFixResult, proposeRestyles: _docPipeline ? _docPipeline.proposeRestyles : null, pptxLoaded,
+          getSkippedResources: getBuilderSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history: getBuilderHistory(), builderResourceIds, isAgentRunning, isGeneratingStyle, pdfFixResult, proposeRestyles: _docPipeline ? _docPipeline.proposeRestyles : null, pptxLoaded,
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, theme, toggleA11yInspect, updateExportPreview,
           exportPreviewSource, builderWorkspaceMode, setBuilderWorkspaceMode,
           onAdvancedReviewSessionChange: (nextSession) => { _builderReviewSessionRef.current = nextSession || null; },
-          onExportSuccess: () => completeGuidedDelivery('exportCreated'),
+          onExportSuccess: () => confirmBuilderGuidedDelivery(builderGuidedDeliveryContext),
           // Slides mode extra: route the same generated content into the studio
           // as an EDITABLE deck (build-direct, no .pptx round trip).
-          openInAlloStudio: () => { setShowExportPreviewWrapped(false); setAlloStudioInitialFile(null); setAlloStudioInitialAction('deck-from-resources'); setIsAlloStudioOpen(true); }
+          openInAlloStudio: builderResourceIds !== null ? undefined : () => { setShowExportPreviewWrapped(false); setAlloStudioInitialFile(null); setAlloStudioInitialAction('deck-from-resources'); setIsAlloStudioOpen(true); }
         })}
         {/* Recoverable open state (lazy-load gate): the user's intent to open stays
             honored while view_export_preview_module.js loads, and a failed CDN load
@@ -55579,7 +54648,7 @@ ${_alloActivityContext(activity)}
         </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
-        <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
+        <CDNModuleGate loaderName="__alloLazyReportWriter" moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
                 callGemini: callGemini,
@@ -56668,6 +55737,7 @@ class AlloFlowErrorBoundary extends React.Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error("[AlloFlow] Fatal error caught by ErrorBoundary:", error, errorInfo);
+    _alloLifecycleRecord('root boundary caught error');
     // The component stack is the single most useful line for finding which view blew up, and
     // it exists ONLY here — getDerivedStateFromError never receives it. Keep it.
     var stack = null;
@@ -56794,7 +55864,7 @@ class AlloFlowErrorBoundary extends React.Component {
             // is the honest equivalent there, and it is the same recovery the small inline
             // ErrorBoundary already offers as "Try again".
             type: "button", onClick: function () {
-              if (window._isCanvasEnv) { self.setState({ hasError: false, error: null, componentStack: null }); return; }
+              if (window._isCanvasEnv) { _alloLifecycleRecord('root boundary restart requested'); self.setState({ hasError: false, error: null, componentStack: null }); return; }
               try { window.location.reload(); } catch (e) {}
             },
             style: btn("#334155", "#e2e8f0")
@@ -56824,7 +55894,7 @@ class AlloFlowErrorBoundary extends React.Component {
               // Same Canvas rule as the restart button above: reloading a blob: document kills
               // the session instead of restarting it, and here it would do so immediately after
               // wiping local storage — the worst possible moment to lose the app.
-              if (window._isCanvasEnv) { self.setState({ hasError: false, error: null, componentStack: null }); return; }
+              if (window._isCanvasEnv) { _alloLifecycleRecord('root boundary restart requested'); self.setState({ hasError: false, error: null, componentStack: null }); return; }
               try { window.location.reload(); } catch (e) {}
             },
             style: btn("transparent", "#f87171", "1px solid #7f1d1d")
@@ -57327,6 +56397,10 @@ if (typeof __firebase_config !== 'undefined') {
   const container = document.getElementById('root');
   if (container) {
     const _alloMountApp = () => {
+      const _rootId = _alloLifecycleNextId('root');
+      const _previousRoot = _alloLifecycleState.roots.get(container) || null;
+      _alloLifecycleRecord('root creation requested', { rootId: _rootId, previousRootId: _previousRoot,
+        api: ReactDOM.createRoot ? 'createRoot' : 'render' });
       if (ReactDOM.createRoot) {
          const originalConsoleError = console.error;
          console.error = (...args) => {
@@ -57336,8 +56410,11 @@ if (typeof __firebase_config !== 'undefined') {
            originalConsoleError(...args);
          };
          const root = ReactDOM.createRoot(container);
+         _alloLifecycleState.roots.set(container, _rootId);
+         _alloLifecycleRecord('root created', { rootId: _rootId, previousRootId: _previousRoot });
          root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
       } else {
+         _alloLifecycleState.roots.set(container, _rootId);
          ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
       }
     };
@@ -57356,4 +56433,24 @@ if (typeof __firebase_config !== 'undefined') {
       _alloMountApp();
     }
   }
+}
+
+// Recoverable presentation-only view; keeps draft state in the host on retry.
+function DirectionsComposerView(props) {
+  return <_AlloRecoverableLazyView registryKey="DirectionsComposer" componentName="DirectionsComposerView" loaderName="__alloLazyDirectionsComposer" displayName={props.t('directions.title') || 'Assignment Directions'} loadingMessage="Loading Assignment Directions…" failedMessage="Assignment Directions could not load. Your draft is still here; retry when your connection is ready." zIndex={395} onClose={() => props.setShowDirectionsComposer(false)} t={props.t} viewProps={props} />;
+}
+
+function PersonaWorkspaceView(props) {
+    return <_AlloRecoverableLazyView
+        registryKey="PersonaWorkspace"
+        componentName="PersonaWorkspaceView"
+        loaderName="__alloLazyPersonaWorkspace"
+        displayName={props.t('persona.setup_title') || 'Persona workspace'}
+        loadingMessage="Loading the Persona workspace. Your characters and conversation are still here."
+        failedMessage="The Persona workspace could not load. Your characters and conversation are still here."
+        onClose={props.onBack}
+        closeLabel={props.t('common.back') || 'Back'}
+        inline={true}
+        viewProps={props}
+    />;
 }

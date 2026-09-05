@@ -286,7 +286,7 @@ describe('Memory Aid translation namespace', () => {
         isTeacherMode: true, isProcessing: false, handleNoteUpdate: () => {}, addToast: () => {}, t: marker,
       })));
       const text = host.textContent;
-      expect(text).toContain('[memory_aid.print]');
+      expect(text).toContain('[memory_aid.preview_worksheet]');
       expect(text).toContain('[memory_aid.practice_idle_title]');
       expect(text).toContain('[memory_aid.facts_verified]');
       expect(text).toContain('[memory_aid.type_analogy_pattern_short]');
@@ -342,11 +342,11 @@ describe('Memory Aid translation namespace', () => {
 describe('Memory Aid host wiring and help', () => {
   it('passes the translator and the resource-sheet printer to the view', () => {
     const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    const start = source.indexOf('window.AlloModules.MemoryAidView && React.createElement');
-    const wiring = source.slice(start, start + 1200);
+    const start = source.indexOf('window.AlloModules.MemoryAidView && window.AlloModules.StudioResponse && React.createElement');
+    const wiring = source.slice(start, start + 2000);
     expect(start).toBeGreaterThan(-1);
     expect(wiring).toMatch(/\bt,/);
-    expect(wiring).toContain('onPrint: (item) => handlePrintResourceSheet(item');
+    expect(wiring).toContain('onPrint: (item, options) => handlePrintResourceSheet(item');
     expect(source).toContain('const handlePrintResourceSheet = (item, options = {}) => {');
   });
 

@@ -827,7 +827,11 @@ describe('Educator Evaluation Apps Script SPM authority', () => {
     boot = harness.invoke('bootstrap');
     spm = boot.workspace.spms.find(item => item.id === 'spm-t1');
     spm.status = 'locked';
-    harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 't1', event: 'FINALIZED', entityType: 'spm', entityId: 'spm-t1' } });
+    boot.workspace.teachers.find(item => item.id === 't1').ratings.lea = spm.rating;
+    const locked = harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 't1', event: 'FINALIZED', entityType: 'spm', entityId: 'spm-t1' } });
+    expect(locked.workspace.teachers.find(item => item.id === 't1').ratings.lea).toBe(3);
+    expect(locked.workspace.spms.find(item => item.id === 'spm-t1').status).toBe('locked');
+    expect(locked.revision).toBe(boot.revision + 1);
     harness.setActiveEmail(TEACHER_ONE);
     spm = harness.invoke('bootstrap').workspace.spms.find(item => item.id === 'spm-t1');
     expect(spm.rating).toBe(3);

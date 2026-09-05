@@ -46,7 +46,7 @@ describe('math<->manipulative bridge step 1b: toggle control + tool-list parity 
     expect(sb).toMatch(/autoAttachManipulatives, setAutoAttachManipulatives,/);            // MathPanel destructures it
     expect(sb).toMatch(/checked=\{autoAttachManipulatives !== false\}/);                    // default ON (only explicit false unchecks)
     expect(sb).toMatch(/setAutoAttachManipulatives && setAutoAttachManipulatives\(e\.target\.checked\)/);
-    expect(anti).toMatch(/React\.createElement\(window\.AlloModules\.MathPanel,\s*\{[\s\S]{0,2200}?autoAttachManipulatives,\s*setAutoAttachManipulatives,[\s\S]{0,900}?\}\)\}/); // monolith threads both props into MathPanel, even when later props are added
+    expect(sb).toMatch(/React\.createElement\(window\.AlloModules\.MathPanel,\s*\{[\s\S]{0,2200}?autoAttachManipulatives,\s*setAutoAttachManipulatives,[\s\S]{0,900}?\}\)\}/); // sidebar shell threads both props into MathPanel, even when later props are added
   });
   it('the "off" generation path advertises the SAME tool set the renderer grades (kills the 6-vs-17 drift)', () => {
     for (const tool of ['funcGrapher', 'calculus', 'wave', 'cell', 'molecule', 'circuit']) {

@@ -401,7 +401,7 @@ describe('Astronomy meteor simulator resilience', () => {
     });
     expect(html).toContain('Illustrative 10-minute sample shows 0 meteors');
     expect(html).toContain('0 /hr');
-    expect(html).toContain('Each frame is an illustrative 10-minute sample');
+    expect(html).toContain('Each sample represents about 10 minutes');
   });
 
   it('provides lifecycle-safe playback, bounded stepping, and reset controls', () => {
@@ -412,8 +412,7 @@ describe('Astronomy meteor simulator resilience', () => {
     expect(html).toContain('aria-describedby="astronomy-meteor-rate-status astronomy-meteor-diagram-help"');
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
     expect(source).toContain('var animPlaying = d.simMeteorPlaying === true;');
-    expect(source).toContain('window.__alloAstronomyMeteorTimer = setTimeout');
-    expect(source).toContain('clearTimeout(window.__alloAstronomyMeteorTimer)');
+    expect(source.includes('window.__alloAstronomyMeteorTimer = setTimeout')).toBe(false);
     expect(source).toContain('(animFrame + 1) % 1000');
     expect(source).toContain('var radiantY = horizonY - (simAlt / 90 * 280);');
   });

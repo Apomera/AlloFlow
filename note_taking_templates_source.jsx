@@ -358,15 +358,24 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
 // Hook factory that wires the "Get AI Feedback" button to the AI call + XP
 // dispatch. Returns { feedbackState, isLoading, requestFeedback, dismiss }.
 // Each view component instantiates this and renders the button + panel.
+function _notesDraftFingerprint(templateType, data) {
+  const text=_serializeTemplateForFeedback(templateType,data);let hash=2166136261;
+  for(let i=0;i<text.length;i++) hash=Math.imul(hash ^ text.charCodeAt(i),16777619);
+  return 'notes-v1:'+(hash>>>0).toString(16);
+}
+function _noteText(t,key,fallback) { const value=typeof t==='function'?t(key):null; return value && value!==key ? value : fallback; }
 function _useNotesFeedback(props, templateType) {
-  const [feedback, setFeedback] = React.useState(null);
+  const feedback = props.generatedContent?.data?.feedback || null;
   const [isLoading, setIsLoading] = React.useState(false);
   const [xpEarned, setXpEarned] = React.useState(0);
   const generatedContent = props.generatedContent;
-  const callGemini = props.callGemini;
+  const callGemini = props.allowRuntimeAi !== false && !props.isTeacherMode ? props.callGemini : null;
   const addToast = props.addToast || (() => {});
-  const handleScoreUpdate = props.handleScoreUpdate;
+  const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
   const inputText = props.inputText || '';
+  const mounted = React.useRef(true), current = React.useRef(null);
+  current.current = { id:generatedContent?.id, draft:_notesDraftFingerprint(templateType, generatedContent?.data || {}), allowed:!!callGemini };
+  React.useEffect(() => { mounted.current=true; return () => { mounted.current=false; }; }, []);
   const t = props.t || ((k, d) => d || k);
 
   const requestFeedback = React.useCallback(async () => {
@@ -389,13 +398,16 @@ function _useNotesFeedback(props, templateType) {
       addToast(reasonMsg, 'info');
       return;
     }
+    if (isLoading) return;
+    const request = { ...current.current };
     setIsLoading(true);
     addToast(t('notes_feedback.thinking') || 'Reading your notes...', 'info');
     try {
       const prompt = _buildNotesFeedbackPrompt(templateType, data, inputText);
       const raw = await callGemini(prompt, true);
       const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
-      setFeedback(parsed);
+      if (!mounted.current || current.current.id !== request.id || current.current.draft !== request.draft || !current.current.allowed) return;
+      props.handleNoteUpdate?.('feedback', { ...parsed, draftFingerprint: request.draft, createdAt:new Date().toISOString() });
       // XP wiring — first-time bonus uses the resource's prior max via the
       // handleScoreUpdate delta calc, but we also check whether THIS template
       // type has any feedback history yet for the +5 first-time bonus.
@@ -421,7 +433,7 @@ function _useNotesFeedback(props, templateType) {
         // know whether this is a first-time-on-this-type submission. We use
         // the handleNoteUpdate prop if available to do this cleanly.
         if (typeof props.handleNoteUpdate === 'function') {
-          props.handleNoteUpdate('prevFeedbackScore', score);
+          props.handleNoteUpdate('prevFeedbackScore', Math.max(prevMax,score));
           props.handleNoteUpdate('feedbackCount', (data.feedbackCount || 0) + 1);
         }
       } else {
@@ -431,16 +443,16 @@ function _useNotesFeedback(props, templateType) {
       console.warn('[NotesFeedback] failed', e);
       addToast(t('notes_feedback.error') || 'Could not generate feedback right now. Try again in a moment.', 'error');
     } finally {
-      setIsLoading(false);
+      if (mounted.current) setIsLoading(false);
     }
-  }, [callGemini, generatedContent, inputText, templateType, addToast, handleScoreUpdate, t, props]);
+  }, [isLoading, callGemini, generatedContent, inputText, templateType, addToast, handleScoreUpdate, t, props]);
 
   const dismiss = React.useCallback(() => {
-    setFeedback(null);
+    props.handleNoteUpdate?.('feedback',null);
     setXpEarned(0);
   }, []);
 
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function' };
 }
 
 // Optional elaboration scaffold shared across templates that don't already
@@ -470,7 +482,7 @@ const _ConnectionsSection = ({ value, onChange, hint, t }) => {
 };
 
 // Inline "Get AI Feedback" button used by each view above the footer.
-const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = 'emerald' }) => {
+const _GetFeedbackButton = ({ onClick, isLoading, disabled, t, colorClass = 'emerald' }) => {
   const palette = ({
     emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700',
     sky: 'bg-sky-600 hover:bg-sky-700 text-white border-sky-700',
@@ -482,7 +494,7 @@ const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = 'emerald' }) =
     <div className="flex justify-center pt-2">
       <button type="button"
         onClick={onClick}
-        disabled={isLoading}
+        disabled={isLoading || disabled}
         className={`px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all motion-reduce:transition-none ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`}
         aria-busy={isLoading}
         data-help-key="notes_feedback_button"
@@ -611,9 +623,9 @@ const CornellNotesView = React.memo((props) => {
         />
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="emerald" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">Cornell Notes: cues on the left, notes on the right, summary below. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -762,9 +774,9 @@ const LabReportView = React.memo((props) => {
         />
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint="Optional — how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too." t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="sky" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="sky" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Lab Report saved to your history. Open it later to keep adding observations across days.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">Return to this Lab Report to keep adding observations across days. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -882,9 +894,9 @@ const ReadingResponseView = React.memo((props) => {
           data-help-key="reading_response_open_question_field"
         />
       </_CardSection>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="violet" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="violet" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Reading Response saved to your history. Browse all your responses to build a record of your reading life.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">Browse your Reading Responses to build a record of your reading life. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -983,9 +995,9 @@ const DoubleEntryView = React.memo((props) => {
           data-help-key="double_entry_add_row_button"
         >+ Add entry</button>
       </div>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="rose" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="rose" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Double-Entry Journal: quotes on the left, your thinking on the right. A dialogue with the text — saved to your notebook.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">Double-Entry Journal: quotes on the left, your thinking on the right. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -1096,9 +1108,9 @@ const GuidedNotesView = React.memo((props) => {
           data-help-key="guided_notes_own_notes_field"
         />
       </_CardSection>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="emerald" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Guided Notes saved to your notebook. The blanks are the key terms — revisit them to study.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">The blanks are the key terms — revisit them to study. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -1221,9 +1233,9 @@ const QAndAView = React.memo((props) => {
         </>
       )}
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint="Optional — connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer." t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="cyan" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="cyan" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
-      <div className="text-[11px] text-slate-500 italic text-center">Q&amp;A Study Notes saved to your notebook. Switch to Quiz me to self-test with active recall.</div>
+      <div className="text-[11px] text-slate-500 italic text-center">Switch to Quiz me to self-test with active recall. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
 });
@@ -1280,13 +1292,15 @@ const NOTEBOOK_TEMPLATE_META = {
   'guided-notes':     { label: 'Guided Notes',          accent: 'emerald', short: 'Guided',    icon: '📝' },
   'q-and-a':          { label: 'Q&A Study Notes',       accent: 'cyan',    short: 'Q&A',       icon: '❓' },
   'anchor-chart':     { label: 'Anchor Chart',          accent: 'amber',   short: 'Chart',     icon: '📋' },
+  'memory-aid': { label:'Memory Aid', accent:'violet', short:'Memory', icon:'🧠' },
+  'applied-challenge': { label:'Applied Challenge', accent:'emerald', short:'Challenge', icon:'🛠️' },
 };
 
 // Normalize an entry to a single "kind" key. Note-taking entries discriminate
 // by data.templateType; anchor-chart entries identify by entry.type directly.
 const _entryKind = (entry) => {
   if (!entry) return null;
-  if (entry.type === 'anchor-chart') return 'anchor-chart';
+  if (['anchor-chart','memory-aid','applied-challenge'].includes(entry.type)) return entry.type;
   if (entry.type === 'note-taking') return (entry.data && entry.data.templateType) || 'cornell-notes';
   return null;
 };
@@ -1313,6 +1327,8 @@ const _entryPreview = (entry) => {
     const labels = sections.slice(0, 4).map(s => s && s.label).filter(Boolean).join(' · ');
     return labels || (sections[0] && Array.isArray(sections[0].bullets) && sections[0].bullets[0]) || '';
   }
+  if (entry?.type === 'memory-aid') return (data.cards || []).slice(0,3).map(card=>card.studentDraft || card.target || '').filter(Boolean).join(' · ');
+  if (entry?.type === 'applied-challenge') return data.workspace?.response || data.brief?.drivingQuestion || '';
   const tt = data.templateType;
   if (tt === 'cornell-notes') {
     const firstNote = (Array.isArray(data.notes) ? data.notes : []).find(n => n && (n.text || '').trim());
@@ -1507,7 +1523,7 @@ const NotebookOverlay = React.memo((props) => {
   const history = Array.isArray(props.history) ? props.history : [];
   const onSelectEntry = props.onSelectEntry || (() => {});
   const t = props.t || ((k, d) => d || k);
-  const callGemini = props.callGemini;
+  const callGemini = props.allowRuntimeAi !== false ? props.callGemini : null;
   const addToast = props.addToast || (() => {});
   const [activeFilter, setActiveFilter] = React.useState('all');
   const [insightsOpen, setInsightsOpen] = React.useState(false);
@@ -1547,7 +1563,7 @@ const NotebookOverlay = React.memo((props) => {
 
   if (!isOpen) return null;
 
-  const notebookEntries = history.filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+  const notebookEntries = history.filter(h => h && _entryKind(h));
   const sortedEntries = notebookEntries.slice().sort((a, b) => {
     const aTime = a.id || 0;
     const bTime = b.id || 0;
@@ -1565,6 +1581,8 @@ const NotebookOverlay = React.memo((props) => {
     'guided-notes':     sortedEntries.filter(e => _entryKind(e) === 'guided-notes').length,
     'q-and-a':          sortedEntries.filter(e => _entryKind(e) === 'q-and-a').length,
     'anchor-chart':     sortedEntries.filter(e => _entryKind(e) === 'anchor-chart').length,
+    'memory-aid': sortedEntries.filter(e=>_entryKind(e)==='memory-aid').length,
+    'applied-challenge': sortedEntries.filter(e=>_entryKind(e)==='applied-challenge').length,
   };
   const handlePrintAll = () => {
     try {
@@ -1583,6 +1601,8 @@ const NotebookOverlay = React.memo((props) => {
     { id: 'guided-notes',     label: 'Guided Notes',    accent: 'emerald' },
     { id: 'q-and-a',          label: 'Q&A',             accent: 'cyan' },
     { id: 'anchor-chart',     label: 'Anchor Charts',   accent: 'amber' },
+    { id:'memory-aid', label:_noteText(t,'notebook.memory_aid','Memory Aids'), accent:'violet' },
+    { id:'applied-challenge', label:_noteText(t,'notebook.applied_challenge','Applied Challenges'), accent:'emerald' },
   ];
   return (
     <div
@@ -1599,7 +1619,7 @@ const NotebookOverlay = React.memo((props) => {
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
             <h2 id="notebook-dialog-title" className="text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">📓</span> Notebook</h2>
-            <p id="notebook-dialog-description" className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&amp;A sets, and Anchor Charts.</p>
+            <p id="notebook-dialog-description" className="text-xs text-slate-600 mt-1 leading-snug">{_noteText(t,'notebook.work_shelf_description','Find your notes, Anchor Charts, Memory Aids and Applied Challenges in one place.')}</p>
           </div>
           <button type="button"
             onClick={onClose}
@@ -1626,7 +1646,7 @@ const NotebookOverlay = React.memo((props) => {
           <div className="ml-auto flex items-center gap-2">
             <button type="button"
               onClick={handleGenerateInsights}
-              disabled={insightsLoading || noteEntries.length < 2}
+              disabled={insightsLoading || noteEntries.length < 2 || typeof callGemini !== 'function'}
               className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               aria-label={t('note_insights.button_aria') || 'Generate note-taking insights across your saved entries'}
               title={noteEntries.length < 2 ? (t('note_insights.need_more_entries_short') || 'Save 2+ entries to unlock') : (t('note_insights.button_tooltip') || 'AI looks for patterns across your notes and offers growth suggestions')}
@@ -1652,7 +1672,7 @@ const NotebookOverlay = React.memo((props) => {
               </p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                 {sortedEntries.length === 0
-                  ? 'Open Note-Taking or Anchor Chart from the sidebar to start saving. Each finished entry lands here.'
+                  ? _noteText(t,'notebook.empty_work_hint','Open Notes, Anchor Charts, Memory Aid or Applied Challenge from the resource tools to begin.')
                   : 'Switch filters above to see other entry types.'}
               </p>
             </div>
@@ -1666,7 +1686,7 @@ const NotebookOverlay = React.memo((props) => {
                 const previewTruncated = preview && preview.length > 140 ? preview.slice(0, 137) + '…' : preview;
                 const ts = entry.data && entry.data.lessonRef && entry.data.lessonRef.generatedAt
                   ? entry.data.lessonRef.generatedAt
-                  : entry.id;
+                  : (entry.timestamp || entry.id);
                 let when = '';
                 try { when = new Date(ts).toLocaleString(); } catch (_) { when = ''; }
                 return (

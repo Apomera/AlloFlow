@@ -61,9 +61,10 @@ describe('portal', () => {
 });
 
 describe('practice page', () => {
-  it('starts the tour by itself on the first visit, once', () => {
-    expect(PRACTICE).toContain("localStorage.getItem('alloflow_school_rewards_practice_toured')");
-    expect(PRACTICE).toContain("setTimeout(function(){if(!box)showStep(0)},900)");
+  it('offers a demo guide and lets the presenter choose when to start the tour', () => {
+    expect(PRACTICE).toContain('id="practice-demo-guide"');
+    expect(PRACTICE).toContain('Five-minute administrator demo');
+    expect(PRACTICE).not.toContain("setTimeout(function(){if(!box)showStep(0)},900)");
   });
 });
 

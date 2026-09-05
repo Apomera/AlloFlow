@@ -26,6 +26,14 @@
   var Play = _lazyIcon('Play');
 
   function WordSoundsPreviewView(props) {
+  function label(key, fallback, values) {
+    var fullKey = 'word_sounds.' + key;
+    var translated = typeof props.t === 'function' ? props.t(fullKey, values || {}) : '';
+    var text = typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
+    return text.replace(/\{(\w+)\}/g, function (match, name) {
+      return values && values[name] != null ? String(values[name]) : match;
+    });
+  }
   var generatedContent = props.generatedContent;
   var wsActivitySequence = props.wsActivitySequence;
   var setWordSoundsActivity = props.setWordSoundsActivity;
@@ -59,17 +67,23 @@
     className: "text-4xl mb-3"
   }, "🎵"), /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-bold text-slate-800 mb-2"
-  }, generatedContent?.title || 'Word Sounds Studio'), /*#__PURE__*/React.createElement("p", {
+  }, generatedContent?.title || label('preview_title', 'Word Sounds Studio')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 mb-1"
-  }, generatedContent?.configSummary || 'Ready to practice'), generatedContent?.data && /*#__PURE__*/React.createElement("p", {
+  }, generatedContent?.configSummary || label('preview_ready', 'Ready to practice')), generatedContent?.data && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-violet-500 font-medium"
-  }, generatedContent.data.length, " words loaded"), isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && /*#__PURE__*/React.createElement("p", {
+  }, label('preview_word_count', '{count} words loaded', {
+    count: generatedContent.data.length
+  })), isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     className: `mt-2 text-xs font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-700'}`
-  }, "Audio ready: ", wordSoundsAudioCoverage.ready, "/", wordSoundsAudioCoverage.total, " required clips", !wordSoundsAudioCoverage.complete && ' - Review missing audio before sending to students', !wordSoundsAudioCoverage.complete && missingAudioLabels.length > 0 && /*#__PURE__*/React.createElement("span", {
+  }, label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips', wordSoundsAudioCoverage), !wordSoundsAudioCoverage.complete && ' — ' + label('preview_review_missing', 'Review missing audio before sending to students'), !wordSoundsAudioCoverage.complete && missingAudioLabels.length > 0 && /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block font-medium text-amber-800"
-  }, "Missing: ", missingAudioLabels.slice(0, 5).join(', '), missingAudioLabels.length > 5 && `, plus ${missingAudioLabels.length - 5} more`)), /*#__PURE__*/React.createElement("div", {
+  }, label('preview_missing', 'Missing: {labels}', {
+    labels: missingAudioLabels.slice(0, 5).join(', ')
+  }), missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', {
+    count: missingAudioLabels.length - 5
+  }))), /*#__PURE__*/React.createElement("div", {
     className: `grid grid-cols-1 ${isTeacherMode ? 'sm:grid-cols-2' : ''} gap-3 mt-5`
   }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -91,12 +105,12 @@
     size: 20,
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "text-left"
+    className: "text-start"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, "Teacher: Review Words & Audio"), /*#__PURE__*/React.createElement("span", {
+  }, label('preview_teacher_review', 'Teacher: Review Words & Audio')), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-medium text-violet-600"
-  }, "Check or edit the lesson before students begin"))), /*#__PURE__*/React.createElement("button", {
+  }, label('preview_teacher_hint', 'Check or edit the lesson before students begin')))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
       if (isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && !wordSoundsAudioCoverage.complete && typeof requestIncompleteAudioConfirmation === 'function') {
@@ -108,17 +122,17 @@
       // no-sequence fallback.
       launchPreparedActivity();
     },
-    className: "min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
+    className: "min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-safe:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Play, {
     size: 20,
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "text-left"
+    className: "text-start"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, isTeacherMode ? 'Student: Start Practice' : 'Start Activity'), /*#__PURE__*/React.createElement("span", {
+  }, isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-medium text-indigo-100"
-  }, "Begin the prepared activities now"))))));
+  }, label('preview_start_hint', 'Begin the prepared activities now')))))));
 }
 
   window.AlloModules = window.AlloModules || {};

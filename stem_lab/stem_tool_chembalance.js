@@ -4216,7 +4216,7 @@
             h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'min-h-[40px] min-w-[40px] transition-colors p-1.5 hover:bg-slate-100 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.chembalance.back_to_tools', 'Back to tools') },
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
-            h('h3', { className: 'text-lg font-bold text-slate-800' }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
+            h('h3', { className: 'text-lg font-bold text-slate-800' + (ctx.isContrast ? ' text-white' : '') }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
             h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[11px] font-bold rounded-full' }, __alloT('stem.chembalance.chem_v3', 'CHEM v3')),
             streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
             h('button', { type: 'button', onClick: function() { upd('_showBadges', !d._showBadges); }, 'aria-expanded': !!d._showBadges, 'aria-controls': 'chem-badges-panel',

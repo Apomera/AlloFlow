@@ -196,3 +196,41 @@ describe('dismissing a grammar notice without the AI', () => {
     expect(dismissButtons(el)).toHaveLength(0);
   });
 });
+
+describe('analysis grammar updates persist through the host artifact boundary', () => {
+  it('routes dismissal and clearing to the originating saved artifact', () => {
+    const props = makeProps(['Spelling: lazy']);
+    props.generatedContent.id = 'analysis-a';
+    let history = [props.generatedContent, {id:'analysis-b',type:'analysis',data:{grammar:['Other note']}}];
+    props.onUpdateResource = vi.fn((id, updater) => { history = history.map(item => item.id === id ? updater(item) : item); return true; });
+    const el = renderView(props);
+    act(()=>dismissButtons(el)[0].click());
+    expect(props.onUpdateResource).toHaveBeenCalledWith('analysis-a', expect.any(Function));
+    expect(history[0].data.grammar[0]).toBe('✓ DISMISSED: Spelling: lazy');
+    expect(history[1].data.grammar).toEqual(['Other note']);
+    expect(props.setGeneratedContent).not.toHaveBeenCalled();
+    act(()=>root.render(React.createElement(AnalysisView,{...props,generatedContent:history[0]})));
+    const clear = [...el.querySelectorAll('button')].find(button=>button.textContent.includes('analysis.dismiss_fixed'));
+    act(()=>clear.click());
+    expect(history[0].data.grammar).toEqual([]);
+  });
+  it('delegates correction, revision checking and text bookkeeping to the host', async () => {
+    const corrected = 'The quick brown fox jumps over the lazi dog.';
+    const props = makeProps(['Spelling: lazy'], {selectedGrammarErrors:new Set([0]),callGemini:vi.fn().mockResolvedValue(corrected),onCorrectAnalysisText:vi.fn().mockResolvedValue(true)});
+    props.generatedContent.id = 'analysis-a';
+    const el = renderView(props);
+    await act(async()=>{el.querySelector('[aria-label="common.fix_grammar_errors"]').click();});
+    expect(props.onCorrectAnalysisText).toHaveBeenCalledWith('analysis-a',props.generatedContent.data.originalText,corrected,['Spelling: lazy']);
+    expect(props.setGeneratedContent).not.toHaveBeenCalled(); expect(props.setInputText).not.toHaveBeenCalled();
+    expect(props.addToast).toHaveBeenCalledWith('process.grammar_fixed','success');
+  });
+  it('reports a concurrent source edit without claiming corrections were applied', async () => {
+    const props = makeProps(['Spelling: lazy'], {selectedGrammarErrors:new Set([0]),callGemini:vi.fn().mockResolvedValue('The quick brown fox jumps over the lazi dog.'),onCorrectAnalysisText:vi.fn().mockResolvedValue(false)});
+    props.generatedContent.id = 'analysis-a';
+    const el = renderView(props);
+    await act(async()=>{el.querySelector('[aria-label="common.fix_grammar_errors"]').click();});
+    expect(props.addToast).toHaveBeenCalledWith('analysis.grammar_source_changed','warning');
+    expect(props.addToast).not.toHaveBeenCalledWith('process.grammar_fixed','success');
+    expect(props.setInputText).not.toHaveBeenCalled();
+  });
+});

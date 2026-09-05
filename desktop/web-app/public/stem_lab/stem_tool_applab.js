@@ -18686,6 +18686,10 @@ test('no a11y violations', async () => {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The header paints no ground of its own, so it sits on the HOST surface -
+      // white in light and dark, pure BLACK in the contrast theme, where these
+      // hardcoded slate hexes measured 1.44:1 and 2.77:1.
+      var isContrast = !!ctx.isContrast;
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -20286,8 +20290,8 @@ test('no a11y violations', async () => {
         // ── Header / Back ──
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEAM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
-          h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
-          h('span', { style: { fontSize: '11px', color: '#475569' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
+          h('h2', { style: { fontSize: '18px', fontWeight: 900, color: isContrast ? '#ffffff' : '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
+          h('span', { style: { fontSize: '11px', color: isContrast ? '#ffffff' : '#475569' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
           activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),

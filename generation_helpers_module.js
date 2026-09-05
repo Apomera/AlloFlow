@@ -170,6 +170,16 @@ const _FULL_PACK_TOOL_OVERRIDE_FIELDS = Object.freeze({
   'anchor-chart': 'anchorChartCustomInstructions',
   'memory-aid': 'memoryAidCustomInstructions',
 });
+const _fullPackActivityOptions = (item) => {
+  if (!item || (item.type || item.tool) !== 'brainstorm') return {};
+  const matrix = _getGenerationMatrixModule();
+  if (matrix && typeof matrix.normalizeActivityOptions === 'function') return matrix.normalizeActivityOptions(item);
+  const mode = item.activityMode || item.config?.activityMode || item.mode;
+  const raw = item.activityConfig || item.config?.activityConfig || {};
+  if (mode === 'discussion') return { activityMode: mode, activityConfig: { protocol: ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'].includes(raw.protocol) ? raw.protocol : 'think-pair-share' } };
+  if (mode === 'jigsaw') return { activityMode: mode, activityConfig: { groupSize: Number(raw.groupSize) >= 2 && Number(raw.groupSize) <= 6 ? Math.floor(Number(raw.groupSize)) : 4 } };
+  return { activityMode: 'ideas', activityConfig: {} };
+};
 const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
   'outlineType', 'visualStyle', 'visualCustomStyle', 'visualLayoutMode',
   'universalImageStyle',
@@ -2292,6 +2302,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     type: item.type,
                     directive: item.directive || '',
                     uiId: item.key || (item.type + '-' + item.index),
+                    ..._fullPackActivityOptions(item),
                     instructionalText: item.instructionalText || null,
                     lineageGenerationVariants: Array.isArray(item.generationVariants)
                         ? _cloneFullPackValue(item.generationVariants) : [],
@@ -2339,6 +2350,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                  resourcesToGen = batchConfig.resourcePlan.map(item => ({
                      type: item.tool,
                      directive: item.directive || "",
+                     ..._fullPackActivityOptions(item),
                  }));
             }
             else if (batchConfig.recommendedResources) {
@@ -2649,6 +2661,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
                     [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
                         key: resourceKey, type, index: i, directive: directive || '',
+                        ..._fullPackActivityOptions(plannedRow),
                         instructionalText: _cloneFullPackValue(plannedInstructionalText),
                         generationAction: plannedRow.generationAction || plannedRow.action || 'generate',
                         generationIdentity: plannedRow.generationIdentity || null,
@@ -2667,6 +2680,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 const stepConfigBase = {
                     ...batchConfig,
                     ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
+                    ..._fullPackActivityOptions(plannedRow),
                     lessonDNA,
                     customInstructions: combinedInstructions,
                     standardsContext: activeStandardsContext,

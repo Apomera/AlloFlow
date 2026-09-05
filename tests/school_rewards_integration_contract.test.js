@@ -331,7 +331,8 @@ describe('School Rewards integration contract', () => {
     const readme = read('apps_script/school_rewards/README.md');
     expect(readme).toMatch(/use the system without opening the portal/i);
     expect(readme).toMatch(/opaque student UUID/i);
-    expect(source).toContain("subject: (config.schoolName || 'School') + ' rewards update'");
+    expect(source).toContain("subject: statementCopy_(recipient.student.language).subject(config)");
+    expect(source).toContain("return (config.schoolName || 'School') + ' rewards update'");
     expect(source).not.toMatch(/subject:[^\n]+balance/);
     expect(source).not.toMatch(/statementHtml_\([\s\S]{0,500}reason/);
   });
@@ -633,8 +634,8 @@ describe('School Rewards integration contract', () => {
     expect(portal).toContain('id="show-unresolved-receipts"');
     expect(portal).toContain('data-view-receipt');
     expect(portal).toContain('data-print-order-receipt');
-    expect(portal).toContain("window.confirm('Start one private student statement run");
-    expect(portal).toContain("window.confirm('Start one privacy-minimized guardian digest run");
+    expect(portal).toContain("confirmT(fmt('Start one private student statement run");
+    expect(portal).toContain("confirmT(fmt('Start one privacy-minimized guardian digest run");
     expect(portal).toContain('state.pending.balanceSend');
     expect(portal).toContain('state.pending.guardianDigest');
     expect(readme).toContain('## Pilot shopping-day runbook');
@@ -726,8 +727,8 @@ describe('School Rewards integration contract', () => {
     expect(render).toContain('allIssues.slice(0,100)');
     expect(render).toContain("issue.code==='JOURNAL_OPERATION_PENDING'");
     expect(render).toContain('Resume stored operation');
-    expect(recovery.indexOf('window.confirm')).toBeGreaterThan(-1);
-    expect(recovery.indexOf("rpc('recoverSchoolRewardsOperation'")).toBeGreaterThan(recovery.indexOf('window.confirm'));
+    expect(recovery.indexOf('confirmT(warning)')).toBeGreaterThan(-1);
+    expect(recovery.indexOf("rpc('recoverSchoolRewardsOperation'")).toBeGreaterThan(recovery.indexOf('confirmT(warning)'));
     expect(portal).toContain('id="verify-audit"');
     expect(portal).toContain("rpc('verifySchoolRewardsAuditChain')");
   });

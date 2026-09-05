@@ -2466,6 +2466,8 @@ function TourOverlay(props) {
     isSpotlightMode, runTour, setIsSpotlightMode, setRunTour,
     setSpotlightMessage, spotlightMessage, t, tourRect,
     tourStep, tourSteps,
+    canGoBack = tourStep > 0,
+    canGoForward = tourStep < tourSteps.length - 1,
     compactTour = false
   } = props;
   const tourDialogRef = React.useRef(null);
@@ -2509,7 +2511,7 @@ function TourOverlay(props) {
   };
   const containTourFocus = (event) => {
     if (!event || !tourDialogRef.current) return;
-    if (event.key === 'Escape') { event.preventDefault(); closeTourOverlay(); return; }
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeTourOverlay(); return; }
     if (event.key !== 'Tab') return;
     const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
     if (!focusable.length) { event.preventDefault(); tourDialogRef.current.focus(); return; }
@@ -2521,15 +2523,14 @@ function TourOverlay(props) {
     if (!(runTour && tourRect)) return undefined;
     const previouslyFocused = document.activeElement;
     const timer = setTimeout(() => {
-      const firstAction = tourDialogRef.current?.querySelector('button:not([disabled])');
-      if (firstAction) firstAction.focus();
-      else tourDialogRef.current?.focus();
+      tourDialogRef.current?.focus({ preventScroll: true });
     }, 0);
     return () => {
       clearTimeout(timer);
       if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [runTour, !!tourRect]);
+  React.useEffect(() => { tourDialogRef.current?.querySelectorAll('.allo-tour-copy').forEach(el => { el.scrollTop = 0; }); }, [tourStep, spotlightMessage]);
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : tourSteps[tourStep].title;
   const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : (tourSteps[tourStep].text || '');
@@ -2624,6 +2625,7 @@ function TourOverlay(props) {
   })();
   return (
         <div role="presentation" className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+            <style>{`.allo-tour-copy{min-height:0;overflow-y:auto} [data-tour-layout] button{min-height:44px} [data-tour-layout] button:focus-visible{outline:3px solid #4338ca;outline-offset:3px} .allo-tour-controls{position:sticky;bottom:0;background:white;flex-wrap:wrap;gap:8px;flex-shrink:0;padding-bottom:4px} @media(max-width:600px){[data-tour-layout="main"]{left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;width:auto!important;max-height:55vh;max-height:55dvh;padding:16px!important;border:2px solid #fcd34d;border-radius:18px;gap:12px!important}}`}</style>
             <div className="absolute inset-0 transition-all duration-500">
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: tourRect.top, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
                 <div style={{ position: 'absolute', top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
@@ -2700,6 +2702,8 @@ function TourOverlay(props) {
                 aria-label={tourAccessibleTitle}
                 tabIndex={-1}
                 onKeyDown={containTourFocus}
+                data-tour-layout={compactTour ? 'compact' : 'main'}
+                style={{ boxSizing: 'border-box', maxWidth: 'calc(100vw - 24px)', overflowWrap: 'anywhere' }}
                 className={compactTour ? (
                     // Compact placement for modal-context tours (2026-06-10,
                     // maintainer feedback): the full-height 500px drawer covered
@@ -2721,7 +2725,7 @@ function TourOverlay(props) {
             >
                 <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{tourAccessibleTitle}. {tourAccessibleText}</div>
                 {spotlightMessage ? (
-                    <div>
+                    <div className="allo-tour-copy">
                         <h4 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
                             <Sparkles size={18} className="text-yellow-500 fill-current"/> {spotlightMessage.title || t('tour.spotlight_title')}
                         </h4>
@@ -2785,13 +2789,13 @@ function TourOverlay(props) {
                     </div>
                 ) : (
                     <>
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start shrink-0">
                             <h4 className="font-bold text-indigo-900 text-lg">{tourSteps[tourStep].title}</h4>
                             <span className="text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
                                 {tourStep + 1} / {tourSteps.length}
                             </span>
                         </div>
-                        <div className="text-slate-600 text-sm leading-relaxed flex flex-col gap-2">
+                        <div className="allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2">
                             {(tourSteps[tourStep].text || '').split(/\r?\n/).map((line, i) => {
                                 const cleanLine = line.trim();
                                 if (!cleanLine) return <div key={i} className="h-2" />;
@@ -2837,9 +2841,9 @@ function TourOverlay(props) {
                         </div>
                     </>
                 )}
-                <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-100">
+                <div className="allo-tour-controls flex justify-between items-center pt-2 mt-2 border-t border-slate-100">
                     {spotlightMessage ? (
-                        <button
+                        <button type="button"
                             data-help-ignore="true"
                             style={{ pointerEvents: "all", zIndex: 9999 }}
                             onClick={(e) => {
@@ -2852,21 +2856,21 @@ function TourOverlay(props) {
                         </button>
                     ) : (
                         <>
-                            <button onClick={handleSetRunTourToFalse} className="text-xs font-bold text-slate-600 hover:text-slate-600">{t('common.skip')}</button>
+                            <button type="button" onClick={handleSetRunTourToFalse} className="text-xs font-bold text-slate-600 hover:text-slate-600">{t('tour.exit') || 'Exit tour'}</button>
                             <div className="flex gap-2">
-                                <button
-                                    aria-label={t('common.continue')}
+                                <button type="button"
+                                    aria-label={t('common.back') || 'Back'}
                                     onClick={handlePrevTourStep}
-                                    disabled={tourStep === 0}
+                                    disabled={!canGoBack}
                                     className="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
                                 >
                                     {t('common.back')}
                                 </button>
-                                <button aria-label={t('common.next')}
+                                <button type="button" aria-label={!canGoForward ? (t('common.finish') || 'Finish') : (t('common.next') || 'Next')}
                                     onClick={handleNextTourStep}
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2"
                                 >
-                                    {tourStep === tourSteps.length - 1 ? t('common.finish') : t('common.next')} <ArrowRight size={14}/>
+                                    {!canGoForward ? t('common.finish') : t('common.next')} <ArrowRight size={14}/>
                                 </button>
                             </div>
                         </>

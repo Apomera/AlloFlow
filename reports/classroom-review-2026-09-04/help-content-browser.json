@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "Keyboard activation opens specific Customize help without opening the picker; closing restores focus.",
+    "Next explains its action in Help Mode and works normally after Help Mode ends.",
+    "Directions Draft and Add to pack help work without drafting or saving.",
+    "Help popup fits 320px viewport.",
+    "Help popup fits 360px viewport.",
+    "Help popup fits 1200px viewport.",
+    "Targeted help-popup axe check has no violations."
+  ],
+  "errors": []
+}

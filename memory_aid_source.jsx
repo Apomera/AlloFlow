@@ -2036,7 +2036,7 @@ function MemoryAidPanel(props) {
 function MemoryAidPracticePanel(props) {
   const {
     card, domIdBase, session, attempts, isProcessing, canSpeak, blockedByOtherPractice, saveEvidence, storageWarning,
-    onStart, onChange, onReveal, onFactCheck, onRepeat, onClose, onSpeak,
+    onStart, onChange, onReveal, onFactCheck, onRepeat, onClose, onSpeak, readAloudControl,
     onDeleteAttempt, onClearHistory, onSaveRevision, t,
   } = props;
   const tr = _maMakeTr(t);
@@ -2085,7 +2085,7 @@ function MemoryAidPracticePanel(props) {
           <p className="text-xs font-black uppercase tracking-wide text-cyan-900">{tr('practice_your_cue', 'Your memory cue')}</p>
           {cue && <p className="mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900">{cue}</p>}
           {card.visualImage && <img src={card.visualImage} alt={card.visualAlt || buildMemoryAidVisualAlt(card)} className="mt-3 max-h-72 w-auto max-w-full rounded-xl border border-cyan-100 object-contain" />}
-          {canSpeak && <button type="button" onClick={onSpeak} disabled={isProcessing} className="mt-3 min-h-11 rounded-xl border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-black text-sky-900 hover:bg-sky-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('practice_listen_cue', 'Listen to practice cue')}</button>}
+          {readAloudControl || (canSpeak && <button type="button" onClick={onSpeak} disabled={isProcessing} className="mt-3 min-h-11 rounded-xl border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-black text-sky-900 hover:bg-sky-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('practice_listen_cue', 'Listen to practice cue')}</button>)}
         </div>
         <fieldset className="mt-4 rounded-xl border border-cyan-200 bg-white p-3">
           <legend className="px-1 text-sm font-black text-slate-900">{tr('practice_response_mode_legend', 'How will you retrieve what the cue means?')}</legend>
@@ -2211,7 +2211,7 @@ function MemoryAidPracticePanel(props) {
   const revisionState = memoryAidPracticeRevisionState(savedAttempts, card);
   return (
     <section className="memory-aid-no-print rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4" aria-labelledby={practiceTitleId}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
         <div className="min-w-0 flex-1">
           <h3 id={practiceTitleId} className="text-sm font-black text-cyan-950">{tr('practice_idle_title', 'Try it from memory')}</h3>
           <p className="mt-1 text-xs leading-relaxed text-slate-700">{tr('practice_idle_note', 'Use only the cue, record what you retrieve, then reveal and self-check the facts. AI does not grade this practice.')}</p>
@@ -2265,8 +2265,12 @@ function MemoryAidView(props) {
     callGeminiImageEdit: callGeminiImageEditProp, callGeminiVision: callGeminiVisionProp,
     handleSpeak: handleSpeakProp, handleDownloadAudio: handleDownloadAudioProp,
     downloadingContentId, addToast: addToastProp, gradeLevel, universalImageStyle,
-    activeProfileId: activeProfileIdProp, onPrint: onPrintProp, t: tProp,
+    activeProfileId: activeProfileIdProp, onPrint: onPrintProp, t: tProp, allowRuntimeAi = true, learnerReadOnly = false, previewMode = false,
   } = props;
+  const ReadAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.Controls;
+  const SharingCheck = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.SharingCheck;
+  const CueReadAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.CueControls;
+  const LocalReadAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.LocalText;
   const tr = _maMakeTr(tProp);
   const trMeta = (prefix, id, field, table) => _maTrMeta(tr, prefix, id, field, table);
   const trMsg = (message) => _maTrMsg(tr, message);
@@ -2380,14 +2384,10 @@ function MemoryAidView(props) {
   const staleActivePractice = !!staleActivePracticeCardId;
   const practiceIsolationActive = !!activePracticeCardId;
   const addToast = typeof addToastProp === 'function' ? addToastProp : function () {};
-  const callGemini = callGeminiProp || (typeof window !== 'undefined' && window.callGemini);
-  const callImagen = typeof callImagenProp === 'function' ? callImagenProp : null;
-  const callGeminiImageEdit = typeof callGeminiImageEditProp === 'function'
-    ? callGeminiImageEditProp
-    : (typeof window !== 'undefined' && typeof window.callGeminiImageEdit === 'function' ? window.callGeminiImageEdit : null);
-  const callGeminiVision = typeof callGeminiVisionProp === 'function'
-    ? callGeminiVisionProp
-    : (typeof window !== 'undefined' && typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null);
+  const callGemini = allowRuntimeAi && !learnerReadOnly ? (callGeminiProp === undefined ? (typeof window !== 'undefined' && window.callGemini) : callGeminiProp) : null;
+  const callImagen = allowRuntimeAi && typeof callImagenProp === 'function' ? callImagenProp : null;
+  const callGeminiImageEdit = allowRuntimeAi ? (callGeminiImageEditProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiImageEdit : null) : callGeminiImageEditProp) : null;
+  const callGeminiVision = allowRuntimeAi ? (callGeminiVisionProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiVision : null) : callGeminiVisionProp) : null;
   const handleSpeak = typeof handleSpeakProp === 'function' ? handleSpeakProp : null;
   const handleDownloadAudio = typeof handleDownloadAudioProp === 'function' ? handleDownloadAudioProp : null;
   const imageAssetTools = typeof window !== 'undefined' && window.AlloModules
@@ -2472,7 +2472,7 @@ function MemoryAidView(props) {
   }, [resourceKey]);
 
   React.useEffect(() => {
-    if (!resourceActive || isTeacherMode) {
+    if (!resourceActive || isTeacherMode || previewMode) {
       setPracticeStorageWarning('');
       setPrivatePracticeState({ ownerIdentity: currentPracticeOwnerIdentity, cards: {} });
       return;
@@ -2486,7 +2486,7 @@ function MemoryAidView(props) {
   }, [resourceActive, isTeacherMode, resourceKey, cardsIdentity, currentPracticeOwnerIdentity]);
 
   React.useEffect(() => {
-    if (!resourceActive || isTeacherMode || !activePracticeProfileId || typeof window === 'undefined') return undefined;
+    if (!resourceActive || isTeacherMode || previewMode || !activePracticeProfileId || typeof window === 'undefined') return undefined;
     const ownerAtRegistration = currentPracticeOwnerIdentity;
     const currentKey = memoryAidPrivatePracticeKey(
       resourceKey,
@@ -2745,7 +2745,7 @@ function MemoryAidView(props) {
   );
 
   const persistPracticeAttempt = async (card, attempt) => {
-    if (!attempt || isTeacherMode || !memoryAidPracticeSummary(attempt, card).complete) return false;
+    if (!attempt || isTeacherMode || previewMode || !memoryAidPracticeSummary(attempt, card).complete) return false;
     const ownerAtStart = currentPracticeOwnerIdentity;
     let result;
     try {
@@ -2775,7 +2775,7 @@ function MemoryAidView(props) {
   };
 
   const deletePracticeAttempt = async (card, attemptId) => {
-    if (isTeacherMode) return;
+    if (isTeacherMode || previewMode) return;
     const ownerAtStart = currentPracticeOwnerIdentity;
     let result;
     try {
@@ -2802,7 +2802,7 @@ function MemoryAidView(props) {
   };
 
   const clearPracticeHistory = async (card) => {
-    if (isTeacherMode) return;
+    if (isTeacherMode || previewMode) return;
     const ownerAtStart = currentPracticeOwnerIdentity;
     let result;
     try {
@@ -2887,7 +2887,7 @@ function MemoryAidView(props) {
   };
 
   const savePracticeRevision = async (card, strategy) => {
-    if (isTeacherMode) return;
+    if (isTeacherMode || previewMode) return;
     const session = visiblePracticeByCard[card.id];
     const currentAttempt = session && session.attempt;
     const summary = memoryAidPracticeSummary(currentAttempt, card);
@@ -3262,7 +3262,7 @@ function MemoryAidView(props) {
   const printResource = () => {
     if (typeof onPrintProp === 'function') {
       try {
-        if (onPrintProp(generatedContent) !== false) return;
+        if (onPrintProp(generatedContent, { worksheet: true, teacherKey: false }) !== false) return;
       } catch (_) {}
     }
     if (typeof window !== 'undefined' && typeof window.print === 'function') window.print();
@@ -3307,7 +3307,7 @@ function MemoryAidView(props) {
       <style>{'@media print { .memory-aid-no-print, .memory-aid-practice-panel { display:none !important; } .memory-aid-practice-content[hidden] { display:block !important; } .memory-aid-practice-isolating .memory-aid-practice-content[hidden] { display:none !important; } .memory-aid-card { break-inside:avoid; box-shadow:none !important; } }'}</style>
       <p role="status" aria-live="polite" className="sr-only">{editSummary}</p>
       <header className="mb-5 rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
           <div className="min-w-0 flex-1">
             <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-teal-800">{tr('studio_name', 'Memory Aid Studio')}</p>
             {isTeacherMode && isEditing && !practiceIsolationActive ? (
@@ -3319,7 +3319,8 @@ function MemoryAidView(props) {
           </div>
           <div className="memory-aid-no-print flex flex-wrap gap-2">
             {isTeacherMode && <button type="button" aria-pressed={isEditing} onClick={() => { if (isEditing) finishEditing(); else setIsEditing(true); }} className="min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{isEditing ? tr('done_editing', 'Done editing') : tr('edit_resource', 'Edit resource')}</button>}
-            {!practiceIsolationActive && <button type="button" onClick={printResource} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('print', 'Print')}</button>}
+            {!practiceIsolationActive && <button type="button" onClick={printResource} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('preview_worksheet', 'Preview student worksheet')}</button>}
+            {isTeacherMode && !practiceIsolationActive && typeof onPrintProp === 'function' && <button type="button" onClick={() => onPrintProp(generatedContent, { worksheet: false, teacherKey: true })} className="min-h-11 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold">{tr('teacher_reference', 'Teacher reference')}</button>}
           </div>
         </div>
         {isTeacherMode && !practiceIsolationActive && <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
@@ -3349,6 +3350,7 @@ function MemoryAidView(props) {
           </fieldset>
         )}
       </header>
+      {isTeacherMode && !practiceIsolationActive && SharingCheck && <SharingCheck resource={props.referenceResource || generatedContent} t={tProp} onReview={() => setIsEditing(true)} />}
 
       {practiceStorageWarning && <p role="alert" className="memory-aid-no-print mb-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold leading-relaxed text-red-900">{trMsg(practiceStorageWarning)}</p>}
 
@@ -3365,7 +3367,7 @@ function MemoryAidView(props) {
           const practiceReviewSummary = practiceSession && practiceSession.attempt
             ? memoryAidPracticeSummary(practiceSession.attempt, card)
             : null;
-          const practiceAttempts = isTeacherMode ? [] : (privatePracticeByCard[card.id] || []);
+          const practiceAttempts = isTeacherMode || previewMode ? [] : (privatePracticeByCard[card.id] || []);
           const domIdBase = cardDomIdBase(card.id);
           const revisionState = memoryAidPracticeRevisionState(practiceAttempts, card);
           const draftLabel = card.mode === 'generated' ? tr('draft_label_generated', 'Make your own or remix the example') : card.mode === 'scaffolded' ? tr('draft_label_scaffolded', 'Finish and personalize the scaffold') : tr('draft_label_student', 'Create your memory aid');
@@ -3408,7 +3410,7 @@ function MemoryAidView(props) {
                   ? tr('feedback_ready_with_explanation', 'Ready for feedback. Your optional explanation will be included.')
                   : tr('feedback_ready_optional', 'Ready for feedback. An explanation is optional, and you can add one if it helps show your connection.');
           return (
-            <article key={card.id} className="memory-aid-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby={domIdBase + '-title'}>
+            <article key={card.id} data-studio-card-id={card.id} className="memory-aid-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby={domIdBase + '-title'}>
               <div className="border-b border-slate-200 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -3420,8 +3422,8 @@ function MemoryAidView(props) {
                   <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
                     <span className="rounded-full bg-teal-100 px-3 py-1 text-teal-900">{trMeta('type', card.type, 'shortLabel', MEMORY_AID_TYPES)}</span>
                     {isTeacherMode && <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-900">{trMeta('mode', card.mode, 'compactLabel', MEMORY_AID_MODES)}</span>}
-                    {!practiceIsolationActive && handleSpeak && <button type="button" onClick={() => speakCard(card)} disabled={isProcessing} aria-label={tr('card_listen_aria', 'Listen to memory aid for {target}', { target: card.target || tr('this_target', 'this target') })} className="memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('card_listen', 'Listen to this card')}</button>}
-                    {!practiceIsolationActive && handleDownloadAudio && <button type="button" onClick={() => downloadCardAudio(card)} disabled={isProcessing || anotherAudioDownloadActive} aria-busy={audioDownloading} aria-label={tr(audioDownloading ? 'card_stop_audio_aria' : 'card_download_audio_aria', audioDownloading ? 'Stop audio download for {target}' : 'Download audio for {target}', { target: card.target || tr('this_memory_aid', 'this memory aid') })} className="memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{audioDownloading ? tr('card_stop_audio', 'Stop audio download') : tr('card_download_audio', 'Download card audio')}</button>}
+                    {!ReadAloud && !practiceIsolationActive && handleSpeak && <button type="button" onClick={() => speakCard(card)} disabled={isProcessing} aria-label={tr('card_listen_aria', 'Listen to memory aid for {target}', { target: card.target || tr('this_target', 'this target') })} className="memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('card_listen', 'Listen to this card')}</button>}
+                    {!ReadAloud && !practiceIsolationActive && handleDownloadAudio && <button type="button" onClick={() => downloadCardAudio(card)} disabled={isProcessing || anotherAudioDownloadActive} aria-busy={audioDownloading} aria-label={tr(audioDownloading ? 'card_stop_audio_aria' : 'card_download_audio_aria', audioDownloading ? 'Stop audio download for {target}' : 'Download audio for {target}', { target: card.target || tr('this_memory_aid', 'this memory aid') })} className="memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{audioDownloading ? tr('card_stop_audio', 'Stop audio download') : tr('card_download_audio', 'Download card audio')}</button>}
                   </div>
                 </div>
                 {isTeacherMode && isEditing && (
@@ -3445,6 +3447,7 @@ function MemoryAidView(props) {
               </div>
 
               <div className="space-y-4 p-4 sm:p-5">
+                {!practiceIsolationActive && ReadAloud && <ReadAloud resource={props.referenceResource || generatedContent} cardId={card.id} canPrepare={isTeacherMode && isEditing} allowRuntimeAi={allowRuntimeAi} t={tProp} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} />}
                 <MemoryAidPracticePanel
                   t={tProp}
                   card={card}
@@ -3454,7 +3457,7 @@ function MemoryAidView(props) {
                   isProcessing={isProcessing}
                   canSpeak={typeof handleSpeak === 'function'}
                   blockedByOtherPractice={!!activePracticeCardId && !practiceActive}
-                  saveEvidence={!isTeacherMode}
+                  saveEvidence={!isTeacherMode && !previewMode}
                   onStart={() => startPractice(card)}
                   onChange={(patch) => updatePracticeSession(card.id, patch)}
                   onReveal={() => revealPracticeFacts(card)}
@@ -3462,12 +3465,13 @@ function MemoryAidView(props) {
                   onRepeat={() => repeatPractice(card)}
                   onClose={() => closePractice(card.id, practiceReviewSummary && practiceReviewSummary.needsPractice ? 'draft' : 'start')}
                   onSpeak={() => speakPracticeCue(card)}
+                  readAloudControl={CueReadAloud ? <CueReadAloud resource={props.referenceResource || generatedContent} cardId={card.id} text={memoryAidPracticeCue(card)} allowRuntimeAi={allowRuntimeAi} t={tProp} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} /> : null}
                   onDeleteAttempt={(attemptId) => deletePracticeAttempt(card, attemptId)}
                   onClearHistory={() => clearPracticeHistory(card)}
                   onSaveRevision={(strategy) => savePracticeRevision(card, strategy)}
                 />
                 <div hidden={practiceIsolationActive} className="memory-aid-practice-content space-y-4">
-                <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" aria-label={!isTeacherMode ? tr('facts_student_aria', 'Facts to remember') : card.factVerified ? tr('facts_verified', 'Teacher-verified facts') : tr('facts_pending', 'Facts awaiting teacher review')}>
+                <section tabIndex={-1} data-studio-review="facts" className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" aria-label={!isTeacherMode ? tr('facts_student_aria', 'Facts to remember') : card.factVerified ? tr('facts_verified', 'Teacher-verified facts') : tr('facts_pending', 'Facts awaiting teacher review')}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-sm font-black text-amber-950">{tr('facts_heading', 'What must stay accurate')}</h3>
                     {isTeacherMode && <span className="rounded-full bg-white px-2 py-1 text-[11px] font-bold text-amber-900">{!card.factLocked ? tr('facts_editing', 'Teacher editing facts') : card.factVerified ? tr('facts_verified', 'Teacher-verified facts') : card.factReviewHold ? tr('facts_held', 'Held for re-review') : tr('facts_needs_review', 'Needs teacher review')}</span>}
@@ -3585,7 +3589,7 @@ function MemoryAidView(props) {
                 )}
 
                 {(card.visualImage || card.visualSyncOmission || canManageVisual) && (
-                <section className={(card.visualImage ? '' : 'memory-aid-no-print ') + 'rounded-2xl border border-fuchsia-200 bg-fuchsia-50/50 p-4'} aria-label={tr('visual_region_aria', 'Visual cue for {target}', { target: card.target })} aria-busy={visualBusy}>
+                <section tabIndex={-1} data-studio-review='visual' className={(card.visualImage ? '' : 'memory-aid-no-print ') + 'rounded-2xl border border-fuchsia-200 bg-fuchsia-50/50 p-4'} aria-label={tr('visual_region_aria', 'Visual cue for {target}', { target: card.target })} aria-busy={visualBusy}>
                   <div>
                     <h3 id={domIdBase + '-visual-title'} className="text-sm font-black text-fuchsia-950">{tr('visual_heading', 'Visual cue')} <span className="font-medium text-fuchsia-800">{tr('optional_paren', '(optional)')}</span></h3>
                     <p className="mt-1 text-xs leading-relaxed text-slate-700">{tr('visual_note', 'A visual can support retrieval, but the required facts and your explanation remain the source of meaning.')}</p>
@@ -3679,7 +3683,7 @@ function MemoryAidView(props) {
                     {!callImagen && !card.visualImage && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_gen_unavailable_note', 'AI visual generation is unavailable with the current setup. You can upload an image or keep the memory aid text-only.')}</p>}
                     {card.visualImage && !callGeminiImageEdit && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_refine_unavailable_note', 'AI image refinement is unavailable, but you can crop, replace, keep, or remove this visual.')}</p>}
                     {card.visualImage && !callGeminiVision && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_check_unavailable_note', 'AI visual checking and description drafting are unavailable. A learner or teacher can still write the description and review the cue directly.')}</p>}
-                    {isTeacherMode && card.visualImage && (
+                    {isTeacherMode && isEditing && card.visualImage && (
                       <fieldset className="rounded-xl border border-slate-300 bg-white p-3">
                         <legend className="px-1 text-xs font-black text-slate-800">{tr('visual_review_legend', 'Teacher visual review')}</legend>
                         <label className="block text-xs font-bold text-slate-700">{tr('visual_review_note', 'Review note')} <span className="font-medium">{tr('optional_paren', '(optional)')}</span>
@@ -3707,7 +3711,8 @@ function MemoryAidView(props) {
                       {revisionState.targetFacts.length > 0 && <p className="mt-2 text-xs font-bold">{tr('revision_targeting', 'Targeting: {facts}', { facts: revisionState.targetFacts.join(' · ') })}</p>}
                     </div>
                   )}
-                  <textarea id={domIdBase + '-draft'} aria-label={tr('draft_aria', '{label} for {target}', { label: draftLabel, target: card.target })} value={card.studentDraft} onChange={(event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null })} rows={4} placeholder={tr('draft_placeholder', 'Write, remix, or build your memory aid here…')} className="mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+                  {LocalReadAloud && !learnerReadOnly && <LocalReadAloud text={[card.studentDraft, card.studentReasoning].filter(Boolean).join(' ')} t={tProp} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} />}
+                  <textarea id={domIdBase + '-draft'} aria-label={tr('draft_aria', '{label} for {target}', { label: draftLabel, target: card.target })} value={card.studentDraft} readOnly={learnerReadOnly} onChange={(event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null })} rows={4} placeholder={tr('draft_placeholder', 'Write, remix, or build your memory aid here…')} className="mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
                 </section>
 
                 {data.reflectionLevel !== 'none' && (
@@ -3717,7 +3722,7 @@ function MemoryAidView(props) {
                       <span className="text-[11px] font-bold text-sky-800">{data.reasoningRequired ? tr('required_before_feedback', 'Required before feedback') : tr('optional', 'Optional')}</span>
                     </div>
                     {isTeacherMode && isEditing ? <textarea aria-label={tr('reasoning_prompt_aria', 'Reasoning prompt for {target}', { target: card.target })} value={card.reasoningPrompt} onChange={(event) => updateCard(card.id, { reasoningPrompt: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" /> : <p className="mt-1 text-xs leading-relaxed text-slate-700">{card.reasoningPrompt}</p>}
-                    <textarea aria-label={tr('reasoning_aria', 'Reasoning for {target}', { target: card.target })} value={card.studentReasoning} onChange={(event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null })} rows={data.reflectionLevel === 'full' ? 4 : 2} placeholder={data.reflectionLevel === 'full' ? tr('reasoning_placeholder_full', 'Explain how each important part leads back to the accurate facts…') : tr('reasoning_placeholder_quick', 'This helps me remember because…')} className="mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" />
+                    <textarea aria-label={tr('reasoning_aria', 'Reasoning for {target}', { target: card.target })} value={card.studentReasoning} readOnly={learnerReadOnly} onChange={(event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null })} rows={data.reflectionLevel === 'full' ? 4 : 2} placeholder={data.reflectionLevel === 'full' ? tr('reasoning_placeholder_full', 'Explain how each important part leads back to the accurate facts…') : tr('reasoning_placeholder_quick', 'This helps me remember because…')} className="mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" />
                   </section>
                 )}
 

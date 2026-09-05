@@ -1198,13 +1198,17 @@
             h('h2', { className: 'text-lg font-black', style: { color: accent } }, modeInfo.title),
             h('p', { className: 'text-sm', style: { color: muted } }, modeInfo.desc)
           ),
-          renderModeContent()
+          h('details', { key: mode, className: 'rounded-xl border p-3', 'data-ratio-exploration': true },
+            h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.ratios.free_exploration', 'Free exploration — choose your own quantities')),
+            h('p', { className: 'text-sm my-2' }, t('stem.ratios.independent_workspace', 'This workspace is independent of the practice problem. Open “Model this problem” below for its quantities.')),
+            renderModeContent()
+          )
         ),
 
         h('section', { className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isContrast ? '#000000' : (isDark ? '#191d36' : '#eef2ff'), border: '2px solid ' + accent } },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
             h('div', null,
-              h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, t('stem.ratios.deterministic_challenge', "🎯 Deterministic challenge")),
+              h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, t('stem.ratios.try_problem', "🎯 Try a problem")),
               h('p', { className: 'text-xs', style: { color: muted } }, modeInfo.title + t('stem.ratios.challenge_2', " • Challenge ") + (challengeIndex + 1) + t('stem.ratios.of', " of ") + modeChallenges.length)
             ),
             h('div', { className: 'flex flex-wrap gap-2' },
@@ -1213,6 +1217,57 @@
               h('button', { type: 'button', onClick: retryMissedChallenge, disabled: !missedChallengeIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-50', style: { background: soft, color: text, border: '1px solid ' + border } }, t('stem.ratios.retry_missed', "Retry missed (") + missedChallengeIds.length + ')'))
           ),
           h('p', { id: 'ratio-challenge-prompt', className: 'text-sm sm:text-base font-semibold' }, challenge.prompt),
+          (function() {
+            var model = {
+              'ratio-paint': [[t('stem.ratios.model_blue_paint_cups', 'Blue paint (cups)'),t('stem.ratios.model_white_paint_cups', 'White paint (cups)')], [[3,5],['?',20]]],
+              'ratio-simplify': [[t('stem.ratios.model_first_quantity', 'First quantity'),t('stem.ratios.model_second_quantity', 'Second quantity')], [[18,24],['?','?']]],
+              'ratio-scale': [[t('stem.ratios.model_first_quantity', 'First quantity'),t('stem.ratios.model_second_quantity', 'Second quantity')], [[7,4],['7 × 6','?']]],
+              'line-tickets': [[t('stem.ratios.model_tickets', 'Tickets'),t('stem.ratios.model_cost', 'Cost ($)')], [[0,0],[5,15],[8,'?']]],
+              'line-running': [[t('stem.ratios.model_distance_km', 'Distance (km)'),t('stem.ratios.model_time_min', 'Time (min)')], [[0,0],[3,18],[7,'?']]],
+              'line-batches': [[t('stem.ratios.model_batches', 'Batches'),t('stem.ratios.model_flour_cups', 'Flour (cups)')], [[0,0],[2,5],[6,'?']]],
+              'unit-snacks': [[t('stem.ratios.model_option', 'Option'),t('stem.ratios.model_mass_oz', 'Mass (oz)'),t('stem.ratios.model_price', 'Price ($)'),t('stem.ratios.model_price_per_oz', 'Price per oz')], [['A',12,'3.60','?'],['B',20,'5.40','?']]],
+              'unit-speed': [[t('stem.ratios.model_distance_miles', 'Distance (miles)'),t('stem.ratios.model_time_hours', 'Time (hours)')], [[180,3],['?',1]]],
+              'unit-printing': [[t('stem.ratios.model_printer', 'Printer'),t('stem.ratios.model_pages', 'Pages'),t('stem.ratios.model_minutes', 'Minutes'),t('stem.ratios.model_pages_per_minute', 'Pages per minute')], [['A',84,6,'?'],['B',105,7,'?']]],
+              'percent-part': [[t('stem.ratios.model_part', 'Part'),t('stem.ratios.model_whole', 'Whole'),t('stem.ratios.model_percent', 'Percent')], [['?',240,'35%']]],
+              'percent-rate': [[t('stem.ratios.model_part', 'Part'),t('stem.ratios.model_whole', 'Whole'),t('stem.ratios.model_percent', 'Percent')], [[45,180,'?']]],
+              'percent-whole': [[t('stem.ratios.model_part', 'Part'),t('stem.ratios.model_whole', 'Whole'),t('stem.ratios.model_percent', 'Percent')], [[30,'?','20%']]],
+              'prop-yes-table': [['x','y'], [[1,3],[2,6],[4,12]]],
+              'prop-no-table': [['x','y'], [[1,4],[2,8],[3,13]]],
+              'prop-origin': [['x','y'], [[0,0],[2,7],[4,14]]]
+            }[challenge.id];
+            return model && h('details', { key: challenge.id, className: 'rounded-xl border p-3', 'data-ratio-problem-model': challenge.id },
+              h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.ratios.model_this_problem', 'Model this problem')),
+              mode === 'numberLine' && h('div', { className: 'overflow-x-auto mt-3', tabIndex: 0, role: 'region', 'aria-label': t('stem.ratios.aligned_line_region', 'Aligned quantities on a double number line') }, (function() {
+                var rows = model[1], domain = rows[rows.length - 1][0];
+                var multiplier = rows[rows.length - 1][0] / rows[1][0];
+                return h('svg', { viewBox: '0 0 360 220', role: 'img', 'aria-labelledby': 'ratio-model-title-' + challenge.id, style: { width: '100%', minWidth: 240, display: 'block' }, 'data-linked-ratio-line': challenge.id },
+                  h('title', { id: 'ratio-model-title-' + challenge.id }, model[0].join(' / ') + '. ' + t('stem.ratios.aligned_line_description', 'Vertically aligned marks represent equivalent quantities. The missing value remains a question mark.')),
+                  [0,1].map(function(axis) {
+                    var y = axis ? 170 : 65;
+                    return h('g', { key: axis },
+                      h('text', { x: 25, y: y - 25, fill: text, fontSize: 15, fontWeight: 700 }, model[0][axis]),
+                      h('line', { x1: 25, y1: y, x2: 345, y2: y, stroke: accent, strokeWidth: 3 }),
+                      rows.map(function(row,index) { var x = 35 + row[0] / domain * 290; return h('g', { key: index },
+                        h('line', { x1: x, x2: x, y1: y - 8, y2: y + 8, stroke: accent, strokeWidth: 2 }),
+                        h('text', { x: x, y: y + 28, fill: text, textAnchor: 'middle', fontSize: 17, fontWeight: 700 }, row[axis])); }));
+                  }),
+                  rows.map(function(row,index) { var x = 35 + row[0] / domain * 290; return h('line', { key: index, x1: x, x2: x, y1: 99, y2: 130, stroke: muted, strokeDasharray: '4 4' }); }),
+                  h('text', { x: 180, y: 118, textAnchor: 'middle', fill: text, fontSize: 14, fontWeight: 700 }, '× ' + formatNumber(multiplier) + ' → ' + t('stem.ratios.both_quantities', 'both quantities')));
+              })()),
+              ['ratio-paint','ratio-simplify','ratio-scale'].indexOf(challenge.id) >= 0 && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3', 'data-ratio-scaling': challenge.id }, model[0].map(function(label,index) {
+                var operation = challenge.id === 'ratio-paint' ? '× 4' : challenge.id === 'ratio-simplify' ? '÷ 6' : '× 6';
+                return h('div', { key: index, className: 'rounded-lg border p-3', style: { background: panel, color: text, borderColor: border } },
+                  h('p', { className: 'text-xs font-bold mb-2' }, label),
+                  h('p', { className: 'text-base font-mono font-bold' }, model[1][0][index] + '  → ' + operation + ' →  ' + model[1][1][index]));
+              })),
+              h('div', { className: 'overflow-x-auto mt-3' }, h('table', { className: 'w-full text-sm border-collapse' },
+                h('caption', { className: 'text-left mb-2', style: { color: text } }, t('stem.ratios.known_and_unknown', 'Known quantities and the unknown (?)')),
+                h('thead', null, h('tr', null, model[0].map(function(label,i) { return h('th', { key:i, scope:'col', className:'border p-2 text-left', style: { color: text, background: panel, borderColor: border } }, label); }))),
+                h('tbody', null, model[1].map(function(row,i) { return h('tr', {key:i}, row.map(function(value,j) { return h('td', {key:j,className:'border p-2 font-mono', style: { color: text, background: panel, borderColor: border }},value); })); }))
+              )),
+              h('p', { className: 'mt-2 text-sm' }, t('stem.ratios.model_reasoning_prompt', 'What stays constant? Use the same multiplier or divisor for both quantities. For unit rates, compare one unit; for percents, identify the whole.'))
+            );
+          })(),
           h('form', { className: 'flex flex-col sm:flex-row gap-2', 'aria-labelledby': 'ratio-challenge-prompt', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
             h('label', { className: 'flex-1', htmlFor: 'ratio-challenge-answer' },
               h('span', { id: 'ratio-challenge-answer-label', className: 'sr-only' }, t('stem.ratios.challenge_answer', "Challenge answer")),

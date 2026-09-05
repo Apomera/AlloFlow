@@ -1,0 +1,174 @@
+{
+  "header_rerun_wizard": [
+    "Start & setup",
+    "Open Start & setup to return to Start, reopen the Setup Wizard, or start or resume Guided Mode. Choosing this menu does not restart your lesson. Use the separate options inside it for those actions."
+  ],
+  "header_quickstart_setup": [
+    "Setup Wizard",
+    "Reopen the Setup Wizard to review source material, grade, standards, languages, and personalization. This is the wizard option inside Start & setup; Guided Mode has its own option in that menu."
+  ],
+  "header_guided_mode_start": [
+    "Start or resume Guided Mode",
+    "Start a step-by-step lesson workflow, or resume your saved step. Choose a focused preset such as Adapt a reading, keep the complete path, or use Plan with AI and review its proposal before applying it. Review generated results and delivery choices before teaching."
+  ],
+  "tool_directions": [
+    "Assignment Directions",
+    "Open Assignment Directions to write the instructions learners will see. Enter a title, steps, an optional due label, and learning goals. Draft for me can suggest directions from the lesson plan and resource pack. Review and edit the draft, then choose Add to pack. Opening the composer alone does not save directions."
+  ],
+  "header_export": [
+    "Export and Document Builder",
+    "Open export choices for the current workspace. Document Builder lets you review PDF, worksheet, HTML, and slide output before creating it. LMS packages use their own export actions. Available content and features depend on the format. Check the selected resources and resulting file before sharing; export does not certify accessibility or guarantee compatibility with every LMS."
+  ],
+  "export_pdf": [
+    "PDF preview",
+    "Open the PDF preview in Document Builder. Review the layout, then choose Print / Save as PDF. The browser print window is where you select a printer or save the PDF."
+  ],
+  "export_worksheet": [
+    "Printable worksheet",
+    "Open a worksheet preview designed for students to write on. Review answer spaces and the student-facing layout, then use Print / Save as PDF. The browser print window completes printing or saving."
+  ],
+  "export_html": [
+    "HTML lesson",
+    "Open the HTML preview in Document Builder and review the learner-facing content before downloading it. The downloaded page can include supported interactive activities. External media and audio packaging choices affect what works offline. Downloading a file does not publish a website."
+  ],
+  "export_slides": [
+    "Presentation slides",
+    "Open the Slides preview in Document Builder to review and export a PowerPoint file. Check slide content, layout, and any imported media in your presentation app before teaching."
+  ],
+  "export_qti": [
+    "Assessment export for an LMS",
+    "Export supported assessment content as a QTI package for LMS import. Supported item types and import behavior vary between LMS products and versions. Review the imported questions, answer keys, and scoring before assigning them."
+  ],
+  "export_ims": [
+    "Lesson package for an LMS",
+    "Export an IMS Common Cartridge package for import into an LMS. Included resources depend on the available content and supported export types. Follow the destination LMS import steps and review the imported materials before assigning them."
+  ],
+  "tool_universal_settings": [
+    "Shared generation settings",
+    "Set shared preferences such as grade, language, standards, interests, and Depth of Knowledge. Individual tools use the settings they support; the controls show their coverage. Review the current tool’s own options as well before generating a resource."
+  ],
+  "guided_workflow": [
+    "Guided lesson workflow",
+    "Build a lesson one step at a time. Choose a path, add source material, review generated resources, prepare student directions, and choose a delivery route. Progress indicators describe what happened; the final readiness checks still require educator review."
+  ],
+  "guided_path_choice": [
+    "Choose a Guided path",
+    "Choose a focused lesson path or keep all available steps. Presets include Adapt a reading, assessment, and other lesson goals. If you already have progress, changing the path asks for confirmation and restarts Guided progress; generated resources remain in History."
+  ],
+  "guided_ai_plan": [
+    "Plan with AI",
+    "Describe the lesson goal and constraints, then review and customize the proposed steps before applying them. The planner can ask follow-up questions and offers a local fallback when needed. Planning a path does not generate the lesson resources by itself. Avoid student names and sensitive personal information."
+  ],
+  "guided_customize": [
+    "Customize included steps",
+    "Open the step picker to review included steps and presets. Changes that restart an existing path ask for confirmation. Resources already generated remain in History. Use the remaining-path planning option when you want to review an adjustment to the work still ahead."
+  ],
+  "guided_next_step": [
+    "Continue to the next step",
+    "Move to the next included step after this step’s completion is recognized. The button names its destination. At a phase boundary, use the phase checkpoint to review the work before continuing."
+  ],
+  "guided_back_step": [
+    "Return to the previous step",
+    "Return to the previous included step to review its instructions or result. Moving back does not delete generated resources."
+  ],
+  "guided_skip_step": [
+    "Skip an unfinished step",
+    "Leave this unfinished step and mark it skipped. Skipping does not generate its resource or count it as completed. You can return through Plan & navigation if you need it later."
+  ],
+  "guided_step_help": [
+    "About this step",
+    "Open the explanation for the current Guided step. Use it to understand the purpose, instructions, and available examples before working with the highlighted tool."
+  ],
+  "guided_resume_later": [
+    "Resume later",
+    "Leave Guided Mode while keeping your place on this device when progress saving succeeds. Check the saved-status indicator. If storage fails, review the warning and use a project backup where available before leaving. A device save is not a cross-device backup."
+  ],
+  "guided_resume_card": [
+    "Return to your lesson",
+    "Review your saved step and progress. Continue returns you to the current task; other available actions let you review the latest result or adjust remaining work. These actions wait while resource generation is running."
+  ],
+  "guided_collapse": [
+    "Collapse or expand Guided Mode",
+    "Hide or show the detailed Guided instructions. Collapsing the banner keeps the workflow active and does not reset its progress."
+  ],
+  "guided_example_source": [
+    "Try a sample passage",
+    "Load the built-in sample passage to try the workflow. This option is available only when the source is empty and generation is idle, so it does not replace your own source text."
+  ],
+  "guided_progress_storage": [
+    "Progress saved on this device",
+    "Check whether Guided progress is saving, saved, or could not be saved on this device. A saved indicator does not mean a file was downloaded or a cloud backup was created. Save a project backup to preserve work outside this browser or device."
+  ],
+  "guided_resources": [
+    "Resources from this lesson",
+    "Review recent resources created in this Guided run. Open a listed result to inspect it. The wider History panel can also contain resources from other lessons."
+  ],
+  "guided_plan_navigation": [
+    "Plan and navigation",
+    "Review phase progress, time estimates, and included steps. Jumping forward across unfinished steps asks you to confirm marking them skipped. Estimates are guidance rather than a promise of completion time."
+  ],
+  "guided_phase_review": [
+    "Review this phase",
+    "Review the phase’s completed and skipped steps and available results. Open a result if it needs checking, then use the continuation action to move into the next phase."
+  ],
+  "guided_document_builder": [
+    "Package this Guided lesson",
+    "Open Document Builder with resources selected from this Guided run. Review the selected resources, layout, and export format. Missing resources can block the handoff. An unrelated workspace export does not automatically mark this Guided lesson as delivered."
+  ],
+  "guided_homework_share": [
+    "Create a homework share",
+    "Start the homework-sharing flow for learner access. Review the shared resources and directions before distributing the link or QR code. Creating a share is separate from opening its learner preview."
+  ],
+  "guided_live_session": [
+    "Set up a live session",
+    "Open live-session setup. A session is counted as started only when session creation succeeds. Review the resources and learner joining instructions before teaching."
+  ],
+  "guided_learner_preview": [
+    "Preview the learner link",
+    "Open an existing student link to check the learner experience. Create a student link first if this action is unavailable. Previewing does not create an export or by itself complete lesson delivery."
+  ],
+  "guided_readiness": [
+    "Review classroom readiness",
+    "Some checks are detected from lesson materials; others require your confirmation after review. Changes to the source or generated resources can clear saved confirmations. These checks are reminders for educator review, not automatic approval of the lesson."
+  ],
+  "guided_finish": [
+    "Finish Guided Mode",
+    "Finish this Guided run. If readiness checks remain, review them or explicitly choose to finish with checks remaining. Finishing does not replace learner-preview and content review or delete generated resources."
+  ],
+  "directions_composer": [
+    "Prepare student directions",
+    "Write and review the directions learners will see with the assignment. You can draft from the lesson plan and pack, then edit the result. Choose Add to pack to save the reviewed directions; opening or closing the composer alone does not add them."
+  ],
+  "directions_title": [
+    "Directions title",
+    "Give these directions a short title that identifies the assignment for learners."
+  ],
+  "directions_body": [
+    "Steps for learners",
+    "Write what students should do and what finished work looks like. Review any AI draft for accuracy, sequence, and suitability for your class before adding it to the pack."
+  ],
+  "directions_due": [
+    "Due label",
+    "Enter an optional due label, such as Friday or a date and time. This field adds text to the directions; it does not schedule a reminder."
+  ],
+  "directions_draft": [
+    "Draft directions from the lesson",
+    "Suggest directions using the available lesson plan and resource pack. Review and edit the result before choosing Add to pack. Drafting is separate from saving the directions."
+  ],
+  "directions_add_pack": [
+    "Add reviewed directions to the pack",
+    "Save the directions you have prepared into the lesson pack. Review the title, steps, due label, and goals before adding them. This action does not by itself create a homework link or start a live session."
+  ],
+  "doc_builder_document": [
+    "Review the document",
+    "Review and edit the selected document before exporting. When opened from Guided Mode, the Builder uses that Guided lesson’s selected resources. The general workspace Builder may contain a wider selection. Check the scope and output before sharing."
+  ],
+  "doc_builder_format": [
+    "Choose an output format",
+    "PDF and Worksheet open the browser print window. Worksheet prepares answer spaces for paper. HTML creates a web page with supported learner interactions. Slides exports a PowerPoint file. Review the preview for the selected format."
+  ],
+  "doc_builder_export_action": [
+    "Create the selected output",
+    "Create the output for the selected format. PDF and Worksheet open Print / Save as PDF; complete the browser’s print or save action there. HTML downloads a page and Slides exports a PowerPoint file. Review the resulting file before sharing it."
+  ]
+}

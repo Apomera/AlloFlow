@@ -6268,8 +6268,9 @@ const AlloCommandPalette = ({ ctx }) => {
   const inputRef = useRef(null);
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
-  const commands = useMemo(() => ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === "teacher" }) : [], [ctx]);
+  const commands = useMemo(() => open && ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === "teacher" }) : [], [open, ctx]);
   const rows = useMemo(() => {
+    if (!open) return [];
     const out = [];
     if (query) {
       const acts2 = _activeContexts(ctx);
@@ -6343,7 +6344,7 @@ const AlloCommandPalette = ({ ctx }) => {
       cmdCount += take.length;
     }
     return out;
-  }, [commands, query, ctx, t, recentCommandIds, favoriteCommandIds, usageVersion]);
+  }, [open, commands, query, ctx, t, recentCommandIds, favoriteCommandIds, usageVersion]);
   const selectable = useMemo(() => {
     const a = [];
     rows.forEach((r, i) => {

@@ -38179,6 +38179,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const typeToggleMap = {
         'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
+          'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
       };
       const toggleKey = typeToggleMap[item.type];
@@ -41954,6 +41955,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         const toggleMap = {
           'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
           'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
+          'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
           'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
         };
         const key = toggleMap[item.type];

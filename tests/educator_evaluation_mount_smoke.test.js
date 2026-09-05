@@ -1322,7 +1322,7 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('selected educator no longer matches this disclosure review');
     expect(container.textContent).toContain('nothing was shared');
   });
-  it('flushes cross-educator profile boundaries while coalescing same-scope keystrokes', async () => {
+  it('serializes explicit profile saves across educators and keeps unsaved keystrokes local', async () => {
     const sample = sampleWorkspaceFixture();
     sample.config.sampleMode = false;
     const firstTeacher = sample.teachers[2];
@@ -1372,8 +1372,10 @@ describe('EducatorEvaluationPanel', () => {
     await flushRemote();
     expect(saveWorkspace).not.toHaveBeenCalled();
 
+    clickButton(selectedCard(), 'Save profile');
     clickButton(container, secondOriginalName);
     enterInput(labeledInput(selectedCard(), 'Name'), 'Scoped Second Name');
+    clickButton(selectedCard(), 'Save profile');
     await flushRemote();
 
     expect(saveWorkspace).toHaveBeenCalledTimes(1);
@@ -1416,7 +1418,7 @@ describe('EducatorEvaluationPanel', () => {
     expect(firstOriginalAssignment).not.toBe('Scoped First Assignment');
   }, 20000);
 
-  it('serializes SPM and annual rating saves before the durable SPM finalization', async () => {
+  it('serializes the SPM draft before atomically saving its finalization and annual rating', async () => {
     const sample = sampleWorkspaceFixture();
     sample.config.sampleMode = false;
     const teacher = sample.teachers[2];
@@ -1508,41 +1510,25 @@ describe('EducatorEvaluationPanel', () => {
     expect(saveWorkspace).toHaveBeenCalledTimes(2);
     expect(payloads[1].mutation).toMatchObject({
       teacherId: teacher.id,
-      event: 'RATING_UPDATED',
-      entityType: 'educator_cycle',
-      entityId: teacher.id,
+      event: 'FINALIZED',
+      entityType: 'spm',
+      entityId: spm.id,
     });
-    expect(payloads[1].workspace.spms.find((item) => item.id === spm.id).status).toBe('results_submitted');
+    expect(payloads[1].workspace.spms.find((item) => item.id === spm.id)).toMatchObject({
+      status: 'locked',
+      rating: 3,
+    });
     expect(payloads[1].workspace.teachers.find((item) => item.id === teacher.id).ratings.lea).toBe(3);
+    expect(payloads.map((payload) => payload.expectedVersion)).toEqual([80, 81]);
+    expect(maxActiveRequests).toBe(1);
 
     await act(async () => {
       finishSaves[1]();
       await Promise.resolve();
       await Promise.resolve();
-      await Promise.resolve();
     });
     await flushRemote();
-    expect(saveWorkspace).toHaveBeenCalledTimes(3);
-    expect(payloads[2].mutation).toMatchObject({
-      teacherId: teacher.id,
-      event: 'FINALIZED',
-      entityType: 'spm',
-      entityId: spm.id,
-    });
-    expect(payloads[2].workspace.spms.find((item) => item.id === spm.id)).toMatchObject({
-      status: 'locked',
-      rating: 3,
-    });
-    expect(payloads[2].workspace.teachers.find((item) => item.id === teacher.id).ratings.lea).toBe(3);
-    expect(payloads.map((payload) => payload.expectedVersion)).toEqual([80, 81, 82]);
-    expect(maxActiveRequests).toBe(1);
-
-    await act(async () => {
-      finishSaves[2]();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-    await flushRemote();
+    expect(saveWorkspace).toHaveBeenCalledTimes(2);
   }, 20000);
 
   it('serializes a latest profile snapshot when another edit lands during an active remote save', async () => {
@@ -1588,6 +1574,7 @@ describe('EducatorEvaluationPanel', () => {
     let selectedCard = Array.from(container.querySelectorAll('section'))
       .find((section) => section.querySelector('h3')?.textContent === 'Selected educator');
     enterInput(labeledInput(selectedCard, 'Name'), 'Queued Name');
+    clickButton(selectedCard, 'Save profile');
     await flushRemoteDebounce();
 
     expect(saveWorkspace).toHaveBeenCalledTimes(1);
@@ -1595,6 +1582,7 @@ describe('EducatorEvaluationPanel', () => {
     selectedCard = Array.from(container.querySelectorAll('section'))
       .find((section) => section.querySelector('h3')?.textContent === 'Selected educator');
     enterInput(labeledInput(selectedCard, 'Assignment'), 'Queued Assignment');
+    clickButton(selectedCard, 'Save profile');
     await flushRemoteDebounce();
 
     expect(saveWorkspace).toHaveBeenCalledTimes(1);
@@ -1664,6 +1652,7 @@ describe('EducatorEvaluationPanel', () => {
     const conflictButtons = () => Array.from(conflictTitle().closest('section').querySelectorAll('button'));
 
     enterInput(labeledInput(selectedCard(), 'Name'), 'Discarded conflict attempt');
+    clickButton(selectedCard(), 'Save profile');
     await flushRemoteDebounce();
     await flushRemote();
     expect(saveWorkspace).toHaveBeenCalledTimes(1);
@@ -1685,6 +1674,7 @@ describe('EducatorEvaluationPanel', () => {
 
     expect(labeledInput(selectedCard(), 'Assignment').value).toBe('District Assignment One');
     enterInput(labeledInput(selectedCard(), 'Name'), 'Safely replayed name');
+    clickButton(selectedCard(), 'Save profile');
     await flushRemoteDebounce();
     await flushRemote();
     expect(saveWorkspace).toHaveBeenCalledTimes(2);
@@ -1905,4 +1895,98 @@ describe('EducatorEvaluationPanel', () => {
     click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+});
+
+
+describe('unfinished text navigation and close recovery', () => {
+  it.each(['generated', 'source'])('preserves statement drafts through tab changes and offers a cancellable close review (%s)', (variant) => {
+    const onClose = vi.fn();
+    const container = mountPanel({ onClose }, variant === 'source' ? SourceEducatorEvaluationPanel : EducatorEvaluationPanel);
+    click(container.querySelector('#ae-tab-staff'));
+    clickButton(container, 'Teacher 03');
+    clickButton(container, 'Fictional educator');
+    const statementSection = () => Array.from(container.querySelectorAll('section')).find(section => section.textContent.includes('Your statement for the record'));
+    const textarea = statementSection().querySelector('textarea');
+    expect(textarea.readOnly).toBe(false);
+    act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(textarea, 'Unfinished statement that must survive navigation.');
+      textarea.dispatchEvent(new window.Event('input', { bubbles: true }));
+    });
+    click(container.querySelector('#ae-tab-trends'));
+    click(container.querySelector('#ae-tab-overview'));
+    expect(statementSection().querySelector('textarea').value).toBe('Unfinished statement that must survive navigation.');
+    clickButton(container, 'Evaluator');
+    click(container.querySelector('#ae-tab-about'));
+    const year = labeledInput(container, 'Academic year');
+    const originalYear = year.value;
+    enterInput(year, '2027-28');
+    expect(year.value).toBe(originalYear);
+    expect(container.textContent).toContain('Save or discard your unfinished drafts');
+    clickButton(container, 'Fictional educator');
+    click(container.querySelector('#ae-tab-overview'));
+    expect(statementSection().querySelector('textarea').value).toBe('Unfinished statement that must survive navigation.');
+    const unload = new window.Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(unload);
+    expect(unload.defaultPrevented).toBe(true);
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.querySelector('#ae-action-review-title').textContent).toBe('Discard unfinished drafts and close?');
+    expect(container.querySelector('[aria-labelledby="ae-action-review-title"]').textContent).toContain('Unfinished statement that must survive navigation.');
+    clickButton(container.querySelector('[aria-labelledby="ae-action-review-title"]'), 'Cancel');
+    expect(statementSection().querySelector('textarea').value).toBe('Unfinished statement that must survive navigation.');
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    const review = container.querySelector('[aria-labelledby="ae-action-review-title"]');
+    click(review.querySelector('input[type="checkbox"]'));
+    clickButton(review, 'Discard drafts and close');
+    expect(onClose).toHaveBeenCalledOnce();
+    const afterDiscard = new window.Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(afterDiscard);
+    expect(afterDiscard.defaultPrevented).toBe(false);
+  });
+});
+
+
+it('recovers an unfinished staff entry across tabs and includes it in the close review', () => {
+  const onClose = vi.fn();
+  const container = mountPanel({ startMode: 'blank', onClose });
+  click(container.querySelector('#ae-tab-staff'));
+  clickButton(container, '+ Add educator');
+  let card = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+  enterInput(card.querySelector('[name="name"]'), 'Unfinished Educator');
+  enterInput(card.querySelector('[name="code"]'), 'UNSAVED-01');
+  click(container.querySelector('#ae-tab-overview'));
+  click(container.querySelector('#ae-tab-staff'));
+  card = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+  expect(card.querySelector('[name="name"]').value).toBe('Unfinished Educator');
+  expect(card.querySelector('[name="code"]').value).toBe('UNSAVED-01');
+  const saved = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
+  expect(saved.teachers).toHaveLength(0);
+  click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+  const review = container.querySelector('[aria-labelledby="ae-action-review-title"]');
+  expect(review.textContent).toContain('Unfinished Educator');
+  expect(review.textContent).toContain('UNSAVED-01');
+  expect(onClose).not.toHaveBeenCalled();
+  clickButton(review, 'Cancel');
+  clickButton(card, 'Cancel');
+  click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+  expect(onClose).toHaveBeenCalledOnce();
+});
+
+it('resumes edits to a saved visit after navigation and includes readable changes in the close review', () => {
+  const onClose = vi.fn(); const container = mountPanel({ onClose });
+  click(container.querySelector('#ae-tab-walkthroughs'));
+  const record = Array.from(container.querySelectorAll('button.ae-record')).find(item => item.textContent.includes('Draft notes: station rotation'));
+  expect(record).toBeTruthy(); click(record); clickButton(container, 'Edit draft');
+  const input = container.querySelector('[name="evidence"]');
+  act(() => { Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(input, 'Unfinished walkthrough correction'); input.dispatchEvent(new Event('input', { bubbles: true })); });
+  click(container.querySelector('#ae-tab-overview')); click(container.querySelector('#ae-tab-walkthroughs'));
+  const pending = container.querySelector('[aria-label="Unfinished walkthrough edits"]'); expect(pending).toBeTruthy(); click(pending.querySelector('button'));
+  expect(container.querySelector('[name="evidence"]').value).toBe('Unfinished walkthrough correction');
+  const saved = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
+  expect(saved.walkthroughs.find(item => item.id === 'sample-w4').evidence).toContain('Draft notes: station rotation');
+  click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+  const review = container.querySelector('[aria-labelledby="ae-action-review-title"]');
+  expect(review.textContent).toContain('Evidence: Unfinished walkthrough correction'); expect(review.textContent).not.toContain('createdAt'); expect(onClose).not.toHaveBeenCalled();
+  clickButton(review, 'Cancel'); clickButton(container, 'Discard unsaved edits');
+  click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]')); expect(onClose).toHaveBeenCalledOnce();
 });

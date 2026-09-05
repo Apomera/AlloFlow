@@ -64,6 +64,40 @@
   var CLAB_CSS = ".clab-root{\n    --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f;\n    --line:#26364a; --line2:#31465e;\n    --ink:#e8eef4; --ink2:#9fb0c1; --ink3:#66788a;\n    --accent:#f2a63c; --accent-dim:#8a5f22;\n    --ke:#3f8fd2; --pe:#c05fa0; --heat:#c47c2f;\n    --good:#59c98d; --warn:#f2c14e; --bad:#e5484d;\n    --mono:\"Cascadia Code\",Consolas,\"SF Mono\",ui-monospace,Menlo,monospace;\n    --sans:\"Segoe UI\",system-ui,-apple-system,\"Helvetica Neue\",sans-serif;\n  }.clab-root *{box-sizing:border-box}.clab-root [hidden]{display:none !important}.clab-root #clab-app{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);\n       color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}.clab-root /* ---------- top bar ---------- */\n  #clab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;\n       padding:0 14px;height:52px;flex:none;background:var(--panel);\n       border-bottom:1px solid var(--line)}.clab-root .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.clab-root .brand .name{font-weight:700;letter-spacing:.14em;font-size:15px}.clab-root .brand .name em{color:var(--accent);font-style:normal}.clab-root .brand .sub{color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.clab-root .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.clab-root button{font-family:var(--sans);font-size:13px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:6px 12px;cursor:pointer}.clab-root button:hover{border-color:var(--accent-dim)}.clab-root button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root button.primary{background:var(--accent);border-color:var(--accent);color:#22160a;font-weight:700}.clab-root button.primary:hover{filter:brightness(1.08)}.clab-root button.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}.clab-root button:disabled{opacity:.45;cursor:default}.clab-root button.danger{color:var(--bad);border-color:var(--bad)}.clab-root .clab-sel{font-family:var(--sans);font-size:12.5px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:5px 8px;cursor:pointer}.clab-root .clab-sel:hover{border-color:var(--accent-dim)}.clab-root .clab-sel:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root /* ---------- main split ---------- */\n  #clab-main{display:flex;flex:1;min-height:0}.clab-root #clab-side{width:346px;flex:none;display:flex;flex-direction:column;background:var(--panel);\n        border-right:1px solid var(--line);min-height:0}.clab-root #clab-tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}.clab-root #clab-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink3);\n               padding:10px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;\n               border-bottom:2px solid transparent}.clab-root #clab-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}.clab-root #clab-side section{overflow-y:auto;padding:14px;flex:1;min-height:0}.clab-root .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);\n           margin:0 0 6px;font-weight:600}.clab-root .card{background:var(--card);border:1px solid var(--line);border-radius:8px;\n        padding:12px;margin-bottom:12px}.clab-root .card h3{margin:0 0 6px;font-size:13px;font-weight:600}.clab-root .hint{color:var(--ink2);font-size:12.5px;margin:0 0 10px}.clab-root .hint b{color:var(--ink)}.clab-root kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);\n      border:1px solid var(--line2);border-radius:4px;padding:0 5px}.clab-root .row{display:flex;gap:8px;align-items:center;margin:8px 0}.clab-root .row label{flex:none;width:64px;color:var(--ink2);font-size:12px}.clab-root .row input[type=range]{flex:1;accent-color:var(--accent)}.clab-root .row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n            width:64px;text-align:right;color:var(--ink)}.clab-root .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.clab-root .coords{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}.clab-root /* ---------- certification ---------- */\n  .marker-legend{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.clab-root .marker-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2)}.clab-root .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.clab-root .prob .given{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n               color:var(--ink2);background:var(--panel2);border-radius:6px;padding:7px 9px;margin:8px 0}.clab-root .prob .ask{font-size:13px;margin:6px 0}.clab-root .ansrow{display:flex;gap:8px;align-items:center;margin-top:8px}.clab-root .ansrow input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;\n      width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);\n      border-radius:6px;padding:6px 8px;font-size:13px}.clab-root .ansrow input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root .ansrow .unit{color:var(--ink3);font-size:12px;width:40px}.clab-root .verdict{font-size:12px;font-weight:600;margin-left:auto}.clab-root .verdict.ok{color:var(--good)}.clab-root .verdict.no{color:var(--bad)}.clab-root details.work{margin-top:8px}.clab-root details.work summary{cursor:pointer;color:var(--ink3);font-size:12px}.clab-root details.work div{font-family:var(--mono);font-size:11.5px;color:var(--ink2);\n                   padding:6px 0 0;line-height:1.7}.clab-root table.cert{width:100%;border-collapse:collapse;font-family:var(--mono);\n             font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:8px}.clab-root table.cert th{color:var(--ink3);font-weight:600;text-align:right;padding:4px 6px;\n                border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.06em}.clab-root table.cert td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ink)}.clab-root table.cert th:first-child,.clab-root table.cert td:first-child{text-align:left}.clab-root .certbanner{border-radius:8px;padding:12px;margin-top:12px;font-weight:600;font-size:14px;\n              border:1px solid var(--line2);background:var(--panel2)}.clab-root .certbanner.pass{border-color:var(--good);color:var(--good)}.clab-root .certbanner.fail{border-color:var(--bad);color:var(--bad)}.clab-root /* ---------- report ---------- */\n  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.clab-root .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}.clab-root .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}.clab-root .stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;margin-top:2px}.clab-root .stat .v small{font-size:11px;color:var(--ink3)}.clab-root .rating{margin:10px 0}.clab-root .rating .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:4px}.clab-root .rating .lbl .num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}.clab-root .rbar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}.clab-root .rbar i{display:block;height:100%;border-radius:4px}.clab-root .modebtn.on{border-color:var(--accent);color:var(--accent)}.clab-root .choice button{display:block;width:100%;text-align:left;margin-top:6px}.clab-root .choice button.on{border-color:var(--accent);color:var(--accent);background:rgba(242,166,60,.08)}.clab-root .exline{font-size:12.5px;margin:6px 0;color:var(--ink2)}.clab-root .exline b.ok{color:var(--good)}.clab-root .exline b.no{color:var(--bad)}.clab-root .mission{display:flex;gap:10px;align-items:flex-start;background:var(--card);\n           border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}.clab-root .mission .mi{font-size:19px;flex:none;width:26px;text-align:center;filter:grayscale(1);opacity:.55}.clab-root .mission.done .mi{filter:none;opacity:1}.clab-root .mission .mt{font-size:13px;font-weight:600}.clab-root .mission.done .mt{color:var(--good)}.clab-root .mission .md{font-size:12px;color:var(--ink2)}.clab-root .mission .stamp{margin-left:auto;flex:none;font-size:11px;color:var(--good);font-weight:700}.clab-root #clab-gball{width:64px;height:64px;display:block;margin-top:4px;border-radius:6px}.clab-root .chart{width:100%;height:74px;display:block;margin:2px 0 6px}.clab-root .chlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:6px}.clab-root .chnote{font-family:var(--mono);font-size:10px;color:var(--ink3);margin:2px 0 0}.clab-root .viol{display:flex;flex-direction:column;gap:6px;margin-top:10px}.clab-root .viol span{font-size:12px;color:var(--bad);background:rgba(229,72,77,.08);\n             border:1px solid rgba(229,72,77,.35);border-radius:6px;padding:5px 9px}.clab-root .viol span.okline{color:var(--good);background:rgba(89,201,141,.07);border-color:rgba(89,201,141,.3)}.clab-root /* ---------- viewport & HUD ---------- */\n  #clab-viewport{flex:1;position:relative;min-width:0;min-height:0;background:#121a24}.clab-root #clab-gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.clab-root #clab-hud{position:absolute;left:12px;bottom:12px;display:flex;gap:14px;align-items:flex-end;\n       background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:10px;\n       padding:10px 14px;pointer-events:none;backdrop-filter:blur(3px)}.clab-root .hudcol{display:flex;flex-direction:column;gap:2px}.clab-root .hudk{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}.clab-root .hudv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;line-height:1.1}.clab-root .hudv small{font-size:10.5px;color:var(--ink3)}.clab-root .gmeter{width:120px}.clab-root .gtrack{position:relative;height:9px;background:var(--panel2);border-radius:5px;margin-top:5px;overflow:hidden}.clab-root .gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(229,72,77,.28)}.clab-root .gtrack .zero{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--ink3)}.clab-root .gtrack .fill{position:absolute;top:1px;bottom:1px;background:var(--accent);border-radius:4px}.clab-root .gval{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;margin-top:3px}.clab-root .gval.hot{color:var(--bad)}.clab-root .ebar{display:flex;width:170px;height:12px;border-radius:6px;overflow:hidden;\n        background:var(--panel2);margin-top:5px}.clab-root .ebar i{display:block;height:100%}.clab-root .ebar i+i{border-left:2px solid var(--bg)}.clab-root .elegend{display:flex;gap:8px;margin-top:4px;font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}.clab-root .elegend b{font-weight:600}.clab-root .elegend .ke{color:var(--ke)}.clab-root .elegend .pe{color:var(--pe)}.clab-root .elegend .heat{color:var(--heat)}.clab-root #clab-xrayLegend{position:absolute;top:12px;right:12px;background:rgba(15,21,28,.85);\n              border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:190px;\n              pointer-events:none;backdrop-filter:blur(3px)}.clab-root .xbar{height:10px;border-radius:5px;margin-top:6px;\n        background:linear-gradient(90deg,#c05fa0 0%,#3f8fd2 18%,#4a5865 28%,#f2a63c 57%,#e5484d 100%)}.clab-root .xlabels{display:flex;justify-content:space-between;font-family:var(--mono);\n           font-size:9.5px;color:var(--ink3);margin-top:3px}.clab-root .photo img{width:100%;border-radius:6px;display:block}.clab-root .photo a{color:var(--accent);font-size:12px}.clab-root #clab-guide{position:absolute;inset:24px;max-width:820px;margin:0 auto;overflow-y:auto;\n         background:rgba(15,21,28,.96);border:1px solid var(--line2);border-radius:14px;\n         padding:16px 18px;backdrop-filter:blur(5px);z-index:8}.clab-root .gd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clab-root .gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.clab-root .gd-grid .card{margin:0}.clab-root .gd-grid h3{margin:0 0 6px;font-size:13px}@media (max-width:900px){.clab-root .gd-grid{grid-template-columns:1fr} }.clab-root .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);\n          padding:0;cursor:pointer}.clab-root .swatch.on{border-color:var(--ink);outline:2px solid var(--accent)}.clab-root #clab-rideQ{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);\n         width:min(470px,92%);background:rgba(15,21,28,.95);border:1px solid var(--line2);\n         border-radius:12px;padding:14px 16px;backdrop-filter:blur(4px)}.clab-root .rq-top{display:flex;justify-content:space-between;align-items:baseline}.clab-root .rq-pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent)}.clab-root #clab-rqTimer{display:block;height:4px;background:var(--panel2);border-radius:2px;margin:8px 0 10px;overflow:hidden}.clab-root #clab-rqTimerFill{display:block;height:100%;background:var(--accent);width:100%}.clab-root #clab-rqText{margin:0 0 10px;font-size:14px}.clab-root #clab-rqText b{color:var(--accent)}.clab-root .clab-viz{height:74px;margin:0 0 10px;display:none}.clab-root .clab-viz svg{display:block;height:100%;width:100%}.clab-root .clab-viz.on{display:block}.clab-root .clab-viz .clab-ans{transform-box:fill-box;transform-origin:center}.clab-root .clab-viz .clab-ans.reveal{fill:var(--good) !important;filter:drop-shadow(0 0 5px rgba(89,201,141,.75));animation:clabAnsPop .62s cubic-bezier(.2,.8,.2,1)}@keyframes clabAnsPop{0%{transform:scaleX(.06) scale(.72)}58%{transform:scaleX(1) scale(1.42)}100%{transform:scaleX(1) scale(1)}}.clab-root .clab-spark{position:absolute;width:var(--sz,7px);height:var(--sz,7px);border-radius:50%;pointer-events:none;opacity:0;animation:clabSpark .8s ease-out var(--delay,0ms) forwards}.clab-root .clab-spark.diamond{border-radius:1px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.clab-root .clab-spark.streak{width:calc(var(--sz,7px) * 1.8);height:3px;border-radius:3px}@keyframes clabSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}@media (prefers-reduced-motion:reduce){.clab-root .clab-viz .clab-ans.reveal{animation:none}.clab-root .clab-spark{display:none}}.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto;overscroll-behavior:contain;z-index:6}@media (max-width:760px),(max-height:620px){.clab-root #clab-rideQ{top:8px;bottom:auto;max-height:calc(100% - 16px)}}.clab-root .clab-build-start{border-color:rgba(242,166,60,.5);background:linear-gradient(145deg,rgba(242,166,60,.12),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--accent)}.clab-root .clab-build-start h3{font-size:16px}.clab-root .clab-build-steps{display:grid;gap:5px;margin:10px 0 12px;padding:0;list-style:none;counter-reset:build}.clab-root .clab-build-steps li{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}.clab-root .clab-build-steps li:before{counter-increment:build;content:counter(build);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#22160a;font:700 11px var(--mono)}.clab-root .clab-node-prompt{border-style:dashed}.clab-root .clab-build-coach{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(242,166,60,.6);border-radius:999px;background:rgba(15,21,28,.88);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}.clab-root .clab-build-coach small{display:block;color:var(--ink2);font-size:10px}.clab-root .clab-node-beacon{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,166,60,.14);animation:clabBeacon 1.8s ease-in-out infinite}@keyframes clabBeacon{50%{box-shadow:0 0 0 10px rgba(242,166,60,0)}}.clab-root #clab-viewport.ride-question-open:after{content:\"\";position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 55%,rgba(15,21,28,.18),rgba(15,21,28,.62));pointer-events:none}.clab-root #clab-rideQ:not([hidden]){animation:clabCardIn .28s ease-out}.clab-root #clab-rideQ.is-correct{border-color:rgba(89,201,141,.85);box-shadow:0 0 0 1px rgba(89,201,141,.18),0 16px 44px rgba(0,0,0,.38),0 0 28px rgba(89,201,141,.12)}.clab-root #clab-rideQ.is-wrong{border-color:rgba(229,72,77,.8);box-shadow:0 0 0 1px rgba(229,72,77,.14),0 16px 44px rgba(0,0,0,.38)}@keyframes clabCardIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}.clab-root .rq-scorebox{position:relative;display:flex;align-items:center;gap:7px}.clab-root .rq-streak{padding:2px 7px;border-radius:999px;background:rgba(242,166,60,.14);border:1px solid rgba(242,166,60,.34);color:var(--accent);font:700 10px var(--mono)}.clab-root .rq-delta{position:absolute;right:0;top:16px;color:var(--good);font:800 13px var(--mono);opacity:0}.clab-root .rq-delta.on{animation:clabScoreGain .75s ease-out}@keyframes clabScoreGain{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1.12)}}.clab-root #clab-rqTimerFill{transition:width .1s linear,background .2s}.clab-root #clab-rqTimer.urgent #clab-rqTimerFill{background:#e98436}.clab-root #clab-rqTimer.critical #clab-rqTimerFill{background:var(--bad);animation:clabTimerPulse .55s ease-in-out infinite alternate}.clab-root #clab-rqTimer.done #clab-rqTimerFill{background:var(--good)}@keyframes clabTimerPulse{to{filter:brightness(1.5)}}.clab-root .choice button{position:relative;min-height:40px;padding-left:42px;transition:border-color .18s,background .18s,color .18s,transform .18s}.clab-root .choice button:before{content:attr(data-key);position:absolute;left:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--panel);border:1px solid var(--line2);color:var(--ink2);font:700 10px var(--mono)}.clab-root .choice button.picked{border-color:var(--accent)}.clab-root .choice button.correct{border-color:var(--good);color:var(--good);background:rgba(89,201,141,.11)}.clab-root .choice button.correct:before{content:\"✓\";border-color:var(--good);color:var(--good)}.clab-root .choice button.wrong{border-color:var(--bad);color:#ffb4b6;background:rgba(229,72,77,.1)}.clab-root .choice button.wrong:before{content:\"×\";border-color:var(--bad);color:var(--bad)}.clab-root .choice button:disabled{opacity:1}.clab-root #clab-rqTimer.failed #clab-rqTimerFill{background:var(--bad)}.clab-root #clab-rqNumRow.correct input{border-color:var(--good);box-shadow:0 0 0 2px rgba(89,201,141,.12)}.clab-root #clab-rqNumRow.wrong input{border-color:var(--bad);box-shadow:0 0 0 2px rgba(229,72,77,.1)}.clab-root #clab-rqFeed:not(:empty){padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.035);border-left:3px solid var(--line2)}.clab-root #clab-rideQ.is-correct #clab-rqFeed{border-left-color:var(--good);background:rgba(89,201,141,.07)}.clab-root #clab-rideQ.is-wrong #clab-rqFeed{border-left-color:var(--bad);background:rgba(229,72,77,.06)}.clab-root .clab-viz.on{padding:4px 8px;border:1px solid rgba(49,70,94,.72);border-radius:8px;background:linear-gradient(180deg,rgba(63,143,210,.055),rgba(89,201,141,.025))}.clab-root .ride-result-grid{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:10px 0}.clab-root .ride-accuracy{--pct:0;display:grid;place-items:center;width:90px;height:90px;border-radius:50%;background:conic-gradient(var(--good) calc(var(--pct) * 1%),var(--panel2) 0);position:relative}.clab-root .ride-accuracy:before{content:\"\";position:absolute;inset:8px;border-radius:50%;background:var(--panel)}.clab-root .ride-accuracy span{position:relative;text-align:center;font:800 20px var(--mono)}.clab-root .ride-accuracy small{display:block;color:var(--ink3);font:600 9px var(--sans);text-transform:uppercase;letter-spacing:.08em}.clab-root .ride-checkpoints{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.clab-root .ride-checkpoints i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:11px;background:var(--panel2);border:1px solid var(--line2)}.clab-root .ride-checkpoints i.ok{color:var(--good);border-color:rgba(89,201,141,.5);background:rgba(89,201,141,.08)}.clab-root .ride-checkpoints i.no{color:var(--bad);border-color:rgba(229,72,77,.45);background:rgba(229,72,77,.07)}@media (prefers-reduced-motion:reduce){.clab-root .clab-node-beacon,.clab-root #clab-rideQ:not([hidden]),.clab-root .rq-delta.on,.clab-root #clab-rqTimer.critical #clab-rqTimerFill{animation:none}}@media (max-width:760px){.clab-root .clab-build-coach{top:48px;max-width:90%}.clab-root .ride-result-grid{grid-template-columns:1fr}.clab-root .ride-accuracy{margin:auto}}.clab-root #clab-rideEnd{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);\n           width:min(400px,92%);background:rgba(15,21,28,.96);border:1px solid var(--line2);\n           border-radius:12px;padding:16px 18px;backdrop-filter:blur(4px)}.clab-root #clab-rideEnd .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;color:var(--accent)}.clab-root #clab-rideEnd .exline{margin:4px 0}.clab-root #clab-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);\n          background:rgba(22,31,41,.94);border:1px solid var(--line2);border-radius:8px;\n          padding:9px 18px;font-size:13.5px;pointer-events:none;max-width:70%;text-align:center}.clab-root #clab-banner.pass{border-color:var(--good);color:var(--good)}.clab-root #clab-banner.fail{border-color:var(--bad);color:var(--bad)}.clab-root #clab-err{position:absolute;inset:auto 12px 12px 12px;background:#2a1214;border:1px solid var(--bad);\n       color:#ffb4b6;border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;z-index:9}@media (prefers-reduced-motion:reduce){.clab-root *{scroll-behavior:auto} }@media (max-width:760px){.clab-root #clab-main{flex-direction:column}.clab-root #clab-side{width:100%;max-height:46%;border-right:0;border-bottom:1px solid var(--line)}\n  }.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note{margin:8px 0 0;color:var(--ink3);font-size:11px}.clab-root .clab-element-card{border-color:rgba(63,143,210,.38)}.clab-root .clab-element-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.clab-root .clab-element-btn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:48px;padding:7px 9px;text-align:left}.clab-root .clab-element-btn b{font-size:12px}.clab-root .clab-element-btn small{color:var(--ink3);font-size:10px}.clab-root .clab-element-wide{grid-column:1/-1}.clab-root .clab-safety-card{border-color:rgba(242,193,78,.34)}.clab-root .clab-safety-summary{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px}.clab-root .clab-safety-summary:before{content:\"!\";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.45);color:var(--warn);font:800 12px var(--mono)}.clab-root .clab-safety-summary.safe{color:var(--good)}.clab-root .clab-safety-summary.safe:before{content:\"✓\";background:rgba(89,201,141,.12);border-color:rgba(89,201,141,.42);color:var(--good)}.clab-root .clab-safety-list{display:grid;gap:7px;margin-top:9px}.clab-root .clab-safety-item{display:grid;grid-template-columns:22px 1fr auto;gap:7px;align-items:start;padding:8px;border:1px solid rgba(242,193,78,.28);border-radius:7px;background:rgba(242,193,78,.055)}.clab-root .clab-safety-item.bad{border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.055)}.clab-root .clab-safety-num{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#241b08;font:800 10px var(--mono)}.clab-root .clab-safety-item.bad .clab-safety-num{background:var(--bad);color:white}.clab-root .clab-safety-copy b{display:block;font-size:11.5px}.clab-root .clab-safety-copy small{display:block;color:var(--ink2);font-size:10.5px;line-height:1.35;margin-top:2px}.clab-root .clab-safety-jump{padding:4px 7px;font-size:10px;white-space:nowrap}@media (max-width:760px){.clab-root .clab-element-btn{min-height:44px}}\n";
   var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.\n            <b>Lab packet</b> bundles the design, guided notebook, conditions, challenge, and latest measured ride evidence.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
   CLAB_CSS += `
+  .clab-root #clab-top{background:linear-gradient(120deg,#142432,#0d1722 70%);border-bottom:1px solid var(--line2)}
+  .clab-root button.primary{background:linear-gradient(135deg,rgba(255,255,255,.2),transparent),var(--accent);border:1px solid var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.22);font-weight:750}
+  .clab-root #clab-tabs button.on{background:linear-gradient(0deg,rgba(255,255,255,.08),transparent);border-radius:7px 7px 0 0}
+  .clab-root #clab-side .card{box-shadow:0 4px 16px rgba(0,0,0,.13);border-radius:12px}
+  .clab-root #clab-viewTools{position:absolute;right:12px;bottom:var(--clab-view-bottom,120px);z-index:4;display:flex;flex-wrap:wrap;max-width:calc(100% - 24px);gap:5px;padding:5px;border:1px solid var(--line2);border-radius:12px;background:rgba(12,22,32,.9);box-shadow:0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(8px)}
+  .clab-root #clab-viewport:has(#clab-rideQ:not([hidden]),#clab-rideEnd:not([hidden]),#clab-guide:not([hidden])) #clab-viewTools{display:none}
+  .clab-root #clab-viewTools button{min-height:34px;padding:6px 10px;border-radius:7px;font-size:12px}
+  .clab-root #clab-viewTools button:first-child{border-color:var(--accent);color:var(--accent)}
+  .clab-root .clab-element-btn{position:relative;display:grid;grid-template-columns:1fr;gap:3px;width:100%;padding:9px;border-radius:10px;background:linear-gradient(145deg,rgba(255,255,255,.04),transparent),var(--panel2);overflow:hidden}
+  .clab-root .clab-element-btn svg{display:block;width:100%;height:52px;color:var(--accent)}
+  .clab-root .clab-piece-guide{stroke:var(--line2);stroke-width:1;stroke-dasharray:3 4;fill:none}
+  .clab-root .clab-piece-shadow{stroke:#08131e;stroke-width:6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .clab-root .clab-piece-rail{stroke:currentColor;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .clab-root .clab-piece-view{fill:var(--ink3);font:6px var(--mono);letter-spacing:.6px}
+  .clab-root .clab-element-btn .clab-element-cost{color:var(--accent);font:700 10px var(--mono);margin-top:3px}
+  .clab-root .clab-element-btn:not(:disabled):is(:hover,:focus-visible){border-color:var(--accent);background:linear-gradient(145deg,rgba(255,255,255,.09),transparent),var(--panel2);box-shadow:inset 0 0 0 1px var(--accent),0 4px 14px rgba(0,0,0,.2)}
+  .clab-root .clab-element-btn:disabled{opacity:1;border-style:dashed;cursor:not-allowed;color:var(--ink2)}
+  .clab-root .clab-element-btn:disabled svg{color:var(--ink3)}
+  .clab-root .clab-element-btn:disabled .clab-element-cost{color:var(--ink3)}
+  .clab-root .clab-element-btn[data-capacity="full"] .clab-element-cost{color:var(--warn)}
+  .clab-root .clab-element-wide{grid-template-columns:100px 1fr;align-content:center;column-gap:12px}
+  .clab-root .clab-element-wide svg{grid-row:1/4;align-self:center}
+  .clab-root .clab-node-budget{display:grid;grid-template-columns:1fr auto;gap:5px;margin:10px 0;color:var(--ink2);font:10px var(--mono)}
+  .clab-root .clab-node-budget meter{grid-column:1/-1;width:100%;height:8px;appearance:none;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .clab-root .clab-node-budget meter::-webkit-meter-bar{background:var(--panel2);border:0}
+  .clab-root .clab-node-budget meter::-webkit-meter-optimum-value{background:var(--accent)}
+  .clab-root .clab-node-budget meter::-webkit-meter-suboptimum-value,.clab-root .clab-node-budget meter::-webkit-meter-even-less-good-value{background:var(--warn)}
+  .clab-root .clab-node-budget meter::-moz-meter-bar{background:var(--accent)}
+  .clab-root #clab-btnBoldTrack[aria-pressed="true"]{background:var(--accent);color:#14202c;border-color:var(--accent)}
+  @media(max-width:600px){.clab-root #clab-viewTools{display:grid;grid-template-columns:repeat(2,1fr)}}
+  .clab-root #clab-viewTools button:focus-visible{outline-offset:1px}
+  .clab-root #clab-btnSceneFocus[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:#142738}
+  .clab-root [data-scene-focus="true"] :is(#clab-side,#clab-hud,#clab-lapHud,#clab-buildCoach,#clab-vectorLegend,#clab-xrayLegend){display:none!important}
+  .clab-root [data-scene-focus="true"] #clab-viewport{min-height:0;flex:1}
   .clab-root{--rail-guide:#f2a63c;--bank-suggest:#f2c14e;--ink3:#8fa4b8;--focus:#fff}
   .clab-root[data-visual-theme="daylight"]{--accent:#61d39a;--accent-dim:#2d7c5a;--line:#385063;--line2:#4d6b80;--rail-guide:#f0a235;--bank-suggest:#b76524}
   .clab-root[data-visual-theme="neon"]{--accent:#55e8ff;--accent-dim:#277d91;--ke:#55e8ff;--pe:#ff62c7;--heat:#ff9d4d;--rail-guide:#55e8ff;--bank-suggest:#ff62c7}
@@ -71,6 +105,13 @@
   .clab-root #clab-top{position:relative;z-index:9;box-shadow:0 8px 30px rgba(0,0,0,.22)}
   .clab-root #clab-top{height:auto;min-height:52px;padding-block:7px}.clab-root #clab-top .controls{justify-content:flex-end}
   @media (max-width:1180px){.clab-root #clab-top .brand .sub{display:none}}
+  @media (max-width:760px){
+    .clab-root #clab-top{display:block;max-height:112px;overflow:auto;padding:8px}
+    .clab-root #clab-top .controls{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding:4px 2px 8px}
+    .clab-root #clab-top .controls>*{flex:none}
+    .clab-root #clab-app[data-active-tab="report"] #clab-side{flex:0 0 78%;max-height:78%}
+    .clab-root #clab-app[data-active-tab="report"] #clab-viewport{overflow:hidden}
+  }
   .clab-root #clab-viewport:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 50% 42%,transparent 48%,rgba(4,8,13,.28) 100%)}
   .clab-root[data-visual-theme="daylight"] #clab-viewport:before{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(22,46,32,.12))}
   .clab-root[data-visual-theme="neon"] #clab-viewport:before{background:radial-gradient(circle at 50% 45%,rgba(46,228,255,.035),rgba(2,3,12,.42) 82%)}
@@ -191,6 +232,8 @@
   CLAB_HTML = CLAB_HTML.replace('<canvas id="clab-gball"></canvas>', '<canvas id="clab-gball" role="img" aria-label="G-force map: lateral 0.00 g, vertical 1.00 g"></canvas>');
   CLAB_HTML = CLAB_HTML.replace('<div class="ebar">', '<div class="ebar" id="clab-energyBar" role="img" aria-label="Energy budget: 33 percent kinetic, 33 percent potential, 0 percent heat">');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnGuide"', 'id="clab-btnGuide" aria-label="Open Coaster Lab quick guide; keyboard shortcut H"');
+  CLAB_HTML = CLAB_HTML.replace('</canvas>', '</canvas><div id="clab-viewTools" role="group" aria-label="Coaster view controls"><button id="clab-btnFitCoaster" type="button" title="Center the whole track in the available view">Fit coaster</button><button id="clab-btnTopView" type="button" aria-label="Top view of the coaster" title="See the track layout from above">Top view</button><button id="clab-btnSideView" type="button" aria-label="Side view of the coaster" title="Inspect hills and drops from the side">Side view</button><button id="clab-btnBoldTrack" type="button" aria-pressed="true" title="Keep rails and heatmaps easy to follow in orbit views; changes appearance only">Bold track</button></div>');
+  CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n<button id="clab-btnSceneFocus" type="button" aria-pressed="false" title="Hide editing panels and instruments for a clear view of your coaster; select again to restore them">Scene focus</button>');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnFx" title=', 'id="clab-btnFx" aria-pressed="false" title=');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnFric" title=', 'id="clab-btnFric" aria-pressed="true" title=');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnSound" title=', 'id="clab-btnSound" aria-pressed="false" title=');
@@ -245,6 +288,7 @@ function __clabDisposeScene(sceneRoot){
     const objectMaterials = Array.isArray(object.material) ? object.material : [object.material];
     objectMaterials.forEach(disposeMaterial);
   });
+  if(sceneRoot.userData && Array.isArray(sceneRoot.userData.clabExtraMaterials)) sceneRoot.userData.clabExtraMaterials.forEach(disposeMaterial);
 }
 function __clabDestroy(){
   if(__clabDead) return;
@@ -853,7 +897,7 @@ try{
   const rawRecord = JSON.parse(localStorage.getItem(GUIDED_RECORD_KEY) || 'null');
   if(rawRecord && typeof rawRecord === 'object'){
     guidedRecord = { attempts: Math.max(0, Number(rawRecord.attempts) || 0), revisions: Math.max(0, Number(rawRecord.revisions) || 0), prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null, history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-GUIDED_HISTORY_LIMIT) : [],
-    conditions: rawRecord.conditions && typeof rawRecord.conditions === 'object' ? rawRecord.conditions : null, studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '', teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '' };
+    comparisonDrafts: rawRecord.comparisonDrafts, conditions: rawRecord.conditions && typeof rawRecord.conditions === 'object' ? rawRecord.conditions : null, studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '', teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '' };
   }
 }catch(_e){}
 let design = loadDesign() || normalizeDesign(defaultDesign());
@@ -863,6 +907,7 @@ if(!hadSavedDesign && guidedState === 'new'){
 }
 if(guidedState === 'new' && hadSavedDesign) guidedState = 'complete';
 if(guidedState === 'ready') saveDesign(false);
+guidedRecord.comparisonDrafts = normalizeGuidedComparisonDrafts(guidedRecord.comparisonDrafts, guidedRecord.history);
 let guidedPrediction = { speed: '', force: '', feedback: '', speedCorrect: null, forceCorrect: null, actualForce: '', ...(guidedRecord.prediction || {}) };
 const GUIDED_RUBRIC_DEFAULTS = { prediction: 2, evidence: 2, reasoning: 2, safety: 2 };
 function normalizeGuidedRubricWeights(raw){
@@ -1006,7 +1051,7 @@ scene.add(sky);
 const groundTex = (() => {
   const cv = document.createElement('canvas'); cv.width = cv.height = 256;
   const g = cv.getContext('2d');
-  g.fillStyle = '#101c12'; g.fillRect(0, 0, 256, 256);
+  g.fillStyle = '#53683e'; g.fillRect(0, 0, 256, 256);
   for(let st = 0; st < 8; st++){
     if(st % 2){ g.fillStyle = 'rgba(255,255,255,0.030)'; g.fillRect(0, st * 32, 256, 32); }
   }
@@ -1066,6 +1111,32 @@ const MAT = {
   runningLight: new THREE.MeshBasicMaterial({ color: 0xffc873, toneMapped: false }),
   courseArrow: new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.72, toneMapped: false })
 };
+/* Wider screen-space rails are an orbit-view aid, independent of the physics mesh. */
+let boldTrack = (() => { try{ return localStorage.getItem('coaster_lab_bold_track') !== 'off'; }catch(_e){ return true; } })();
+const trackWorldPerPixel = { value: 0.001 };
+function readableTrackMaterial(options, pixelRadius){
+  const material = new THREE.MeshBasicMaterial({ ...options, fog: false, toneMapped: false });
+  material.onBeforeCompile = shader => {
+    shader.uniforms.clabWorldPerPixel = trackWorldPerPixel;
+    shader.uniforms.clabPixelRadius = { value: pixelRadius };
+    shader.vertexShader = 'attribute vec3 clabTubeCenter; uniform float clabWorldPerPixel; uniform float clabPixelRadius;\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `
+      vec3 delta = position - clabTubeCenter;
+      float depth = max(0.0, -(modelViewMatrix * vec4(clabTubeCenter, 1.0)).z);
+      float radius = max(length(delta), 0.0001);
+      float emphasis = clamp(depth * clabWorldPerPixel * clabPixelRadius / radius, 1.0, 6.0);
+      vec3 transformed = clabTubeCenter + delta * emphasis;
+    `);
+  };
+  material.customProgramCacheKey = () => 'clab-readable-track-v1';
+  return material;
+}
+const readableRailMat = readableTrackMaterial({ color: COL.accent }, 0.8);
+const readableDimMat = readableTrackMaterial({ color: 0x576578 }, 0.65);
+const readableSpineMat = readableTrackMaterial({ color: 0x14222e }, 0.55);
+const readableHeatMat = readableTrackMaterial({ vertexColors: true }, 1.6);
+scene.userData.clabExtraMaterials = [readableRailMat, readableDimMat, readableSpineMat, readableHeatMat];
+const trackMainMeshes = [];
 const launchPhaseMeshes = [];
 const liftChainDogs = [];
 let brakeFinRig = null, brakeLightMesh = null, brakeFinLift = 0, brakeLightIdleHex = 0xe5484d;
@@ -1208,14 +1279,38 @@ const atmosphereGroup = new THREE.Group();
 const atmosphereMat = new THREE.MeshBasicMaterial({ color: 0x101827, transparent: true, opacity: 0.62, depthWrite: false });
 const ferrisMat = new THREE.MeshBasicMaterial({ color: 0xf2a63c, transparent: true, opacity: 0.78, toneMapped: false });
 const ferrisCabinMat = new THREE.MeshBasicMaterial({ color: 0x59c98d, toneMapped: false });
-const ridgeGeo = new THREE.ConeGeometry(24, 44, 5);
-for(let i = 0; i < 16; i++){
-  const a = i / 16 * Math.PI * 2, rr = 250 + (i % 3) * 24;
-  const peak = new THREE.Mesh(ridgeGeo, atmosphereMat);
-  peak.position.set(Math.cos(a) * rr, 20 + (i % 4) * 4, Math.sin(a) * rr);
-  peak.scale.set(1 + (i % 3) * 0.35, 0.75 + (i % 4) * 0.12, 1 + ((i + 1) % 3) * 0.28);
-  peak.rotation.y = a * 1.7; atmosphereGroup.add(peak);
+/* @clab-ridge-start: deterministic closed terrain; no animation or extra textures */
+function buildRidgeData(radius, height, phase, segments = 96){
+  const positions = [], indices = [];
+  for(let i = 0; i <= segments; i++){
+    const a = (i % segments) / segments * Math.PI * 2;
+    const crest = height * (0.68 + 0.19 * Math.sin(a * 5 + phase) + 0.13 * Math.cos(a * 11 - phase));
+    for(const [r, y] of [[radius - 55, -3], [radius, crest], [radius + 100, -3]]){
+      positions.push(Math.cos(a) * r, y, Math.sin(a) * r);
+    }
+    if(i < segments){
+      const n = i * 3;
+      for(let band = 0; band < 2; band++){
+        const v = n + band;
+        indices.push(v, v + 3, v + 1, v + 1, v + 3, v + 4);
+      }
+    }
+  }
+  return { positions, indices };
 }
+/* @clab-ridge-end */
+const ridgeMaterials = [];
+const ridgeGroup = new THREE.Group();
+for(let layer = 0; layer < 3; layer++){
+  const data = buildRidgeData(460 + layer * 150, 88 + layer * 24, layer * 1.7);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(data.positions, 3));
+  geometry.setIndex(data.indices); geometry.computeVertexNormals();
+  const material = new THREE.MeshLambertMaterial({ color: 0x405552, side: THREE.DoubleSide, flatShading: true });
+  ridgeMaterials.push(material);
+  ridgeGroup.add(new THREE.Mesh(geometry, material));
+}
+atmosphereGroup.add(ridgeGroup);
 const ferrisWheel = new THREE.Group();
 const ferrisRotor = new THREE.Group();
 ferrisRotor.position.y = 20; ferrisWheel.add(ferrisRotor);
@@ -1757,6 +1852,7 @@ function rebuildTrackMeshes(){
   disposeGroup(trackGroup);
   disposeGroup(supportGroup);
   liftChainDogs.length = 0;
+  trackMainMeshes.length = 0;
   launchPhaseMeshes.length = 0;
   brakeFinRig = null; brakeLightMesh = null; brakeFinLift = 0;
   const t = track;
@@ -1777,8 +1873,17 @@ function rebuildTrackMeshes(){
       [[RP, 0.09, railMat, false], [LP, 0.09, railMat, false], [SP, spineR, MAT.spine, true]]){
     const c = new THREE.CatmullRomCurve3(ptsArr, true, 'catmullrom', 0.5);
     const mesh = new THREE.Mesh(new THREE.TubeGeometry(c, seg, r, 6, true), mat);
+    const centers = new Float32Array(mesh.geometry.attributes.position.count * 3);
+    const radial = mesh.geometry.parameters.radialSegments;
+    for(let i = 0; i <= seg; i++){
+      const center = c.getPointAt(i / seg);
+      for(let j = 0; j <= radial; j++) center.toArray(centers, (i * (radial + 1) + j) * 3);
+    }
+    mesh.geometry.setAttribute('clabTubeCenter', new THREE.BufferAttribute(centers, 3));
+    mesh.frustumCulled = false; // the shader expansion can extend past the original bounds
     mesh.castShadow = true;
     trackGroup.add(mesh);
+    trackMainMeshes.push({ mesh, isSpine });
     if(isSpine) trackGroup.userData.spine = mesh;
   }
   if(xrayMode && analysis) colorizeSpine();
@@ -2209,8 +2314,43 @@ function makeSectionSprite(label){
   tex.encoding = THREE.sRGBEncoding;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
   sp.scale.set(7.8, 1.95, 1);
+  sp.center.set(0.5, 0);
   sp.renderOrder = 4;
   return sp;
+}
+/* @clab-label-layout-start */
+function visibleSectionLabels(items, width, height){
+  const accepted = [];
+  return items.map(item => {
+    if(!Number.isFinite(item.x) || !Number.isFinite(item.y) || !Number.isFinite(item.depth) || !(item.depth > 0)) return false;
+    const box = { left: item.x - 56, right: item.x + 56, top: item.y - 28, bottom: item.y };
+    if(box.left < 8 || box.top < 8 || box.right > width - 8 || box.bottom > height - 8) return false;
+    if(accepted.some(other => box.left < other.right + 6 && box.right > other.left - 6 && box.top < other.bottom + 6 && box.bottom > other.top - 6)) return false;
+    accepted.push(box); return true;
+  });
+}
+/* @clab-label-layout-end */
+const sectionLabelPoint = new THREE.Vector3();
+function updateTrackReadability(){
+  const h = canvas.clientHeight, w = canvas.clientWidth;
+  if(h < 1 || w < 1) return;
+  trackWorldPerPixel.value = 2 * Math.tan(camera.fov * Math.PI / 360) / h;
+  const emphasized = boldTrack && camMode === 'orbit' && !xrOn;
+  for(const { mesh, isSpine } of trackMainMeshes){
+    mesh.material = isSpine ? (xrayMode ? (emphasized ? readableHeatMat : MAT.xray) : (emphasized ? readableSpineMat : MAT.spine))
+      : xrayMode ? (emphasized ? readableDimMat : MAT.railDim) : (emphasized ? readableRailMat : MAT.rail);
+  }
+  if(!sectionGroup.visible) return;
+  camera.updateMatrixWorld();
+  const positions = sectionGroup.children.map(sprite => {
+    const depth = -sectionLabelPoint.copy(sprite.position).applyMatrix4(camera.matrixWorldInverse).z;
+    const height = 28 * trackWorldPerPixel.value * Math.max(depth, 0.1);
+    sprite.scale.set(height * 4, height, 1);
+    sectionLabelPoint.copy(sprite.position).project(camera);
+    return { x: (sectionLabelPoint.x + 1) * w / 2, y: (1 - sectionLabelPoint.y) * h / 2, depth };
+  });
+  const visible = visibleSectionLabels(positions, w, h);
+  sectionGroup.children.forEach((sprite, i) => { sprite.visible = visible[i]; });
 }
 function renderSectionLabels(){
   disposeGroup(sectionGroup);
@@ -2525,6 +2665,7 @@ function focusSafetyFinding(index){
   __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
   selectPoint(f.nodeIdx);
   const p = design.points[f.nodeIdx];
+  orbitAutoFit = false;
   orbit.target.set(p.x, p.y, p.z);
   orbit.radius = Math.min(orbit.radius, 105);
   userTouched = true;
@@ -3723,17 +3864,17 @@ function buildGuidedHistoryCsv(){
 function guidedHtmlEscape(value){
   return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 }
-function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){
+function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText, selectedDistance = 0){
   const safeHistory = Array.isArray(history) ? history : [];
   const selectedSummary = safeHistory.length >= 2 ? renderExperimentComparisonSummary(safeHistory, fromIndex, toIndex) : '<p class="note">This is the baseline run. Complete another guided attempt to create a controlled comparison.</p>';
-  const selectedOverlay = safeHistory.length >= 2 ? renderGuidedTraceOverlay(safeHistory, fromIndex, toIndex) : '<div class="panel"><h2>Telemetry overlay</h2><p>A second guided run is needed before curves can be compared.</p></div>';
+  const selectedOverlay = safeHistory.length >= 2 ? renderGuidedTraceOverlay(safeHistory, fromIndex, toIndex, false, selectedDistance) : '<div class="panel"><h2>Telemetry overlay</h2><p>A second guided run is needed before curves can be compared.</p></div>';
   const trend = renderGuidedHistoryTrend(safeHistory);
-  const conclusion = conclusionText || (safeHistory.length >= 2 ? guidedComparisonConclusion(safeHistory, fromIndex, toIndex) : 'Claim: This run is my baseline measurement.\n\nEvidence: I recorded the goal, speed, force, predictions, and controlled conditions above.\n\nReasoning: I need a second run with one track change and the same settings before I can claim what caused a difference.');
+  const conclusion = typeof conclusionText === 'string' ? conclusionText : (safeHistory.length >= 2 ? guidedComparisonConclusion(safeHistory, fromIndex, toIndex) : 'Claim: This run is my baseline measurement.\n\nEvidence: I recorded the goal, speed, force, predictions, and controlled conditions above.\n\nReasoning: I need a second run with one track change and the same settings before I can claim what caused a difference.');
   const condition = guidedRecord.conditions || {};
   const conditionText = (condition.friction || 'not recorded') + ' friction; ' + (Number(condition.cars) || '?') + ' cars; ' + (condition.propulsion === 'launch' ? 'LSM launch at ' + fmt(Number(condition.accel) || 0, 1) + ' m/s^2' : 'chain lift');
   const rubric = guidedRubricSummary();
   const reviewStatus = guidedReviewStatusText();
-  const quality = safeHistory.length >= 2 ? guidedExperimentQuality(safeHistory, Math.max(0, safeHistory.length - 2), safeHistory.length - 1) : guidedLatestEvidenceQuality(safeHistory);
+  const quality = safeHistory.length >= 2 ? guidedExperimentQuality(safeHistory, fromIndex, toIndex) : guidedLatestEvidenceQuality(safeHistory);
   const adaptiveProgress = guidedAdaptiveProgress(safeHistory);
   const adaptivePlan = guidedAdaptivePlan(adaptiveProgress.recommendation);
   const reflectionPrompt = guidedReflectionPrompt(safeHistory, quality, adaptiveProgress.recommendation);
@@ -3765,7 +3906,8 @@ function downloadGuidedTeacherReport(){
   const conclusion = board && board.querySelector('[data-clab-comparison-conclusion]');
   const fromIndex = from ? Number(from.value) : Math.max(0, history.length - 2);
   const toIndex = to ? Number(to.value) : history.length - 1;
-  const html = buildGuidedTeacherReport(history, fromIndex, toIndex, conclusion && conclusion.value.trim());
+  const distance = board && board.querySelector('[data-clab-trace-distance]');
+  const html = buildGuidedTeacherReport(history, fromIndex, toIndex, conclusion ? conclusion.value : undefined, distance ? Number(distance.value) : 0);
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -4333,54 +4475,214 @@ function renderExperimentComparisonSummary(history, fromIndex, toIndex){
   html += '<p class="chnote" style="margin:0">Controlled delta: top speed <b>' + signed(speedDelta, 0) + ' km/h</b> · peak vertical force <b>' + signed(forceDelta, 1) + ' g</b> · goal measure <b>' + signed(goalDelta, 1) + ' ' + guidedGoalUnit(after.goal) + '</b>.</p>';
   html += '<p class="chnote" style="margin:6px 0 0;color:' + (after.goalPassed ? 'var(--good)' : 'var(--ink2)') + '">Goal: <b>' + guidedGoalLabel(after.goal) + '</b> · ' + guidedGoalValueText(before) + ' -> ' + guidedGoalValueText(after) + ' · ' + (after.goalPassed ? 'met on the later run.' : 'not met on the later run yet.') + '</p>';
   return html;
-}function renderGuidedTraceOverlay(history, fromIndex, toIndex){
-  const before = history[fromIndex];
-  const after = history[toIndex];
-  const earlier = before && Array.isArray(before.trace) ? before.trace.filter(point => point && Number.isFinite(Number(point.s))) : [];
-  const later = after && Array.isArray(after.trace) ? after.trace.filter(point => point && Number.isFinite(Number(point.s))) : [];
+}
+/* @clab-trace-comparison-start */
+function guidedTraceNumber(value){
+  return (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value)) ? Number(value) : null;
+}
+function guidedComparisonTrace(entry){
+  const raw = entry && Array.isArray(entry.trace) ? entry.trace : [];
+  // Keep missing measurements as gaps, never as artificial zero readings.
+  const points = raw.filter(point => point && guidedTraceNumber(point.s) !== null && Number(point.s) >= 0)
+    .map(point => ({ s: Number(point.s), v: guidedTraceNumber(point.v), g: guidedTraceNumber(point.g), gl: guidedTraceNumber(point.gl) }))
+    .sort((a, b) => a.s - b.s);
+  return points.filter((point, index) => index === points.length - 1 || point.s !== points[index + 1].s);
+}
+function guidedTraceReading(trace, distance){
+  if(!trace.length || !Number.isFinite(distance) || distance < trace[0].s || distance > trace[trace.length - 1].s) return null;
+  const index = trace.findIndex(point => point.s >= distance);
+  const right = trace[index];
+  if(right.s === distance) return right;
+  const left = trace[index - 1];
+  const ratio = (distance - left.s) / (right.s - left.s);
+  const reading = { s: distance };
+  for(const key of ['v', 'g', 'gl']) reading[key] = left[key] === null || right[key] === null ? null : left[key] + (right[key] - left[key]) * ratio;
+  return reading;
+}
+function guidedTraceDifferences(earlier, later){
+  const result = { v: null, g: null, gl: null };
+  // Each difference is piecewise linear. Its largest absolute value occurs
+  // at a sample boundary from either trace; never extrapolate across gaps.
+  const distances = [...new Set(earlier.concat(later).map(point => point.s))].sort((a, b) => a - b);
+  for(const distance of distances){
+    const a = guidedTraceReading(earlier, distance);
+    const b = guidedTraceReading(later, distance);
+    if(!a || !b) continue;
+    for(const key of ['v', 'g', 'gl']){
+      if(a[key] === null || b[key] === null) continue;
+      const delta = b[key] - a[key];
+      if(!result[key] || Math.abs(delta) > Math.abs(result[key].delta)){
+        result[key] = { s: distance, earlier: a[key], later: b[key], delta };
+      }
+    }
+  }
+  return result;
+}
+function renderGuidedDifferenceShortcuts(earlier, later){
+  const differences = guidedTraceDifferences(earlier, later);
+  const buttons = [{ key: 'v', label: 'Speed', name: 'speed' }, { key: 'g', label: 'Vertical', name: 'vertical-force' }, { key: 'gl', label: 'Lateral', name: 'lateral-force' }].map(metric => {
+    const target = differences[metric.key];
+    const usable = target && target.delta !== 0;
+    const detail = !target ? 'no shared data' : target.delta === 0 ? 'no difference' : fmt(target.s, 1) + ' m';
+    return '<button type="button" data-clab-jump-difference="' + metric.key + '" aria-label="Find largest ' + metric.name + ' difference"' + (usable ? '' : ' disabled') + '>' + metric.label + ': ' + detail + '</button>';
+  }).join('');
+  return '<div style="margin:8px 0"><p class="eyebrow" style="margin-bottom:4px">Find largest differences</p><div class="btnrow" role="group" aria-label="Find largest recorded differences" style="margin-top:0">' + buttons + '</div><p class="chnote" style="margin-top:5px">Uses shared recorded distances. Ties use the earliest point; compact samples can miss brief peaks.</p></div>';
+}
+function guidedTraceEvidenceText(history, fromIndex, toIndex, distance){
+  if(!Array.isArray(history) || fromIndex === toIndex || !history[fromIndex] || !history[toIndex]) return '';
+  const a = guidedTraceReading(guidedComparisonTrace(history[fromIndex]), distance);
+  const b = guidedTraceReading(guidedComparisonTrace(history[toIndex]), distance);
+  if(!a || !b) return '';
+  const metrics = [{ key: 'v', label: 'Speed', unit: 'm/s' }, { key: 'g', label: 'Vertical force', unit: 'g' }, { key: 'gl', label: 'Lateral force', unit: 'g' }];
+  const lines = metrics.filter(metric => a[metric.key] !== null && b[metric.key] !== null).map(metric => {
+    const delta = b[metric.key] - a[metric.key];
+    return metric.label + ': earlier ' + fmt(a[metric.key], 2) + ' ' + metric.unit + ', later ' + fmt(b[metric.key], 2) + ' ' + metric.unit + ', change ' + (delta > 0 ? '+' : '') + fmt(delta, 2) + ' ' + metric.unit + '.';
+  });
+  if(!lines.length) return '';
+  return 'Evidence at ' + fmt(distance, 1) + ' m from the start (attempt ' + (Number(history[fromIndex].attempt) || fromIndex + 1) + ' -> attempt ' + (Number(history[toIndex].attempt) || toIndex + 1) + '):\n' +
+    lines.join('\n') + '\nSaved-trace readings are interpolated between samples. The same distance can refer to different track sections after an edit; these readings alone do not establish the cause of a difference.';
+}
+function guidedAppendEvidenceText(existing, evidence){
+  const text = String(existing || '');
+  if(!evidence) return { text, added: false, reason: 'missing' };
+  if(text.includes(evidence)) return { text, added: false, reason: 'duplicate' };
+  const next = text + (text ? '\n\n' : '') + evidence;
+  if(next.length > 6000) return { text, added: false, reason: 'full' };
+  return { text: next, added: true, reason: '' };
+}
+function renderGuidedTraceReadout(earlier, later, distance){
+  const a = guidedTraceReading(earlier, distance);
+  const b = guidedTraceReading(later, distance);
+  const value = number => number === null ? 'Not recorded' : fmt(number, 2);
+  const rows = [{ key: 'v', label: 'Speed (m/s)' }, { key: 'g', label: 'Vertical force (g)' }, { key: 'gl', label: 'Lateral force (g)' }].map(metric => {
+    const av = a ? a[metric.key] : null;
+    const bv = b ? b[metric.key] : null;
+    const delta = av === null || bv === null ? null : bv - av;
+    return '<tr><th scope="row">' + metric.label + '</th><td>' + value(av) + '</td><td>' + value(bv) + '</td><td>' + (delta !== null && delta > 0 ? '+' : '') + value(delta) + '</td></tr>';
+  }).join('');
+  return '<div style="overflow-x:auto"><table class="cert" style="font-size:11px"><caption style="text-align:left;color:var(--ink2);padding:6px 0">Readings at ' + fmt(distance, 1) + ' m from the start</caption><thead><tr><th scope="col">Measure</th><th scope="col">Earlier</th><th scope="col">Later</th><th scope="col">Change</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+function bindGuidedTraceInspector(container, history, fromIndex, toIndex){
+  const slider = container && container.querySelector('[data-clab-trace-distance]');
+  if(!slider) return;
+  const earlier = guidedComparisonTrace(history[fromIndex]);
+  const later = guidedComparisonTrace(history[toIndex]);
+  const readout = container.querySelector('[data-clab-trace-readout]');
+  const cursor = container.querySelector('[data-clab-trace-cursor]');
+  const status = container.querySelector('[data-clab-trace-status]');
+  const update = () => {
+    const distance = Number(slider.value);
+    if(readout) readout.innerHTML = renderGuidedTraceReadout(earlier, later, distance);
+    const x = 58 + 320 * distance / Number(slider.max);
+    if(cursor){ cursor.setAttribute('x1', String(x)); cursor.setAttribute('x2', String(x)); }
+    slider.setAttribute('aria-valuetext', fmt(distance, 1) + ' meters from the start');
+  };
+  const differences = guidedTraceDifferences(earlier, later);
+  container.querySelectorAll('[data-clab-jump-difference]').forEach(button => {
+    button.addEventListener('click', () => {
+      const target = differences[button.dataset.clabJumpDifference];
+      if(!target || target.delta === 0) return;
+      slider.value = String(target.s);
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+      slider.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+  slider.addEventListener('input', update);
+  slider.addEventListener('change', () => {
+    update();
+    if(status && readout){
+      const readingA = guidedTraceReading(earlier, Number(slider.value));
+      const readingB = guidedTraceReading(later, Number(slider.value));
+      const describe = reading => reading ? ['speed ' + (reading.v === null ? 'not recorded' : fmt(reading.v, 2) + ' meters per second'), 'vertical force ' + (reading.g === null ? 'not recorded' : fmt(reading.g, 2) + ' g'), 'lateral force ' + (reading.gl === null ? 'not recorded' : fmt(reading.gl, 2) + ' g')].join(', ') : 'not recorded';
+      status.textContent = slider.getAttribute('aria-valuetext') + '. Earlier: ' + describe(readingA) + '. Later: ' + describe(readingB) + '.';
+    }
+  });
+  update();
+}
+/* @clab-trace-comparison-end */
+function renderGuidedTraceOverlay(history, fromIndex, toIndex, interactive = false, selectedDistance = 0){
+  if(fromIndex === toIndex) return '<p class="hint">Choose two different saved runs to compare their traces.</p>';
+  const earlier = guidedComparisonTrace(history[fromIndex]);
+  const later = guidedComparisonTrace(history[toIndex]);
   if(!earlier.length || !later.length){
-    return '<div data-clab-trace-overlay="true" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 3px">Telemetry overlay</p><p class="hint" style="margin:0">A compact trace is not available for one selected older run. Complete new guided runs with this version to unlock curve comparisons.</p></div>';
+    return '<div data-clab-trace-overlay="true" class="card"><p class="eyebrow">Telemetry overlay</p><p class="hint">A compact trace is not available for one selected older run. Complete new guided runs with this version to unlock curve comparisons.</p></div>';
   }
   const metrics = [
     { key: 'v', label: 'Speed', unit: 'm/s', digits: 1 },
     { key: 'g', label: 'Vertical force', unit: 'g', digits: 1 },
     { key: 'gl', label: 'Lateral force', unit: 'g', digits: 1 }
   ];
-  const left = 58;
-  const right = 378;
-  const rowHeight = 76;
-  const rowTop = 18;
-  const maxCircuit = Math.max(0.001, ...earlier.map(point => Number(point.s) || 0), ...later.map(point => Number(point.s) || 0));
-  const x = point => left + (right - left) * Math.max(0, Math.min(1, (Number(point.s) || 0) / maxCircuit));
-  const line = (trace, metric, y, lo, hi) => trace.map(point => {
-    const value = Number(point[metric.key]);
-    const ratio = Number.isFinite(value) ? (value - lo) / Math.max(0.001, hi - lo) : 0;
-    return x(point).toFixed(1) + ',' + (y + rowHeight - 18 - Math.max(0, Math.min(1, ratio)) * (rowHeight - 28)).toFixed(1);
-  }).join(' ');
+  const left = 58, right = 378, rowHeight = 76, rowTop = 18;
+  const maxDistance = Math.max(0.001, earlier[earlier.length - 1].s, later[later.length - 1].s);
+  const distance = Math.max(0, Math.min(maxDistance, guidedTraceNumber(selectedDistance) || 0));
+  const cursorX = left + (right - left) * distance / maxDistance;
+  const x = point => left + (right - left) * point.s / maxDistance;
+  const line = (trace, metric, y, lo, hi) => {
+    let connected = false;
+    return trace.map(point => {
+      const value = point[metric.key];
+      if(value === null){ connected = false; return ''; }
+      const ratio = (value - lo) / Math.max(0.001, hi - lo);
+      const command = connected ? 'L' : 'M';
+      connected = true;
+      return command + x(point).toFixed(1) + ',' + (y + rowHeight - 18 - Math.max(0, Math.min(1, ratio)) * (rowHeight - 28)).toFixed(1);
+    }).join(' ');
+  };
   const rows = metrics.map((metric, index) => {
-    const allValues = earlier.concat(later).map(point => Number(point[metric.key])).filter(Number.isFinite);
-    const rawMin = Math.min(...allValues);
-    const rawMax = Math.max(...allValues);
-    const padding = Math.max(metric.key === 'v' ? 0.5 : 0.08, (rawMax - rawMin) * 0.12);
-    const lo = rawMin - padding;
-    const hi = rawMax + padding;
+    const allValues = earlier.concat(later).map(point => point[metric.key]).filter(value => value !== null);
     const y = rowTop + index * rowHeight;
-    return '<text x="4" y="' + (y + 12) + '" fill="var(--ink2)" font-size="11" font-weight="600">' + metric.label + '</text>' +
+    if(!allValues.length) return '<text x="4" y="' + (y + 30) + '" fill="var(--ink2)" font-size="11">' + metric.label + ': not recorded</text>';
+    const rawMin = Math.min(...allValues), rawMax = Math.max(...allValues);
+    const padding = Math.max(metric.key === 'v' ? 0.5 : 0.08, (rawMax - rawMin) * 0.12);
+    const lo = rawMin - padding, hi = rawMax + padding;
+    return '<text x="4" y="' + (y + 12) + '" fill="var(--ink2)" font-size="11" font-weight="600">' + metric.label + ' (' + metric.unit + ')</text>' +
       '<text x="' + (left - 5) + '" y="' + (y + 25) + '" text-anchor="end" fill="var(--ink3)" font-size="9">' + fmt(hi, metric.digits) + '</text>' +
       '<text x="' + (left - 5) + '" y="' + (y + rowHeight - 14) + '" text-anchor="end" fill="var(--ink3)" font-size="9">' + fmt(lo, metric.digits) + '</text>' +
       '<line x1="' + left + '" y1="' + (y + 22) + '" x2="' + right + '" y2="' + (y + 22) + '" stroke="var(--line2)" />' +
       '<line x1="' + left + '" y1="' + (y + rowHeight - 18) + '" x2="' + right + '" y2="' + (y + rowHeight - 18) + '" stroke="var(--line2)" />' +
-      '<polyline points="' + line(earlier, metric, y, lo, hi) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
-      '<polyline points="' + line(later, metric, y, lo, hi) + '" fill="none" stroke="var(--good)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />';
+      '<path d="' + line(earlier, metric, y, lo, hi) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
+      '<path d="' + line(later, metric, y, lo, hi) + '" fill="none" stroke="var(--good)" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" stroke-linejoin="round" />';
   }).join('');
   return '<div data-clab-trace-overlay="true" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card2)">' +
     '<p class="eyebrow" style="margin:0 0 3px">Telemetry overlay</p>' +
-    '<p class="chnote" style="margin:0 0 5px"><span style="color:var(--accent)">Earlier run</span> · <span style="color:var(--good)">Later run</span> · normalized circuit position</p>' +
-    '<svg viewBox="0 0 390 260" role="img" aria-label="Overlay comparing speed, vertical force, and lateral force for two guided runs" style="display:block;width:100%;height:auto;overflow:visible">' + rows +
-      '<text x="' + left + '" y="250" fill="var(--ink3)" font-size="9">start</text><text x="' + right + '" y="250" text-anchor="end" fill="var(--ink3)" font-size="9">end of circuit</text>' +
+    '<p class="chnote" style="margin:0 0 5px"><span style="color:var(--accent)">Earlier: solid</span> · <span style="color:var(--good)">Later: dashed</span></p>' +
+    '<p class="hint" style="margin:0 0 5px">Distance along the track in meters. Track edits can move ride sections, so the same distance may refer to a different hill or turn.</p>' +
+    '<svg viewBox="0 0 390 260" role="img" aria-label="Overlay comparing speed, vertical force, and lateral force for two guided runs by distance in meters; earlier solid, later dashed" style="display:block;width:100%;height:auto;overflow:visible">' + rows +
+      '<line data-clab-trace-cursor x1="' + cursorX + '" x2="' + cursorX + '" y1="18" y2="228" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3" />' +
+      '<text x="' + left + '" y="250" fill="var(--ink3)" font-size="9">0 m</text><text x="' + right + '" y="250" text-anchor="end" fill="var(--ink3)" font-size="9">' + fmt(maxDistance, 1) + ' m recorded</text>' +
     '</svg>' +
+    (interactive ? renderGuidedDifferenceShortcuts(earlier, later) : '') +
+    (interactive ? '<label class="hint" style="display:block;margin-top:8px">Inspect distance<input data-clab-trace-distance type="range" min="0" max="' + maxDistance + '" step="any" value="' + distance + '" aria-label="Compare runs at distance along track" style="display:block;width:100%;margin:8px 0;accent-color:var(--accent)"></label>' : '') +
+    '<div data-clab-trace-readout>' + renderGuidedTraceReadout(earlier, later, distance) + '</div>' +
+    '<p class="chnote" style="margin-top:6px">Readings between saved samples are interpolated estimates. Change = later minus earlier. Missing samples and distances beyond a recorded run are shown as Not recorded.</p>' +
+    (interactive ? '<div data-clab-trace-status role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"></div>' : '') +
   '</div>';
 }
+/* @clab-comparison-drafts-start */
+function guidedComparisonDraftKey(history, fromIndex, toIndex){
+  if(!Array.isArray(history) || fromIndex === toIndex || !history[fromIndex] || !history[toIndex]) return '';
+  const identity = entry => [entry.attempt, entry.revision, entry.goal, entry.experimentSignature || entry.designKey || JSON.stringify(entry)];
+  return JSON.stringify([identity(history[fromIndex]), identity(history[toIndex])]);
+}
+function normalizeGuidedComparisonDrafts(raw, history){
+  if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Object.keys(raw).length) return {};
+  const entries = Array.isArray(history) ? history : [];
+  const allowed = new Set();
+  for(let from = 0; from < entries.length; from++){
+    for(let to = 0; to < entries.length; to++){
+      const key = guidedComparisonDraftKey(entries, from, to);
+      if(key) allowed.add(key);
+    }
+  }
+  const drafts = {};
+  if(raw && typeof raw === 'object' && !Array.isArray(raw)){
+    for(const [key, value] of Object.entries(raw).filter(([key, value]) => allowed.has(key) && typeof value === 'string').slice(-24)){
+      drafts[key] = value.slice(0, 6000);
+    }
+  }
+  return drafts;
+}
+/* @clab-comparison-drafts-end */
 function renderExperimentComparisonBoard(){
   const history = guidedHistoryEntries();
   if(history.length < 2) return '';
@@ -4397,12 +4699,13 @@ function renderExperimentComparisonBoard(){
       '<label class="hint" for="clab-compareTo">Later run<select id="clab-compareTo" data-clab-compare-to class="clab-sel" style="display:block;width:100%;margin-top:4px">' + optionsTo + '</select></label>' +
     '</div>' +
     '<div data-clab-compare-output style="margin-top:10px">' + renderExperimentComparisonSummary(history, fromIndex, toIndex) + '</div>' +
-    '<div data-clab-compare-trace style="margin-top:10px">' + renderGuidedTraceOverlay(history, fromIndex, toIndex) + '</div>' +
+    '<div data-clab-compare-trace style="margin-top:10px">' + renderGuidedTraceOverlay(history, fromIndex, toIndex, true) + '</div>' +
     '<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">' +
       '<p class="eyebrow">Claim - Evidence - Reasoning</p>' +
-      '<p class="hint" style="margin:0 0 6px">Edit this evidence-based conclusion in your own words, then copy it into a lab report.</p>' +
-      '<textarea data-clab-comparison-conclusion rows="7" aria-label="Experiment conclusion" style="display:block;width:100%;box-sizing:border-box;resize:vertical;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)"></textarea>' +
-      '<div class="btnrow" style="margin-top:7px"><button type="button" data-clab-copy-conclusion>Copy conclusion</button><span data-clab-copy-status class="chnote" role="status" aria-live="polite"></span></div>' +
+      '<p class="hint" style="margin:0 0 6px">Edit this conclusion in your own words. Drafts are saved on this device for each run pair and included in lab packets.</p>' +
+      '<textarea data-clab-comparison-conclusion rows="7" maxlength="6000" aria-label="Experiment conclusion" style="display:block;width:100%;box-sizing:border-box;resize:vertical;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)"></textarea>' +
+      '<p data-clab-draft-status class="chnote" role="status" aria-live="polite"></p>' +
+      '<div class="btnrow" style="margin-top:7px"><button type="button" data-clab-add-evidence>Add selected readings</button><button type="button" data-clab-copy-conclusion>Copy conclusion</button><span data-clab-copy-status class="chnote" role="status" aria-live="polite"></span></div>' +
     '</div>' +
   '</div>';
 }function bindExperimentComparison(){
@@ -4416,15 +4719,58 @@ function renderExperimentComparisonBoard(){
   const conclusion = board.querySelector('[data-clab-comparison-conclusion]');
   const copy = board.querySelector('[data-clab-copy-conclusion]');
   const status = board.querySelector('[data-clab-copy-status]');
+  const draftStatus = board.querySelector('[data-clab-draft-status]');
+  const addEvidence = board.querySelector('[data-clab-add-evidence]');
   if(!from || !to || !output || !trace || !conclusion) return;
+  const selectedEvidence = () => {
+    const slider = trace.querySelector('[data-clab-trace-distance]');
+    return slider ? guidedTraceEvidenceText(guidedHistoryEntries(), Number(from.value), Number(to.value), Number(slider.value)) : '';
+  };
+  const updateEvidenceButton = () => {
+    if(!addEvidence) return;
+    const evidence = selectedEvidence();
+    addEvidence.disabled = conclusion.disabled || !evidence || conclusion.value.includes(evidence);
+  };
+  trace.addEventListener('input', updateEvidenceButton);
+  if(addEvidence) addEvidence.addEventListener('click', () => {
+    const result = guidedAppendEvidenceText(conclusion.value, selectedEvidence());
+    if(!result.added){
+      if(status) status.textContent = result.reason === 'full' ? 'Shorten your conclusion before adding these readings; existing writing has been kept.' : result.reason === 'duplicate' ? 'These readings are already in your conclusion.' : 'Choose a distance with readings in both runs.';
+      return;
+    }
+    conclusion.value = result.text;
+    conclusion.dispatchEvent(new Event('input', { bubbles: true }));
+    if(status) status.textContent = 'Selected readings added to your conclusion.';
+  });
   const update = () => {
     const history = guidedHistoryEntries();
     const fromIndex = Number(from.value);
     const toIndex = Number(to.value);
     output.innerHTML = renderExperimentComparisonSummary(history, fromIndex, toIndex);
-    trace.innerHTML = renderGuidedTraceOverlay(history, fromIndex, toIndex);
-    conclusion.value = guidedComparisonConclusion(history, fromIndex, toIndex);
+    trace.innerHTML = renderGuidedTraceOverlay(history, fromIndex, toIndex, true);
+    bindGuidedTraceInspector(trace, history, fromIndex, toIndex);
+    const key = guidedComparisonDraftKey(history, fromIndex, toIndex);
+    const drafts = guidedRecord.comparisonDrafts || {};
+    const saved = Object.prototype.hasOwnProperty.call(drafts, key);
+    conclusion.value = saved ? drafts[key] : guidedComparisonConclusion(history, fromIndex, toIndex);
+    conclusion.disabled = !key;
+    if(copy) copy.disabled = !key;
+    updateEvidenceButton();
+    if(draftStatus) draftStatus.textContent = saved ? 'Your draft for this run pair is restored.' : '';
+    if(status) status.textContent = '';
   };
+  conclusion.addEventListener('input', () => {
+    const history = guidedHistoryEntries();
+    const key = guidedComparisonDraftKey(history, Number(from.value), Number(to.value));
+    if(!key) return;
+    const drafts = normalizeGuidedComparisonDrafts(guidedRecord.comparisonDrafts, history);
+    delete drafts[key];
+    drafts[key] = conclusion.value.slice(0, 6000);
+    guidedRecord.comparisonDrafts = normalizeGuidedComparisonDrafts(drafts, history);
+    const saved = persistGuidedRecord();
+    updateEvidenceButton();
+    if(draftStatus) draftStatus.textContent = saved ? 'Draft saved on this device.' : 'Draft kept for this session. Local saving is unavailable; copy your conclusion or export a lab packet.';
+  });
   from.addEventListener('change', update);
   to.addEventListener('change', update);
   if(copy) copy.addEventListener('click', async () => {
@@ -5235,25 +5581,76 @@ let camMode = 'orbit';
 const CAMERA_MODES = ['orbit', 'onboard', 'chase', 'scenic'];
 const CAMERA_LABELS = { orbit: 'Orbit', onboard: 'Onboard', chase: 'Chase', scenic: 'Scenic' };
 const orbit = { theta: -0.95, phi: 0.42, radius: 175, target: new THREE.Vector3(60, 8, 28) };
+/* @clab-camera-fit-start */
+function fittedOrbitRadius(bounds, theta, phi, aspect, paddingY = 0.8){
+  if(!bounds || !Number.isFinite(aspect) || aspect <= 0) return 175;
+  const ct = Math.cos(theta), st = Math.sin(theta), cp = Math.cos(phi), sp = Math.sin(phi);
+  const tangentY = Math.tan(55 * Math.PI / 360);
+  const tx = tangentY * aspect * 0.86, ty = tangentY * Math.max(0.2, Math.min(0.9, paddingY));
+  const center = { x: (bounds.min.x + bounds.max.x) / 2, y: (bounds.min.y + bounds.max.y) / 2, z: (bounds.min.z + bounds.max.z) / 2 };
+  let radius = 15;
+  for(const px of [bounds.min.x, bounds.max.x]) for(const py of [bounds.min.y, bounds.max.y]) for(const pz of [bounds.min.z, bounds.max.z]){
+    const x = px - center.x, y = py - center.y, z = pz - center.z;
+    const right = ct * x - st * z;
+    const up = -sp * st * x + cp * y - sp * ct * z;
+    const depth = cp * st * x + sp * y + cp * ct * z;
+    radius = Math.max(radius, depth + Math.abs(right) / tx, depth + Math.abs(up) / ty, depth + 1);
+  }
+  return radius;
+}
+/* @clab-camera-fit-end */
+let orbitFrameBounds = null, orbitAutoFit = true, orbitFitRadius = 175, orbitFramePaddingY = 0.8;
+function updateViewClearance(){
+  const h = canvas.clientHeight;
+  if(h <= 0) return;
+  const hud = __clabGet('clab-hud');
+  const bottom = !sceneFocus && hud && hud.offsetHeight ? hud.offsetHeight + 24 : 0;
+  rootEl.style.setProperty('--clab-view-bottom', (bottom ? bottom + 8 : 12) + 'px');
+  const viewTools = __clabGet('clab-viewTools');
+  const controlsHeight = viewTools && viewTools.offsetHeight || 44;
+  orbitFramePaddingY = Math.max(0.25, 1 - 2 * Math.min(h * 0.35, Math.max(64, bottom + controlsHeight + 12)) / h);
+}
+function fitCoasterView(view = 'overview', announce = true){
+  if(xrOn || !orbitFrameBounds) return;
+  camMode = 'orbit';
+  __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
+  orbit.theta = view === 'overview' ? -0.95 : 0;
+  orbit.phi = view === 'top' ? 1.55 : view === 'side' ? 0.08 : 0.42;
+  orbit.target.copy(orbitFrameBounds.min).add(orbitFrameBounds.max).multiplyScalar(0.5);
+  orbitAutoFit = true; userTouched = true;
+  updateViewClearance();
+  camera.fov = 55; camera.updateProjectionMatrix();
+  if(announce) banner(view === 'top' ? 'Top view: inspect the track layout.' : view === 'side' ? 'Side view: compare the heights of hills and drops.' : 'Whole coaster fitted to the view.', '', 2400);
+}
 function applyOrbit(){
+  if(orbitAutoFit && orbitFrameBounds){
+    orbitFitRadius = fittedOrbitRadius(orbitFrameBounds, orbit.theta, orbit.phi, camera.aspect, orbitFramePaddingY);
+    orbit.radius = orbitFitRadius;
+  }
+  const far = Math.max(2600, orbit.radius + 1200);
+  if(camera.far !== far){ camera.far = far; camera.updateProjectionMatrix(); }
   const { theta, phi, radius, target } = orbit;
   camera.position.set(
     target.x + radius * Math.cos(phi) * Math.sin(theta),
     target.y + radius * Math.sin(phi),
     target.z + radius * Math.cos(phi) * Math.cos(theta)
   );
-  camera.lookAt(target);
   camera.up.set(0, 1, 0);
+  camera.lookAt(target);
 }
 function updateOrbitTarget(){
   if(!track) return;
   const box = new THREE.Box3();
-  for(let i = 0; i < M; i += 25) box.expandByPoint(track.pos[i]);
+  for(let i = 0; i < M; i++) box.expandByPoint(track.pos[i]);
+  box.min.y = Math.min(0, box.min.y);
+  box.expandByScalar(3);
+  orbitFrameBounds = box;
   box.getCenter(orbit.target);
   sun.target.position.copy(orbit.target);
   sun.position.set(orbit.target.x + 240, 74, orbit.target.z + 46);
   sky.material.uniforms.sunDir.value.copy(sun.position).normalize();
   atmosphereGroup.position.set(orbit.target.x, 0, orbit.target.z);
+  ridgeGroup.position.set(-orbit.target.x, 0, -orbit.target.z);
 }
 
 const raycaster = new THREE.Raycaster();
@@ -5278,14 +5675,16 @@ function syncMotionUi(){
   b.textContent = motionComfort ? 'Motion: Steady' : 'Motion: Standard';
   rootEl.dataset.cameraMotion = motionComfort ? 'steady' : 'standard';
 }
+let sceneFocus = false;
 let userTouched = false;
 
 canvas.addEventListener('pointerdown', e => {
   if(e.button !== 0) return;
   userTouched = true;
+  if(camMode === 'orbit') orbitAutoFit = false;
   canvas.setPointerCapture(e.pointerId);
   setNDC(e);
-  if(!sim.running && camMode === 'orbit'){
+  if(!sceneFocus && !sim.running && camMode === 'orbit'){
     raycaster.setFromCamera(mouseNDC, camera);
     const hits = raycaster.intersectObjects(handleGroup.children, false);
     if(hits.length){
@@ -5328,7 +5727,7 @@ canvas.addEventListener('pointermove', e => {
   }
   if(orbiting && camMode === 'orbit'){
     orbit.theta -= (e.clientX - lastPX) * 0.005;
-    orbit.phi = THREE.MathUtils.clamp(orbit.phi + (e.clientY - lastPY) * 0.004, 0.06, 1.35);
+    orbit.phi = THREE.MathUtils.clamp(orbit.phi + (e.clientY - lastPY) * 0.004, 0.06, 1.55);
     lastPX = e.clientX; lastPY = e.clientY;
   }
 });
@@ -5344,7 +5743,9 @@ canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
-  orbit.radius = THREE.MathUtils.clamp(orbit.radius * (1 + e.deltaY * 0.001), 15, 480);
+  if(camMode !== 'orbit') return;
+  orbitAutoFit = false; userTouched = true;
+  orbit.radius = THREE.MathUtils.clamp(orbit.radius * (1 + e.deltaY * 0.001), 15, Math.max(480, orbitFitRadius * 1.5));
 }, { passive: false });
 
 /* ---------------- rebuild orchestration ---------------- */
@@ -5391,6 +5792,24 @@ const nodeStep = __clabGet('clab-nodeStep');
 const buildCoach = __clabGet('clab-buildCoach');
 const elementButtons = [...rootEl.querySelectorAll('.clab-element-btn')];
 const elementNote = __clabGet('clab-elementNote');
+const elementArtwork = {
+  hill: { view: 'SIDE VIEW', start: 39, end: 39, path: 'M8 39 C26 39 30 15 60 15 S94 39 112 39' },
+  drop: { view: 'SIDE VIEW', start: 30, end: 38, path: 'M8 30 C26 30 24 15 41 15 C57 15 58 43 78 43 S98 38 112 38' },
+  'turn-left': { view: 'TOP VIEW', start: 39, end: 39, path: 'M8 39 C31 39 30 18 60 18 S89 39 112 39' },
+  'turn-right': { view: 'TOP VIEW', start: 18, end: 18, path: 'M8 18 C31 18 30 39 60 39 S89 18 112 18' },
+  loop: { view: 'SIDE VIEW', start: 42, end: 42, path: 'M8 42 H58 C78 42 83 15 63 15 C43 15 43 42 64 42 H112' }
+};
+for(const button of elementButtons){
+  const art = elementArtwork[button.dataset.element];
+  if(!art) continue;
+  button.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 120 52" aria-hidden="true" focusable="false"><text class="clab-piece-view" x="8" y="7">${art.view}</text><path class="clab-piece-guide" d="M8 46H112"/><path class="clab-piece-shadow" d="${art.path}"/><path class="clab-piece-rail" d="${art.path}"/><circle cx="8" cy="${art.start}" r="2.7" fill="currentColor"/><circle cx="112" cy="${art.end}" r="2.7" fill="currentColor"/></svg>`);
+  button.insertAdjacentHTML('beforeend', '<span class="clab-element-cost"></span>');
+  button.setAttribute('aria-describedby', 'clab-elementNote');
+  if(button.dataset.element === 'loop') button.querySelector('small').textContent = 'full inversion';
+}
+__clabGet('clab-elementPalette').querySelector('.clab-element-grid').insertAdjacentHTML('beforebegin', '<div class="clab-node-budget"><label for="clab-nodeBudget">Track nodes</label><span id="clab-nodeBudgetText"></span><meter id="clab-nodeBudget" min="0" max="80" low="64" high="76" optimum="0" value="0"></meter></div>');
+const nodeBudgetMeter = __clabGet('clab-nodeBudget');
+const nodeBudgetText = __clabGet('clab-nodeBudgetText');
 const safetyList = __clabGet('clab-safetyList');
 const challengeSelect = __clabGet('clab-designChallenge');
 const challengeFill = __clabGet('clab-challengeFill');
@@ -5429,7 +5848,8 @@ function persistGuidedState(){
   try{ localStorage.setItem(GUIDED_STATE_KEY, guidedState); }catch(_e){}
 }
 function persistGuidedRecord(){
-  try{ localStorage.setItem(GUIDED_RECORD_KEY, JSON.stringify(guidedRecord)); }catch(_e){}
+  guidedRecord.comparisonDrafts = normalizeGuidedComparisonDrafts(guidedRecord.comparisonDrafts, guidedRecord.history);
+  try{ localStorage.setItem(GUIDED_RECORD_KEY, JSON.stringify(guidedRecord)); return true; }catch(_e){ return false; }
 }
 function guidedConditionSnapshot(){
   return {
@@ -5909,6 +6329,7 @@ function enterTrackEditor(){
   if(sim.running){ banner('Stop the train before reshaping the track.', 'fail', 2400); return; }
   camMode = 'orbit';
   __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
+  orbitAutoFit = false;
   let idx = 0;
   for(let i = 1; i < design.points.length; i++) if(design.points[i].y > design.points[idx].y) idx = i;
   selectPoint(idx);
@@ -6042,6 +6463,11 @@ function buildElementPoints(kind, p0, p1){
   }
   return [];
 }
+function elementNodeCapacity(kind, nodeCount){
+  const added = buildElementPoints(kind, { x: 0, y: 8, z: 0, bank: 0 }, { x: 40, y: 8, z: 0, bank: 0 }).length;
+  const remaining = Number.isInteger(nodeCount) && nodeCount >= 0 ? Math.max(0, 80 - nodeCount) : 0;
+  return { added, remaining, fits: added > 0 && added <= remaining };
+}
 /* @clab-elements-end */
 const previewMat = new THREE.MeshBasicMaterial({ color: 0x78d8ff, transparent: true, opacity: 0.46, depthWrite: false, toneMapped: false });
 const previewNodeMat = new THREE.MeshBasicMaterial({ color: 0xf4d35e, transparent: true, opacity: 0.72, depthWrite: false, toneMapped: false });
@@ -6054,7 +6480,7 @@ function showElementPreview(kind){
   if(sim.running || selIdx < 0 || !design.points[selIdx]) return;
   const nextIdx = (selIdx + 1) % design.points.length;
   const added = buildElementPoints(kind, design.points[selIdx], design.points[nextIdx]);
-  if(!added.length) return;
+  if(!added.length || design.points.length + added.length > 80) return;
   const pts = [design.points[selIdx], ...added, design.points[nextIdx]].map(p => new THREE.Vector3(p.x, p.y, p.z));
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.5);
   const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(24, pts.length * 8), 0.16, 6, false), previewMat);
@@ -6069,7 +6495,18 @@ function showElementPreview(kind){
 }
 function syncElementPalette(){
   const ready = selIdx >= 0 && selIdx < design.points.length && !sim.running;
-  for(const b of elementButtons) b.disabled = !ready;
+  for(const b of elementButtons){
+    const capacity = elementNodeCapacity(b.dataset.element, design.points.length);
+    b.disabled = !ready || !capacity.fits;
+    b.dataset.capacity = capacity.fits ? 'available' : 'full';
+    b.querySelector('.clab-element-cost').textContent = capacity.fits ? '+' + capacity.added + ' nodes' : 'Needs ' + capacity.added + ' free nodes';
+    b.title = !capacity.fits ? capacity.added + ' free nodes needed; ' + capacity.remaining + ' available.'
+      : ready ? 'Hover or focus to preview; select to insert after node ' + selIdx + '.' : 'Select a track node to add this piece.';
+  }
+  const used = design.points.length, free = Math.max(0, 80 - used);
+  nodeBudgetMeter.value = used;
+  nodeBudgetMeter.setAttribute('aria-valuetext', used + ' of 80 nodes used; ' + free + ' free');
+  nodeBudgetText.textContent = used + ' / 80 · ' + free + ' free';
   if(elementNote) elementNote.textContent = ready
     ? `New pieces will be inserted after node ${selIdx}; every new node remains editable.`
     : 'Choose a glowing node to unlock these pieces.';
@@ -6324,7 +6761,7 @@ function importDesign(str){
   fullRebuild(); syncPointCard(); saveDesign();
 }
 const LAB_PACKET_SCHEMA = 1;
-const LAB_PACKET_MAX_JSON_CHARS = 128 * 1024;
+const LAB_PACKET_MAX_JSON_CHARS = 512 * 1024; // Includes bounded saved comparison drafts.
 const LAB_PACKET_MAX_TRACE_POINTS = 240;
 function packetNumber(value, fallback = 0){
   const n = Number(value);
@@ -6554,6 +6991,7 @@ function importLabPacket(str){
       challenge: importedChallenge
     } : null
   };
+  importedRecord.comparisonDrafts = normalizeGuidedComparisonDrafts(rawRecord.comparisonDrafts, importedRecord.history);
   const frictionSetting = rawSettings.friction || (rawConditions && rawConditions.friction);
   const expectedExperimentSignature = guidedExperimentSignature(importedDesign.points, {
     friction: frictionSetting === 'ideal' ? 'ideal' : 'realistic',
@@ -6704,6 +7142,8 @@ function applyVisualTheme(name, announce = true){
   visualTheme = name;
   const cfg = VISUAL_THEMES[name], u = sky.material.uniforms;
   rootEl.dataset.visualTheme = name;
+  const visualRoot = rootEl.closest('.clab-root');
+  if(visualRoot) visualRoot.dataset.visualTheme = name;
   scene.fog.color.setHex(cfg.fog); scene.fog.near = cfg.fogNear; scene.fog.far = cfg.fogFar;
   renderer.toneMappingExposure = cfg.exposure;
   hemi.color.setHex(cfg.hemiSky); hemi.groundColor.setHex(cfg.hemiGround); hemi.intensity = cfg.hemi;
@@ -6712,11 +7152,25 @@ function applyVisualTheme(name, announce = true){
   u.zenColor.value.setHex(cfg.zen); u.midColor.value.setHex(cfg.mid); u.horizonColor.value.setHex(cfg.horizon);
   u.sunGlow.value.setHex(cfg.sunGlow); u.starStrength.value = cfg.stars;
   ground.material.color.setHex(cfg.ground);
+  MAT.leaf.color.setHex(name === 'daylight' ? 0x16380c : name === 'neon' ? 0x102a31 : 0x122a13);
+  MAT.trunk.color.setHex(name === 'daylight' ? 0x68513b : 0x3d3026);
+  const ridgePalette = name === 'daylight' ? [0x688980, 0x849f9b, 0x9eb6b6]
+    : name === 'neon' ? [0x292345, 0x292846, 0x242b45]
+    : name === 'blueprint' ? [0x3378a1, 0x285c82, 0x204868]
+    : [0x48545e, 0x606273, 0x757184];
+  ridgeMaterials.forEach((material, i) => {
+    material.color.setHex(ridgePalette[i]);
+    material.wireframe = name === 'blueprint';
+    material.needsUpdate = true;
+  });
   ground.material.map = name === 'blueprint' ? null : groundTex;
   ground.material.needsUpdate = true;
   terrainGrid.visible = !fxLite && name === 'blueprint';
   treeGroup.visible = !fxLite && name !== 'blueprint';
   MAT.rail.color.setHex(cfg.rail); MAT.rail.emissive.setHex(cfg.railGlow);
+  readableRailMat.color.setHex(cfg.rail);
+  readableDimMat.color.setHex(name === 'daylight' ? 0x334352 : 0x61758a);
+  readableSpineMat.color.setHex(name === 'blueprint' ? 0x234a67 : 0x14222e);
   MAT.spine.color.setHex(cfg.spine); MAT.support.color.setHex(cfg.support);
   MAT.railDim.color.setHex(name === 'blueprint' ? 0x386b8c : 0x39434e);
   const chainHex = name === 'blueprint' ? 0x8bd7ff : name === 'neon' ? 0x55e8ff : name === 'daylight' ? 0x657681 : 0x7b8994;
@@ -6779,6 +7233,27 @@ function syncVectorUi(){
   vectorButton.textContent = vectorsOn ? 'Vectors: On' : 'Vectors: Off';
   vectorLegend.hidden = !vectorsOn;
 }
+const boldTrackButton = __clabGet('clab-btnBoldTrack');
+boldTrackButton.setAttribute('aria-pressed', String(boldTrack));
+boldTrackButton.addEventListener('click', () => {
+  boldTrack = !boldTrack;
+  boldTrackButton.setAttribute('aria-pressed', String(boldTrack));
+  try{ localStorage.setItem('coaster_lab_bold_track', boldTrack ? 'on' : 'off'); }catch(_e){}
+  banner(boldTrack ? 'Bold track on for orbit views. Ride physics are unchanged.' : 'Natural rail appearance restored.', '', 2600);
+});
+__clabGet('clab-btnFitCoaster').addEventListener('click', () => fitCoasterView('overview'));
+__clabGet('clab-btnTopView').addEventListener('click', () => fitCoasterView('top'));
+__clabGet('clab-btnSideView').addEventListener('click', () => fitCoasterView('side'));
+const sceneFocusButton = __clabGet('clab-btnSceneFocus');
+sceneFocusButton.addEventListener('click', () => {
+  sceneFocus = !sceneFocus;
+  rootEl.dataset.sceneFocus = String(sceneFocus);
+  updateViewClearance();
+  sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
+  sceneFocusButton.textContent = sceneFocus ? 'Restore panels' : 'Scene focus';
+  userTouched = true;
+  banner(sceneFocus ? 'Scene focus on. Use Restore panels to return to editing.' : 'Editing panels restored.', '', 2400);
+});
 themeSelect.value = visualTheme;
 themeSelect.addEventListener('change', () => applyVisualTheme(themeSelect.value));
 vectorButton.addEventListener('click', () => {
@@ -7198,6 +7673,7 @@ __clabGet('clab-btnRedo').addEventListener('click', () => applyHistory(hIdx + 1)
 const tabButtons = [...rootEl.querySelectorAll('#clab-tabs [role="tab"]')];
 function activateTab(b){
   if(!b) return;
+  __clabGet('clab-app').dataset.activeTab = b.dataset.tab;
   if(b.dataset.tab !== 'report') stopTelemetryReplay();
   tabButtons.forEach(x => {
     const active = x === b;
@@ -8754,6 +9230,7 @@ function resize(){
     renderer.setSize(w, h, false);
     camera.aspect = w / Math.max(h, 1);
     camera.updateProjectionMatrix();
+    updateViewClearance();
   }
 }
 
@@ -8838,6 +9315,7 @@ function animate(){
   }
   sectionGroup.visible = !fxLite && !sim.running && camMode === 'orbit';
   handleGroup.visible = !sim.running && camMode === 'orbit';
+  if(sceneFocus){ sectionGroup.visible = false; handleGroup.visible = false; }
   sectionLandmarkGroup.visible = !fxLite;
   selectionGuide.visible = handleGroup.visible && !!selectionGuide.userData.ready;
   selectionBankFrame.visible = selectionGuide.visible && !!selectionBankFrame.userData.ready;
@@ -8865,6 +9343,7 @@ function animate(){
   updatePhysicsVectors();
   if(xrOn && renderer.xr.isPresenting) placeXrRig();
   else placeCamera();
+  updateTrackReadability();
   updateHUD();
   updateAudio(dt);
   updateFx(dt);
@@ -8909,6 +9388,23 @@ showDesignRecovery();
 rootEl._selftest = selfTest();
 /* tiny hooks for automated smoke tests */
 rootEl._lab = {
+  elementPresentation: () => ({ selectedNode: selIdx, nodes: design.points.length, previewVisible: previewGroup.visible, previewNodes: previewGroup.children.filter(child => child.geometry && child.geometry.type === 'SphereGeometry').length }),
+  trackReadability: () => ({ bold: boldTrack, active: trackMainMeshes.some(({ mesh }) => mesh.material === readableRailMat || mesh.material === readableHeatMat),
+    heatmap: heatmapMode, meshCount: trackMainMeshes.length,
+    centersValid: trackMainMeshes.every(({ mesh }) => mesh.geometry.attributes.clabTubeCenter.count === mesh.geometry.attributes.position.count && [...mesh.geometry.attributes.clabTubeCenter.array].every(Number.isFinite)),
+    labels: sectionGroup.children.map(sprite => ({ visible: sectionGroup.visible && sprite.visible, height: sprite.scale.y,
+      depth: -sprite.position.clone().applyMatrix4(camera.matrixWorldInverse).z })), worldPerPixel: trackWorldPerPixel.value,
+    shaderErrors: (renderer.info.programs || []).filter(program => program.diagnostics && !program.diagnostics.runnable).length }),
+  cameraFraming: () => {
+    camera.updateMatrixWorld();
+    const projected = track.pos.map(point => point.clone().project(camera));
+    return { mode: camMode, autoFit: orbitAutoFit, radius: orbit.radius, phi: orbit.phi, paddingY: orbitFramePaddingY,
+      maxX: Math.max(...projected.map(p => Math.abs(p.x))), maxY: Math.max(...projected.map(p => Math.abs(p.y))),
+      minZ: Math.min(...projected.map(p => p.z)), maxZ: Math.max(...projected.map(p => p.z)) };
+  },
+  visualPresentation: () => ({ theme: visualTheme, sceneFocus, sceneryVisible: atmosphereGroup.visible,
+    ridgeCount: ridgeGroup.children.length, ridgeWireframe: ridgeMaterials.every(mat => mat.wireframe),
+    editHandlesVisible: handleGroup.visible, foliageColor: MAT.leaf.color.getHexString() }),
   analysis: () => analysis,
   setCertBank: deg => {
     const bank = Number(deg);

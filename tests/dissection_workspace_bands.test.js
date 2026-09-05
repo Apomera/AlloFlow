@@ -451,4 +451,26 @@ describe('dissection workspace bands', () => {
     expect(arms.length).toBe(2);
     for (const call of arms) expect(call, call).toContain('W * 0.0');
   }, 60_000);
+
+  // 2026-09-04. The specimen transform mirrors x in the ventral view (specimenScale.x = -1) and
+  // squashes it to 0.66 in the lateral view. Anatomy labels painted straight onto the specimen
+  // inside that transform came out back to front: confirmed by screenshot on Sheep Heart,
+  // Internal layer, ventral view, where the chamber labels read in reverse. fillReadableSpecimenText
+  // cancels the specimen scale around the anchor, so the glyphs run the right way while the label
+  // still travels with its feature; it is the identity transform in the dorsal view.
+  it.each(DISSECTION_PATHS)('draws specimen anatomy labels through the un-mirroring helper in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    const labels = [
+      "'thorax'", "'abdomen'", "'Area centralis'", "'Optic disc'", "'Refracted light'",
+      "'SA Node'", "'AV Node'", "'Bundle of His'", "'Purkinje Fibers'",
+      "'LA'", "'LV'", "'RA'", "'RV'", "'mitral'", "'tricuspid'",
+    ];
+    for (const label of labels) {
+      expect(source, label).not.toContain('ctx.fillText(' + label + ',');
+      expect(source, label).toContain('fillReadableSpecimenText(' + label + ',');
+    }
+    // The ECG readout sits in the same transform and was mirrored with them.
+    expect(source).toContain("fillReadableSpecimenText(bpm + ' BPM'");
+    expect(source).not.toContain("ctx.fillText(bpm + ' BPM'");
+  }, 60_000);
 });

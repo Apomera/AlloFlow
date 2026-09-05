@@ -283,6 +283,62 @@ describe('teacher guide HTML accessibility', () => {
   });
 });
 
+describe('teacher guide search discovery', () => {
+  it('gives every guide page matching, unique canonical and sharing metadata in the sitemap', () => {
+    const sitemap = new DOMParser().parseFromString(text(resolve(root, 'sitemap.xml')), 'application/xml');
+    const locations = Array.from(sitemap.querySelectorAll('loc'), (node) => node.textContent);
+    const canonicals = new Set();
+    const allPages = [...pagePaths, resolve(outputRoot, 'tool-reference.html')];
+    for (const filePath of allPages) {
+      // Metadata coverage does not require parsing the large offline book body.
+      const source = text(filePath);
+      const document = new DOMParser().parseFromString(source.slice(0, source.indexOf('</head>') + 7), 'text/html');
+      const fileName = filePath.replace(/\\/g, '/').split('/').pop();
+      const expected = 'https://apomera.github.io/AlloFlow/guide/' + fileName;
+      const canonicalTags = document.querySelectorAll('link[rel="canonical"]');
+      expect(canonicalTags, fileName).toHaveLength(1);
+      expect(canonicalTags[0].getAttribute('href')).toBe(expected);
+      expect(locations.filter((location) => location === expected), fileName).toHaveLength(1);
+      expect(canonicals.has(expected), fileName).toBe(false);
+      canonicals.add(expected);
+      const meta = (selector) => {
+        const tags = document.querySelectorAll(selector);
+        expect(tags, fileName + ': ' + selector).toHaveLength(1);
+        return tags[0].getAttribute('content');
+      };
+      const description = meta('meta[name="description"]');
+      expect(description.trim()).not.toBe('');
+      expect(meta('meta[property="og:url"]')).toBe(expected);
+      expect(meta('meta[property="og:title"]')).toBe(document.title);
+      expect(meta('meta[name="twitter:title"]')).toBe(document.title);
+      expect(meta('meta[property="og:description"]')).toBe(description);
+      expect(meta('meta[name="twitter:description"]')).toBe(description);
+      expect(meta('meta[name="twitter:card"]')).toBe('summary_large_image');
+      expect(meta('meta[property="og:image"]')).toBe('https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png');
+      expect(meta('meta[name="twitter:image"]')).toBe(meta('meta[property="og:image"]'));
+      expect(meta('meta[property="og:image:alt"]')).toBe(meta('meta[name="twitter:image:alt"]'));
+      const preview = readFileSync(resolve(root, 'assets/alloflow-social-preview.png'));
+      expect(meta('meta[property="og:image:width"]')).toBe(String(preview.readUInt32BE(16)));
+      expect(meta('meta[property="og:image:height"]')).toBe(String(preview.readUInt32BE(20)));
+      const breadcrumb = source.match(/<nav class="breadcrumbs"[^>]*>[\s\S]*?<\/nav>/);
+      const schemas = document.querySelectorAll('script[type="application/ld+json"]');
+      expect(schemas, fileName).toHaveLength(breadcrumb ? 1 : 0);
+      if (breadcrumb) {
+        const visible = new DOMParser().parseFromString(breadcrumb[0], 'text/html');
+        const items = Array.from(visible.querySelectorAll('li'));
+        const schema = JSON.parse(schemas[0].textContent);
+        expect(schema['@context']).toBe('https://schema.org');
+        expect(schema['@type']).toBe('BreadcrumbList');
+        expect(schema.itemListElement).toEqual(items.map((item, index) => ({
+          '@type': 'ListItem', position: index + 1, name: item.textContent.trim(),
+          item: item.querySelector('a') ? new URL(item.querySelector('a').getAttribute('href'), expected).href : expected,
+        })));
+      }
+    }
+    expect(canonicals.size).toBe(manifest.chapters.length + 3);
+  });
+});
+
 describe('teacher guide search and offline contracts', () => {
   it('indexes each chapter by section and points to real headings', { timeout: 240000 }, () => {
     const cachedDocumentFor = cachedDocumentReader();

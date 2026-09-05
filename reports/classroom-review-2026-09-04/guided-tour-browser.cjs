@@ -1,0 +1,40 @@
+const {chromium}=require('playwright');const fs=require('fs'),path=require('path');
+(async()=>{const browser=await chromium.launch({headless:true}),errors=[],checks=[];try{
+ const page=await browser.newPage({viewport:{width:1200,height:850}});page.on('pageerror',e=>errors.push(e.message));
+ await page.route('http://127.0.0.1:7777/guided-tour',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><title>Guided and tour UX check</title></head><body style="margin:16px;background:#f1f5f9"><main id="root" style="max-width:620px;margin:auto"></main></body></html>'}));
+ await page.goto('http://127.0.0.1:7777/guided-tour');
+ await page.addStyleTag({path:path.resolve('desktop/web-app/build/static/css/'+fs.readdirSync('desktop/web-app/build/static/css').find(f=>f.endsWith('.css')))});
+ for(const f of ['desktop/web-app/node_modules/react/umd/react.production.min.js','desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js','guided_mode_config_module.js','view_guided_mode_banner_module.js','view_misc_panels_module.js'])await page.addScriptTag({path:path.resolve(f)});
+ const host=fs.readFileSync('AlloFlowANTI.txt','utf8'),start=host.indexOf('      const handleTourKeyDown = (e) => {'),end=host.indexOf("      window.addEventListener('keydown', handleTourKeyDown)",start);
+ await page.addScriptTag({content:'window.makeTourKeyboard=function(handleNextTourStep,handlePrevTourStep,handleSetRunTourToFalse,setRunTour){'+host.slice(start,end)+';return handleTourKeyDown;};'});
+ await page.evaluate(strings=>{
+  const React=window.React,e=React.createElement,t=k=>k.split('.').reduce((v,p)=>v?.[p],strings)||'',config=window.AlloModules.GuidedModeConfig;
+  window.__mode='guided';window.__root=ReactDOM.createRoot(document.getElementById('root'));
+  const active=config.GUIDED_STEPS.filter(s=>config.normalizeGuidedProgress({selectedIds:config.GUIDED_PRESETS.find(p=>p.id==='reading-access').stepIds}).selectedIds.includes(s.id));
+  function Guided(){const [step,setStep]=React.useState(2);return e(window.AlloModules.GuidedModeBanner.GuidedModeBanner,{GUIDED_STEPS:active,allGuidedSteps:config.GUIDED_STEPS,GUIDED_TOUR_MAP:config.GUIDED_TOUR_MAP,guidedPhases:config.GUIDED_PHASES,guidedStep:step,setGuidedStep:setStep,guidedSelectedIds:active.map(s=>s.id),toggleGuidedStepId:()=>{},history:[],tourSteps:[],t,inputText:'Plants use sunlight to make food.',guidedCompletedIds:['source-input','analysis','glossary'],guidedSkippedIds:[],guidedCreatedHistoryIds:[],handleExitGuidedMode:()=>{},handleGuidedSkip:()=>setStep(s=>s+1),setShowGuidedTip:()=>{},getDefaultTitle:s=>s,markGuidedStepDone:()=>{},guidedProgressSaveState:{status:'saved',at:new Date().toISOString()}});}
+  function Tour(){const [step,setStep]=React.useState(0),[open,setOpen]=React.useState(true);const next=()=>setStep(s=>Math.min(s+1,2)),prev=()=>setStep(s=>Math.max(0,s-1)),close=()=>setOpen(false);React.useEffect(()=>{const key=window.makeTourKeyboard(next,prev,close,setOpen);window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[]);window.__tourStep=step;
+  return e(window.AlloModules.TourOverlay,{runTour:open,tourStep:step,tourSteps:[{title:t('tour.guided_workflow_title'),text:t('tour.guided_workflow_text')},{title:t('tour.directions_title'),text:t('tour.directions_text')},{title:'Review before teaching',text:('Review the lesson with your students in mind. ').repeat(80)}],tourRect:{top:80,left:20,right:200,bottom:140,width:180,height:60},t,handleNextTourStep:next,handlePrevTourStep:prev,handleSetRunTourToFalse:close,setRunTour:setOpen,setIsSpotlightMode:()=>{},setSpotlightMessage:()=>{}});}
+  window.__showGuided=()=>window.__root.render(e(Guided));window.__showTour=()=>window.__root.render(e(Tour));window.__showGuided();
+ },JSON.parse(fs.readFileSync('ui_strings.js','utf8')));
+ const customize=page.getByRole('button',{name:'Choose which steps to include'});await customize.waitFor();if(!(await customize.innerText()).includes('Customize'))throw Error('Missing visible Customize label');
+ await customize.click();await page.locator('#guided-step-picker').waitFor();await customize.click();
+ const next=page.getByRole('button',{name:/Next step/});if(!(await next.locator('span').innerText()).trim())throw Error('Missing next destination');checks.push('Guided Customize opens the picker; Next names its destination.');
+ await page.setViewportSize({width:360,height:780});await page.screenshot({path:'reports/classroom-review-2026-09-04/guided-ux-mobile.png',fullPage:true});
+ if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Guided horizontal overflow');
+ await page.evaluate(()=>window.__showTour());await page.getByRole('dialog').waitFor();
+ for(const size of [{width:1200,height:850},{width:360,height:780},{width:320,height:568},{width:667,height:375}]){
+  await page.setViewportSize(size);await page.getByRole('dialog').evaluate(async el=>{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));await Promise.all(el.getAnimations().map(a=>a.finished.catch(()=>{})));});const bounds=await page.getByRole('dialog').boundingBox();if(bounds.x<0||bounds.y<0||bounds.x+bounds.width>size.width+1||bounds.y+bounds.height>size.height+1)throw Error('Tour outside viewport '+JSON.stringify({size,bounds}));
+  for(const button of await page.getByRole('dialog').getByRole('button').all()){const b=await button.boundingBox();if(b.y<bounds.y||b.y+b.height>bounds.y+bounds.height+1||b.height<44)throw Error('Tour action unreachable '+JSON.stringify(b));}
+  checks.push('Tour fits '+size.width+'×'+size.height+'; all navigation controls visible and at least 44px tall.');
+ }
+ await page.setViewportSize({width:360,height:780});await page.getByRole('button',{name:'Next',exact:true}).focus();await page.keyboard.press('Space');if(await page.evaluate(()=>window.__tourStep)!==1)throw Error('Space advanced more than once');
+ await page.getByRole('button',{name:'Back',exact:true}).focus();await page.keyboard.press('Space');if(await page.evaluate(()=>window.__tourStep)!==0)throw Error('Back Space misrouted');checks.push('Space activates Next and Back once.');
+ await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('button',{name:'Finish',exact:true}).waitFor();
+ const copy=page.locator('.allo-tour-copy');if(!await copy.evaluate(el=>el.scrollHeight>el.clientHeight))throw Error('Long copy does not scroll');await copy.evaluate(el=>el.scrollTop=el.scrollHeight);
+ const finish=await page.getByRole('button',{name:'Finish',exact:true}).boundingBox();if(finish.y+finish.height>780)throw Error('Long text hid Finish');checks.push('Long instructions scroll independently; Finish remains visible.');
+ await page.getByRole('button',{name:'Back',exact:true}).click();if(await copy.evaluate(el=>el.scrollTop)!==0)throw Error('New step retained old scroll offset');
+ await page.screenshot({path:'reports/classroom-review-2026-09-04/tour-ux-mobile.png',fullPage:true});
+ await page.addScriptTag({path:path.resolve('desktop/web-app/node_modules/axe-core/axe.min.js')});const axe=await page.evaluate(()=>axe.run(document.querySelector('[role="dialog"]'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}}));fs.writeFileSync('reports/classroom-review-2026-09-04/tour-ux-axe.json',JSON.stringify(axe,null,2));if(axe.violations.length)throw Error('Axe violations: '+axe.violations.map(v=>v.id).join(','));
+ await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'detached'});checks.push('Escape closes tour; targeted axe check has no violations.');
+ if(errors.length)throw Error(errors.join('\n'));fs.writeFileSync('reports/classroom-review-2026-09-04/guided-tour-browser.json',JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

@@ -330,6 +330,19 @@ describe('galaxy visuals', () => {
     expect(source).not.toContain('orb.r = 1.2;');
   });
 
+  it.each(GALAXY_PATHS)('%s releases a dropped object inside the frame', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The fall path used to start at radius 2.65 (6.2 horizon radii) on a launch arc of
+    // 0.42-1.04 rad. With the default camera 3.25 out at yaw 0.28 that point sits just
+    // past the right edge of the frustum, and the tidal zone only begins at 1.55 - so a
+    // learner pressed "Drop", read "watch the stretching", and saw nothing for ~1.5 s
+    // until the object drifted in from off-screen. Verified in frame from the first
+    // capture at 1.6 with the narrower, lower arc; end point and duration unchanged.
+    expect(source).toContain('radius=1.6-1.31*eased,');
+    expect(source).toContain('launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,');
+    expect(source).not.toContain('radius=2.65-2.36*eased,');
+  });
+
   it.each(GALAXY_PATHS)('%s keeps the black-hole canvas sized to its own box', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     // resize() ran once from init(), while the canvas still spanned the full width.
@@ -341,6 +354,20 @@ describe('galaxy visuals', () => {
     expect(source).toContain('if(blackHoleResizeObserver)blackHoleResizeObserver.disconnect()');
     // A zero measurement must not be allowed to pin the backing store.
     expect(source).toContain('if (w < 2 || h < 2) return;');
+  });
+
+  it.each(GALAXY_PATHS)('%s counts only real observing filters as progress', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The "N/5" badge counts DISTINCT entries in observeHistory, so a stale or
+    // corrupted history holding names that were never filters ('ultraviolet') read as
+    // progress: 3 of 5 explored when one real filter had been used.
+    expect(source).toContain("return OBSERVE_MODES.some(function (m) { return m.key === mode; });");
+    expect(source).toContain('if (!observeHistory.length) observeHistory = [observeMode];');
+    expect(source).not.toContain('var observeHistory = Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode];');
+    // And it must be filtered where OBSERVE_MODES exists - same hoisting trap as
+    // GALAXY_TYPES: the name hoists, the array does not.
+    expect(source.indexOf('var OBSERVE_MODES = ['))
+      .toBeLessThan(source.indexOf('return OBSERVE_MODES.some(function (m) { return m.key === mode; });'));
   });
 
   it.each(GALAXY_PATHS)('%s survives a saved session holding stale values', (filePath) => {

@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-04",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  },
+  "system": "skeletal",
+  "learningLevel": 3,
+  "before": [
+    {
+      "revealed": false,
+      "pageWidth": 390,
+      "panel": {
+        "top": 446,
+        "bottom": 1198,
+        "height": 752
+      },
+      "card": {
+        "top": 736.5,
+        "bottom": 1012,
+        "height": 275.5
+      },
+      "reveal": {
+        "top": 910,
+        "bottom": 938,
+        "height": 28
+      },
+      "navigation": {
+        "top": 1084,
+        "bottom": 1180,
+        "height": 96
+      }
+    },
+    {
+      "revealed": true,
+      "pageWidth": 390,
+      "panel": {
+        "top": 446,
+        "bottom": 1477.625,
+        "height": 1031.625
+      },
+      "card": {
+        "top": 736.5,
+        "bottom": 1044.125,
+        "height": 307.625
+      },
+      "reveal": {
+        "top": 940.125,
+        "bottom": 970.125,
+        "height": 30
+      },
+      "navigation": {
+        "top": 1363.625,
+        "bottom": 1459.625,
+        "height": 96
+      }
+    }
+  ],
+  "after": [
+    {
+      "revealed": false,
+      "pageWidth": 390,
+      "panel": {
+        "top": 446,
+        "bottom": 1044,
+        "height": 598
+      },
+      "card": {
+        "top": 628.5,
+        "bottom": 860,
+        "height": 231.5
+      },
+      "reveal": {
+        "top": 798,
+        "bottom": 842,
+        "height": 44
+      },
+      "navigation": {
+        "top": 872,
+        "bottom": 968,
+        "height": 96
+      }
+    },
+    {
+      "revealed": true,
+      "pageWidth": 390,
+      "panel": {
+        "top": 446,
+        "bottom": 1272.625,
+        "height": 826.625
+      },
+      "card": {
+        "top": 628.5,
+        "bottom": 942.125,
+        "height": 313.625
+      },
+      "reveal": {
+        "top": 880.125,
+        "bottom": 924.125,
+        "height": 44
+      },
+      "navigation": {
+        "top": 1042.625,
+        "bottom": 1138.625,
+        "height": 96
+      }
+    }
+  ],
+  "validation": {
+    "unitChecksPassed": 48,
+    "scope": "Local harness with app styles; opened notes and study tips checked on phone and desktop. This is not a full accessibility audit.",
+    "browserWorkflowsPassed": 3,
+    "noteDisclosureAxeViolations": 0
+  }
+}

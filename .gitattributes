@@ -39,3 +39,9 @@ migration_sources/** -text
 *.zip  binary
 *.gz   binary
 *.wasm binary
+
+# Clinical Atlas files are vendored byte-for-byte and checked against release SHA-256.
+# Preserve source line endings in CSV/YAML as well as binary models and illustrations.
+stem_lab/assets/anatomy/clinical-atlas/** -text
+desktop/web-app/public/stem_lab/assets/anatomy/clinical-atlas/** -text
+desktop/web-app/build/stem_lab/assets/anatomy/clinical-atlas/** -text

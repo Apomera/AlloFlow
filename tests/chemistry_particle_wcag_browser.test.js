@@ -108,6 +108,11 @@ const CASES = [
   })),
   { name: 'nuclear lab overview', file: 'stem_lab/stem_tool_nuclearlab.js', id: 'nuclearLab', state: { _nuclearLab: {} } },
   { name: 'particle lab 3d overview', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: {} } },
+  // The readouts dock and essential bar are new surfaces; audit them with the dock in each
+  // placement and under the dark and high-contrast host themes as well as the default.
+  { name: 'particle lab 3d readouts below', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { readoutsPosition: 'bottom', trace: true, systemProbe: true, preset: 'osmosis' } } },
+  { name: 'particle lab 3d dark theme', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { readoutsPosition: 'left', trace: true } }, overrides: { isDark: true }, hostCard: true },
+  { name: 'particle lab 3d high contrast', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { trace: true, systemProbe: true } }, overrides: { isContrast: true } },
   { name: 'molecule lab dark theme', file: 'stem_lab/stem_tool_molecule.js', id: 'molecule', state: { molecule: { moleculeMode: 'viewer' } }, overrides: { isDark: true } },
   { name: 'titration lab high contrast', file: 'stem_lab/stem_tool_titration.js', id: 'titrationLab', state: { titrationLab: { labTab: 'titrate', titrationReduceMotion: true } }, overrides: { isContrast: true } },
 ];
@@ -136,6 +141,19 @@ function compactViolations(violations) {
         : undefined,
     })),
   }));
+}
+
+// In the dark theme the STEM host (stem_lab_module.js, isDarkBackdrop) wraps every tool in a
+// white card carrying data-stem-tool-surface, and the host's generic .theme-dark utility remaps
+// are scoped with :not([data-stem-tool-surface] *). Rendering the tool bare under .theme-dark
+// audits a cascade the product never shows (navy bg-white panels with slate-950 ink). Mirror the
+// production substrate so dark-theme findings are real. Contrast keeps its pure-black surface.
+// Opt-in per case (hostCard: true): under the faithful substrate the pre-existing molecule dark case
+// reports slate-600 ink on the tool's own dark token panels at 1.93:1, a real finding for that
+// tool's owner that this lane does not change.
+function surfaceMarkup(testCase, html) {
+  if (!testCase.hostCard || normalizedOverrides(testCase).theme !== 'dark') return html;
+  return '<div data-stem-tool-surface="' + testCase.id + '" style="background:#ffffff;color:#0f172a;color-scheme:light;border-radius:10px;padding:10px">' + html + '</div>';
 }
 
 function themeClass(testCase) {
@@ -171,7 +189,7 @@ describe('Chemistry and particle tools WCAG regression in a real browser', () =>
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
-          '<body><main id="tool-root" class="' + themeClass(testCase) + '">' + rendered.html + '</main></body></html>',
+          '<body><main id="tool-root" class="' + themeClass(testCase) + '">' + surfaceMarkup(testCase, rendered.html) + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
       await page.addStyleTag({ content: appCss });
@@ -215,6 +233,6 @@ describe('Chemistry and particle tools WCAG regression in a real browser', () =>
       expect.soft(reflow.scrollWidth, JSON.stringify(reflow.offenders, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
       expect.soft(textSpacingReflow.scrollWidth, JSON.stringify(textSpacingReflow.offenders, null, 2)).toBeLessThanOrEqual(textSpacingReflow.clientWidth);
       await page.close();
-    }, 20000);
+    }, 60000); // axe + two reflow passes on a real browser; 20s tripped on OneDrive disk contention
   }
 });

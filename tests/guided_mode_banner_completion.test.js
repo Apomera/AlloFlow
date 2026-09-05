@@ -937,3 +937,286 @@ describe('Guided banner - continuous journey handoff and resource shelf', () => 
     b.cleanup();
   });
 });
+
+describe('Guided reading first use', () => {
+  it.each(['A', 'My lesson', '12345678901234567890'])('preserves even a short source draft: %s', draft => {
+    const setInputText = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: draft, setInputText }));
+    expect(b.button('example passage')).toBeFalsy();
+    expect(setInputText).not.toHaveBeenCalled();
+    b.cleanup();
+  });
+
+  it('allows a whitespace-only source to load the sample and blocks loading while busy', () => {
+    const setInputText = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: '  ', setInputText, isGuidedRetrying: true }));
+    expect(b.button('example passage').disabled).toBe(true);
+    act(() => b.button('example passage').click());
+    expect(setInputText).not.toHaveBeenCalled();
+    b.render(baseProps({ guidedStep: 0, inputText: '  ', setInputText }));
+    act(() => b.button('example passage').click());
+    expect(setInputText).toHaveBeenCalledTimes(1);
+    expect(setInputText.mock.calls[0][0]).toMatch(/^Photosynthesis/);
+    b.cleanup();
+  });
+
+  it('shows the real reading-path length before selection and applies that preset', () => {
+    loadAlloModule('guided_mode_config_module.js');
+    const config = window.AlloModules.GuidedModeConfig;
+    const preset = config.GUIDED_PRESETS.find(item => item.id === 'reading-access');
+    const applyGuidedPreset = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 0, GUIDED_STEPS: config.GUIDED_STEPS,
+      allGuidedSteps: config.GUIDED_STEPS, guidedPresets: [preset], applyGuidedPreset }));
+    const button = b.button('Adapt a reading');
+    expect(button.textContent).toContain('7 steps, including review and delivery');
+    act(() => button.click());
+    expect(applyGuidedPreset).toHaveBeenCalledWith(preset);
+    b.cleanup();
+  });
+});
+
+describe('Guided reading review and result ownership', () => {
+  const readingSteps = [STEPS[0], { id: 'simplified', label: 'Text Adaptation', action: 'Adapt the text.', success: 'Adapted text ready.' }, STEPS[2]];
+  const props = overrides => baseProps({ GUIDED_STEPS: readingSteps, allGuidedSteps: readingSteps, guidedStep: 1, ...overrides });
+
+  it.each([
+    ['string payload', 'Plants use light to make sugar.'],
+    ['simplifiedText payload', { simplifiedText: 'Plants use light to make sugar.', originalText: 'Unadapted source text.' }],
+    ['text payload', { text: 'Plants use light to make sugar.' }],
+  ])('previews the actual adaptation from a %s and opens the same saved item', (_label, data) => {
+    const result = { id: 'reading-current', type: 'simplified', title: 'Adapted passage', data };
+    const openGuidedHistoryItem = vi.fn();
+    const b = mountBanner(props({ history: [result], guidedCompletedIds: ['simplified'], guidedCreatedHistoryIds: [result.id], openGuidedHistoryItem }));
+    const preview = b.host.querySelector('[aria-labelledby="guided-result-preview-title"]');
+    expect(preview.textContent).toContain('Plants use light to make sugar.');
+    expect(preview.textContent).not.toContain('Unadapted source text.');
+    expect(preview.textContent).toContain('check facts, key vocabulary, and the learning goal');
+    act(() => b.button('Open result').click());
+    expect(openGuidedHistoryItem).toHaveBeenCalledWith(result);
+    b.cleanup();
+  });
+
+  it('never presents an unrelated lesson as the result of a resumed step with missing IDs', () => {
+    const old = { id: 'another-lesson', type: 'simplified', data: 'Unrelated lesson text.' };
+    const b = mountBanner(props({ history: [old], guidedCompletedIds: ['simplified'], guidedCreatedHistoryIds: [] }));
+    expect(b.host.querySelector('[aria-labelledby="guided-result-preview-title"]')).toBeNull();
+    expect(b.text()).not.toContain('Unrelated lesson text.');
+    b.cleanup();
+  });
+
+  it('previews a newly arrived result before the host registers its Guided ID', () => {
+    const old = { id: 'old-reading', type: 'simplified', data: 'Previous lesson text.' };
+    const analysis = { id: 'this-analysis', type: 'analysis' };
+    const result = { id: 'new-reading', type: 'simplified', data: 'This lesson adaptation.' };
+    const shared = { guidedCreatedHistoryIds: [analysis.id] };
+    const b = mountBanner(props({ ...shared, history: [old, analysis] }));
+    b.render(props({ ...shared, history: [old, analysis, result] }));
+    const preview = b.host.querySelector('[aria-labelledby="guided-result-preview-title"]');
+    expect(preview.textContent).toContain('This lesson adaptation.');
+    expect(preview.textContent).not.toContain('Previous lesson text.');
+    b.cleanup();
+  });
+
+  it('renders reading text as text and locks result opening while generation is busy', () => {
+    const result = { id: 'safe-reading', type: 'simplified', data: '<img src=x onerror="alert(1)"> is literal example text.' };
+    const openGuidedHistoryItem = vi.fn();
+    const b = mountBanner(props({ history: [result], guidedCreatedHistoryIds: [result.id], guidedCompletedIds: ['simplified'], isGuidedRetrying: true, openGuidedHistoryItem }));
+    const preview = b.host.querySelector('[aria-labelledby="guided-result-preview-title"]');
+    expect(preview.querySelector('img')).toBeNull();
+    expect(preview.textContent).toContain('<img src=x');
+    expect(b.button('Open result').disabled).toBe(true);
+    act(() => b.button('Open result').click());
+    expect(openGuidedHistoryItem).not.toHaveBeenCalled();
+    b.cleanup();
+  });
+});
+
+describe('Guided step recovery guidance', () => {
+  it.each([
+    ['Could not generate the adaptation.', 'Review the source and settings, then retry.'],
+    [{ status: 401, message: 'Request failed' }, 'Check your AI connection and access settings'],
+    [{ code: 'PERMISSION_DENIED', message: 'Request failed' }, 'Check your AI connection and access settings'],
+    ['Missing API key', 'Check your AI connection and access settings'],
+    [{ status: 429, message: 'Request failed' }, 'The service is busy. Wait a moment'],
+    [{ status: 429, message: 'Insufficient quota' }, 'Check your AI provider usage allowance'],
+    ['Network connection lost', 'Check your connection, then try again.'],
+    ['Request timed out', 'Check your connection, then try again.'],
+  ])('offers the appropriate recovery for %j', (error, guidance) => {
+    const b = mountBanner(baseProps({ guidedStepError: error }));
+    expect(b.text()).toContain(guidance);
+    if (typeof error === 'string' && error.startsWith('Could not generate')) expect(b.text()).not.toContain('The service is busy');
+    b.cleanup();
+  });
+
+  it('opens settings or retries only when chosen, retaining the current result', () => {
+    const openUniversalSettings = vi.fn();
+    const retryGuidedStep = vi.fn();
+    const saved = { id: 'saved-analysis', type: 'analysis', data: 'Existing result.' };
+    const shared = { guidedStepError: 'Missing API key', openUniversalSettings, retryGuidedStep,
+      history: [saved], guidedCreatedHistoryIds: [saved.id], guidedCompletedIds: ['analysis'] };
+    const b = mountBanner(baseProps(shared));
+    expect(retryGuidedStep).not.toHaveBeenCalled();
+    act(() => b.button('Review settings').click());
+    expect(openUniversalSettings).toHaveBeenCalledTimes(1);
+    const retry = Array.from(b.host.querySelectorAll('button')).find(button => button.textContent === 'Retry');
+    act(() => retry.click());
+    expect(retryGuidedStep).toHaveBeenCalledTimes(1);
+    expect(b.text()).toContain('Existing result.');
+    expect(b.text()).toContain('Saved result available');
+    expect(b.text()).toContain('This attempt did not finish');
+    expect(b.text()).not.toContain('Latest result ready');
+    b.render(baseProps({ ...shared, isGuidedRetrying: true }));
+    expect(b.button('Review settings').disabled).toBe(true);
+    b.cleanup();
+  });
+
+  it('does not offer an inert Retry button when the host has no retry handler', () => {
+    const b = mountBanner(baseProps({ guidedStepError: 'Request failed' }));
+    expect(Array.from(b.host.querySelectorAll('button')).some(button => button.textContent === 'Retry')).toBe(false);
+    b.cleanup();
+  });
+});
+
+describe('Readiness confirmations belong to the reviewed lesson', () => {
+  const key = 'allo_guided_readiness_checks';
+  const finalSteps = [{ id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review the lesson.', success: 'All set.' }];
+  const reading = { id: 'lesson-reading', type: 'simplified', data: 'Plants use light to make sugars.', config: { gradeLevel: '5' } };
+  const props = overrides => baseProps({ GUIDED_STEPS: finalSteps, allGuidedSteps: finalSteps, guidedStep: 0,
+    inputText: 'The original lesson passage about plant energy.', history: [reading], guidedCreatedHistoryIds: [reading.id],
+    guidedDeliveryEvidence: {}, ...overrides });
+  const check = (b, label = 'Accessibility and reading order') => Array.from(b.host.querySelectorAll('label')).find(item => item.textContent.includes(label))?.querySelector('input[type="checkbox"]');
+  const confirm = b => act(() => check(b).click());
+
+  it('does not inherit unscoped confirmations from an older version', () => {
+    localStorage.setItem(key, JSON.stringify({ accessibility: true, backup: true, directions: true }));
+    const b = mountBanner(props());
+    expect(check(b).checked).toBe(false);
+    expect(b.text()).toContain('0/6');
+    b.cleanup();
+  });
+
+  it('restores checks for the same source and resource contents without storing duplicate lesson text', () => {
+    const b = mountBanner(props()); confirm(b);
+    const saved = localStorage.getItem(key);
+    expect(JSON.parse(saved)).toMatchObject({ version: 2, checks: { accessibility: true } });
+    expect(saved).not.toContain(reading.data);
+    expect(saved).not.toContain('The original lesson passage');
+    b.cleanup();
+    const c = mountBanner(props({ history: [JSON.parse(JSON.stringify(reading))] }));
+    expect(check(c).checked).toBe(true);
+    c.cleanup();
+  });
+
+  it.each([
+    ['source changed', { inputText: 'A different lesson source about rainfall.' }],
+    ['resource edited', { history: [{ ...reading, data: 'A teacher-edited adaptation with a new example.' }] }],
+    ['resource replaced', { history: [{ ...reading, id: 'new-reading' }], guidedCreatedHistoryIds: ['new-reading'] }],
+    ['reading settings changed', { history: [{ ...reading, config: { gradeLevel: '3' } }] }],
+    ['learning goal changed', { guidedPlanBrief: { goal: 'Explain how plants store energy.' } }],
+  ])('reopens manual checks when %s', (_label, change) => {
+    const b = mountBanner(props()); confirm(b);
+    b.render(props(change));
+    expect(check(b).checked).toBe(false);
+    expect(b.text()).toContain('The lesson changed. Please confirm the manual checks again.');
+    expect(JSON.parse(localStorage.getItem(key)).checks).toEqual({});
+    b.cleanup();
+  });
+
+  it('does not restore old checks merely because an edit is undone', () => {
+    const b = mountBanner(props()); confirm(b);
+    b.render(props({ inputText: 'A changed source passage.' }));
+    b.render(props());
+    expect(check(b).checked).toBe(false);
+    b.cleanup();
+  });
+
+  it('keeps checks when unrelated History changes or resources are reordered', () => {
+    const b = mountBanner(props()); confirm(b);
+    b.render(props({ history: [{ id: 'unrelated', type: 'simplified', data: 'Another lesson.' }, reading] }));
+    expect(check(b).checked).toBe(true);
+    b.render(props({ history: [reading, { id: 'unrelated', type: 'simplified', data: 'An edited other lesson.' }] }));
+    expect(check(b).checked).toBe(true);
+    b.cleanup();
+  });
+
+  it('waits for saved resources to hydrate before replacing stored checks', () => {
+    const b = mountBanner(props()); confirm(b); b.cleanup();
+    const saved = localStorage.getItem(key);
+    const c = mountBanner(props({ history: [] }));
+    expect(check(c).checked).toBe(false);
+    expect(check(c).disabled).toBe(true);
+    expect(c.text()).toContain('Waiting for the lesson resources');
+    expect(localStorage.getItem(key)).toBe(saved);
+    c.render(props());
+    expect(check(c).checked).toBe(true);
+    expect(check(c).disabled).toBe(false);
+    c.cleanup();
+  });
+
+  it('accepts only known check IDs with literal true values', () => {
+    const b = mountBanner(props()); confirm(b); b.cleanup();
+    const saved = JSON.parse(localStorage.getItem(key));
+    saved.checks = { accessibility: 'true', backup: true, directions: 1, unknown: true };
+    localStorage.setItem(key, JSON.stringify(saved));
+    const c = mountBanner(props());
+    expect(check(c).checked).toBe(false);
+    expect(check(c, 'backup access route').checked).toBe(true);
+    expect(JSON.parse(localStorage.getItem(key)).checks).toEqual({ backup: true });
+    c.cleanup();
+  });
+
+  it('reports failed persistence while retaining checks for the current session', () => {
+    const original = Storage.prototype.setItem;
+    const storage = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function(name, value) {
+      if (name === key) throw new Error('Storage quota exceeded');
+      return original.call(this, name, value);
+    });
+    const b = mountBanner(props());
+    try {
+      confirm(b);
+      expect(check(b).checked).toBe(true);
+      expect(b.text()).toContain('These checks could not be saved on this device');
+    } finally { b.cleanup(); storage.mockRestore(); }
+  });
+
+  it('keeps recorded evidence checked and locks manual controls while busy', () => {
+    const b = mountBanner(props({ guidedDeliveryEvidence: { directionsSaved: true } }));
+    expect(check(b, 'Student directions are saved').checked).toBe(true);
+    expect(check(b, 'Student directions are saved').disabled).toBe(true);
+    b.render(props({ isGuidedRetrying: true }));
+    expect(check(b).disabled).toBe(true);
+    b.cleanup();
+  });
+});
+
+describe('Guided navigation labels', () => {
+  it('shows a visible Customize label and opens the step picker', () => {
+    const b = mountBanner(baseProps({ toggleGuidedStepId: () => {} }));
+    const customize = b.button('Customize');
+    expect(customize).toBeTruthy();
+    act(() => customize.click());
+    expect(customize.getAttribute('aria-expanded')).toBe('true');
+    expect(b.host.querySelector('#guided-step-picker')).toBeTruthy();
+    b.cleanup();
+  });
+  it('names the destination on Next step after a completed result', () => {
+    const b = mountBanner(baseProps({ guidedCompletedIds: ['analysis'] }));
+    expect(b.button('Next step').textContent).toContain('FAQ Generator');
+    b.cleanup();
+  });
+});
+
+describe('Guided resume clarity and busy state', () => {
+  it('names the saved step when returning to a lesson', () => {
+    const b=mountBanner(baseProps({guidedCompletedIds:['source-input']}));
+    expect(b.host.querySelector('.allo-guided-resume-card').textContent).toContain('Your saved step: Analyze Source Material');
+    b.cleanup();
+  });
+  it('disables resume, review, and planning actions while a resource is running', () => {
+    const focus=vi.fn(),review=vi.fn();
+    const b=mountBanner(baseProps({guidedCompletedIds:['source-input'],guidedCreatedHistoryIds:['result'],history:[{id:'result',type:'analysis',data:'Saved analysis'}],isGuidedRetrying:true,focusGuidedTarget:focus,openGuidedHistoryItem:review,generateGuidedPlanFromGoal:vi.fn()}));
+    const actions=Array.from(b.host.querySelectorAll('.allo-guided-resume-card button'));
+    expect(actions).toHaveLength(3);expect(actions.every(button=>button.disabled)).toBe(true);
+    act(()=>actions.forEach(button=>button.click()));expect(focus).not.toHaveBeenCalled();expect(review).not.toHaveBeenCalled();b.cleanup();
+  });
+});

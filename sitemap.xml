@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://apomera.github.io/AlloFlow/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/about.html</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -50,13 +50,13 @@
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/launch.html</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/features.html</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -68,7 +68,7 @@
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/students.html</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -115,12 +115,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://apomera.github.io/AlloFlow/educator-evaluation.html</loc>
-    <lastmod>2026-08-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>monthly</changefreq>
@@ -128,164 +122,176 @@
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/accessibility-and-udl.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/adventure-mode.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/allobot-assistant.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/classroom-workflows.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/documents-and-printing.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/family-mode.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/for-school-leaders.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/for-your-it-department.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/index.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/live-sessions.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/make-a-document-accessible.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/math-fluency.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/offline.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/prepare-a-lesson.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/privacy-and-responsible-ai.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/quick-reference.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/review-and-next-steps.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/school-rollout-and-coaching.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/specialist-reference.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/start-here.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/steam-lab.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/tool-reference.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/troubleshooting.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/universal-settings.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/the-workspace.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/settings-and-help.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/guide/saving-and-storage.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://apomera.github.io/AlloFlow/guide/worked-student-vignette.html</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+  <url>
+    <loc>https://apomera.github.io/AlloFlow/guide/worked-multilingual-vignette.html</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+  <url>
+    <loc>https://apomera.github.io/AlloFlow/guide/worked-assessment-access-vignette.html</loc>
+    <lastmod>2026-09-04</lastmod>
   </url>
 </urlset>

@@ -64,15 +64,12 @@ const uiStrings = read('ui_strings.js');
     console.log('opened ' + opened + ' disclosure(s)');
     await pg.waitForTimeout(900);
   }
-  const box = await pg.evaluate(({ sel, vw }) => {
-    const el = document.querySelector(sel);
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { x: Math.max(0, r.left - 4), y: Math.max(0, r.top - 4), width: Math.min(vw, r.width + 8), height: Math.min(2300, r.height + 8) };
-  }, { sel: SELECTOR, vw: VW });
-  if (!box) { console.log('selector not found: ' + SELECTOR); await b.close(); return; }
-  // Element screenshots position themselves; a computed clip box silently drifts if
-  // anything reflows between measuring and shooting.
+  const found = await pg.evaluate((sel) => !!document.querySelector(sel), SELECTOR);
+  if (!found) { console.log('selector not found: ' + SELECTOR); await b.close(); return; }
+  // Scroll by hand: Playwright's own scrollIntoViewIfNeeded waits for the element to be
+  // stable, and the scene's rAF loop means that never happens. Neutralise rAF only
+  // AFTER the scroll, then measure - a box measured before either step lands the clip
+  // on whatever has since moved into those coordinates.
   await pg.evaluate((sel) => { const el = document.querySelector(sel); if (el) el.scrollIntoView({ block: 'center' }); }, SELECTOR);
   await pg.waitForTimeout(500);
   await pg.evaluate(() => { window.requestAnimationFrame = function () { return 0; }; });
@@ -84,9 +81,5 @@ const uiStrings = read('ui_strings.js');
   }, { sel: SELECTOR, vw: VW });
   await pg.screenshot({ path: path.join(OUT, NAME + '.png'), clip: shot, timeout: 25000 });
   console.log(NAME + ' ' + JSON.stringify(shot));
-  await b.close();
-  return;
-  await pg.screenshot({ path: path.join(OUT, NAME + '.png'), clip: box, timeout: 25000 });
-  console.log(NAME, JSON.stringify(box));
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

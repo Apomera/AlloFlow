@@ -28,7 +28,7 @@ describe('Geology Explorer guided missions', () => {
 
   it('defines one question and three observable checks for every scene', () => {
     const missions = P.missions();
-    expect(Object.keys(missions)).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
+    expect(Object.keys(missions)).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision']);
     for (const [id, mission] of Object.entries(missions)) {
       expect(mission.question, id).toBeTruthy();
       expect(mission.notice, id).toHaveLength(3);

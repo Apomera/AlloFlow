@@ -5843,13 +5843,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       style: {
                         background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b',
                         border: '1px solid ' + (picked ? '#15803d' : '#334155'),
-                        color: picked ? (ctx.isDark ? '#86efac' : '#14532d') : '#cbd5e1',
+                        color: picked ? ((ctx.isDark || ctx.isContrast) ? '#86efac' : '#14532d') : '#cbd5e1',
                         borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
                         textAlign: 'left'
                       }
                     },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, diff.label),
-                      h('div', { style: { fontSize: 11, color: picked ? (ctx.isDark ? '#a7f3d0' : '#166534') : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.fireecology.' + (dkey) + '_desc', diff.desc))
+                      h('div', { style: { fontSize: 11, color: picked ? ((ctx.isDark || ctx.isContrast) ? '#a7f3d0' : '#166534') : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.fireecology.' + (dkey) + '_desc', diff.desc))
                     );
                   })
                 )

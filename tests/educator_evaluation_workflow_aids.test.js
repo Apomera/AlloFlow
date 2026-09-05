@@ -116,26 +116,32 @@ describe('bulk roster paste', () => {
     const preview = card.textContent;
     expect(preview).toContain('Skipped: name and staff code are required');
     expect(preview).toContain('Skipped: duplicate staff code in this paste');
-    expect(preview).toContain('due date not recognized');
+    expect(preview).toContain('Enter a valid cycle due date');
 
-    clickButton(container, 'Add 2 educators');
+    clickButton(container, 'Add 1 educator');
     await waitForLocalSave();
 
     const workspace = storedWorkspace();
-    expect(workspace.teachers).toHaveLength(2);
+    expect(workspace.teachers).toHaveLength(1);
     const codes = workspace.teachers.map((teacher) => teacher.code);
     expect(codes).toContain('JR104');
-    expect(codes).toContain('SL221');
+    expect(codes).not.toContain('SL221');
     const rivera = workspace.teachers.find((teacher) => teacher.code === 'JR104');
-    const lee = workspace.teachers.find((teacher) => teacher.code === 'SL221');
     expect(rivera.dueDate).toBe('2027-05-15');
-    expect(lee.dueDate).toBe('');
-    expect(lee.assignment).toBe('Biology');
     // ONE audit entry for the whole paste, not one per educator.
     const pasteEvents = workspace.audit.filter((entry) => String(entry.summary || '').includes('pasted roster'));
     expect(pasteEvents).toHaveLength(1);
     expect(container.textContent).toContain('Jordan Rivera');
-    expect(container.textContent).toContain('Sam Lee');
+    expect(card.querySelector('textarea').value).toBe('Sam Lee\tSL221\tBiology\ttomorrow\nNoCode Person\nDupe Rivera, jr104, Art');
+    expect(card.querySelector('[role="status"]').textContent).toContain('1 educator added. 3 skipped line(s) kept');
+    expect(pasteEvents[0].teacherId).toBe(rivera.id);
+    expect(pasteEvents[0].entityId).toBe(rivera.id);
+    enterValue(card.querySelector('textarea'), 'Sam Lee\tSL221\tBiology\t2027-05-16');
+    clickButton(container, 'Add 1 educator');
+    await waitForLocalSave();
+    expect(storedWorkspace().teachers).toHaveLength(2);
+    expect(storedWorkspace().teachers.find(teacher => teacher.code === 'SL221')).toMatchObject({ dueDate: '2027-05-16', assignment: 'Biology' });
+    expect(container.querySelector('[aria-labelledby="ae-paste-roster-title"]')).toBeNull();
   });
 
   it('keeps a comma-containing name intact when the line is tab-separated', async () => {

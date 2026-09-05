@@ -17,6 +17,7 @@ function startDisposableServer(root) {
     'alloflow-remediation-mcp-stdio.cjs',
     'remediation_headless_driver.cjs',
     'zip_writer.cjs',
+    'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs',
     'connector_version.cjs',
   ]) copyFileSync(join(MCP_DIR, name), join(serverDir, name));
   cpSync(join(MCP_DIR, 'vendor'), join(serverDir, 'vendor'), { recursive: true });
@@ -67,7 +68,7 @@ function startDisposableServer(root) {
       const timer = setTimeout(function () {
         pending.delete(id);
         rejectRequest(new Error('Timed out waiting for ' + method + ': ' + stderr));
-      }, 30000);
+      }, 120000); // the fixture's first capabilities call hashes the freshly copied 35 MB vendor tree (EPUBCheck)
       pending.set(id, {
         resolve(message) {
           clearTimeout(timer);

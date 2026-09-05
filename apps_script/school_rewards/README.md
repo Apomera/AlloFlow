@@ -73,6 +73,25 @@ The illustrated user manual is at `school-rewards-manual.html` (published at htt
 - **Dark theme and reduced motion.** The portal follows the device colour scheme and motion preference.
 - **Faster loads.** Every bootstrap, statement run, and district summary now reads the PointHolds sheet once per request instead of once per student.
 
+## Pathway verification
+
+Run `npm run verify:school-rewards` before distributing the package. It covers the rewards portal, repository, role workflows, setup, language packs, classroom reward boundary, Print Lab, and Geometry World handoff. See `docs/school_rewards_readiness.md` in the repository for the verification matrix and school-owned live checks.
+
+Print Lab loading failures now leave other rewards tools available and provide a retry control. Print model submission locks the selected handoff, asset, material, note, and request keys until the operation settles.
+
+## Store reliability fixes (September 2026)
+
+- Completed checkout receipts appear immediately, before refreshing the portal. A failed refresh keeps the receipt visible and clearly reports the completed purchase.
+- Cart quantities, student selection, and shopping-window controls stay locked during live verification and checkout, then unlock after completion or cancellation.
+- If live verification finds a different student or shopping window, checkout stops so the cashier can review the selection again.
+
+- Partially completed group awards retain their original retry key and selection. Retry the same group unchanged to recover saved awards without awarding them again.
+- Long group request keys use a bounded hash per student. Existing truncated journals remain recoverable and conflicting legacy requests fail closed.
+- Saved group awards remain recoverable after a category is deactivated; new awards still require an active category.
+- Cashier carts allow at most 50 different prizes and 100 of each prize. The server also checks the combined quantity when a new checkout contains duplicate lines.
+
+Update both `Code.gs` and `Portal.html` in the school-owned Apps Script project and publish a new version of its existing deployment to apply these fixes. No schema migration is required.
+
 ## Roles and permissions
 
 | Role | Rewards | Print Lab |
@@ -319,6 +338,24 @@ Apps Script tests in this repository use a local service mock. They do not repla
 - A browser preflight is not a safety approval. Require a trained operator, school-approved printer/material profiles, slicer review, ventilation/enclosure controls, and the school's facilities/EHS process.
 - Treat PHA as a material to evaluate, not as a universal environmental claim. Product composition, additives, performance, emissions, disposal conditions, and local end-of-life access all matter.
 - Export and retain records under the district's approved student-record schedule. This package is technical infrastructure, not a FERPA or local-policy determination.
+
+## Remix recovery and repeated actions
+
+Private recipe remixes now write a signed intent to the existing Idempotency sheet before creating a model file. The model ID and file name are derived from the original request key. Retries verify and reuse that file, retain one model row, and append the audit event once. Pending remix records are excluded from request-record trimming and appear in the integrity report. No schema migration is required.
+
+If an interrupted file-creation attempt has no visible result, the retry stops instead of creating another file. An administrator must inspect the school-owned Print Models folder and the pending request. Retry the original request when its matching file becomes available; do not delete the request record, substitute another file, or issue a fresh key to bypass the review. Conflicting contents or multiple matching files also stop recovery. This uses Google’s documented [folder-scoped file lookup](https://developers.google.com/apps-script/reference/drive/folder#getFilesByName(String)); live Drive availability still needs a school deployment test.
+
+Administrators can use **Resume private remix** on a valid pending integrity-report row. Recovery validates the original signature and student ownership, reuses verified file/model records, and keeps the result private. The audit preserves the student's creation event and records the administrator's recovery separately. Missing files after an attempted create, duplicate records/files, or altered signatures/content remain blocked for school review. Pending remixes are included in the pending-operation count.
+
+After administrator recovery, the student's next refresh checks the saved request status without replaying it. The old retry key is cleared only when the server confirms completion and the recovered model appears in that student's account. This status endpoint is restricted to the original student.
+
+The remaining Print Lab and guardian controls now serialize submissions and retain an exact hashed request identity after an uncertain response. A later rejection cannot erase an earlier uncertain request. Known first-attempt validation rejections release the draft for correction; unclassified transport errors remain uncertain. Staff quotes reject past expiration dates and point amounts outside the whole-number range 1–100,000 before creating a retry key. Refreshes publish only the newest response, and checkout stops when its availability check is superseded.
+
+## Shopping schedules and quote edits
+
+Shopping-window and quote editors display times in the operator’s local timezone, as labeled beside the inputs. Saves send explicit UTC instants so the Apps Script project’s timezone cannot reinterpret the entered time. An unchanged displayed time preserves the exact stored timestamp, including seconds and a repeated clock hour. Invalid calendar times and times shifted by the browser across a clock-change gap are rejected before saving.
+
+A new quote defaults to seven days from now in local time. Reopening a saved quote retains its deadline, override decision, explanation, material code and preflight summary; changing the price does not silently renew the deadline or remove the review decision. Grams and minutes must be whole numbers from 0 to 100,000; invalid values are rejected instead of rounded or replaced with zero. Blank optional estimates remain zero.
 
 ## Intentional v6 execution boundaries
 

@@ -536,7 +536,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('roverTraverseDetails.appendChild(roverTraverseButton);');
       expect(source).toContain("var traverseCompactProgress = roverTraverse.status === 'ready' ? '0/5 optional'");
       expect(source).toContain("roverSoundButton.setAttribute('aria-label', roverSoundLabel + ', keyboard shortcut B');");
-      expect(source).toContain("position:absolute;right:144px;bottom:12px");
+      expect(source).toContain("position:absolute;right:184px;bottom:12px");
     });
   });
 
@@ -674,9 +674,9 @@ describe('solar system main 3D canvas loop', () => {
 
       // The captured thumbnail reaches the journal entry (session-local copy only,
       // so persisted state stays text-sized).
-      expect(source).toContain('function recordDroneJournal(kind, title, observation, cer, silent, photoThumb)');
+      expect(source).toContain('function recordDroneJournal(kind, title, observation, cer, silent, photoThumb, photoContext)');
       expect(source).toContain('droneJournalEntries.unshift(photoThumb ? Object.assign({ photoThumb: photoThumb }, entry) : entry);');
-      expect(source).toContain('true, thumbDataUrl);');
+      expect(source).toContain('true, photo.image, photo.context);');
       expect(source).toContain("entry.photoThumb ? '<img src=");
       // Export button downloads a standalone HTML evidence log.
       expect(source).toContain('data-journal-export="true"');

@@ -2805,14 +2805,20 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const _dirIsObj = item.data && typeof item.data === 'object' && !Array.isArray(item.data);
           const _dirBody = _dirIsObj ? String(item.data.body || '') : String(item.data || '');
           const _dirLabels = (_dirIsObj && Array.isArray(item.data.objectives)) ? item.data.objectives.map(o => String((o && o.label) || '')) : [];
+          const board = _dirIsObj && item.data.choiceBoard;
+          const choiceBoard = board && typeof board === 'object' ? {
+              title: String(board.title || ''), prompt: String(board.prompt || ''),
+              items: (Array.isArray(board.items) ? board.items : []).map(card => ({ label: String(card.label || ''), description: String(card.description || '') }))
+          } : null;
           prompt = `
               You are an expert translator for educators.
               Task: Translate these student-facing assignment directions into ${targetLanguage}.
-              Input JSON: ${JSON.stringify({ title: item.title || '', body: _dirBody, labels: _dirLabels })}
+              Input JSON: ${JSON.stringify({ title: item.title || '', body: _dirBody, labels: _dirLabels, choiceBoard })}
               Rules:
               1. Translate "title", "body" (keep the markdown structure, including any **Due:** line), and every entry of "labels".
               2. Keep each label SHORT — they are checklist goals a child reads at a glance.
-              3. Return ONLY valid JSON of the exact same shape: {"title": "...", "body": "...", "labels": ["..."]}.
+              3. Translate choiceBoard title, prompt, and each item's label and description. Keep item order and count unchanged. Keep null choiceBoard as null.
+              4. Return ONLY valid JSON of the exact same shape: {"title": "...", "body": "...", "labels": ["..."], "choiceBoard": null or {"title":"...","prompt":"...","items":[{"label":"...","description":"..."}]}}.
           `;
       } else {
           prompt = `
@@ -2903,6 +2909,20 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
               const _dData = _dIsObj
                   ? { ..._dSrc, body: _dBody, objectives: (Array.isArray(_dSrc.objectives) ? _dSrc.objectives : []).map((o, i) => ({ ...o, label: (typeof _dLbls[i] === 'string' && _dLbls[i].trim()) ? _dLbls[i] : (o && o.label) })) }
                   : _dBody;
+              if (_dIsObj && _dSrc.choiceBoard && typeof _dSrc.choiceBoard === 'object') {
+                  const board = _dSrc.choiceBoard;
+                  const translatedBoard = newData && newData.choiceBoard || {};
+                  const translatedText = (value, fallback) => typeof value === 'string' && value.trim() ? value : fallback;
+                  _dData.choiceBoard = {
+                      ...board,
+                      title: translatedText(translatedBoard.title, board.title),
+                      prompt: translatedText(translatedBoard.prompt, board.prompt),
+                      items: (Array.isArray(board.items) ? board.items : []).map((card, index) => {
+                          const translatedCard = Array.isArray(translatedBoard.items) && translatedBoard.items[index] || {};
+                          return { ...card, label: translatedText(translatedCard.label, card.label), description: translatedText(translatedCard.description, card.description) };
+                      })
+                  };
+              }
               return {
                   ...item,
                   data: _dData,

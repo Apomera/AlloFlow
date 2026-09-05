@@ -9,7 +9,8 @@ Two ways in. Pick deliberately, because they have different guarantees.
 
 **The MCP connector** (`alloflow-remediation`) runs the **real pipeline** — the same bytes the app
 ships. Full parity: OCR fallback chains, multi-auditor triangulation, chunked fixing, contrast
-repair. Needs a Gemini API key for anything AI-dependent.
+repair. Full remediation can use the MCP client model without a Gemini key through
+`pdf_remediate_agent_start`. Gemini-specific tools still require that optional key.
 
 **The agent-driven path** (`dev-tools/agent_remediate.cjs`) has you do the reading and uses only
 AlloFlow's deterministic verifiers. **No API key.** Weaker on hard documents, honest on easy ones.
@@ -51,7 +52,7 @@ Never tell a user a document is compliant because axe was quiet.
 | `translate_accessible_html` | yes | Translate, structure preserved, images protected |
 
 The connector now reports the authoritative, derived list as
-`remediation_capabilities.keylessToolNames` (currently seventeen tools). Use that field
+`remediation_capabilities.keylessToolNames` (derived from the live registry). Use that field
 instead of counting this table: when a user has no key, say what still works rather than
 stopping. `fullAiPipelineReady: false` disables the Gemini path, not the keyless mode.
 
@@ -59,7 +60,11 @@ stopping. `fullAiPipelineReady: false` disables the Gemini path, not the keyless
 
 1. `remediation_capabilities`, then `remediation_selftest` if anything looks wrong. A selftest
    failure is never an API-key problem — it names the stage.
-2. A folder? `pdf_batch_audit_start` first. Auditing is 1–3 min/file and writes nothing;
+2. No key, or keyless preferred? Use `pdf_remediate_agent_start` with `file_path`
+   or `dir_path`, answer pending requests with `remediation_agent_respond_batch`,
+   and resume interruptions with `remediation_agent_resume`. Add `effort: "thorough"`
+   for bounded improvement and independent validation.
+   If the user selected Gemini for a folder, use `pdf_batch_audit_start` first. Auditing is 1–3 min/file and writes nothing;
    remediation is 5–30 min and spends real quota. Read the bands, then
    `pdf_remediate_from_scoreboard_start` on `needs-work`. Do not remediate a folder blind.
 3. Media? `transcribe_media` first, then treat the transcript as the source.
@@ -72,7 +77,7 @@ stopping. `fullAiPipelineReady: false` disables the Gemini path, not the keyless
    ePub for reading on a phone or e-reader, DAISY when the student uses a DAISY player, BRF only
    when there is an embosser or a refreshable display.
 
-## Writing HTML yourself (the no-key path)
+## Writing HTML yourself (portable fallback)
 
 `DocBuilderRenderer` is **not** usable from outside — its dependencies live in the pipeline
 closure. Write semantic HTML directly.
@@ -103,7 +108,7 @@ Say so plainly rather than improvising:
   it conforms.
 - Anything requiring visual fidelity to the original. This **rebuilds**; it does not patch layout.
   Wrong for signed forms and legal records.
-- Very long documents — page rendering caps at 30 pages by default.
+- Documents beyond the configured visual evidence budget: use bounded PDF page ranges; never claim coverage of unprocessed pages.
 - Languages you cannot read confidently.
 
 ## Reporting honestly

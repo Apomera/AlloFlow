@@ -1929,7 +1929,8 @@ function MathPanel(props) {
                             const MathFluencyComponent = window.AlloModules && window.AlloModules.MathFluency;
                             if (!MathFluencyComponent) return (
                                 <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-center text-amber-700 text-sm">
-                                    Loading Math Fluency module...
+                                    <p role="status" aria-live="polite">{window.__alloModuleRegistry?.MathFluency?.status === 'failed' ? 'Math Fluency could not load. Retry when your connection is ready.' : 'Loading Math Fluency module...'}</p>
+                                    {window.__alloModuleRegistry?.MathFluency?.status === 'failed' && <button type="button" className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white" onClick={() => window.__alloLazyMathFluency?.()}>{t('common.retry') || 'Retry loading'}</button>}
                                 </div>
                             );
                             return <MathFluencyComponent
@@ -4010,5 +4011,1024 @@ function UiToolWordsoundsPanel(props) {
                             <Sparkles size={14} className="text-yellow-700"/> Open Generator
                         </button>
                     </div>
+  );
+}
+
+// Host owns state, refs and actions; this view preserves the existing DOM structure.
+function GeneratorActionsView(props) {
+  const {
+    AlertTriangle, ArrowDown, ArrowRight, ArrowUp, BRIDGE_MODES, BookOpen, Calculator, CheckSquare,
+    ChevronDown, ChevronRight, ChevronUp, ClipboardList, Clock, Cloud, CloudOff, Copy, Cpu, Download,
+    Eye, EyeOff, FileQuestion, FileText, Filter, FullPackRunView, GUIDED_DELIVERY_GROUPS, Globe, History,
+    ImageIcon, InfoTooltip, Layout, Lightbulb, ListChecks, ListOrdered, MapIcon, MessageCircleQuestion,
+    Octagon, Package, Plus, Quote, RefreshCw, Search, ShieldCheck, Sparkles, StopCircle,
+    TIMELINE_MODE_DEFINITIONS, TOOL_CATALOG_GROUPS, Target, Terminal, Trash2, Volume2,
+    _alloDiagnosticReason, _alloGenerationHelpersDeps, activeView, addConcept, addInterest, addLanguage,
+    addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
+    adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty,
+    adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
+    aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
+    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengeFamily,
+    appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
+    brainstormCustomInstructions, bridgeSimType, bridgeStepCount, callGemini, callGeminiVision,
+    checkAccuracyWithSearch, conceptImageMode, conceptInput, conceptItemCount,
+    conceptSortCustomInstructions, conceptSortImageStyle, createGuidedHomeworkShare, creativeMode,
+    cubeAnswer, cubeChallenge, cubeDims, cubeDragRef, cubeFeedback, cubeNotch, cubeRotation, cubeScale,
+    cubeShape, cubeShowLayers, currentUiLanguage, dbqCustomInstructions, differentiationCustomGrades,
+    differentiationRange, differentiationTypes, dokLevel, enableFactionResources, expandedTools,
+    exploreDifficulty, factionResourceMode, faqCount, faqCustomInstructions, fetchAndCleanUrl,
+    fillInTheBlank, frameCustomInstructions, frameType, fullPackAddType, fullPackRun,
+    fullPackTargetGroup, generatedContent, getAdaptiveDifficulty, getDefaultTitle, globalPoints,
+    glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count,
+    gradeLevel, guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource,
+    handleAddStandard, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleConceptKeyDown,
+    handleCopyFullPackDiagnostics, handleDismissFullPackRun, handleDownloadFullPackDiagnostics,
+    handleEditFullPackPlanResourceDirective, handleFindStandards, handleGenerate,
+    handleGenerateLessonPlan, handleGenerateMath, handleGeneratePersonas, handleInterestKeyDown,
+    handleKeyDown, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handleOpenWordSounds,
+    handlePlanFullPack, handleRemoveFullPackPlanResource, handleRemoveStandard, handleResumeAdventure,
+    handleRetryFailedFullPack, handleScoreUpdate, handleSetActiveViewToPersona,
+    handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual,
+    handleSetFullPackPlanAdaptedTextPolicy, handleSetStandardModeToAi, handleSetStandardModeToManual,
+    handleStartAdventure, handleStopFullPack, handleToggleAllTools, handleUseResolvedStandard,
+    hasSavedAdventureForLesson, hasSourceOrAnalysis, hiddenToolCatalogSelector, history,
+    imageAspectRatio, imageGenerationStyle, imageStyle, includeCharts, includeEtymology,
+    includeTimelineVisuals, inputText, interestInput, isAdventureCloudEnabled, isAdventureStoryMode,
+    isAutoConfigEnabled, isFindingStandards, isGeneratingPersona, isGuidedToolVisible, isIndependentMode,
+    isMathGraphEnabled, isParentMode, isPersonaFreeResponse, isProcessing, isResumingAdventure,
+    isSocialStoryMode, isTeacherMode, isToolCatalogExpanded, isToolCatalogHidden,
+    isToolCatalogItemVisible, isTranslationControlRelevant, isUniversalSettingsOpen, keepCitations,
+    languageInput, lessonCustomAdditions, leveledTextCustomInstructions, leveledTextLanguage,
+    leveledTextLength, mathInput, mathMode, mathQuantity, mathSubject, mcqVisualMode,
+    memoryAidAuthorshipMode, memoryAidCount, memoryAidCustomInstructions, memoryAidIncludeHookFacts,
+    memoryAidIncludeVisuals, memoryAidReasoningRequired, memoryAidReflectionLevel,
+    memoryAidSelectionMode, memoryAidTypes, noText, noteTakingCustomInstructions, noteTakingTemplateType,
+    openExportPreview, openMathCreate, openStudentQrPreview, openToolCatalog, outlineCustomInstructions,
+    outlineType, personaCustomInstructions, personaState, qrShareModal, quizCustomInstructions,
+    quizItemTypeMix, quizMcqCount, quizMode, quizReflectionCount, recentQrShares, removeConcept,
+    removeInterest, removeLanguage, resolveTranslationPolicy, resourceCount, rosterKey, safeSetItem,
+    saveProbeResult, selectToolFromCatalog, selectedConcepts, selectedLanguages,
+    selectedToolCatalogLabel, setActiveView, setAdventureArtStyle, setAdventureChanceMode,
+    setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions,
+    setAdventureDifficulty, setAdventureFreeResponseEnabled, setAdventureInputMode,
+    setAdventureLanguageMode, setAdventureState, setAiStandardQuery, setAnchorChartCustomInstructions,
+    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions,
+    setAppliedChallengeFamily, setAppliedChallengeScope, setAppliedChallengeSelectionMode,
+    setAutoAttachManipulatives, setAutoRemoveWords, setBrainstormCustomInstructions, setBridgeSimType,
+    setBridgeStepCount, setCheckAccuracyWithSearch, setConceptImageMode, setConceptInput,
+    setConceptItemCount, setConceptSortCustomInstructions, setConceptSortImageStyle, setCreativeMode,
+    setCubeAnswer, setCubeChallenge, setCubeDims, setCubeFeedback, setCubeNotch, setCubeRotation,
+    setCubeScale, setCubeShape, setCubeShowLayers, setDbqCustomInstructions,
+    setDifferentiationCustomGrades, setDifferentiationRange, setDifferentiationTypes, setDokLevel,
+    setEnableFactionResources, setExpandedTools, setExploreDifficulty, setFaqCount,
+    setFaqCustomInstructions, setFillInTheBlank, setFrameCustomInstructions, setFrameType,
+    setFullPackAddType, setFullPackTargetGroup, setGeneratedContent, setGlossaryCustomInstructions,
+    setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setGradeLevel, setHistory,
+    setImageStyle, setIncludeCharts, setIncludeEtymology, setIncludeTimelineVisuals, setInterestInput,
+    setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsAutoConfigEnabled, setIsMathGraphEnabled,
+    setIsPersonaFreeResponse, setIsSocialStoryMode, setIsToolCatalogExpanded, setIsToolCatalogHidden,
+    setIsUniversalSettingsOpen, setKeepCitations, setLanguageInput, setLessonCustomAdditions,
+    setLeveledTextCustomInstructions, setLeveledTextLanguage, setLeveledTextLength, setMathInput,
+    setMathMode, setMathQuantity, setMathSubject, setMbDirectionsDraft, setMcqVisualMode,
+    setMemoryAidAuthorshipMode, setMemoryAidCount, setMemoryAidCustomInstructions,
+    setMemoryAidIncludeHookFacts, setMemoryAidIncludeVisuals, setMemoryAidReasoningRequired,
+    setMemoryAidReflectionLevel, setMemoryAidSelectionMode, setMemoryAidTypes, setNoText,
+    setNoteTakingCustomInstructions, setNoteTakingTemplateType, setOutlineCustomInstructions,
+    setOutlineType, setPersonaCustomInstructions, setQuizCustomInstructions, setQuizItemTypeMix,
+    setQuizMcqCount, setQuizMode, setQuizReflectionCount, setResourceCount, setShowAIBackendModal,
+    setShowCompletedFullPackRows, setShowDirectionsComposer, setShowSessionStartOptions, setShowStemLab,
+    setSocialStoryFocus, setSourceTopic, setStandardInputValue, setStemLabTab, setStudentProjectSettings,
+    setTargetStandards, setTextFormat, setTimelineImageStyle, setTimelineItemCount, setTimelineMode,
+    setTimelineTopic, setToolCatalogGroup, setToolCatalogQuery, setTranslationMode,
+    setUniversalImageStyle, setUseEmojis, setUseLowQualityVisuals, setUseMathSourceContext,
+    setVisualCustomInstructions, setVisualCustomStyle, setVisualLayoutMode, setVisualStyle,
+    showCompletedFullPackRows, socialStoryFocus, standardInputValue, standardMode, standardsInput,
+    storageDB, studentInterests, studentProjectSettings, suggestedStandards, t, targetStandards,
+    textFormat, timelineImageStyle, timelineItemCount, timelineMode, timelineTopic, toggleTool,
+    toolCatalogGroup, toolCatalogQuery, translationMode, translationTargetChoices, universalImageStyle,
+    useEmojis, useLowQualityVisuals, useMathSourceContext, visualCustomInstructions, visualCustomStyle,
+    visualLayoutMode, visualStyle,
+  } = props;
+  return (
+<div id="tour-generator-actions" data-help-key="generator_actions" className="grid gap-4">
+            <style>{`
+              ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ''}
+              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
+                border-radius: 14px !important;
+                border-width: 1px !important;
+                box-shadow: 0 1px 2px rgba(15,23,42,.06) !important;
+                transition: border-color .16s ease, box-shadow .16s ease !important;
+              }
+              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) > button:first-child,
+              #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) > div:first-child > button:first-child {
+                min-height: 48px;
+              }
+              @media (prefers-reduced-motion: reduce) {
+                #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) { transition: none !important; }
+              }
+              @media (forced-colors: active) {
+                #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) { border: 1px solid CanvasText !important; }
+              }
+            `}</style>
+            {!guidedMode && (() => {
+              const ToolCatalogControls = window.AlloModules && window.AlloModules.ToolCatalogControls;
+              const _catalogShown = TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length;
+              const _catalogFiltered = !!String(toolCatalogQuery || '').trim() || toolCatalogGroup !== 'all';
+              // N4: the dismissed state still shows a restore bar, and that bar states the
+              // filter if one is somehow running. Hide is only offered when no filter is
+              // active, so this should read "all tools" every time; it is here because a
+              // hidden panel with a live filter is the one failure Aaron named, and a
+              // guarantee you can see is worth more than one you have to trust.
+              if (ToolCatalogControls && isToolCatalogHidden) return (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                  <span className="text-[11px] font-semibold text-slate-600">
+                    {_catalogFiltered
+                      ? (t('sidebar.tool_finder_hidden_filtered') || 'A tool filter is on: showing {shown} of {total} tools.').replace('{shown}', String(_catalogShown)).replace('{total}', String(TOOL_CATALOG_GROUPS.all.length))
+                      : (t('sidebar.tool_finder_hidden') || 'Showing all tools.')}
+                  </span>
+                  <button type="button" onClick={() => { setIsToolCatalogHidden(false); setIsToolCatalogExpanded(true); }} className="min-h-10 shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                    {t('sidebar.tool_finder_title') || 'Find a tool'}
+                  </button>
+                </div>
+              );
+              if (ToolCatalogControls) return React.createElement(ToolCatalogControls, {
+                allEditorsExpanded: expandedTools.length >= 18,
+                group: toolCatalogGroup,
+                isExpanded: isToolCatalogExpanded,
+                onCollapse: () => setIsToolCatalogExpanded(false),
+                onGroupChange: (id) => { setToolCatalogQuery(''); setToolCatalogGroup(id); },
+                onOpen: openToolCatalog,
+                onQueryChange: setToolCatalogQuery,
+                onToggleAll: handleToggleAllTools,
+                onHide: () => setIsToolCatalogHidden(true),
+                query: toolCatalogQuery,
+                selectedLabel: selectedToolCatalogLabel,
+                shownCount: _catalogShown,
+                totalCount: TOOL_CATALOG_GROUPS.all.length,
+                t,
+              });
+              return (
+                <section id="tour-tool-finder" data-testid="tool-catalog-controls-fallback" aria-labelledby="tool-catalog-fallback-title" className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 id="tool-catalog-fallback-title" className="text-sm font-black text-slate-900">{t('sidebar.tool_finder_title') || 'Find a tool'}</h2>
+                      <p className="mt-0.5 text-xs leading-relaxed text-slate-700">{t('sidebar.tool_finder_loading') || 'The tool filters are still loading. Every tool is listed below.'}</p>
+                    </div>
+                    <button type="button" onClick={() => { setToolCatalogQuery(''); setToolCatalogGroup('all'); setIsToolCatalogExpanded(true); }} className="inline-flex min-h-11 shrink-0 items-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Show all tools</button>
+                  </div>
+                </section>
+              );
+            })()}
+            {/* -- UniversalSettingsPanel (CDN): cross-resource settings (grade, language, standards, interests, DoK, emoji) extracted from the Text Adaptation card 2026-07-28. Mounts ONCE above the tool accordion; per-control applicability is measured (docs/resource_setting_coverage.json). -- */}
+            {window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
+          InfoTooltip, addInterest, addToast, aiStandardQuery, dokLevel,
+          gradeLevel, handleAddStandard, handleFindStandards, handleUseResolvedStandard, handleInterestKeyDown, handleRemoveStandard,
+          handleSetStandardModeToAi, handleSetStandardModeToManual, interestInput, isFindingStandards, leveledTextLanguage,
+          removeInterest, selectedLanguages, setAiStandardQuery, setDokLevel, setGradeLevel,
+          setInterestInput, setLeveledTextLanguage, setStandardInputValue, setTargetStandards, setUseEmojis,
+          setUniversalImageStyle, standardInputValue, standardMode, studentInterests, suggestedStandards, t,
+          targetStandards, universalImageStyle, useEmojis,
+          // Surprise Me: direct topic seeding + the host's canonical AI fn
+          // (the panel falls back to window.callGemini when absent).
+          setSourceTopic, callGemini,
+          isUniversalSettingsOpen, setIsUniversalSettingsOpen,
+          differentiationRange, setDifferentiationRange,
+          differentiationTypes, setDifferentiationTypes,
+          differentiationCustomGrades, setDifferentiationCustomGrades,
+          languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown,
+          // Translations control. currentUiLanguage is passed as DATA, not as a
+          // generation input: it is what 'auto' resolves the gloss language to,
+          // and the panel needs it to decide whether the control is relevant
+          // at all. The resolver itself is passed in so the panel and the
+          // generators cannot drift into two readings of the same setting.
+          translationMode, setTranslationMode, currentUiLanguage,
+          resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
+            })}
+            <div style={{display: isGuidedToolVisible('analysis') ? undefined : 'none'}} id="tour-tool-analysis" data-help-key="tool_analysis" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'analysis' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
+              `}>
+              <button type="button"
+                  aria-label={t('common.search')}
+                data-help-key="tool_analysis"
+                aria-expanded={expandedTools.includes('analysis')} onClick={() => toggleTool('analysis')}
+                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Search size={16}/> {t('sidebar.tool_analysis')}</div>
+                {expandedTools.includes('analysis') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+              </button>
+              {/* ── AnalysisPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+              {expandedTools.includes('analysis') && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
+          expandedTools, checkAccuracyWithSearch, handleGenerate, hasSourceOrAnalysis, isProcessing,
+          setCheckAccuracyWithSearch, t
+              })}
+            </div>
+            <div style={{display: isGuidedToolVisible('glossary') ? undefined : 'none'}} id="ui-tool-glossary" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'glossary' ? 'border-sky-600 shadow-xl shadow-sky-500/20' : 'border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10'}
+              `}>
+              <button type="button"
+                data-help-key="tool_glossary"
+                aria-expanded={expandedTools.includes('glossary')} onClick={() => toggleTool('glossary')}
+                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-sky-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                    <Globe size={16}/> {isParentMode ? t('glossary.word_helper') : t('sidebar.tool_glossary')}
+                </div>
+                {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+              </button>
+                {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
+          expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
+          glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count, gradeLevel,
+          handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
+          leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
+          setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
+          t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('simplified') ? undefined : 'none'}} id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'simplified' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.read')}
+                    data-help-key="tool_simplified"
+                    aria-expanded={expandedTools.includes('simplified')} onClick={() => toggleTool('simplified')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                >
+                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                        <BookOpen size={16}/> {isParentMode ? t('simplified.parent_mode_label') : t('sidebar.tool_simplified')}
+                    </div>
+                    {expandedTools.includes('simplified') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+              {/* ── SimplifiedPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+              {expandedTools.includes('simplified') && window.AlloModules && window.AlloModules.SimplifiedPanel && React.createElement(window.AlloModules.SimplifiedPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, includeCharts,
+          isProcessing, keepCitations, leveledTextCustomInstructions, leveledTextLength,
+          setIncludeCharts, setKeepCitations, setLeveledTextCustomInstructions, setLeveledTextLength, setTextFormat,
+          t, textFormat
+              })}
+            </div>
+            <div style={{display: isGuidedToolVisible('ui-tool-wordsounds') ? undefined : 'none'}} id="tour-tool-wordsounds" data-help-key="tool_wordsounds" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'ui-tool-wordsounds' ? 'border-pink-600 shadow-xl shadow-pink-500/20' : 'border-slate-200 hover:border-pink-200 shadow-lg shadow-pink-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('sidebar.tool_wordsounds') || t('word_sounds.title') || 'Word Sounds'}
+                    aria-expanded={expandedTools.includes('ui-tool-wordsounds')}
+                  onClick={() => toggleTool('ui-tool-wordsounds')}
+                  className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-pink-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="flex items-center gap-2">
+                      <div className="bg-pink-100 p-1 rounded-md text-pink-700"><Volume2 size={16}/></div>
+                      <div>
+                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_wordsounds') || 'Word Sounds'}</span>
+                      </div>
+                  </div>
+                  {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                 {/* ── UiToolWordsoundsPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                 {expandedTools.includes('ui-tool-wordsounds') && window.AlloModules && window.AlloModules.UiToolWordsoundsPanel && React.createElement(window.AlloModules.UiToolWordsoundsPanel, {
+          expandedTools, handleOpenWordSounds, t
+                 })}
+            </div>
+            <div style={{display: isGuidedToolVisible('outline') ? undefined : 'none'}} id="tour-tool-outline" data-help-key="tool_outline" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'outline' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
+              `}>
+              <button type="button"
+                data-help-key="tool_outline"
+                aria-expanded={expandedTools.includes('outline')} onClick={() => toggleTool('outline')}
+                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Layout size={16}/> {t('sidebar.tool_outline')}</div>
+                {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+              </button>
+                {/* ── OutlinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('outline') && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, outlineCustomInstructions,
+          outlineType, setOutlineCustomInstructions, setOutlineType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('note-taking') ? undefined : 'none'}} id="tour-tool-note-taking" data-help-key="tool_note_taking" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'note-taking' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_note_taking') || 'Toggle note-taking templates'}
+                    data-help-key="tool_note_taking"
+                    aria-expanded={expandedTools.includes('note-taking')} onClick={() => toggleTool('note-taking')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><BookOpen size={16}/> {t('sidebar.tool_note_taking') || 'Note-Taking Templates'}</div>
+                  {expandedTools.includes('note-taking') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── NoteTakingPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('note-taking') && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingCustomInstructions, noteTakingTemplateType, setNoteTakingCustomInstructions, setNoteTakingTemplateType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('anchor-chart') ? undefined : 'none'}} id="tour-tool-anchor-chart" data-help-key="tool_anchor_chart" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'anchor-chart' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_anchor_chart') || 'Toggle anchor chart'}
+                    data-help-key="tool_anchor_chart"
+                    aria-expanded={expandedTools.includes('anchor-chart')} onClick={() => toggleTool('anchor-chart')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('sidebar.tool_anchor_chart') || 'Anchor Chart'}</div>
+                  {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
+          anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('memory-aid') ? undefined : 'none'}} id="tour-tool-memory-aid" data-help-key="tool_memory_aid" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'memory-aid' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_memory_aid') || 'Toggle Memory Aid Studio'}
+                    data-help-key="tool_memory_aid"
+                    aria-expanded={expandedTools.includes('memory-aid')} onClick={() => toggleTool('memory-aid')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_memory_aid') || 'Memory Aid Studio'}</div>
+                  {expandedTools.includes('memory-aid') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {expandedTools.includes('memory-aid') && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
+                  memoryAidSelectionMode, setMemoryAidSelectionMode,
+                  memoryAidTypes, setMemoryAidTypes,
+                  memoryAidAuthorshipMode, setMemoryAidAuthorshipMode,
+                  memoryAidReflectionLevel, setMemoryAidReflectionLevel,
+                  memoryAidReasoningRequired, setMemoryAidReasoningRequired,
+                  memoryAidCount, setMemoryAidCount,
+                  memoryAidIncludeVisuals, setMemoryAidIncludeVisuals,
+                  memoryAidIncludeHookFacts, setMemoryAidIncludeHookFacts,
+                  memoryAidCustomInstructions, setMemoryAidCustomInstructions,
+                  t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('applied-challenge') ? undefined : 'none'}} id='tour-tool-applied-challenge' data-help-key='tool_applied_challenge' className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'applied-challenge' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_applied_challenge') || 'Toggle Applied Challenge Studio'}
+                    data-help-key='tool_applied_challenge'
+                    aria-expanded={expandedTools.includes('applied-challenge')} onClick={() => toggleTool('applied-challenge')}
+                    className='w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none'
+                >
+                  <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
+                  {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
+                </button>
+                {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
+                  appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
+                  appliedChallengeFamily, setAppliedChallengeFamily,
+                  appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
+                  appliedChallengeScope, setAppliedChallengeScope,
+                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_images')}
+                    data-help-key="tool_visual"
+                    aria-expanded={expandedTools.includes('image')} onClick={() => toggleTool('image')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ImageIcon size={16}/> {t('sidebar.tool_visual')}</div>
+                  {expandedTools.includes('image') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── ImagePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('image') && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
+          expandedTools, creativeMode, fillInTheBlank, handleGenerate, hasSourceOrAnalysis,
+          isProcessing, noText, setCreativeMode, setFillInTheBlank, setNoText,
+          setUseLowQualityVisuals, setVisualCustomInstructions, setVisualCustomStyle, setVisualLayoutMode, setVisualStyle, t,
+          universalImageStyle, useLowQualityVisuals, visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('faq') ? undefined : 'none'}} id="tour-tool-faq" data-help-key="tool_faq" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'faq' ? 'border-cyan-600 shadow-xl shadow-cyan-500/20' : 'border-slate-200 hover:border-cyan-200 shadow-lg shadow-cyan-500/10'}
+              `}>
+                <button type="button"
+                    data-help-key="tool_faq"
+                    aria-expanded={expandedTools.includes('faq')} onClick={() => toggleTool('faq')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-cyan-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileQuestion size={16}/> {t('sidebar.tool_faq')}</div>
+                  {expandedTools.includes('faq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── FaqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('faq') && window.AlloModules && window.AlloModules.FaqPanel && React.createElement(window.AlloModules.FaqPanel, {
+          expandedTools, faqCount, faqCustomInstructions, handleGenerate, hasSourceOrAnalysis,
+          isProcessing, setFaqCount, setFaqCustomInstructions, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
+              `}>
+                <button type="button"
+                    data-help-key="tool_scaffolds"
+                    aria-expanded={expandedTools.includes('sentence-frames')} onClick={() => toggleTool('sentence-frames')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                  </div>
+                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
+          expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,
+          isProcessing, setFrameCustomInstructions, setFrameType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('brainstorm') ? undefined : 'none'}} id="tour-tool-brainstorm" data-help-key="tool_brainstorm" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'brainstorm' ? 'border-yellow-600 shadow-xl shadow-yellow-500/20' : 'border-slate-200 hover:border-yellow-200 shadow-lg shadow-yellow-500/10'}
+              `}>
+                <button type="button"
+                    data-help-key="tool_brainstorm"
+                    aria-expanded={expandedTools.includes('brainstorm')} onClick={() => toggleTool('brainstorm')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-yellow-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brainstorm')}</div>
+                  {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── BrainstormPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('brainstorm') && window.AlloModules && window.AlloModules.BrainstormPanel && React.createElement(window.AlloModules.BrainstormPanel, {
+          expandedTools, BRIDGE_MODES, Terminal, brainstormCustomInstructions, bridgeSimType,
+          bridgeStepCount, handleGenerate, hasSourceOrAnalysis, isProcessing, setBrainstormCustomInstructions,
+          setBridgeSimType, setBridgeStepCount, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('persona') ? undefined : 'none'}} id="tour-tool-persona" data-help-key="tool_persona" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'persona' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.history')}
+                    data-help-key="tool_persona"
+                    aria-expanded={expandedTools.includes('persona')} onClick={() => toggleTool('persona')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><History size={16}/> {t('persona.title')}</div>
+                  {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── PersonaPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('persona') && window.AlloModules && window.AlloModules.PersonaPanel && React.createElement(window.AlloModules.PersonaPanel, {
+          expandedTools, ListChecks, MessageCircleQuestion, activeView, generatedContent,
+          handleGeneratePersonas, handleSetActiveViewToPersona, hasSourceOrAnalysis, isGeneratingPersona, isPersonaFreeResponse,
+          isProcessing, personaCustomInstructions, personaState, setActiveView, setIsPersonaFreeResponse,
+          setPersonaCustomInstructions, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('timeline') ? undefined : 'none'}} id="tour-tool-timeline" data-help-key="tool_timeline" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'timeline' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.reorder_list')}
+                    data-help-key="tool_timeline"
+                    aria-expanded={expandedTools.includes('timeline')} onClick={() => toggleTool('timeline')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t('timeline.title')}</div>
+                  {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── TimelinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('timeline') && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
+          expandedTools, TIMELINE_MODE_DEFINITIONS, handleGenerate, hasSourceOrAnalysis, includeTimelineVisuals,
+          isProcessing, setIncludeTimelineVisuals, setTimelineImageStyle, setTimelineItemCount, setTimelineMode,
+          setTimelineTopic, t, timelineImageStyle, timelineItemCount, timelineMode,
+          timelineTopic
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('concept-sort') ? undefined : 'none'}} id="tour-tool-concept-sort" data-help-key="tool_concept_sort" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'concept-sort' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.filter')}
+                    data-help-key="tool_concept_sort"
+                    onClick={() => toggleTool('concept-sort')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Filter size={16}/> {t('concept_sort.title')}</div>
+                  {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── ConceptSortPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('concept-sort') && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
+          expandedTools, addConcept, conceptImageMode, conceptInput, conceptItemCount,
+          conceptSortCustomInstructions, conceptSortImageStyle, handleConceptKeyDown, handleGenerate, hasSourceOrAnalysis, isProcessing,
+          removeConcept, selectedConcepts, setConceptImageMode, setConceptInput, setConceptItemCount,
+          setConceptSortCustomInstructions, setConceptSortImageStyle, t
+                })}
+            </div>
+            {/* ── DBQ Tool Panel ── */}
+            <div style={{display: isGuidedToolVisible('dbq') ? undefined : 'none'}} id="tour-tool-dbq" data-help-key="tool_dbq" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('sidebar.tool_dbq_aria') || 'Document-Based Questions'}
+                    data-help-key="tool_dbq"
+                    onClick={() => toggleTool('dbq')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
+                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── DbqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('dbq') && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
+          expandedTools, addToast, callGemini, callGeminiVision, dbqCustomInstructions, fetchAndCleanUrl,
+          handleGenerate, hasSourceOrAnalysis, isProcessing, setDbqCustomInstructions, setExpandedTools, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('math') ? undefined : 'none'}} id="tour-tool-math" data-help-key="tool_math" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'math' ? 'border-blue-600 shadow-xl shadow-blue-500/20' : 'border-slate-200 hover:border-blue-200 shadow-lg shadow-blue-500/10'}
+              `}>
+                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-blue-50 transition-colors motion-reduce:transition-none">
+                  <button type="button"
+                    data-help-key="tool_math"
+                    aria-expanded={expandedTools.includes('math')}
+                    onClick={() => toggleTool('math')}
+                    className="flex-1 p-3 flex justify-between items-center text-start"
+                  >
+                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
+                    {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { selectToolFromCatalog('math'); setShowStemLab(true); setStemLabTab('explore'); }}
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all motion-reduce:transition-none hover:shadow-sm"
+                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}
+                  >
+                    🧪 <span className="group-hover:tracking-wide transition-all motion-reduce:transition-none">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
+                  </button>
+                </div>
+                {/* ── MathPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('math') && window.AlloModules && window.AlloModules.MathPanel && React.createElement(window.AlloModules.MathPanel, {
+          expandedTools, Calculator, addToast, cubeAnswer, cubeChallenge,
+          cubeDims, cubeDragRef, cubeFeedback, cubeNotch, cubeRotation,
+          cubeScale, cubeShape, cubeShowLayers, exploreDifficulty, getAdaptiveDifficulty,
+          gradeLevel, handleGenerateMath, handleScoreUpdate, hasSourceOrAnalysis, isMathGraphEnabled,
+          isProcessing, mathInput, mathMode, mathQuantity, mathSubject,
+          setActiveView, setCubeAnswer, setCubeChallenge, setCubeDims, setCubeFeedback,
+          setCubeNotch, setCubeRotation, setCubeScale, setCubeShape, setCubeShowLayers,
+          setExploreDifficulty, setGeneratedContent, setHistory, setIsMathGraphEnabled, setMathInput,
+          setMathMode, setMathQuantity, setMathSubject, setUseMathSourceContext, storageDB,
+          t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives,
+          // Primary door to Math Studio (the former STEM Lab Create tab).
+          openMathCreate,
+          // Lets a completed standardized math probe reach the learner's probe
+          // history, the same store the word-sounds probes write to. Without it
+          // Assessment Center's Math DCPM trend could never fill.
+          saveProbeResult
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('adventure') ? undefined : 'none'}} id="tour-tool-adventure" data-help-key="tool_adventure" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'adventure' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
+              `}>
+              <button type="button"
+                data-help-key="tool_adventure"
+                aria-expanded={expandedTools.includes('adventure')} onClick={() => toggleTool('adventure')}
+                className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="flex items-center gap-2">
+                    <div className="bg-purple-100 p-1 rounded-md text-purple-700"><MapIcon size={16}/></div>
+                    <div>
+                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_adventure')}</span>
+                    </div>
+                </div>
+                {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+              </button>
+              {/* ── AdventurePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+              {expandedTools.includes('adventure') && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
+          expandedTools, Cloud, CloudOff, Octagon, Package,
+          addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters, adventureCustomArtStyle,
+          adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode,
+          adventureState, enableFactionResources, factionResourceMode, globalPoints, handleResumeAdventure,
+          handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual, handleStartAdventure, hasSourceOrAnalysis,
+          // Lesson-scoped, so Resume never points at a previous lesson's story.
+          hasSavedAdventure: hasSavedAdventureForLesson,
+          isAdventureCloudEnabled, isAdventureStoryMode, isProcessing, isResumingAdventure, isSocialStoryMode,
+          isTeacherMode, safeSetItem, selectedLanguages, setAdventureArtStyle, setAdventureChanceMode,
+          setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions, setAdventureDifficulty, setAdventureFreeResponseEnabled,
+          setAdventureInputMode, setAdventureLanguageMode, setAdventureState, setEnableFactionResources, setIsAdventureCloudEnabled,
+          setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setStudentProjectSettings, setUseLowQualityVisuals,
+          socialStoryFocus, studentProjectSettings, t, universalImageStyle, useLowQualityVisuals
+              })}
+            </div>
+             <div style={{display: isGuidedToolVisible('quiz') ? undefined : 'none'}} id="ui-tool-quiz" data-help-key="tool_quiz" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'quiz' ? 'border-emerald-600 shadow-xl shadow-emerald-500/20' : 'border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.check')}
+                    data-help-key="tool_quiz"
+                    aria-expanded={expandedTools.includes('quiz')} onClick={() => toggleTool('quiz')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><CheckSquare size={16}/> {t('sidebar.tool_quiz')}</div>
+                  {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                 {/* ── QuizPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                 {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
+          expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
+          hasSourceOrAnalysis, history, imageStyle, isProcessing, mcqVisualMode, quizCustomInstructions,
+          quizMcqCount, quizMode, quizReflectionCount, quizItemTypeMix, setDokLevel, setImageStyle,
+          setMcqVisualMode, setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,
+          setQuizItemTypeMix, t
+                 })}
+             </div>
+             <div style={{display: isGuidedToolVisible('lesson-plan') ? undefined : 'none'}} id="tour-tool-lesson-plan" data-help-key="tool_lesson_plan" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                 ${activeView === 'lesson-plan' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
+               `}>
+                 <button type="button"
+                     data-help-key="tool_lesson_plan"
+                     onClick={() => toggleTool('lesson-plan')}
+                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                 >
+                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                     <ClipboardList size={16} className="text-indigo-600"/>
+                     {isIndependentMode ? t('common.study_guide') : (isParentMode ? t('lesson_plan.family_guide') : t('lesson_plan.title'))}
+                   </div>
+                   {expandedTools.includes('lesson-plan') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                 </button>
+                 {/* ── LessonPlanPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                 {expandedTools.includes('lesson-plan') && window.AlloModules && window.AlloModules.LessonPlanPanel && React.createElement(window.AlloModules.LessonPlanPanel, {
+          expandedTools, activeView, handleGenerateLessonPlan, hasSourceOrAnalysis, isProcessing,
+          lessonCustomAdditions, setLessonCustomAdditions, isParentMode, t
+                 })}
+            </div>
+            {/* Directions v2: teacher-AUTHORED (not generated) — the card opens the composer
+                instead of a generation panel. Student-facing by design; sits after Lesson Plan
+                as its student-voice counterpart. */}
+            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all motion-reduce:transition-none bg-white overflow-hidden">
+              <button type="button"
+                  data-help-key="tool_directions"
+                  onClick={() => { selectToolFromCatalog('directions'); setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
+                  className="w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                  <ClipboardList size={16} className="text-amber-600"/>
+                  {t('directions.title') || 'Assignment Directions'}
+                </div>
+                {/* D7 (2026-08-16): this was a rounded amber PILL reading "you write it",
+                    sitting at the right edge of a card that is itself one big button. A
+                    pill is the app's own idiom for something you press, so it read as a
+                    second, disabled-looking control. It is decorative: it says who authors
+                    the directions, not something you can do. Now plain text plus the same
+                    chevron every other openable card uses, so the whole card reads as one
+                    affordance. Nothing else changes; the string keeps its key. */}
+                <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold text-amber-700">
+                  {t('directions.badge') || 'you write it'}
+                  <ChevronRight size={14} className="text-amber-600" aria-hidden="true" />
+                </span>
+              </button>
+            </div>
+            <FullPackRunView
+        __alloDisplayName="Full Pack"
+        __alloOverlay={false}
+        {...{
+        AlertTriangle, ArrowDown, ArrowRight, ArrowUp, ChevronDown, Clock, Copy, Cpu,
+        Download, Eye, EyeOff, GUIDED_DELIVERY_GROUPS, ImageIcon, Plus, RefreshCw, Sparkles,
+        StopCircle, Trash2, _alloDiagnosticReason, _alloGenerationHelpersDeps, aiCapability, createGuidedHomeworkShare, currentUiLanguage, differentiationCustomGrades,
+        differentiationRange, differentiationTypes, dokLevel, fullPackAddType, fullPackRun, fullPackTargetGroup, getDefaultTitle, gradeLevel,
+        guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleCopyFullPackDiagnostics, handleDismissFullPackRun,
+        handleDownloadFullPackDiagnostics, handleEditFullPackPlanResourceDirective, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handlePlanFullPack, handleRemoveFullPackPlanResource, handleRetryFailedFullPack, handleSetFullPackPlanAdaptedTextPolicy,
+        handleStopFullPack, hasSourceOrAnalysis, history, imageAspectRatio, imageGenerationStyle, inputText, isAutoConfigEnabled, isIndependentMode,
+        isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares,
+        resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount,
+        setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat,
+        translationMode, universalImageStyle, useEmojis
+        }}
+      />
+            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all motion-reduce:transition-none group">
+                <button type="button"
+                    data-help-key="tool_alignment"
+                    onClick={() => { selectToolFromCatalog('alignment'); handleGenerate('alignment-report'); }}
+                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    title={t('alignment.generate')}
+                >
+                    <div>
+                        <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2">
+                            {isProcessing && activeView === 'alignment-report' ? <RefreshCw className="animate-spin motion-reduce:animate-none text-teal-600" size={18} /> : <ShieldCheck size={18} className="text-emerald-500 fill-emerald-100" />}
+                            {isIndependentMode ? (t('alignment.skill_check') || "Skill Check") : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
+                        </span>
+                        <span className="text-[11px] text-slate-600 block mt-0.5">
+                            {standardsInput ? (isIndependentMode ? (t('alignment.desc_skill_check') || "Verify your mastery against standards.") : (isParentMode ? (t('alignment.desc_parent') || "See how this matches school goals") : (t('alignment.desc_6dim') || "Audits curriculum across 6 dimensions"))) : (t('alignment.desc_5dim') || "Audits curriculum across 5 dimensions (add standards for full audit)")}
+                        </span>
+                    </div>
+                    <ArrowRight size={16} className="text-teal-700 group-hover:text-teal-600" />
+                </button>
+            </div>
+          </div>
+  );
+}
+
+// Host owns state, refs and actions; this view preserves the existing DOM structure.
+function SourceInputShellView(props) {
+  const {
+    BookOpen, CheckSquare, ChevronDown, ChevronUp, ClipboardList, FileDown, FileText, Globe, Layout,
+    Link, RefreshCw, Sparkles, Upload, X, activeView, addToast, aiStandardQuery, aiStandardRegion,
+    attachVerificationHtmlProof, callGeminiVision, capturePdfDocumentIntakeEpoch,
+    deriveVerificationState, expandedTools, fileInputRef, generationStep, gradeLevel, handleAddStandard,
+    handleAiUrlSearch, handleFindStandards, handleGenerateSource, handleRemoveStandard,
+    handleSelectMainSearchOption, handleSetIsUrlSearchModeToFalse, handleSetIsUrlSearchModeToTrue,
+    handleSetStandardModeToAi, handleSetStandardModeToManual, handleSourceFileUpload,
+    handleTranscriptSourceAction, handleUrlFetch, includeSourceCitations, inputText, isCanvas,
+    isDraftSaving, isExtracting, isFindingStandards, isGeneratingSource, isGuidedToolVisible,
+    isIndependentMode, isLiveVerificationHtmlBound, isPdfDocumentIntakeCurrent, isProcessing,
+    isUrlSearchMode, pdfProjectLoadEpochRef, rehydrateVerificationHtmlBinding, searchOptions,
+    setAiStandardQuery, setAiStandardRegion, setExpandedTools, setGenerationStep,
+    setIncludeSourceCitations, setInputText, setIsExtracting, setIsReadingLibraryOpen,
+    setIsUrlSearchMode, setPdfAuditResult, setPdfFixResult, setPdfPageRange, setPendingPdfBase64,
+    setPendingPdfFile, setSearchOptions, setShowSourceGen, setShowUrlInput, setSourceCustomInstructions,
+    setSourceLength, setSourceLevel, setSourceTone, setSourceTopic, setSourceVocabulary,
+    setStandardInputValue, setTargetStandards, setUrlSearchQuery, setUrlToFetch, showSourceGen,
+    showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
+    sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
+    targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
+  } = props;
+  return (
+<div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
+            <div
+                className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                onClick={() => toggleTool('source-input')}
+            >
+              <h2 className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
+                <FileText size={16} /> {t('tools.source')}
+              </h2>
+              <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0">
+                 <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
+                     <input aria-label={t('common.upload_file')}
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleSourceFileUpload}
+                        className="hidden"
+                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
+                     />
+                     <button type="button"
+                         id="tour-upload-source"
+                         aria-label={t('common.upload_file') || 'Upload file'}
+                        onClick={() => fileInputRef.current.click()}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
+                        className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm"
+                        title={t('input.upload_tooltip')}
+                     >
+                        {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
+                        {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
+                     </button>
+                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
+                        <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
+                        <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0]; if (!file) return;
+                          if (file.size > 64 * 1024 * 1024) { addToast('This project file is larger than the 64 MB browser safety limit.', 'error'); e.target.value = ''; return; }
+                          const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
+                          let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();
+                          const _projectLoadIsCurrent = () => _projectLoadEpoch === pdfProjectLoadEpochRef.current
+                            && isPdfDocumentIntakeCurrent(_projectDocumentEpoch);
+                          const reader = new FileReader();
+                          reader.onload = async (ev) => {
+                            if (!_projectLoadIsCurrent()) return;
+                            try {
+                              const _savedProject = JSON.parse(ev.target.result);
+                              if (!_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+                              // Ignore any serialized runtime snapshot. Rehydrate makes it live
+                              // only when the persisted SHA-256 digest matches accessibleHtml.
+                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
+                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+                              const _sanitizedImport = _projectSanitizer(_savedProject);
+                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
+                              if (!_projectLoadIsCurrent()) return;
+                              if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+                              _projectDocumentEpoch = startNewPdfAudit();
+                              if (!_projectLoadIsCurrent()) return;
+                              setPendingPdfBase64(project.pdfBase64 || null);
+                              if (project.incomplete) {
+                                const _resumeName = project.fileName || 'resumed-project.pdf';
+                                const _resumeDigest = project.docKey || (project.auditResult && project.auditResult.documentDigest) || null;
+                                setPendingPdfFile({
+                                  name: _resumeName,
+                                  size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0,
+                                  documentDigest: _resumeDigest,
+                                });
+                                try {
+                                  if (project.extractedText) window.__resumeExtractedText = { fileName: _resumeName, text: project.extractedText, docKey: _resumeDigest };
+                                } catch (_) {}
+                                setPdfAuditResult(project.auditResult
+                                  ? { ...project.auditResult, documentDigest: project.auditResult.documentDigest || _resumeDigest }
+                                  : {
+                                      documentDigest: _resumeDigest, score: null, scores: [], critical: [], serious: [], moderate: [], minor: [], passes: [],
+                                      summary: 'Resumed from an unfinished session; no numeric baseline is available yet.', pageCount: project.pageCount || 1,
+                                      hasSearchableText: true, hasImages: false, _resumeIncomplete: true,
+                                    });
+                                setPdfFixResult(null);
+                                if (project.extractedText) setInputText(project.extractedText);
+                                if (Array.isArray(project.pageRange) && project.pageRange.length === 2) {
+                                  setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+                                }
+                                addToast('Resumed “' + _resumeName + '”. Click Make Accessible to finish' + (project.pdfBase64 ? '.' : ' after re-attaching the original PDF.'), 'success');
+                                return;
+                              }
+                              const _derivedProjectVerification = deriveVerificationState({
+                                ai: project.verificationAudit || null,
+                                axe: project.axeAudit || null,
+                                equalAccess: project.secondEngineAudit || null,
+                                aiIncomplete: !!project._aiVerificationIncomplete,
+                                pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
+                              }) || {};
+                              const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;
+                              const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';
+                              const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
+                              const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
+                              const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
+                              const _loadedFidelityLimited = !!project.fidelityLimited;
+                              const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
+                                ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
+                                : (_loadedRequiresManualReview ? 'accessibility' : null));
+                              const _loadedExpertBase = (project._expertReviewBeforeVerification && typeof project._expertReviewBeforeVerification === 'object')
+                                ? project._expertReviewBeforeVerification
+                                : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
+                              setPdfAuditResult({
+                                score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
+                                passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
+                                hasSearchableText: true, hasImages: project.imageCount > 0,
+                              });
+                              const _loadedPdfFixResult = {
+                                accessibleHtml: project.accessibleHtml,
+                                documentDigest: project.documentDigest || project.docKey || null,
+                                beforeScore: project.beforeScore, afterScore: project.afterScore,
+                                axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
+                                secondEngineAudit: project.secondEngineAudit || null,
+                                verificationHtmlBinding: project.verificationHtmlBinding || null,
+                                verificationCoverage: _loadedVerificationCoverage,
+                                verificationState: _loadedVerificationState,
+                                afterScoreVerified: _loadedAfterScoreVerified,
+                                requiresManualReview: _loadedRequiresManualReview,
+                                verificationReviewCount: Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : (Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0),
+                                verificationReasons: Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : (Array.isArray(project.verificationReasons) ? project.verificationReasons : []),
+                                _verificationExpertReview: _loadedRequiresManualReview || project._verificationExpertReview === true,
+                                _expertReviewBeforeVerification: _loadedExpertBase,
+                                _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
+                                _scoreSource: project._scoreSource || null,
+                                docStyle: project.docStyle || null, pageCount: project.pageCount,
+                                imageCount: project.imageCount || 0, needsExpertReview: !!(project.needsExpertReview || _loadedRequiresManualReview || _loadedFidelityLimited),
+                                // Restore the fields older project files didn't carry (fallbacks keep
+                                // backward compatibility): reason-specific banner, integrity indicators,
+                                // Diff inputs (so the Diff works on a loaded project), and stat badges.
+                                expertReviewReason: _loadedExpertReason,
+                                integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+                                integrityWarning: project.integrityWarning || null,
+                                fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+                                fidelityLimited: project.fidelityLimited || false,
+                                sourceText: project.sourceText || '', finalText: project.finalText || '',
+                                htmlChars: project.htmlChars || project.accessibleHtml.length,
+                                extractedChars: project.extractedChars || 0,
+                                issuesFixed: project.issuesFixed || 0,
+                                remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+                                autoFixPasses: project.autoFixPasses || 0,
+                                humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                                reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+                                // Audit 2026-06-13: this input-screen loader dropped the
+                                // companion-lane + score-honesty + resume keys the two
+                                // view-file loaders restore — so a project loaded via THIS
+                                // button silently lost its translation, plain-language copy,
+                                // audio-resume position, and showed an AI-only score even
+                                // when the engine blended. Restored to parity.
+                                _translation: project._translation || null,
+                                _plainLanguage: project._plainLanguage || null,
+                                _audioJobMeta: project._audioJobMeta || null,
+                                _scoreIsBlended: !!project._scoreIsBlended,
+                                chunkState: project.chunkState || null,
+                              };
+                              if (isLiveVerificationHtmlBound(project, project.accessibleHtml)) {
+                                attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
+                              }
+                              setPdfFixResult(_loadedPdfFixResult);
+                              setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0, documentDigest: project.documentDigest || project.docKey || null });
+                              addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
+                            } catch(err) {
+                              if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + err.message, 'error');
+                            }
+                          };
+                          reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (reader.error?.message || 'Unable to read project file'), 'error'); };
+                          reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + 'Project file read was cancelled', 'info'); };
+                          try {
+                            reader.readAsText(file);
+                          } catch (readError) {
+                            if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (readError?.message || 'Unable to start reading project file'), 'error');
+                          }
+                          e.target.value = '';
+                        }} />
+                     </label>
+                     <button type="button"
+                        data-help-key="source_link_btn" onClick={() => {
+                            if (!showUrlInput && !expandedTools.includes('source-input')) {
+                                setExpandedTools(prev => [...prev, 'source-input']);
+                            }
+                            setShowUrlInput(!showUrlInput);
+                        }}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
+                        className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                     >
+                        <Link size={12} />
+                        {showUrlInput ? t('common.cancel') : t('common.link')}
+                     </button>
+                     <button type="button"
+                         aria-label={t('common.generate')}
+                        data-help-key="source_generate_btn" onClick={() => {
+                            if (!showSourceGen && !expandedTools.includes('source-input')) {
+                                setExpandedTools(prev => [...prev, 'source-input']);
+                            }
+                            setShowSourceGen(!showSourceGen);
+                        }}
+                        disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
+                        className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                     >
+                        <Sparkles size={12} />
+                        {showSourceGen ? t('common.cancel') : t('input.actions.generate_short')}
+                     </button>
+                     {/* Reading Library as a first-class source: the reader's
+                         "Use as source text" pipes the picked book back here. */}
+                     <button type="button"
+                        data-help-key="source_books_btn"
+                        onClick={() => setIsReadingLibraryOpen(true)}
+                        disabled={isExtracting || isGeneratingSource}
+                        title={t('input.actions.books_hint') || 'Open picture books — any book can become your source text'}
+                        className="text-xs flex items-center gap-1 bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                     >
+                        <span aria-hidden="true">📖</span>
+                        {t('input.actions.books_short') || 'Books'}
+                     </button>
+                 </div>
+                 {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+              </div>
+            </div>
+            {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+            {expandedTools.includes('source-input') && videoTranscriptSourceContext && (
+              <div className="mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800">
+                      <FileText size={13} />
+                      Video transcript loaded
+                    </div>
+                    <div className="mt-1 truncate text-sm font-bold text-slate-800">
+                      {videoTranscriptSourceContext.title}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600">
+                      <span>{videoTranscriptSourceContext.wordCount.toLocaleString()} words</span>
+                      {videoTranscriptSourceContext.cueCount > 0 && <span>{videoTranscriptSourceContext.cueCount.toLocaleString()} caption lines</span>}
+                      {videoTranscriptSourceContext.chapterCount > 0 && <span>{videoTranscriptSourceContext.chapterCount} chapters</span>}
+                      {videoTranscriptSourceContext.durationLabel && <span>{videoTranscriptSourceContext.durationLabel}</span>}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleTranscriptSourceAction('dismiss')}
+                    className="shrink-0 rounded-full border border-emerald-200 bg-white p-1.5 text-slate-600 hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    aria-label={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
+                    title={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {[
+                    { action: 'quiz', label: 'Exit ticket', icon: <CheckSquare size={13} /> },
+                    { action: 'glossary', label: 'Glossary', icon: <Globe size={13} /> },
+                    { action: 'note-taking', label: 'Guided notes', icon: <ClipboardList size={13} /> },
+                    { action: 'anchor-chart', label: 'Anchor chart', icon: <Layout size={13} /> },
+                    { action: 'simplified', label: 'Summary', icon: <BookOpen size={13} /> }
+                  ].map(item => (
+                    <button
+                      key={item.action}
+                      type="button"
+                      onClick={() => handleTranscriptSourceAction(item.action)}
+                      disabled={isProcessing}
+                      className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 transition-colors motion-reduce:transition-none hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {item.icon}
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* SourceInputPanel extracted to view_sidebar_panels_module.js (CDN). */}
+            {expandedTools.includes('source-input') && window.AlloModules && window.AlloModules.SourceInputPanel && React.createElement(window.AlloModules.SourceInputPanel, {
+          expandedTools, addToast, aiStandardQuery, aiStandardRegion, callGeminiVision,
+          generationStep, gradeLevel, handleAddStandard, handleAiUrlSearch, handleFindStandards,
+          handleGenerateSource, handleRemoveStandard, handleSelectMainSearchOption, handleSetIsUrlSearchModeToFalse, handleSetIsUrlSearchModeToTrue,
+          handleSetStandardModeToAi, handleSetStandardModeToManual, handleUrlFetch, includeSourceCitations, inputText,
+          isCanvas, isDraftSaving, isExtracting, isFindingStandards, isGeneratingSource,
+          isIndependentMode, isUrlSearchMode, searchOptions, setAiStandardQuery, setAiStandardRegion,
+          setGenerationStep, setIncludeSourceCitations, setInputText, setIsExtracting, setIsUrlSearchMode,
+          setSearchOptions, setSourceCustomInstructions, setSourceLength, setSourceLevel, setSourceTone,
+          setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards, setUrlSearchQuery,
+          setUrlToFetch, showSourceGen, showUrlInput, sourceCustomInstructions, sourceLength,
+          sourceLevel, sourceTone, sourceTopic, sourceVocabulary, standardInputValue,
+          standardMode, suggestedStandards, t, targetStandards, urlSearchQuery,
+          urlToFetch
+            })}
+          </div>
   );
 }

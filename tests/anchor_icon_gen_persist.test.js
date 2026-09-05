@@ -79,9 +79,13 @@ describe('AnchorChartView — generated icons persist for every section', () => 
 });
 
 describe('monolith handleNoteUpdate — the source-side half of the fix', () => {
-  it('allows anchor-chart through the type gate and supports a functional updater', () => {
+  it('routes functional anchor writes to the captured resource and preserves other fields', () => {
     const mono = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(mono).toMatch(/!\['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'\]\.includes\(prev\.type\)/);
-    expect(mono).toContain("typeof value === 'function' ? value(prev.data");
-  });
-});
+    const start=mono.indexOf('  const handleNoteUpdate = useCallback('), end=mono.indexOf('  const [fillInTheBlank',start);
+    let record={id:'a',type:'anchor-chart',title:'Keep title',data:{sections:[{id:'s1',label:'Keep label'}]}};
+    const written=[];
+    const handler=new Function('useCallback','generatedContent','onUpdateResource',mono.slice(start,end)+';return handleNoteUpdate;')(fn=>fn,record,(id,update)=>{written.push(id);record=update(record);});
+    handler('sections',rows=>rows.map(row=>({...row,iconUrl:'first'})));
+    handler('sections',rows=>rows.map(row=>({...row,iconPrompt:'second'})));
+    expect(written).toEqual(['a','a']);expect(record).toMatchObject({title:'Keep title',data:{sections:[{id:'s1',label:'Keep label',iconUrl:'first',iconPrompt:'second'}]}});
+  });});

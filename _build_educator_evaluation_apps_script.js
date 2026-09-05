@@ -62,6 +62,19 @@ const entry = path.join(tempDir, 'portal-entry.jsx');
 const bundle = path.join(tempDir, 'portal-bundle.js');
 const asImport = (file) => file.replace(/\\/g, '/');
 
+// Stage completed output before replacement. OneDrive can deny truncate/write
+// handles on generated files while indexing, even when replacement succeeds.
+function writeGenerated(file, content) {
+  const staged = path.join(tempDir, path.basename(file) + '.staged');
+  fs.writeFileSync(staged, content, 'utf8');
+  try {
+    fs.renameSync(staged, file);
+  } catch (_) {
+    fs.copyFileSync(staged, file);
+  }
+}
+
+
 const qrSource = fs.readFileSync(path.join(ROOT, 'qrcode.js'), 'utf8');
 const entrySource = `import React from ${JSON.stringify(asImport(REACT))};
 import { createRoot } from ${JSON.stringify(asImport(REACT_DOM))};
@@ -398,8 +411,8 @@ try {
     }
   } else {
     fs.mkdirSync(OUT_DIR, { recursive: true });
-    fs.writeFileSync(INDEX_OUT, indexHtml, 'utf8');
-    fs.writeFileSync(PORTAL_OUT, portalHtml, 'utf8');
+    writeGenerated(INDEX_OUT, indexHtml);
+    writeGenerated(PORTAL_OUT, portalHtml);
     console.log(`Built ${path.relative(ROOT, INDEX_OUT)} and ${path.relative(ROOT, PORTAL_OUT)} (${Math.ceil(Buffer.byteLength(portalHtml) / 1024)} KiB)`);
   }
 } finally {

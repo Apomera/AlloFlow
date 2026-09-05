@@ -415,8 +415,11 @@ describe('kind-aware ladder prompts and export (2026-08-16 follow-up)', () => {
     // guide + worksheet + rubric + worksheet-cover all route through the shim
     expect(anti.match(/_alloActivityContext\(activity\)/g).length).toBeGreaterThanOrEqual(4);
     // the raw description read is gone from the brainstorm ladder prompts
-    // (the lesson-extension guide keeps its own — extensions are idea-shaped)
-    expect(anti.match(/Context: \$\{activity\.description\}/g) || []).toHaveLength(1);
+    // Lesson extensions read the captured origin activity while awaiting AI.
+    expect(anti.match(/Context: \$\{activity\.description\}/g) || []).toHaveLength(0);
+    const extension = anti.slice(anti.indexOf('const handleGenerateExtensionGuide'), anti.indexOf('const handleGenerateProgression'));
+    expect(extension).toContain('activity.description');
+    expect(extension).toContain('const activity = generatedContent.data.extensions[index]');
   });
 
   it.each([
@@ -452,7 +455,12 @@ describe('ANTI loader pins — Activities modules', () => {
         return m && m[1];
       });
       expect(pins[0], mod + ' pin present').toBeTruthy();
-      expect(pins[1], mod + ' pin matches across copies').toBe(pins[0]);
+      if (pins[1]) {
+        expect(pins[1], mod + ' production pin matches across copies').toBe(pins[0]);
+      } else {
+        // build.js --mode=dev intentionally uses local unpinned modules.
+        expect(antis[1], mod + ' local development loader').toContain("'./" + mod + "'");
+      }
     }
   });
 

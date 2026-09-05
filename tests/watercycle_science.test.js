@@ -16,8 +16,9 @@ describe('water cycle teaching-model boundaries', () => {
       expect(source).toContain('"Evaporation index: " + evaporationIndex.toFixed(2) + "x"');
       expect(source).toContain('var evapRate = evaporationIndex;');
       expect(source).not.toContain('var evapRate = Math.max(0.2');
-      expect(source).toContain('var runoffTendency = Math.round');
-      expect(source).toContain('var infiltrationOpportunity = Math.round');
+      expect(source).toContain('var landResponse = wcLandResponse(d);');
+      expect(source).toContain('var runoffTendency = landResponse.runoff;');
+      expect(source).toContain('var infiltrationOpportunity = landResponse.infiltration;');
       expect(source).toContain('Groundwater recharge remains unresolved.');
       expect(source).not.toContain("var runoffPct = 'Needs land data';");
       expect(source).not.toContain("var gwRecharge = 'Not resolved';");

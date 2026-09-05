@@ -16,7 +16,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("'aria-busy': ready ? 'false' : 'true'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
     expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
-    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H ? Escape'");
+    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D ? Escape'");
+    expect(source).toContain("['D', 'Show or hide the chamber readouts dock']");
     expect(source).toContain('onKeyDown: onLabKey');
     expect(source).toContain('event.currentTarget.focus()');
     expect(source).toContain('focus-visible:outline-cyan-200');
@@ -91,8 +92,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain('Watch collisions and wall impacts');
     expect(source).toContain("'Watch A and B mix'");
     expect(source).toContain("'A on solution side '");
-    expect(source).toContain("w-[min(11rem,calc(100%-1.5rem))]");
-    expect(source).toContain("systemProbe || trace || transportMode ? 'bottom-[6rem]'");
+    expect(source).toContain("id: 'particle-readouts'");
+    expect(source).not.toContain("systemProbe || trace || transportMode ? 'bottom-[6rem]'");
   });
 
   it('turns temperature settling into a compact accessible progress cue', () => {
@@ -163,10 +164,6 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black sm:min-h-6");
     expect(source).toContain("pointer-events-auto -mr-1 flex min-h-11 min-w-11");
     expect(source).toContain("sm:min-h-6 sm:min-w-6");
-    expect(source).toContain("top-16 w-[min(9.5rem,calc(100%-1.5rem))]");
-    expect(source).toContain("sm:top-3 sm:w-auto sm:min-w-[150px]");
-    expect(source).toContain("left-3 top-24 w-[7.75rem]");
-    expect(source).toContain("sm:left-auto sm:right-3 sm:top-24 sm:w-[150px]");
   });
 
   it('keeps passive summaries out of the live announcement stream', () => {
@@ -209,28 +206,25 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     });
   });
 
-  it('the HUD remains recoverable by key, button, and floating control', () => {
+  it('the HUD remains recoverable by key and the essential control bar', () => {
     expect(source).toContain("event.key === 'h' || event.key === 'H'");
-    expect(source).toContain("'aria-label': 'Hide the simulation controls. Press H to show them again.'");
+    expect(source).toContain("'Hide the simulation controls. Press H to show them again.'");
     expect(source).toContain("'Show controls (H)'");
     expect((source.match(/showHud && h\('div'/g) || []).length).toBeGreaterThanOrEqual(3);
-    expect(source).toContain('Simulation controls hidden. Press H');
+    expect(source).toContain('Simulation controls and readouts hidden.');
   });
 
   it('collapses the chamber-controls card instead of letting it cover the stage', () => {
     TOOL_PATHS.forEach((filePath) => {
       const tool = readFileSync(resolve(process.cwd(), filePath), 'utf8');
-      // Expanded, the card used to run the full width of the stage and sit under the
-      // live read-outs on the right. It is now width-capped and foldable.
-      expect(tool).toContain('max-w-[min(20rem,calc(100%-1.5rem))]');
+      // The guide now lives in the readout dock, outside the canvas.
+      expect(tool).toContain("id: 'particle-readouts'");
       expect(tool).toContain('var [legendOpen, setLegendOpen] = useState(bucket.legendOpen === true)');
       expect(tool).toContain("'aria-controls': 'particle-chamber-guide'");
       expect(tool).toContain("h('div', { id: 'particle-chamber-guide' }");
       expect(tool).toContain('persist({ legendOpen: next })');
       expect(tool).toContain('Chamber controls guide collapsed.');
-      // The card is click-through so it never eats an orbit drag; only the toggle
-      // itself takes pointer events back.
-      expect(tool).toMatch(/pointer-events-none absolute left-3 top-3 z-20 max-w-/);
+      expect(tool).not.toMatch(/pointer-events-none absolute left-3 top-3 z-20 max-w-/);
       expect(tool).toContain('pointer-events-auto -mr-1 flex min-h-11 min-w-11');
       // Every body row is gated, so collapsing really removes them from the tree.
       expect((tool.match(/legendOpen && /g) || []).length).toBeGreaterThanOrEqual(4);
@@ -295,7 +289,7 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
     const moduleSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
     expect((moduleSource.match(/three\.min\.js/g) || []).length).toBe(3); // local + cdnjs + jsDelivr
     expect(moduleSource).toContain('ensureThree: function (opts)');
-  });
+  }, 60000); // reads 100+ tool files synchronously; OneDrive contention blew the 5s default
 
   it('every converted tool calls the shared loader', () => {
     const converted = ['aquaculture', 'artstudio', 'cephalopodlab', 'coasterlab', 'dinolab',
@@ -305,7 +299,7 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
       const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_' + slug + '.js'), 'utf8');
       expect(source, slug + ' should use the shared loader').toContain('window.StemLab.ensureThree(');
     });
-  });
+  }, 60000);
 
   it('the test harness stubs the loader API so tool effects cannot crash under jsdom', () => {
     const harness = readFileSync(resolve(process.cwd(), 'tests/helpers/stem_widgets_smoke_harness.js'), 'utf8');

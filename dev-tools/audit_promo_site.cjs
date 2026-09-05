@@ -138,8 +138,88 @@ for (const file of pages) {
         /Forever Free/i,
         /Cost to educators/i,
         /same license as Linux/i,
-        /No vendor lock-in/i
+        /No vendor lock-in/i,
+        /Prevents hallucinations/i,
+        /piggybacks entirely/i,
+        /the safest AI-assisted clinical report tool/i,
+        /ensures every claim is traceable/i
     ];
+    if (file === 'index.html') {
+        // Include text split across lines, inline tags, and SVG labels in the tour.
+        const copy = document.body.textContent.replace(/\s+/g, ' ');
+        const slides = document.querySelectorAll('#slides-viewport .slide');
+        const dots = document.querySelectorAll('.slide-dots .dot');
+        const counter = document.querySelector('#slide-counter');
+        if (dots.length !== slides.length) fail(file, 'static tour controls do not match the slide count');
+        if (!counter || counter.textContent.trim() !== 'Slide 1 of ' + slides.length) fail(file, 'static tour counter is stale');
+        const languageManifest = JSON.parse(fs.readFileSync(path.join(root, 'lang', 'manifest.json'), 'utf8'));
+        const languageFiles = fs.readdirSync(path.join(root, 'lang')).filter(name => name.endsWith('.js')).length;
+        if (languageManifest.count !== languageFiles || languageManifest.available.length !== languageFiles) fail(file, 'language file inventory and manifest disagree');
+        if (!new RegExp('\\b' + languageFiles + '\\s+language-pack files', 'i').test(copy)) fail(file, 'homepage language-file count is stale');
+
+        const unsupported = [
+            /without security risk/i,
+            /no access to the parent application, student data, or external networks/i,
+            /Every button, menu, tooltip, and instruction translates automatically/i,
+            /complete clinical research infrastructure/i,
+            /Scores are extracted as immutable facts/i,
+            /creating intrinsic motivation to read deeply/i,
+            /all students read independently and comfortably/i,
+            /giving every learner a pathway that matches/i,
+            /AI-generated distractors ensure/i,
+            /Grade \d+ \((?:ESL|IEP|RTI)\)/i,
+            /assessment design in seconds/i,
+            /in under 60 seconds/i,
+            /no student data ever leaves the device/i,
+            /PII is scrubbed from all AI-facing pipelines/i,
+            /clinically-accurate narrative/i,
+            /ensuring lesson accuracy/i,
+            /Zero impact on the core app/i,
+            /Every contribution is reviewed and merged/i,
+            /All Data.*localStorage Only/i,
+            /keeping learner identities private by default/i
+        ];
+        unsupported.forEach(function (pattern) {
+            if (pattern.test(copy)) fail(file, 'unsupported homepage claim: ' + pattern);
+        });
+    }
+
+    const visibleCopy = document.body.textContent.replace(/\s+/g, ' ');
+    const unsupportedShared = [
+        /Supports any language via Gemini/i,
+        /self-healing accuracy audit/i,
+        /full transcript automatically/i,
+        /Instant source material from any public video/i,
+        /Python, React, and p5\.js coding sandboxes/i,
+        /Generate unlimited custom symbols/i,
+        /Load any JSON file/i,
+        /Verify curriculum rigor instantly/i
+    ];
+    unsupportedShared.forEach(function (pattern) {
+        if (pattern.test(visibleCopy)) fail(file, 'unsupported shared-page claim: ' + pattern);
+    });
+    if (file === 'library.html') {
+        const cards = Array.from(document.querySelectorAll('.lesson-card'));
+        const categories = new Set(cards.map(card => card.dataset.category));
+        document.querySelectorAll('#filters button').forEach(function (button) {
+            if (button.dataset.category !== 'all' && !categories.has(button.dataset.category)) fail(file, 'subject filter has no available packs');
+        });
+        const topic = value => String(value).toLowerCase().replace(/^(?:title:|#)\s*/i, '').replace(/\b(?:the|american)\b/g, '').replace(/[^a-z0-9]/g, '');
+        cards.forEach(function (card) {
+            const link = card.querySelector('a[download]');
+            if (!link) return fail(file, 'lesson card has no downloadable pack');
+            try {
+                const pack = JSON.parse(fs.readFileSync(path.resolve(root, link.getAttribute('href')), 'utf8'));
+                if (!Array.isArray(pack.history) || !pack.history.length) throw new Error('missing saved resources');
+                const source = pack.history.find(item => item.type === 'analysis')?.data?.originalText;
+                const sourceTitle = typeof source === 'string' ? source.split(/\r?\n/)[0] : '';
+                if (!sourceTitle || topic(sourceTitle) !== topic(card.querySelector('h2').textContent)) fail(file, 'card topic differs from downloaded source: ' + link.getAttribute('href'));
+                const count = card.textContent.match(/(\d+) saved resources/);
+                if (!count || Number(count[1]) !== pack.history.length) fail(file, 'saved-resource count differs from download: ' + link.getAttribute('href'));
+            } catch (error) { fail(file, 'invalid lesson pack: ' + error.message); }
+        });
+    }
+
     banned.forEach(function (pattern) {
         if (pattern.test(html)) fail(file, 'stale or absolute promotional claim: ' + pattern);
     });

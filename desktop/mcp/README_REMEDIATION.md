@@ -1,4 +1,6 @@
-# AlloFlow PDF Remediation — local MCP connector (v1)
+# AlloFlow Document Remediation — local MCP connector (v1)
+
+Despite the historical `pdf_*` tool names, the connector remediates PDFs, Word documents, slides, spreadsheets, images, markdown/text and accessible HTML.
 
 Exposes the **real remediation pipeline** (`doc_pipeline_module.js`, the same bytes the app
 ships) as MCP tools. A self-contained **sibling** of `alloflow-mcp-stdio.cjs` (the Agent Core
@@ -19,6 +21,103 @@ way `tests/e2e/remediation_fault_injection_golden.spec.ts` drives it.
                             generativelanguage.googleapis.com
 ```
 
+## Keyless workflow and optional narration
+
+Start with `pdf_remediate_agent_start`, passing either `file_path` or `dir_path`.
+The client model answers pending requests; the server needs no Gemini key.
+Use `effort: "thorough"` for three fix passes, one polish pass, bounded auto-continue,
+and independent PDF/UA validation. Explicit options override the preset.
+
+The client loops `remediation_agent_requests` and `remediation_agent_respond_batch`.
+The latter accepts 1–32 pending replies atomically and returns the next work.
+Folder runs are sequential (up to 60 supported files, non-recursive), continue past
+per-file failures, and reuse completed outputs only after their hashes and options match.
+After interruption, find saved work with `remediation_agent_runs`;
+`remediation_agent_resume` takes the intended saved `run_id`.
+The unfinished document may restart; completed files are verified and reused.
+An active client conversation is still needed to answer model requests.
+
+Add `narration: "accessible"` to announce headings, lists, tables and image descriptions,
+or `narration: "natural"` for continuous reading. Audio is optional (default none).
+For an existing accessible HTML file use `document_narrate_start`, which defaults
+to accessible narration. `narration_provider: "auto"` uses Kokoro for English and
+Piper for other configured languages; `narration_voice` defaults to `auto`.
+Language comes from the HTML `lang` attribute, with an explicit BCP-47 override
+through `narration_language`. Missing metadata assumes English with a report warning.
+`document_narration_voices` lists 29 configured Piper language defaults and model cards.
+Accessible structural announcements are localized in en/es/fr/de/pt/it; the other
+configured languages support natural narration. Voice configuration does not mean
+every voice has been downloaded or listening-tested. Piper uses the catalog's default
+locale for each base language; it does not translate text. Language-tagged blocks and inline phrases inherit their nearest HTML language tag and switch voices
+automatically, including nested phrases in headings, lists, tables and captions.
+Leave provider and voice on auto for multilingual documents. Structural cues follow
+their element language; punctuation stays with a spoken phrase. EPUB highlighting
+uses the containing block while its phrases switch voices. Outputs include complete WAV and MP3, HTML with native audio controls,
+and a synchronized read-along EPUB (disable with `readalong_epub: false`).
+The HTML and companion MP3 must stay together; EPUB contains its audio.
+
+`document_narration_preflight` checks one HTML file or a non-recursive folder
+(up to 60 files) using local bundled helpers, without model downloads or synthesis.
+It reports ready/blocked files, language routes, section counts and rough spoken
+audio duration. This does not estimate processing time, detect unmarked languages,
+or certify accessibility. `document_narrate_start` also accepts `dir_path` to narrate
+a folder sequentially; generated read-along players are excluded.
+
+Every synthesized section is normalized to 24 kHz mono before audio assembly.
+The narration report records each section's language, provider, voice, start time,
+duration, document target and cache reuse so a multilingual result can be checked.
+
+Kokoro and Piper synthesis run locally. Public library/model downloads occur on first use
+and may recur if dependencies are not cached. The private Chromium profile under
+`<stateDir>/kokoro-browser` caches model assets for both providers (the folder name is retained for compatibility). Completed audio sections are stored
+under `<stateDir>/narration-cache/clips-v1`, keyed by the exact spoken text, voice,
+language, style and synthesis runtime. Document paths, IDs and source hashes do not
+invalidate unchanged clips. Editing or reordering a document reuses valid clips,
+then rebuilds the complete WAV/MP3/HTML/EPUB in the new order. Reports distinguish
+`reusedSections` from `generatedSections`; preflight reports `cachedSections` and
+`sectionsToSynthesize`. A runtime change can invalidate the clip cache.
+These audio files contain document content and persist until removed by the owner.
+A missing or failed section prevents a complete result; resume retries missing work.
+Completed packages are indexed under `<stateDir>/narration-completions`. Repeating
+or resuming the same source, options, runtime and output directory reuses final
+files only after every output hash matches, including the narration report. This
+path requires no browser launch or new dependency download. A changed or missing
+output rebuilds the package, reusing valid section audio. Folder summaries report
+`outcome: "completed_with_failures"`, `failedFiles` and a ready-to-call `retry` action
+when needed; a finished batch does not mean every document succeeded.
+The narration report lists section coverage and output hashes. Read-along and text-only
+EPUBs are additionally validated by the bundled EPUBCheck 5.3.0 (local Java) and DAISY Ace 1.4.6
+(local Node + Chromium). Each check reports `passed`, `failed`, `review-required`, `unavailable` or
+`skipped`; a missing Java or Chromium runtime is reported, never treated as a pass. Raw JSON reports
+are copied beside the EPUB and the result binds to the EPUB's SHA-256. A passing result is
+`complete-for-tested-scope` with `humanReviewRequired: true`; it is not a conformance certification.
+Each validator has a 600 s budget (`ALLOFLOW_MCP_EPUB_VALIDATION_TIMEOUT_MS` overrides it); on an
+emulated or memory-starved host EPUBCheck alone can exceed that, and the check then reports
+`unavailable` with the budget in its error so the run can be repeated with a larger budget.
+
+## Content coverage
+
+Remediation reports include a separate `contentCoverage` check comparing extracted
+source token occurrences with HTML, including repeated words and numbers. Missing
+tokens, absent source text, or reported extraction errors/low-confidence pages
+require review before tagged-PDF delivery or automatic narration. Rewording can
+also trigger review: this is a conservative lexical check, not semantic proof.
+Reports bind the comparison to source and HTML hashes, identify token ranges with
+possible omissions, and retain page-range scope and available extraction evidence.
+Empty page candidates may be intentionally blank; matched text does not prove OCR
+or reading order correct. Existing pipeline verification remains in force.
+
+Narration preflight independently compares eligible HTML text and authored visual
+descriptions against planned speech. It blocks omissions and undescribed visuals
+before synthesis and reports affected document targets. Equations require an
+`aria-label` or `alttext` spoken description; SVG can use a label or title/description.
+Images may use alt text or a figure caption; explicitly decorative images are
+excluded. Controls, hidden content and nonspoken markup are counted as exclusions.
+Both styles preserve inline image descriptions, captions, disclosure summaries and
+author verification notes. Legacy app string exports keep their existing behavior.
+Narration reports carry this coverage result and upstream source coverage when the
+HTML came from remediation. These checks do not certify pronunciation or accessibility.
+
 ## No-account mode
 
 `remediation_capabilities` reports two distinct states. `fullAiPipelineReady` describes the
@@ -30,11 +129,11 @@ AlloFlow account, paid Worker, or institution account.
 
 The same response now separates privacy from cost/account status. `dataHandling.offlineToolNames`
 make no external network request. `publicDependencyDownloadToolNames` contains only
-`remediation_setup`, `export_accessible_office`, and `export_alt_format`: they download Chromium
-or pinned exporter libraries, but do not intentionally include document content in those
+setup/export tools and the narration-capable start/resume tools: they download Chromium,
+public model weights or pinned libraries, but do not intentionally include document content in those
 requests (the provider can still see ordinary connection metadata such as IP address and
 timing). `geminiDocumentEgressToolNames` is the exact list that sends a document or derived
-content to Gemini. The three lists are exhaustive and disjoint; server startup fails if a future
+content to Gemini. The four lists (including credential-only checks) are exhaustive and disjoint; server startup fails if a future
 tool is left unclassified.
 
 `onboarding` is the machine-readable first-run decision. A client should follow its `nextTool`
@@ -61,7 +160,7 @@ export GEMINI_API_KEY=...            # optional — see key auto-discovery below
 
 ### Supplying your own Gemini key (safely)
 
-The AI tools run on **your** key, not a shared one. A free key from
+The optional Gemini tools run on **your** key, not a shared one. The client-model bridge needs no Gemini key. A free key from
 [aistudio.google.com](https://aistudio.google.com/app/apikey) takes about two minutes and needs no
 credit card. Pick one of these two, in this order of preference:
 
@@ -104,11 +203,12 @@ reports `onboarding.state: "key-present-untested"` and will not claim the key wo
 `no-key`.
 
 Free-tier prompts may be used by the provider to improve its products and are subject to daily
-caps. For student-identifiable documents prefer the keyless tools, or the fully local
+caps. For student-identifiable documents use an approved client/provider account for the bridge, deterministic local tools, or the fully local
 [portable pathway](../../agent_skills/alloflow-portable-remediation/SKILL.md), which sends nothing
 anywhere.
 
-The full AI audit/remediation path requires the Gemini API (**document content is sent to it**).
+The Gemini-backed audit/remediation tools require the Gemini API (**document content is sent to it**).
+The full client-model bridge performs remediation without that API or key.
 Core browser libraries and the preferred veraPDF Java CLI are bundled and run locally. The
 legacy browser-based veraPDF compatibility path downloads CheerpJ/pdf-lib and is disabled unless
 `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1` is explicitly set; MCP validation fails closed when
@@ -226,7 +326,7 @@ remediation_agent_respond   → the client's reply for one request; the pipeline
 remediation_agent_cancel    → abort; files already written stay
 ```
 
-The client's model — for most people, the Claude subscription they already have — plays the
+The client's model — for example, the model in an existing MCP client subscription — plays the
 role Gemini normally plays. Since MCP sampling is not yet supported by Claude's clients, this
 is the same idea implemented over ordinary tool calls: the server never contacts Gemini, needs
 no key, and makes no external model request at all.
@@ -251,9 +351,9 @@ Honesty notes, because this lane moves the data boundary rather than removing it
   silently discarded.
 - Expect roughly 10–40 requests per document (more with `auto_continue` or scanned pages).
   Text-first documents are the sweet spot; scanned pages surface as images to describe. Agent
-  runs are conversation-scoped: they hold the single-flight lane, default to a 60-minute wall
-  clock (`max_run_minutes`, cap 180), and do not survive a server restart — the conversation
-  driving one is its state.
+  runs hold the single-flight lane and default to a 60-minute per-document wall clock
+  (`max_run_minutes`, cap 180). Saved run records support explicit resume after restart;
+  the client supplies new model replies and unfinished documents may restart.
 - **The transport is latency-tuned for a conversational client** (2026-08-19 perf report): the
   driver publishes a host transport profile that widens the pipeline's per-call deadlines to
   600s (vs 180s text / 120s vision tuned for HTTP sockets) and exempts the run from Gemini
@@ -286,7 +386,8 @@ environment, tagged PDF delivery-verified.
 | `remediation_job_result` | The completed job's summary (per-file summaries for batches). | nothing | instant |
 | `remediation_job_cancel` | Cancels a queued job, or kills the running one (its browser context closes; in-flight AI calls die in seconds). Files already written stay. | nothing | instant |
 | `remediation_job_diagnostics` | Numbers-only diagnostic snapshot for a run: per-call ledger (outcomes, timings, byte counts, retries, models), throttle events, constants in force. Pass `job_id` for a background job; omit it for the most recent run this session. Never contains prompts, responses, or document text. | nothing | instant |
-| `audit_html` | Two-engine accessibility audit (AI content rubric + axe-core) of a local `.html` file — the same evidence stack the remediation pipeline uses internally, for web page exports and LMS content. Never fetches URLs. | audited HTML → Gemini under your key | 1-2 min |
+| `audit_html` | Three-engine accessibility audit (AI content rubric + axe-core + IBM Equal Access) of a local `.html` file — the same evidence stack and canonical verification policy the remediation pipeline uses internally. Per-engine `checks` distinguish passed / failed / partial / review-required / unavailable; an engine error is reported in `engineErrors`, never counted as a pass. Never fetches URLs. | audited HTML → Gemini under your key | 1-2 min |
+| `audit_two_engines` | Model-free axe-core + IBM Equal Access audit of a local `.html` file with the same per-engine status contract, reporting where the engines disagree. | nothing | < 1 min |
 
 Since 0.3.2, `pdf_audit` and the remediation tools also accept **PNG/JPEG/WebP images** (photographed
 worksheets are first-class inputs; magic-byte detection protects against mislabeled files), and the
@@ -451,8 +552,7 @@ PDF as base64 — or list them with `resources/list`. The server emits
 `notifications/resources/list_changed` when a run finishes, so a client that listed earlier
 refreshes on its own. The server keeps its own artifact index in the state directory, so
 artifacts from previous sessions are republished after a restart whichever lane produced
-them — including the keyless agent bridge, which holds its run in memory and writes no job
-record. Files deleted or moved in the meantime are dropped from the listing rather than
+them. Keyless runs save their own resumable records separately from Gemini job records. Files deleted or moved in the meantime are dropped from the listing rather than
 advertised and then failed.
 
 **This is not a general file-read channel.** A resource URI carries an opaque run id and a
@@ -616,8 +716,9 @@ extension and keep using the same tools (the registry and the MCPB manifest are 
 each other by `tests/mcp_remediation_stdio_smoke.test.js`, so the count lives there, not here). The installer may accept an optional Gemini API key
 (stored by Claude Desktop and injected as `GEMINI_API_KEY`; never embedded in the bundle).
 Install by dragging the `.mcpb` into Claude Desktop Settings > Extensions. Host machines
-still need Node 18+ on PATH and a one-time `npx playwright install chromium`; capabilities
-report separately on Playwright, Chromium, pipeline modules, and vendor hash integrity.
+still need Node 20+ on PATH, a local Java runtime (veraPDF and EPUBCheck) and a one-time
+`npx playwright install chromium`; capabilities report separately on Playwright, Chromium, Java,
+EPUBCheck/Ace runtimes, pipeline modules, and vendor hash integrity.
 `--lean` skips `node_modules` for personal development and verifies protocol, registry parity, and
 vendor integrity without pretending Playwright is bundled. Full distribution builds additionally
 require the extracted artifact to resolve its own packaged Playwright. Distribution builds require

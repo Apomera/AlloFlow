@@ -75,6 +75,21 @@ blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .start .start-heading{font-size:calc(17px * var(--fs));margin:10px 0 4px;padding:0;border:0;}
 .start .start-heading::before{display:none;}
 figure{margin:22px 0 26px;}
+figure.diagram svg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:var(--shadow);}
+figure.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5;}
+figure.diagram .box.accent{fill:var(--accent-soft);stroke:var(--accent-bd);}
+figure.diagram .box.ok{fill:var(--ok-bg);stroke:var(--ok-bd);}
+figure.diagram .t{fill:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:800;}
+figure.diagram .s{fill:var(--soft);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px;}
+figure.diagram .arrow{stroke:var(--accent);stroke-width:2.5;fill:none;}
+figure.diagram .arrow.dim{stroke:var(--soft);stroke-dasharray:6 5;}
+figure.diagram .head{fill:var(--accent);}figure.diagram .head.dim{fill:var(--soft);}
+.glance{margin:18px 0;padding:14px 18px 6px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;box-shadow:var(--shadow);}
+.glance h3{margin:0 0 8px;}
+.glance .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 22px;}
+.glance h4{margin:8px 0 4px;font-size:calc(14px * var(--fs));color:var(--accent-ink);text-transform:uppercase;letter-spacing:.04em;}
+.glance ol{margin:0 0 10px;padding-left:20px;font-size:calc(14.5px * var(--fs));}
+.glance li{margin:0 0 5px;}
 figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);background:var(--panel);}
 figcaption{margin-top:8px;font-size:calc(13.5px * var(--fs));color:var(--soft);}
 nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 24px;box-shadow:var(--shadow);}
@@ -207,8 +222,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>13 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed September 2, 2026</span><span class="dot" aria-hidden="true"></span>
-<span>prints to about 12 pages</span>
+<span>reviewed September 4, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>prints to about 14 pages</span>
 </p>
 
 <div class="start">
@@ -250,6 +265,52 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </table>
 </div>
 <p>Roles come from the roster and the staff list on the server side. Signing in with a school Google account decides what you can see; nothing in the link itself grants access.</p>
+<p><strong>The two numbers every conversation comes back to.</strong> An award raises a student's <em>available balance</em> and their <em>growth level</em> in that category at the same time. Checkout spends the balance; nothing spends growth. When a student asks why their points went down but their level did not, this is the answer.</p>
+<figure class="diagram">
+<svg viewBox="0 0 860 330" role="img" aria-labelledby="flow-title flow-desc">
+<title id="flow-title">How points move through School Rewards</title>
+<desc id="flow-desc">Staff award points with a written reason. Each award raises two separate things: the student's available balance, which a cashier checkout later spends, and the student's growth level in that category, which purchases never lower. An award can be undone by the same staff member within fifteen minutes.</desc>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="head"/></marker>
+<marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="head dim"/></marker>
+</defs>
+<rect x="24" y="110" width="200" height="110" rx="12" class="box accent"/>
+<text x="124" y="146" text-anchor="middle" class="t">Staff award</text>
+<text x="124" y="168" text-anchor="middle" class="s">points + a written reason</text>
+<text x="124" y="186" text-anchor="middle" class="s">from the Award points tab</text>
+<text x="124" y="204" text-anchor="middle" class="s">(Undo within 15 minutes)</text>
+<path d="M224 145 C262 145 262 70 296 70" class="arrow" marker-end="url(#ah)"/>
+<path d="M224 185 C262 185 262 260 296 260" class="arrow" marker-end="url(#ah)"/>
+<rect x="298" y="28" width="256" height="84" rx="12" class="box"/>
+<text x="426" y="60" text-anchor="middle" class="t">Available balance</text>
+<text x="426" y="82" text-anchor="middle" class="s">what the student can spend</text>
+<text x="426" y="100" text-anchor="middle" class="s">up with awards, down with purchases</text>
+<rect x="298" y="218" width="256" height="84" rx="12" class="box ok"/>
+<text x="426" y="250" text-anchor="middle" class="t">Growth level</text>
+<text x="426" y="272" text-anchor="middle" class="s">one per recognition category</text>
+<text x="426" y="290" text-anchor="middle" class="s">only ever goes up</text>
+<path d="M554 70 L590 70" class="arrow" marker-end="url(#ah)"/>
+<rect x="592" y="28" width="250" height="84" rx="12" class="box accent"/>
+<text x="717" y="60" text-anchor="middle" class="t">Cashier checkout</text>
+<text x="717" y="82" text-anchor="middle" class="s">only while a window is open now</text>
+<text x="717" y="100" text-anchor="middle" class="s">refresh, review, confirm, receipt</text>
+<path d="M554 260 L590 260" class="arrow dim" marker-end="url(#ahd)"/>
+<rect x="592" y="218" width="250" height="84" rx="12" class="box"/>
+<text x="717" y="250" text-anchor="middle" class="t">Student overview</text>
+<text x="717" y="272" text-anchor="middle" class="s">level bars, latest recognition,</text>
+<text x="717" y="290" text-anchor="middle" class="s">and the prize goal</text>
+<line x1="426" y1="112" x2="426" y2="218" class="arrow dim" stroke-dasharray="3 6" marker-end="none"/>
+<text x="440" y="160" class="s">separate numbers:</text>
+<text x="440" y="178" class="s">spending never lowers growth</text>
+</svg>
+<figcaption>How points move. One award raises two separate numbers: the available balance, which checkout spends, and the growth level, which nothing lowers.</figcaption>
+</figure>
+<p><strong>If you get lost, press Help.</strong> The Help button in the portal header opens the same answers this manual gives, shortened to a screen and filtered to the role that is signed in. It is the fastest way to settle a question at the register or in a staff meeting without leaving the portal.</p>
+<figure>
+<img src="school-rewards-manual-assets/10-help-panel.jpg" width="1180" height="1000" loading="lazy" alt="The portal header with the STAFF badge, the language menu, and the Help button, and below it the built-in help card titled How School Rewards works. Sections read Two kinds of points, with Available balance is what a student can spend and Growth levels never go down; Who does what, with staff, cashiers, administrators, and students; and Awarding points, beginning with Finding a student and Verify before you record. A Close help button sits at the top right.">
+<figcaption>Built-in help as a staff member sees it. Cashiers and administrators see their own sections; students see theirs.</figcaption>
+</figure>
+
 <h2 id="quickstart">2. Quick Start for a Principal</h2>
 <p>Inside AlloFlow, open <strong>Educator Tools &rarr; School Rewards &amp; Store</strong>, or <strong>Leadership Hub &rarr; School Rewards &amp; Store</strong>. The panel that opens is both the setup and the launcher. The first time, it shows a ten-step checklist; once a deployment is connected, it opens on the launcher with the checklist folded below.</p>
 <figure>
@@ -257,10 +318,10 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>First open: the setup checklist. Each copy control fetches the reviewed file, checks its signature, and marks the step done.</figcaption>
 </figure>
 <h3>Practice first</h3>
-<p>Before any Google setup, and before a staff meeting, open the <strong>practice portal</strong> from the panel's Launch card (<em>Practice with fictional data</em>) or directly at alloflow-cdn.pages.dev/school-rewards-practice. It is the real portal running on a fictional ledger in your browser: awards, group awards, undo, checkout, receipts, refunds, and the student view all work, and nothing reaches a real ledger. A bar at the top switches the <strong>role</strong> (staff, cashier, administrator, student), picks a <strong>scenario</strong> (a small school in preview, a shopping day with the store open, a large school), and offers <strong>Reset data</strong> to start clean. The data persists in that browser between visits, so a mistake made in a staff meeting can be undone or reset without consequence.</p>
+<p>Before any Google setup, and before a staff meeting, open the <strong>practice portal</strong> from the panel's Launch card (<em>Practice with fictional data</em>) or directly at alloflow-cdn.pages.dev/school-rewards-practice. It is the real portal running on a fictional ledger in your browser: awards, group awards, undo, checkout, receipts, refunds, and the student view all work, and nothing reaches a real ledger. A bar at the top switches the <strong>role</strong> (staff, cashier, administrator, student), picks a <strong>scenario</strong> (a small school in preview, a shopping day with the store open, a large school), and offers <strong>Reset data</strong> to start clean. The page opens with a short introduction and a <strong>Demo guide</strong>: a five-minute walkthrough for presenting the system to administrators. The tour starts only when you press <strong>Start the tour</strong>, so the overview stays still while you talk. The data persists in that browser between visits, so a mistake made in a staff meeting can be undone or reset without consequence.</p>
 <figure>
-<img src="school-rewards-manual-assets/09-practice-portal.jpg" width="1180" height="900" loading="lazy" alt="The practice portal with its dark purple practice bar across the top showing Role Staff, Scenario Small school, Customize, Start the tour, Reset data, and Manual buttons; below it the real Award points tab with student tiles outlined in amber and a Practice tour box reading 1 of 4, Choose the student.">
-<figcaption>The practice portal: the real portal, a fictional ledger, a role and scenario bar, and a tour that highlights the control each step is about.</figcaption>
+<img src="school-rewards-manual-assets/09-practice-portal.jpg" width="1180" height="900" loading="lazy" alt="The practice page. A dark purple bar across the top reads Practice mode, fictional data in this browser only, with Role Staff, Scenario Small school, and buttons for Customize, Start the tour, Demo guide, Reset data, and Manual. Below it a card titled Recognize effort, build progress, shop with points introduces the roles, with the Five-minute administrator demo expanded into six numbered steps. Under that, the real portal header shows Practice Elementary Rewards, a STAFF badge, the language menu, and a Help button.">
+<figcaption>The practice page: the role and scenario bar, the introduction, the five-minute demo guide, and the real portal underneath with its own Help button.</figcaption>
 </figure>
 <p>You do not need to customise anything to practise: pick a scenario and press <strong>Start the tour</strong>. <strong>Customize</strong> opens a panel for making the practice school look like yours: the school name, number of students, store status, starting points, the recognition categories and prizes as simple rows, and the <strong>tour steps</strong> as cards. Each card has a role, a tab to open, a control to highlight chosen from a list, a title, and a sentence or two; steps can be added, reordered, or removed, and <em>Use the built-in tour</em> puts the original back. Nothing has to be typed in a technical format. <em>Apply and reload</em> rebuilds the fictional ledger from those settings; <em>Export settings</em> and <em>Import settings</em> move the whole practice set, tour included, between schools as one file. The tour runs the steps for the current role, so a staff meeting can run the staff tour while cashiers run theirs at the register.</p>
 <ol>
@@ -295,6 +356,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="awarding">4. Awarding Points</h2>
 <p class="suite">Training day: the <a href="school-rewards-quick-cards.html">printable quick cards</a> hold this section and the next on one page each, for staff and for cashiers.</p>
 <p>Staff award from the portal <strong>Award points</strong> tab. Students appear as tiles with their name, grade and homeroom, a short reference code, and available points. Tap a tile to select the student; the confirmation panel repeats who you chose. Pick a recognition category, enter the points, and write what the student did. The explanation is required and is the sentence the student will read, so write it to them.</p>
+<p><strong>Finding a student.</strong> Type part of a name, grade, or homeroom in the search box; the tiles narrow as you type. The grade and homeroom filters narrow them further. Two students with the same first name are told apart by grade, homeroom, and the short reference code on each tile, and the confirmation panel below the tiles repeats all of these for the student you chose. Tapping the selected tile again keeps it selected, so a second tap never silently clears your choice. Read the confirmation before you record.</p>
 <figure>
 <img src="school-rewards-manual-assets/03-award-tiles.jpg" width="1180" height="1180" loading="lazy" alt="The Award points tab. Search and grade and homeroom filters above a grid of student tiles; Blake T. is selected with a purple outline; below are the confirmation panel, the group award checkbox, points, category with its help text, the explanation field, and a Record award button. A Current balances list sits on the right.">
 <figcaption>Awarding to one student. The tile grid replaces a dropdown so the intended student is visible before the award is recorded.</figcaption>
@@ -312,11 +374,36 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="store">5. The Store: Windows, Checkout, and Receipts</h2>
 <p>Shopping happens inside a <strong>trimester window</strong> that an administrator moves through <em>Draft</em>, <em>Preview</em>, <em>Open</em>, <em>Closed</em>, and <em>Archived</em>. In Preview, students see prizes and what they can afford; in Open, cashiers can check out. Configured start and end times fail closed outside the window.</p>
 <ul>
-<li><strong>Checkout</strong> is done by a cashier at the register. The cashier chooses and verifies the student, builds the cart, and the portal refreshes the live balance, window, and inventory before the final confirmation. If availability changed, the cart is kept and the affected prize is highlighted for review.</li>
+<li><strong>Checkout</strong> is done by a cashier at the register in two steps. First the cashier chooses and verifies the student, picks the open window, and builds the cart while watching the available balance and the stock on each prize. Then <em>Refresh, review, and complete checkout</em> refreshes the live balance, window, and inventory and shows a final confirmation with the points before and after; nothing is charged until the cashier confirms. If availability changed, the cart is kept and the affected prize is highlighted for review.</li>
+<li><strong>Open is not always open right now.</strong> A window whose status is Open only sells between the start and end times it was given. Outside those times the Store tab says so in plain words (for example that shopping has not started yet and when it opens) and checkout stays closed; nobody needs to guess from the status alone.</li>
 <li><strong>Receipts</strong> are itemized, shown on screen, and emailed to the student's managed address. If email fails, the on-screen receipt can be printed and an administrator resolves delivery later; the purchase itself is complete.</li>
 <li><strong>Refunds</strong> are administrator-only and restore points and finite inventory for the whole order.</li>
 <li><strong>Inventory</strong> is an append-only movement history: creating a prize, adjusting stock, sales, and refunds each leave a record, and a stale stock version is refused rather than overwritten.</li>
 </ul>
+<figure>
+<img src="school-rewards-manual-assets/12-store-scheduled.jpg" width="1180" height="744" loading="lazy" alt="The Store tab as a cashier. The Store catalog note reads Trimester 1 is set to Open, but shopping has not started yet, checkout opens 2026-09-06 11:47, above a Refresh live availability button and four prizes with their point costs and stock. The Cashier checkout card shows the student search and filters, a Choose a student menu, the Open store window menu reading None available, and an empty cart.">
+<figcaption>A window set to Open before its start time. The note says exactly what is happening and when checkout opens; the window menu offers nothing until then.</figcaption>
+</figure>
+<div class="glance">
+<h3>Shopping day at a glance</h3>
+<div class="cols">
+<div><h4>The day before</h4><ol>
+<li>Set the window to <strong>Open</strong> with the real start and end times; confirm the Store tab says shopping opens tomorrow, not that it is open now.</li>
+<li>Check each prize's stock in the inventory card and adjust with a reason.</li>
+<li>Confirm the cashier can sign in and sees the Store tab.</li>
+</ol></div>
+<div><h4>On the day</h4><ol>
+<li>The Store tab reads <em>Shopping is open for …</em>. If it says anything else, stop and ask an administrator.</li>
+<li>Choose and verify the student, build the cart, then <em>Refresh, review, and complete checkout</em>; confirm only after reading the before-and-after points.</li>
+<li>If a request times out, keep the screen and do not resubmit.</li>
+</ol></div>
+<div><h4>Afterwards</h4><ol>
+<li>Set the window to <strong>Closed</strong>.</li>
+<li>Review unresolved receipts under Progress &amp; activity.</li>
+<li>Download the aggregate reconciliation from Admin setup and file it.</li>
+</ol></div>
+</div>
+</div>
 <p>The repository README carries a shopping-day runbook with the go/no-go review, the day-of routine, and what to do when a request times out. Follow it as written: the standing rule is never to resubmit an ambiguous request with a new key.</p>
 <h2 id="students">6. For Students and Families</h2>
 <p>Students do not need the portal to take part: balance emails arrive on the schedule the school sets. A rostered student who opens the portal with their school account sees only their own balance, growth, recent recognition, and the prize catalog.</p>
@@ -325,6 +412,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>What a student sees. The prize goal line updates as points arrive; the goal itself stays in that browser and is never sent to the ledger.</figcaption>
 </figure>
 <ul>
+<li><strong>Two numbers.</strong> <em>My available-to-spend balance</em> is what a purchase can use. <em>Growth points earned</em> and the level bars count every recognition in each category and never go down; shopping spends points without undoing growth.</li>
 <li><strong>Latest recognition</strong> shows the five most recent awards with the category and the sentence staff wrote. The full history is under Progress &amp; activity.</li>
 <li><strong>Save for this</strong> marks one prize as a goal and shows the points still needed.</li>
 <li><strong>Language.</strong> A menu in the header switches the student surfaces between English and Spanish; the choice is remembered on that device and defaults to the device language. When a signed-in student chooses a language, the repository saves it too, so balance emails to that student arrive in the same language and a new device picks it up on sign-in. Section 11 says what is and is not translated.</li>
@@ -343,14 +431,15 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="printlab">8. The 3D Print Lab</h2>
 <p>The Print Lab lets a student submit a small 3D design from AlloFlow's STEAM Lab, have staff review and quote it in points, and reserve those points until the print is fulfilled. It is a large surface with its own safety and review workflow, and most pilots will not use it at first. An administrator can hide the tab under <strong>School settings</strong> until the school has a reviewed printer workflow; existing print records stay in the ledger, and hiding the tab is a display setting rather than an access control. The full workflow, formats, and safety boundaries are documented in the package README and the Print Lab design note.</p>
 <h2 id="admin">9. Administration</h2>
-<p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it. It is also the honest way to confirm each role works: when a teacher's first award appears, their sign-in and role are proven.</p>
+<p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it and carries a button that opens that card or tab. It is also the honest way to confirm each role works: when a teacher's first award appears, their sign-in and role are proven.</p>
+<p><strong>How the tab is laid out.</strong> Admin setup opens with the checklist and School settings expanded and every other card collapsed, so a new administrator meets two cards rather than nineteen. The section links at the top expand a card, scroll to it, and move keyboard focus to its heading. <em>Adjust stock</em> on a prize opens the separate inventory card, because editing a prize never changes its stock.</p>
 <p><strong>Answering a records request.</strong> The Admin setup tab has a <strong>Records requests</strong> card. <em>Download this student’s full record</em> produces a file with every row the repository holds about one student, which is what a parent or district request usually asks for. <em>Redact permanently</em> replaces that student’s name, school email, and the words staff wrote about them with a placeholder, and parks the account so it cannot sign in. Points, dates, and record ids stay, so balances still reconcile and the audit check still passes.</p>
 <p><strong>Do not delete rows in the spreadsheet.</strong> The audit trail is a chain in which each entry carries the fingerprint of the one before it. Removing a row breaks that chain permanently, and the integrity check will report a break from then on with no sign of what caused it. Redaction is the supported path because it edits in place and adds an entry, which extends the chain instead of breaking it.</p>
 <p><strong>What redaction cannot remove.</strong> Audit entries the student’s own account created still carry that address, because rewriting them would destroy the tamper-evidence the chain exists for. Both the export and the redaction tell you how many such entries there are, so the school can decide what its schedule requires.</p>
 <p><strong>Roster import.</strong> The Student roster card shows two example rows above the file chooser and offers a blank template to download. Fill one row per student in Sheets or Excel, save as CSV, and import up to 500 rows at a time.</p>
 <figure>
-<img src="school-rewards-manual-assets/07-admin-sections.jpg" width="1180" height="1000" loading="lazy" alt="The Admin setup tab: a row of section chips such as School settings, Student roster, Staff access, Prize catalog, and Trimester reconciliation, then cards for School settings with the Print Lab checkbox and Student roster with the add-student form, each with a Collapse button.">
-<figcaption>The Admin tab. The section index jumps to a card, and each card collapses so a tablet is not one long column of forms.</figcaption>
+<img src="school-rewards-manual-assets/11-admin-checklist.jpg" width="1180" height="1000" loading="lazy" alt="The Admin setup tab. Below the tab strip, three rows of section links such as First-week checklist, Student roster, Staff access, Prize catalog, Inventory adjustment, and Trimester reconciliation. The First-week checklist card reads 1 to go, with seven ticked lines and one open line, The first checkout has happened, carrying an Open store button. Beside it the School settings card shows the Print Lab checkbox and a Save settings button. Below, Student roster, Storage and retention, Academic year, and Records requests are collapsed with Expand buttons.">
+<figcaption>The Admin tab on first open: the checklist and School settings expanded, every other card collapsed, and the one unfinished checklist line carrying a button that opens the right place.</figcaption>
 </figure>
 <ul>
 <li><strong>Student roster.</strong> Add, edit, deactivate, or reactivate students; import a CSV with <code>firstName</code> and <code>email</code> plus optional last initial, grade, and homeroom, validated as a whole before anything is written; or preview and apply a provider-neutral SIS snapshot.</li>
@@ -379,6 +468,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <ul>
 <li><strong>Themes.</strong> Inside AlloFlow the panel follows the app's theme, including the high-contrast theme. The portal follows the device: a dark colour scheme and a request for more contrast are both honoured, and reduced motion turns off transitions.</li>
 <li><strong>Phones.</strong> Below 760 pixels the portal's tab strip becomes a fixed bar at the bottom of the screen, cards stack, and award tiles remain full-width targets.</li>
+<li><strong>Built-in help.</strong> The <strong>Help</strong> button in the portal header opens a guide inside the portal: the two kinds of points, who does what, and the questions each role asks most, with links to this manual, the quick cards, and the practice page. It shows only the sections for the signed-in role, is translated with the rest of the portal, and works when the school network blocks outside links.</li>
 <li><strong>Languages.</strong> The header menu lists every language the portal ships. Spanish is complete: every screen a student, teacher, cashier, or administrator sees is translated, including the store, the admin cards, and the print lab. A language that is only partly translated shows its coverage beside its name, so a partly translated portal never looks like a finished one, and any string without a translation stays English rather than breaking.</li>
 <li><strong>How languages are added.</strong> The portal runs inside the school's own Apps Script project, so it cannot use the language packs the rest of AlloFlow uses. It keeps its own catalogue instead, at <code>apps_script/school_rewards/portal_strings.json</code>, with one file per language beside it. Adding a language is a translation file, not a code change; <code>lang/SCHOOL_REWARDS_PORTAL_TRANSLATION_HANDOFF.md</code> lists exactly what is left to translate and what must be left alone. Languages beyond English and Spanish download the first time someone picks them, so a school network that blocks the AlloFlow CDN still gets those two.</li>
 <li><strong>Emails are not the portal.</strong> Balance statements are written by the repository, not the portal, and exist in English and Spanish only. A student whose portal is set to another language still receives English email. Guardian digests are English.</li>
@@ -400,7 +490,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>A group award reported failures:</strong> the students named were not recorded; the rest were. Fix the cause and award only the missing students.</li>
 <li><strong>A checkout timed out or the result is ambiguous:</strong> do not submit again with a new request. Keep the screen, note the time and cart, and follow the runbook; the portal keeps a stable retry key for an exact retry.</li>
 <li><strong>Practice shows “not available in practice mode”:</strong> bulk mail, guardian digests, the Print Lab, and integrity recovery need a real deployment; everything a staff member or cashier does on a normal day works in practice.</li>
-<li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design.</li>
+<li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design. The practice page's own bar, introduction, and demo guide are English only; the portal inside it is translated.</li>
+<li><strong>Not sure what a screen is asking:</strong> press <strong>Help</strong> at the top of the portal. The answers are short, specific to your role, and do not need an outside connection.</li>
 </ul>
 <h2 id="glossary">13. Glossary</h2>
 <dl>
@@ -413,6 +504,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <dt>Deployment check</dt><dd>The portal page at the deployment URL with <code>?api=status</code> that confirms the service, version, school, domain, and your role.</dd>
 <dt>Codename</dt><dd>The classroom-session identity AlloFlow uses instead of a student's name.</dd>
 <dt>Roster bridge</dt><dd>The CSV template that carries groups and codenames, never names or emails, from AlloFlow to the portal importer.</dd>
+<dt>Built-in help</dt><dd>The Help panel in the portal header: role-specific answers, the two kinds of points, and links to this manual and the quick cards.</dd>
 <dt>Practice portal</dt><dd>The real portal page served with a fictional ledger in your browser, with a role and scenario bar and an editable tour; nothing reaches a real ledger.</dd>
 <dt>Idempotency key</dt><dd>A stable request key that lets an interrupted operation be retried exactly once without duplicating it.</dd>
 </dl>

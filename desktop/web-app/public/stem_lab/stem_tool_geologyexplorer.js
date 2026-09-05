@@ -5,7 +5,9 @@
  * (deeper sedimentary = older), cross-cutting (a younger granite pluton cuts the
  * layers), contact metamorphism (a baked aureole), depth -> temperature/pressure,
  * and where the rock cycle restarts (magma). Graduated from the
- * docs/geology_explorer_spike.html prototype.
+ * docs/geology_explorer_spike.html prototype. Six more scenes share the same
+ * voxel engine: crystal cavern, deep Earth, subduction zone, mid-ocean ridge,
+ * hotspot chain, and a continent–continent mountain belt (scene 7).
  *
  * Hooks-safety: every hook is declared unconditionally at the top of render();
  * the THREE-not-ready / WebGL-failure branches choose the VISUAL only (never an
@@ -38,7 +40,8 @@
   };
   var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#38bdf8', 'Igneous (intrusive)': '#ec4899', 'Igneous (extrusive)': '#f97316', 'Metamorphic': '#a78bfa', 'Molten': '#fb923c',
     'Crust': '#92786a', 'Mantle': '#ef4444', 'Outer core': '#fb923c', 'Inner core': '#fbbf24', 'Mineral': '#22d3ee', 'Mineral (silica)': '#5eead4', 'Mineral (quartz)': '#a78bfa',
-    'Water': '#38bdf8', 'Igneous (basalt)': '#64748b', 'Mantle (rigid)': '#b45309', 'Mantle (ductile)': '#ef4444', 'Mantle (plume)': '#f97316' };
+    'Water': '#38bdf8', 'Igneous (basalt)': '#64748b', 'Mantle (rigid)': '#b45309', 'Mantle (ductile)': '#ef4444', 'Mantle (plume)': '#f97316',
+    'Continental': '#a16207', 'Fault zone': '#57534e' };
   var ROCK_ORDER = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma', 'intrusion', 'marble', 'hornfels'];
   // Index fossils per depositional environment (illustrative). Sedimentary layers
   // record life; igneous/metamorphic/molten rock does not — melting and
@@ -937,7 +940,44 @@
     arcMagma: 'You’re in rising arc magma — wedge melt climbing through the crust.',
     arcVolcano: 'You’re in an arc volcano — built by wedge melt, not by the slab.'
   };
-  function fpBlurb(sceneId, key) { var m = sceneId === 'geode' ? FP_BLURB_GEODE : (sceneId === 'deepEarth' ? FP_BLURB_DEEP : (sceneId === 'subduction' ? FP_BLURB_SUB : FP_BLURB_CRUST)); return (m && m[key]) || ''; }
+  var FP_BLURB_RIDGE = {
+    oceanWater: 'You’re in the deep ocean over the ridge — shallowest right above the axis.',
+    sediment: 'You’re in deep-sea ooze — a slow rain of shells and clay, thicker the older the crust.',
+    basaltN: 'You’re in pillow basalt that froze with today’s magnetic field locked in.',
+    basaltR: 'You’re in REVERSED-polarity basalt — it cooled when the field pointed the other way.',
+    dikes: 'You’re inside the sheeted dikes — each one a frozen crack from the crust pulling apart.',
+    gabbro: 'You’re in gabbro — the same melt as the pillows above, cooled slowly into coarse crystals.',
+    axialMagma: 'You’re at the axial magma lens — brand-new crust is being made right here.',
+    vent: 'You’re at a black smoker — 350 °C mineral water jetting into the cold sea.',
+    lithMantle: 'You’re in rigid mantle frozen onto the crust — it thickens as the plate ages.',
+    asthenosphere: 'You’re in upwelling mantle — solid rock that melts a few percent as pressure drops.'
+  };
+  var FP_BLURB_HOTSPOT = {
+    oceanWater: 'You’re in the ocean over a MOVING plate — the conveyor belt of the chain.',
+    activeVolcano: 'You’re on the active shield volcano — directly over the plume today.',
+    oldIsland: 'You’re on an extinct island — carried off its magma supply, now eroding.',
+    seamount: 'You’re on a drowned seamount — a former island that eroded and sank.',
+    oceanCrust: 'You’re in ordinary ocean crust — the plate that carries the volcanoes away.',
+    lithMantle: 'You’re in the rigid mantle lid — the plume must burn through all of this.',
+    conduit: 'You’re in the conduit — plume melt feeding ONLY the volcano overhead.',
+    plume: 'You’re in the mantle plume — solid rock, ~200 °C hotter than its surroundings.',
+    asthenosphere: 'You’re in ordinary ductile mantle — the plume is only slightly hotter than this.'
+  };
+  var FP_BLURB_COLLISION = {
+    molasse: 'You’re in the foreland basin — gravel shed off the range, the youngest rock here.',
+    foldedStrata: 'You’re in folded, thrust-stacked sea-floor layers — the crust shortened and thickened.',
+    summitLimestone: 'You’re on the summit — an ancient sea floor lifted ~8 km by collision.',
+    thrustZone: 'You’re inside a thrust fault — one slice of crust rode up and over another here.',
+    schist: 'You’re in schist — shale baked and squeezed 15 km down (regional metamorphism).',
+    gneiss: 'You’re in gneiss — the range’s core, once 25 km deep, exposed by erosion.',
+    leucogranite: 'You’re in leucogranite — the over-thick crust melted a little and sweated this out.',
+    suture: 'You’re in the suture — a trapped sliver of the ocean that closed here.',
+    crustRoot: 'You’re in the crustal root — the iceberg-like keel that floats the range.',
+    lithMantle: 'You’re in rigid mantle under both plates — the collision is still pushing today.',
+    asthenosphere: 'You’re in the asthenosphere — its buoyant push-back is what holds the range up.'
+  };
+  var FP_BLURBS = { crust: FP_BLURB_CRUST, geode: FP_BLURB_GEODE, deepEarth: FP_BLURB_DEEP, subduction: FP_BLURB_SUB, ridge: FP_BLURB_RIDGE, hotspot: FP_BLURB_HOTSPOT, collision: FP_BLURB_COLLISION };
+  function fpBlurb(sceneId, key) { var m = FP_BLURBS[sceneId] || FP_BLURB_CRUST; return (m && m[key]) || ''; }
   var FP_BUST = {
     upperMantle: 'Myth-bust: the mantle is SOLID rock that flows slowly — not a sea of molten lava.',
     lowerMantle: 'Myth-bust: still SOLID here, just convecting extremely slowly under pressure.',
@@ -955,7 +995,13 @@
     plume: 'Myth-bust: the plume stays ~fixed — the PLATE moves. The island chain is a tape recorder of plate motion.',
     oldIsland: 'Extinct: the plate carried it OFF the plume. Now it erodes above while the cooling plate sinks below.',
     seamount: 'A drowned former island — hotspot chains continue underwater for thousands of km.',
-    activeVolcano: 'A SHIELD volcano: runny basalt, gentle slopes — nothing like a steep, explosive arc volcano.'
+    activeVolcano: 'A SHIELD volcano: runny basalt, gentle slopes — nothing like a steep, explosive arc volcano.',
+    summitLimestone: 'Myth-bust: sea shells on a summit are not from a flood — collision lifted this sea floor ~8 km. Everest’s top is limestone.',
+    leucogranite: 'Myth-bust: no volcanoes here. This granite came from melting the thickened crust itself — no plume, no slab, no wedge.',
+    crustRoot: 'Myth-bust: a mountain is mostly BELOW you — an iceberg-like root ~70 km deep floats it on the mantle (isostasy).',
+    thrustZone: 'Cross-cutting again: the fault cuts the layers, so it is younger than them — and it still slips (Nepal, 2015).',
+    gneiss: 'This rock was ~25 km down. Everything above it eroded away — mountains rise AND erode at millimetres per year.',
+    suture: 'Deep-sea rock on a mountainside: proof an entire ocean closed here.'
   };
   function fpBust(key) { return FP_BUST[key] || null; }
   function fpProbe(wx, wy, wz) {                              // you-are-here readout; defers all science to rockFacts (scene-aware)
@@ -1065,6 +1111,12 @@
       { q: 'Which island is OLDEST?', opts: ['The one over the plume', 'The one farthest from the plume'], correct: 1, why: 'Age grows down the chain with distance — that age progression is textbook evidence that plates move.' },
       { q: 'A shield volcano has gentle slopes because…', opts: ['Its runny basalt flows far', 'Its thick lava explodes'], correct: 0, why: 'Hot, runny basalt spreads in thin sheets — broad shields, unlike steep, explosive arc stratovolcanoes.' },
       { q: 'Hotspot volcanoes sit…', opts: ['On plate boundaries', 'In the middle of plates'], correct: 1, why: 'Intraplate volcanism: the plume punches through the middle of a plate, far from any boundary.' }
+    ] },
+    collision: { title: 'Test yourself — mountain belts', items: [
+      { q: 'Why are sea-shell fossils found on the summit?', opts: ['A flood once covered the peak', 'Collision lifted an ancient sea floor'], correct: 1, why: 'The limestone formed on a sea floor between two continents; when they collided, the crust thickened and lifted it ~8 km.' },
+      { q: 'The gneiss in the range’s core formed…', opts: ['At the surface, from lava', 'About 25 km down, then erosion exposed it'], correct: 1, why: 'Regional metamorphism: deep burial under the thickened crust recrystallised the rock; erosion later stripped away everything above it.' },
+      { q: 'Why does this mountain belt have NO volcanoes?', opts: ['No slab water or plume melts the mantle here', 'Rock this cold can never melt'], correct: 0, why: 'Volcanoes need mantle melt. With no subducting slab and no plume, the mantle stays solid — only a little crustal melt (leucogranite) forms, and it freezes at depth.' },
+      { q: 'What holds the range up?', opts: ['A deep, buoyant crustal root (isostasy)', 'Magma pushing up from below'], correct: 0, why: 'Like an iceberg, the range floats on a crustal root ~70 km deep. The mantle’s buoyant push-back supports the mass above.' }
     ] }
   };
 
@@ -1106,6 +1158,12 @@
       { id: 'hotspot-age', misconception: 'The island over the plume is the oldest.', remedy: 'The active island is youngest. Age generally increases with distance from the plume toward extinct and drowned seamounts.' },
       { id: 'hotspot-shield', misconception: 'Shield volcanoes have gentle slopes because their lava is thick and explosive.', remedy: 'Runny basalt flows far in thin sheets, building broad gentle shields rather than steep explosive cones.' },
       { id: 'hotspot-setting', misconception: 'Hotspot volcanoes must sit on plate boundaries.', remedy: 'Hotspots can occur within plates. The plume is a deep heat source separate from the boundary-driven processes at ridges and subduction zones.' }
+    ],
+    collision: [
+      { id: 'collision-summit', misconception: 'Marine fossils on a summit mean water once covered the mountain.', remedy: 'The rock formed under a sea before the mountain existed. Collision thickened the crust and lifted that sea floor to the summit.' },
+      { id: 'collision-gneiss', misconception: 'Gneiss in the core formed at the surface from lava.', remedy: 'Gneiss is metamorphic: deep burial baked and squeezed older rock. Uplift plus erosion exposed it later.' },
+      { id: 'collision-volcano', misconception: 'Rock in a mountain belt is too cold to ever melt.', remedy: 'The thickened crust does melt a little, making leucogranite. What is missing is mantle melt: no slab water and no plume, so no volcanoes.' },
+      { id: 'collision-root', misconception: 'Magma pushing up from below holds the range up.', remedy: 'A low-density crustal root floats the range on the mantle, the way an iceberg floats. That balance is isostasy.' }
     ]
   };
   function quizRemediation(sceneId, index) {
@@ -1320,6 +1378,61 @@
     return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
   }
 
+  // ── Scene 7: Mountain belt (continent–continent collision) ──────────────────
+  // Himalaya-style. The convergent case where NOTHING subducts: both plates are
+  // buoyant granite, so the crust between them shortens, folds, and stacks along
+  // thrust faults until it is ~70 km thick. Teaches crustal thickening + isostasy
+  // (a buoyant root floats the range), REGIONAL metamorphism (schist/gneiss from
+  // burial, vs the crust scene's CONTACT bake), crustal-melt leucogranite with NO
+  // volcanoes (no wedge, no plume), sea-floor limestone lifted to the summit, a
+  // suture-zone ophiolite as proof an ocean closed, and exhumation by erosion.
+  var COLLISION_ROCKS = {
+    molasse:         { name: 'Foreland basin gravel',    type: 'Sedimentary',          color: 0xd9b56a, depthKm: 2,  glow: 0, formation: 'Sand and gravel shed off the rising range and dumped in a basin at its foot (the Siwaliks). The mountain’s own erosion, stacked up as new rock.', minerals: 'Sandstone, conglomerate', age: 'Youngest rock here — still being deposited.' },
+    foldedStrata:    { name: 'Folded, thrust-stacked strata', type: 'Sedimentary',     color: 0x8a6544, depthKm: 5,  glow: 0, formation: 'Sea-floor layers squeezed between two continents: folded like a rug and sliced along thrust faults, each slice shoved on top of the next. The crust SHORTENS and THICKENS.', minerals: 'Sandstone, shale, limestone', age: 'Deposited before the collision; deformed during it.' },
+    summitLimestone: { name: 'Summit limestone',         type: 'Sedimentary',          color: 0xe6e0c8, depthKm: 0,  glow: 0, formation: 'Marine limestone — shells and sea-floor mud — now on the highest ridge. Everest’s summit is exactly this: an ancient sea floor lifted ~8 km by collision.', minerals: 'Calcite, marine fossils', age: 'Formed under a sea; lifted by collision.' },
+    thrustZone:      { name: 'Thrust fault zone',        type: 'Fault zone',           color: 0x3f2a22, depthKm: 8,  glow: 0, formation: 'A gently dipping break where one crustal slice was shoved up and over another. Crushed, smeared rock marks the plane. It cuts the layers, so it is younger than them (cross-cutting).', minerals: 'Fault gouge, mylonite', age: 'Active during collision — still slipping today (Nepal, 2015).' },
+    schist:          { name: 'Schist',                   type: 'Metamorphic',          color: 0x7d6b86, depthKm: 15, glow: 0, formation: 'Shale buried ~15 km under the thickened crust, heated and squeezed for millions of years until its clay recrystallised into shiny mica sheets — REGIONAL metamorphism, over a whole mountain belt, not a bake beside one pluton.', minerals: 'Mica, garnet, quartz', age: 'Metamorphosed during the collision.' },
+    gneiss:          { name: 'Gneiss',                   type: 'Metamorphic',          color: 0xc4b8c8, depthKm: 25, glow: 0, formation: 'The range’s core: banded, high-grade rock that was ~25 km deep and close to melting. It is at the surface only because erosion has stripped away the kilometres of rock above it (exhumation).', minerals: 'Feldspar, quartz, mica bands', age: 'The deepest rock exposed at the surface.' },
+    leucogranite:    { name: 'Leucogranite',             type: 'Igneous (intrusive)',  color: 0xe9c8dd, depthKm: 20, glow: 0, formation: 'Pale granite made by PARTIALLY MELTING the thickened crust itself — no mantle plume, no subducting slab. Wet, over-thick crust gets hot enough to sweat out a little granite melt, which freezes at depth.', minerals: 'Quartz, feldspar, muscovite, tourmaline', age: 'Intruded ~20 million years ago; cuts the gneiss it came from.' },
+    suture:          { name: 'Suture-zone ophiolite',    type: 'Igneous (basalt)',     color: 0x3b5f4f, depthKm: 5,  glow: 0, formation: 'A sliver of the ocean floor that used to lie between the two continents, caught in the seam (the Indus–Tsangpo suture). Deep-sea rock on a mountainside is proof an ocean closed here.', minerals: 'Basalt, gabbro, serpentinite', age: 'The last trace of the vanished Tethys Ocean.' },
+    crustRoot:       { name: 'Continental crust & root', type: 'Continental',          color: 0xb4915e, depthKm: 50, glow: 0, formation: 'Granite-type crust of both plates. Under the range it is doubled to ~70 km: like an iceberg, a mountain needs a deep, low-density ROOT to float on the mantle (isostasy) — most of the range is below sea level.', minerals: 'Granite, gneiss', age: 'The thickest crust on Earth.' },
+    lithMantle:      { name: 'Lithospheric mantle',      type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 85, glow: 0, formation: 'Rigid mantle welded under both plates. The indenting plate still pushes in at ~5 cm per year, so the collision — and the uplift — continue today.', minerals: 'Peridotite', age: 'Moves as one with the crust above it.' },
+    asthenosphere:   { name: 'Asthenosphere',            type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 100, glow: 0, formation: 'SOLID mantle that flows slowly. The crustal root presses into it and it pushes back — that buoyant support is what holds the range up.', minerals: 'Peridotite', age: 'Convects over millions of years.' }
+  };
+  function collisionTopo(fx) {                                  // surface height (fy): foreland plain → steep face → summit → high plateau
+    return fx < 0.55 ? 0.30 - 0.26 * Math.max(0, 1 - (0.55 - fx) / 0.32) : Math.min(0.16, 0.04 + (fx - 0.55) * 0.45);
+  }
+  function collisionKeyAt(x, y, z) {
+    var fx = NX > 1 ? x / (NX - 1) : 0;   // 0 = foreland (indenting plate) → 1 = high plateau (overriding plate)
+    var fy = NY > 1 ? y / (NY - 1) : 0;   // 0 = top of block → 1 = deep
+    var topo = collisionTopo(fx);
+    if (fy < topo) return 'void';                                       // sky above the range
+    var dz = fy - topo;                                                 // structural depth below the LOCAL surface
+    var bump = fx < 0.62 ? Math.max(0, 1 - (0.62 - fx) / 0.40) : 1 - (fx - 0.62) / 1.2;
+    var moho = 0.62 + 0.28 * bump;                                      // crust doubles into a ~70 km root under the range
+    if (fy >= Math.min(0.97, moho + 0.08)) return 'asthenosphere';
+    if (fy >= moho) return 'lithMantle';
+    if (fx < 0.26) return dz < 0.10 ? 'molasse' : 'crustRoot';          // foreland basin on the indenting plate
+    var fault = 0.27 + (fx - 0.26) * 0.55;                              // main thrust: surfaces at the range front, dips under the plateau
+    if (fx <= 0.82 && Math.abs(fy - fault) < 0.045) return 'thrustZone';
+    if (fx <= 0.82 && fy > fault) return 'crustRoot';                   // footwall: the underthrust plate
+    if (fx > 0.82 && dz >= 0.24) return 'crustRoot';                    // plateau crust beyond the fault tip
+    // hanging wall: stacked strata that metamorphose with burial and are exhumed on the steep face
+    if (Math.abs(fx - 0.55) < 0.08 && dz < 0.10) return 'summitLimestone';
+    if (Math.abs(fx - 0.78) < 0.045 && dz < 0.15) return 'suture';
+    if (Math.abs(fx - 0.60) < 0.08 && dz >= 0.20 && dz < 0.30) return 'leucogranite';
+    var exhume = 1 - 0.8 * Math.max(0, 1 - Math.abs(fx - 0.47) / 0.06);   // erosion on the steep face brings deep rock to the surface
+    if (dz < 0.13 * exhume) return 'foldedStrata';
+    if (dz < 0.24 * exhume) return 'schist';
+    return 'gneiss';
+  }
+  function collisionGeotherm(depthKm, key) {
+    // Key-based: the summit is the COLDEST rock (highest = coldest), the crustal melt is frozen, the mantle never melts.
+    var T = { summitLimestone: -8, molasse: 20, foldedStrata: 60, suture: 80, thrustZone: 150, schist: 400, gneiss: 650, leucogranite: 700, crustRoot: 800, lithMantle: 1000, asthenosphere: 1330 };
+    var S = { summitLimestone: 'solid (frozen summit — highest is coldest)', molasse: 'loose → cemented gravel', foldedStrata: 'solid (folded, faulted)', suture: 'solid (trapped sea floor)', thrustZone: 'solid (crushed; slips in earthquakes)', schist: 'solid (recrystallised by burial)', gneiss: 'solid (once near melting, now exhumed)', leucogranite: 'solid (crystallised crustal melt)', crustRoot: 'solid (buoyant root)', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)' };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 28), state: (S[key] || 'solid') };
+  }
+
   var SCENES = {
     crust: {
       id: 'crust', label: '⛰️ Layered crust', gen: rockKeyAt, palette: ROCKS, order: ROCK_ORDER, voxelKeys: ROCK_ORDER,
@@ -1364,6 +1477,14 @@
       geotherm: hotspotGeotherm, kmPerWorldH: 150,
       features: {},
       blurb: 'Intraplate volcanism (schematic — not to scale): volcanoes far from ANY plate boundary. A plume of solid-but-extra-hot mantle rises from deep below and partially melts near the top; the melt burns through the moving plate to build a SHIELD volcano of runny basalt — broad and gentle, nothing like a steep arc stratovolcano. The plume stays ~fixed while the PLATE slides past, so each volcano is carried off its magma supply, goes extinct, erodes, and sinks: active island over the plume, extinct island downstream, drowned seamount beyond. Age increasing down the chain is textbook evidence that plates move — Hawaii’s chain continues 6,000 km as the Emperor Seamounts.'
+    },
+    collision: {
+      id: 'collision', label: '🏔️ Mountain belt', gen: collisionKeyAt, palette: COLLISION_ROCKS,
+      order: ['molasse', 'foldedStrata', 'summitLimestone', 'thrustZone', 'schist', 'gneiss', 'leucogranite', 'suture', 'crustRoot', 'lithMantle', 'asthenosphere'],
+      voxelKeys: ['molasse', 'foldedStrata', 'summitLimestone', 'thrustZone', 'schist', 'gneiss', 'leucogranite', 'suture', 'crustRoot', 'lithMantle', 'asthenosphere'],
+      geotherm: collisionGeotherm, kmPerWorldH: 100,
+      features: {},
+      blurb: 'A continent–continent collision (schematic — not to scale), Himalaya-style. Neither plate can sink — both are buoyant granite — so the crust between them SHORTENS, folds, and stacks along thrust faults until it is ~70 km thick. Sea-floor limestone ends up on the summit; shale buried 15–25 km down bakes into schist and gneiss; the over-thick crust melts a little and sweats out pale leucogranite. No wedge, no plume: NO volcanoes. Like an iceberg, the range floats on a deep crustal root (isostasy) while erosion strips it almost as fast as it rises.'
     }
   };
 
@@ -1393,6 +1514,10 @@
     hotspot: [
       { id: 'plate', label: 'Follow the moving plate', targets: ['oldIsland', 'oceanCrust', 'lithMantle'], reward: 150, brief: 'Trace an extinct volcano into the plate carrying it away.' },
       { id: 'trail', label: 'Trace the hotspot trail', targets: ['seamount', 'plume', 'asthenosphere'], reward: 160, brief: 'Connect the oldest volcano shown to its mantle reference frame.' }
+    ],
+    collision: [
+      { id: 'summit', label: 'Climb the stack', targets: ['molasse', 'foldedStrata', 'summitLimestone'], reward: 150, brief: 'Collect the foreland fill, the folded slices, and the sea-floor limestone on the summit.' },
+      { id: 'core', label: 'Exhume the core', targets: ['schist', 'gneiss', 'leucogranite'], reward: 160, brief: 'Work from mica schist into the banded gneiss and the granite that sweated out of it.' }
     ]
   };
   function fieldExpeditionFor(sceneId, index) {
@@ -1528,6 +1653,19 @@
     plume: { position: 'Relatively fixed mantle source', age: 'Reference point for the age trail' },
     asthenosphere: { position: 'Ductile mantle around the plume', age: 'Background mantle domain' }
   };
+  var COLLISION_MEASUREMENTS = {
+    molasse: { position: 'Foreland basin at the range front', burial: 'Never buried — the youngest fill' },
+    foldedStrata: { position: 'Thrust-stacked slices of the hanging wall', burial: 'Shallow burial — folded, not recrystallised' },
+    summitLimestone: { position: 'Summit ridge, ~8 km above sea level', burial: 'Deposited on a sea floor, then lifted' },
+    thrustZone: { position: 'Main thrust plane beneath the range', burial: 'Cuts the layers — younger than them' },
+    schist: { position: 'Mid-crust of the hanging wall', burial: '~15 km burial — regional metamorphism' },
+    gneiss: { position: 'Exhumed core on the steep face', burial: '~25 km burial, then erosion exposed it' },
+    leucogranite: { position: 'Melt pocket inside the hot core', burial: 'Partial melt of the thickened crust' },
+    suture: { position: 'The seam between the two continents', burial: 'Trapped sea floor — an ocean closed here' },
+    crustRoot: { position: 'Thickened crust beneath the range', burial: 'Root doubled to ~70 km — isostasy' },
+    lithMantle: { position: 'Rigid mantle under both plates', burial: 'Still converging at ~5 cm per year' },
+    asthenosphere: { position: 'Ductile mantle below the root', burial: 'Buoyant push-back supports the range' }
+  };
   function formatMeasurementNumber(value, digits) {
     var n = Number(value);
     return isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: digits == null ? 1 : digits }) : String(value);
@@ -1586,6 +1724,15 @@
         temperatureMeasurement(facts)
       ];
     }
+    if (id === 'collision') {
+      var collision = COLLISION_MEASUREMENTS[key] || { position: 'Mountain-belt system', burial: 'Read burial depth against surface height' };
+      return [
+        depthMeasurement(facts, 'Representative depth'),
+        factRow('structural-position', 'Structural position', collision.position),
+        factRow('burial-signal', 'Burial signal', collision.burial, null, true),
+        temperatureMeasurement(facts)
+      ];
+    }
     return [depthMeasurement(facts, 'Depth'), temperatureMeasurement(facts), pressureMeasurement(facts)];
   }
   var SCENE = SCENES.crust;
@@ -1597,7 +1744,8 @@
     deepEarth: { concept: 'Earth structure', process: 'Layered shells, pressure, and seismic waves', evidence: 'S-wave shadow plus solid/liquid states', direction: 'Surface -> center', outcome: 'A model of hidden interior layers' },
     subduction: { concept: 'Convergent plate motion', process: 'Cold slab descent and water fluxing the mantle wedge', evidence: 'Trench, slab, wedge, and volcanic arc', direction: 'Ocean plate -> trench -> arc', outcome: 'A causal path from plate motion to magma' },
     ridge: { concept: 'Seafloor spreading', process: 'Upwelling, decompression melting, and cooling', evidence: 'Symmetric magnetic stripes and older flanks', direction: 'Ridge axis -> older seafloor', outcome: 'New ocean crust moving away from the axis' },
-    hotspot: { concept: 'Intraplate volcanism', process: 'A relatively fixed plume beneath a moving plate', evidence: 'Age and elevation progression along a chain', direction: 'Plume -> plate-motion trail', outcome: 'A volcanic chain that records plate motion' }
+    hotspot: { concept: 'Intraplate volcanism', process: 'A relatively fixed plume beneath a moving plate', evidence: 'Age and elevation progression along a chain', direction: 'Plume -> plate-motion trail', outcome: 'A volcanic chain that records plate motion' },
+    collision: { concept: 'Continental collision', process: 'Two buoyant plates converge; the crust shortens, thickens, and rises', evidence: 'Sea-floor limestone on the summit, thrust-stacked slices, and a deep crustal root', direction: 'Foreland -> summit -> plateau; surface -> root', outcome: 'A mountain belt with no volcanoes, floating on a buoyant root' }
   };
   var SCENE_COMPARISON_INSIGHTS = {
     'crust+geode': 'Both scenes use position to read time, but the direction changes: layers read downward while crystals grow inward from a cavity wall.',
@@ -1609,7 +1757,13 @@
     'geode+subduction': 'Water matters in both scenes: groundwater builds mineral layers in a cavity, while slab water changes the melting behavior of the mantle wedge.',
     'ridge+subduction': 'These are opposite plate-boundary stories: a ridge creates crust as plates separate, while subduction recycles crust as plates converge.',
     'hotspot+ridge': 'Both can build basaltic volcanoes, but ridge volcanism marks a plate boundary while hotspot volcanism occurs within a moving plate.',
-    'hotspot+subduction': 'Both produce volcanic chains, but subduction links volcanoes to a plate boundary while a hotspot chain records a plate moving over a plume.'
+    'hotspot+subduction': 'Both produce volcanic chains, but subduction links volcanoes to a plate boundary while a hotspot chain records a plate moving over a plume.',
+    'collision+crust': 'Both use cross-cutting: the crust’s pluton and the mountain belt’s thrust fault are each younger than the layers they cut, but a collision also folds and stacks whole layer sequences.',
+    'collision+deepEarth': 'Both depend on the solid, flowing mantle: deep Earth shows it convecting, and the mountain belt shows it pushing back on a buoyant crustal root (isostasy).',
+    'collision+geode': 'Both record slow change over millions of years, but a geode grows minerals into open space while a collision recrystallises buried rock into schist and gneiss.',
+    'collision+hotspot': 'Both raise land far from any ridge, but a hotspot builds volcanoes from plume melt while a collision lifts sea-floor rock by thickening the crust — with no volcanoes at all.',
+    'collision+ridge': 'Opposite ends of an ocean’s life: a ridge creates sea floor, and a collision is what happens after that ocean has closed, with its last sliver trapped in a suture.',
+    'collision+subduction': 'Both are convergent boundaries, but subduction sinks a dense ocean plate and melts a wedge to feed volcanoes, while two buoyant continents cannot sink — so the crust stacks up instead.'
   };
   function defaultComparisonScene(id) { return id === 'crust' ? 'geode' : 'crust'; }
   function sceneComparisonFor(id) { return SCENE_COMPARISONS[id] || SCENE_COMPARISONS.crust; }
@@ -1719,6 +1873,23 @@
         { key: 'oldIsland', label: '2 · Carried downstream', body: 'Plate motion removes the island from its magma supply; erosion begins.' },
         { key: 'seamount', label: '3 · Drowned seamount', body: 'Cooling, sinking crust and erosion carry the oldest link below sea level.' }
       ] }
+    },
+    collision: {
+      eyebrow: 'Mountain-building fieldwork',
+      subtitle: 'Read a collision from the foreland to the summit, then down to the root that holds it up.',
+      question: 'How can a sea floor end up on top of a mountain?',
+      notice: ['Neither continent can sink.', 'Thrust faults stack the crust thicker.', 'A buoyant root lifts the range; erosion exposes its core.'],
+      evidencePrompt: 'Use the summit limestone, the exhumed gneiss, and the foreland gravel to explain uplift without any volcano.',
+      checklist: [
+        { id: 'uplift', label: 'Compare summit limestone, gneiss, and foreland gravel', check: function (c) { return c.hasKeys(['summitLimestone', 'gneiss', 'molasse']); } },
+        { id: 'thicken', label: 'Trace the thickening sequence', check: function (c) { return c.signalComplete; } },
+        { id: 'quiz', label: 'Answer one mountain question', check: function (c) { return !!c.quizAnswered; } }
+      ],
+      signal: { title: 'Collision cause-and-effect', prompt: 'Follow the crust from the first thrust to the summit.', steps: [
+        { key: 'thrustZone', label: '1 · Crust shortens and stacks', body: 'Two buoyant continents meet; thrust faults shove slices of crust over one another and the crust thickens.' },
+        { key: 'gneiss', label: '2 · Deep burial bakes the core', body: 'Rock buried 15–25 km recrystallises into schist and gneiss; the over-thick crust sweats out leucogranite.' },
+        { key: 'summitLimestone', label: '3 · The sea floor rises', body: 'A buoyant root floats the range; erosion strips the top and exposes the core while the old sea floor rides on the summit.' }
+      ] }
     }
   };
   function setScene(id) { SCENE = SCENES[id] || SCENES.crust; }
@@ -1793,6 +1964,11 @@
       { id: 'active-plume', stage: 0, label: 'Active over plume', key: 'activeVolcano', view: 'iso', detail: 'A broad shield volcano forms above the active hotspot plume.' },
       { id: 'carried-island', stage: 1, label: 'Carried downstream', key: 'oldIsland', view: 'front', detail: 'Plate motion carries an older island away from its magma supply.' },
       { id: 'drowned-seamount', stage: 2, label: 'Drowned seamount', key: 'seamount', view: 'front', detail: 'Cooling, sinking crust and erosion carry the oldest volcanic link below sea level.' }
+    ],
+    collision: [
+      { id: 'thrust-stack', stage: 0, label: 'Thrust stack', key: 'thrustZone', view: 'front', detail: 'A gently dipping thrust fault carries one slice of crust up and over another, shortening and thickening the crust.' },
+      { id: 'exhumed-core', stage: 1, label: 'Exhumed core', key: 'gneiss', view: 'front', detail: 'Gneiss that formed ~25 km down now sits on the steep face because erosion removed the rock above it.' },
+      { id: 'summit-sea-floor', stage: 2, label: 'Summit sea floor', key: 'summitLimestone', view: 'iso', detail: 'Marine limestone on the summit shows the range was lifted from a sea floor by crustal thickening, not by a volcano.' }
     ]
   };
   function sceneBeaconsFor(sceneId) { return (SCENE_BEACONS[sceneId] || SCENE_BEACONS.crust).map(function (item) { return Object.assign({}, item); }); }
@@ -1828,6 +2004,11 @@
       { label: 'Active plume', detail: 'A broad shield volcano forms above the plume.' },
       { label: 'Carried downstream', detail: 'Plate motion removes the island from its magma supply.' },
       { label: 'Drowned seamount', detail: 'Cooling, sinking crust carries the oldest link below sea level.' }
+    ] },
+    collision: { title: 'Continental collision', summary: 'Two buoyant continents meet; the crust shortens, thickens, and rises.', depth: 'Read two directions: up the surface from the foreland to the summit, and down from the summit to the crustal root that holds the range up.', axis: { label: 'Uplift axis', value: 'Crustal thickness', gradient: 'from-amber-700 via-stone-500 to-sky-300', labels: ['Foreland fill', 'Thrust-stacked slices', 'Summit sea floor'], ariaLabel: 'Uplift axis: begin at the foreland basin, cross the thrust-stacked slices, and end at the marine limestone on the summit.' }, steps: [
+      { label: 'Crust stacks', detail: 'Thrust faults shove slices of crust over one another.' },
+      { label: 'Deep bake', detail: 'Buried rock recrystallises into schist and gneiss; the crust sweats out granite.' },
+      { label: 'Sea floor rises', detail: 'A buoyant root lifts the range; erosion exposes the core.' }
     ] }
   };
   function sceneProcessCueFor(sceneId) {
@@ -2054,7 +2235,8 @@
     deepEarth: { cores: 'Select both the outer core and inner core so you can compare state and pressure.', waves: 'Follow the seismic probe to the S-wave shadow; liquid cannot carry shear waves.', quiz: 'Switch to Assess, answer the core question, and use the S-wave result in your explanation.' },
     subduction: { slab: 'Select the cold slab and hot mantle wedge; the slab carries water but the wedge supplies the melt.', arc: 'Follow the sequence from descending slab to water release to rising arc magma.', quiz: 'Use the quiz to check why the slab itself mostly does not melt.' },
     ridge: { polarity: 'Select normal and reversed basalt; matching magnetic records on both flanks are the key comparison.', spread: 'Follow the sequence from axial melt to normal basalt to the reversed mirror stripe.', quiz: 'Use the quiz to connect magnetic reversals with new seafloor.' },
-    hotspot: { chain: 'Select the active volcano, old island, and seamount; age and elevation change along the chain.', motion: 'Follow the sequence from the plume to the carried island to the drowned seamount.', quiz: 'Use the quiz to test whether the plate or plume is moving.' }
+    hotspot: { chain: 'Select the active volcano, old island, and seamount; age and elevation change along the chain.', motion: 'Follow the sequence from the plume to the carried island to the drowned seamount.', quiz: 'Use the quiz to test whether the plate or plume is moving.' },
+    collision: { uplift: 'Select the summit limestone, the gneiss on the steep face, and the foreland gravel; note which is highest, which was deepest, and which is youngest.', thicken: 'Follow the sequence from the thrust fault to the deep-baked core to the sea floor lifted onto the summit.', quiz: 'Use the quiz to check why marine fossils sit on the summit and why there are no volcanoes.' }
   };
   function nextMissionHint(mission, context, sceneId) {
     var hints = MISSION_HINTS[sceneId] || {};
@@ -2077,6 +2259,8 @@
     arc: { target: 'signal', mode: 'investigate', label: 'Open process timeline', message: 'Cause-and-effect timeline focused. Follow water from the slab to arc magma.' },
     spread: { target: 'signal', mode: 'investigate', label: 'Open process timeline', message: 'Spreading timeline focused. Reveal the mirrored magnetic stripe.' },
     motion: { target: 'signal', mode: 'investigate', label: 'Open process timeline', message: 'Hotspot timeline focused. Follow the plate-motion trail.' },
+    uplift: { target: 'materials', mode: 'investigate', label: 'Open material list', message: 'Material list focused. Select the summit limestone, gneiss, and foreland gravel.' },
+    thicken: { target: 'signal', mode: 'investigate', label: 'Open process timeline', message: 'Collision timeline focused. Follow the crust from the thrust stack to the summit.' },
     quiz: { target: 'quiz', mode: 'assess', label: 'Open quiz', message: 'Assessment quiz focused. Answer one question to complete this check.' }
   };
   function missionActionFor(checkId) { return MISSION_ACTIONS[checkId] || null; }
@@ -2087,7 +2271,8 @@
     deepEarth: { scale: 'Earth radius 6,371 km', direction: 'Surface -> center', read: 'This is a radial slice, not a flat stack. Use the shells and seismic signal to infer state.' },
     subduction: { scale: '~200 km depth range (schematic)', direction: 'Left plate -> trench -> right arc', read: 'Follow the cold slab downward. Water leaves the slab, fluxes the wedge, and the melt rises toward the arc.' },
     ridge: { scale: '~30 km depth range (schematic)', direction: 'Ridge axis -> older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
-    hotspot: { scale: '~150 km depth range (schematic)', direction: 'Plume -> plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' }
+    hotspot: { scale: '~150 km depth range (schematic)', direction: 'Plume -> plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' },
+    collision: { scale: '~100 km depth range (schematic)', direction: 'Foreland -> summit -> plateau', read: 'Read the surface for the stack: foreland fill, folded slices, summit limestone. Then read downward — the range rides on a crustal root about 70 km deep.' }
   };
   var SCENE_SCHEMATICS = {
     geode: {
@@ -2109,6 +2294,10 @@
     hotspot: {
       title: 'Hotspot chain 2D evidence map',
       description: 'A moving plate carries volcanoes away from a relatively fixed plume, creating an age trail from active island to seamount.'
+    },
+    collision: {
+      title: 'Mountain belt 2D evidence map',
+      description: 'Two continents converge: thrust faults stack folded sea-floor layers into a range that rides on a deep crustal root, with no volcanoes.'
     }
   };
   function sceneSchematicInfo(sceneId, selectedKey, stageIndex) {
@@ -2176,6 +2365,11 @@
       { term: 'Mantle plume', definition: 'A relatively fixed column of unusually hot mantle that can supply melt from below.', cue: 'Use it when you identify the reference point under the active volcano.' },
       { term: 'Shield volcano', definition: 'A broad, gently sloping volcano built by runny basaltic lava.', cue: 'Use it when you compare the active volcano with a steep arc volcano.' },
       { term: 'Plate-motion trail', definition: 'A line of volcanoes that records how a moving plate traveled over a relatively fixed plume.', cue: 'Use it when age increases toward the extinct island and seamount.' }
+    ],
+    collision: [
+      { term: 'Thrust fault', definition: 'A gently dipping fault along which one slice of crust is pushed up and over another, shortening and thickening the crust.', cue: 'Use it when you explain how sea-floor layers were stacked and lifted.' },
+      { term: 'Regional metamorphism', definition: 'Heat and pressure from deep burial across a whole mountain belt recrystallise rock into schist and gneiss.', cue: 'Use it when you compare the gneiss core with the folded strata above it.' },
+      { term: 'Isostasy', definition: 'Crust floats on the mantle; a high range needs a deep, low-density root, like the hidden part of an iceberg.', cue: 'Use it when you explain what holds the range up without any magma.' }
     ]
   };
 
@@ -2218,6 +2412,13 @@
       { key: 'activeVolcano', label: 'A shield volcano grows', detail: 'Runny basalt builds a broad, gentle volcano over the plume.' },
       { key: 'oldIsland', label: 'The plate carries an island away', detail: 'The volcano goes extinct after moving off the magma supply.' },
       { key: 'seamount', label: 'The oldest link drowns', detail: 'Cooling, sinking crust and erosion carry the former island below sea level.' }
+    ] },
+    collision: { title: 'Mountain-building order', prompt: 'Arrange the events from the ocean that once separated the continents to the range eroding today.', items: [
+      { key: 'summitLimestone', label: 'Sea-floor layers pile up', detail: 'Limestone and mud collect on the floor of the ocean between two continents.' },
+      { key: 'suture', label: 'The ocean closes', detail: 'The continents meet; a sliver of sea floor is trapped in the suture.' },
+      { key: 'thrustZone', label: 'Thrust faults stack the crust', detail: 'Slices of crust ride over one another; the crust shortens and thickens toward ~70 km.' },
+      { key: 'gneiss', label: 'Deep burial bakes the core', detail: 'Buried rock becomes schist and gneiss, and the hot crust sweats out leucogranite.' },
+      { key: 'molasse', label: 'The range rises and erodes', detail: 'A buoyant root lifts the summit; erosion exposes the core and fills the foreland basin.' }
     ] }
   };
   function sequenceChallengeFor(sceneId) { return SCENE_SEQUENCE_CHALLENGES[sceneId] || SCENE_SEQUENCE_CHALLENGES.crust; }
@@ -2439,7 +2640,8 @@
       deepEarth: { color: 0xff6b2c, intensity: 1.9, flicker: 0.3 },
       subduction: { color: 0xff6633, intensity: 1.18, flicker: 0.22 },
       ridge: { color: 0xff7a33, intensity: 1.28, flicker: 0.2 },
-      hotspot: { color: 0xff5a1f, intensity: 1.42, flicker: 0.28 }
+      hotspot: { color: 0xff5a1f, intensity: 1.42, flicker: 0.28 },
+      collision: { color: 0xffb36b, intensity: 0.62, flicker: 0.06 }
     }[SCENE.id] || { color: 0xff5522, intensity: 1.2, flicker: 0.2 };
     var magmaGlowBaseColor3d = new THREE.Color(geologyHeatLightConfig3d.color);
     var magmaGlow = new THREE.PointLight(geologyHeatLightConfig3d.color, geologyHeatLightConfig3d.intensity, 44); magmaGlow.position.set(0, -WORLD.h * 0.5, 0); scene.add(magmaGlow);
@@ -2487,7 +2689,8 @@
       deepEarth: 0xff8a4c,
       subduction: 0x7dd3fc,
       ridge: 0x5eead4,
-      hotspot: 0xfb923c
+      hotspot: 0xfb923c,
+      collision: 0xdbeafe
     };
     var geologyAtmosphereColor3d = geologyAtmosphereColors3d[SCENE.id] || 0xcbd5e1;
     var atmosphereRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-atmosphere'));
@@ -2676,6 +2879,11 @@
     } else if (SCENE.id === 'hotspot') {
       addGeologyProcessGuide3d([[2.8, -5.5], [2.65, -2.5], [2.8, 0.7], [2.75, 4.75]], 0xff8a3d, false, [0.48, 0.82]);
       addGeologyProcessGuide3d([[5.3, 4.55], [2.2, 4.62], [-1.7, 4.52], [-5.4, 4.62]], 0x67e8f9, false, [0.44, 0.82]);
+    } else if (SCENE.id === 'collision') {
+      // two plates converge at mid-crust; the summit is pushed up above the seam
+      addGeologyProcessGuide3d([[-6.4, -1.3], [-3.8, -1.15], [-1.3, -1.0]], 0x67e8f9, false, [0.5, 0.9]);
+      addGeologyProcessGuide3d([[6.4, -1.5], [3.9, -1.3], [1.9, -1.1]], 0x67e8f9, false, [0.5, 0.9]);
+      addGeologyProcessGuide3d([[0.6, -2.6], [0.65, 0.4], [0.7, 3.6]], 0xfbbf24, false, [0.45, 0.85]);
     } else if (SCENE.id === 'geode') {
       addGeologyProcessGuide3d([[-2.05, 0], [-1.45, 1.3], [0, 1.75], [1.45, 1.3], [2.05, 0], [1.45, -1.3], [0, -1.75], [-1.45, -1.3]], 0xc4b5fd, true, [0.2, 0.7]);
     } else {
@@ -3259,6 +3467,16 @@
             processY3d = WORLD.h * 0.42 + Math.sin(processIndex3d) * 0.12;
           }
           processZ3d += Math.sin(processIndex3d * 1.1) * 0.24;
+        } else if (SCENE.id === 'collision') {
+          if (processIndex3d < geologyProcessCount3d * 0.64) {
+            var convergeSide3d = processIndex3d % 2 ? 1 : -1;
+            processX3d = convergeSide3d * (WORLD.w * 0.46 - processProgress3d * WORLD.w * 0.38);
+            processY3d = -WORLD.h * 0.12 + Math.sin(processIndex3d * 1.9) * 0.5;
+          } else {
+            processX3d = WORLD.w * 0.05 + Math.sin(processProgress3d * Math.PI * 2 + processIndex3d) * 0.36;
+            processY3d = -WORLD.h * 0.22 + processProgress3d * WORLD.h * 0.62;
+          }
+          processZ3d += Math.cos(processIndex3d * 1.3) * 0.24;
         } else if (SCENE.id === 'geode') {
           var crystalAngle3d = processProgress3d * Math.PI * 2 + processIndex3d * 0.73;
           var crystalRadius3d = WORLD.w * (0.12 + (processIndex3d % 4) * 0.012);
@@ -3813,9 +4031,10 @@
       geologyLandformMeshes3d.push(mesh3d);
       return mesh3d;
     }
-    function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d) {
+    function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d, baseY3d) {
       var isShieldIsland3d = landformStyle3d === 'shield-island';
-      var summitRadius3d = radius3d * (isShieldIsland3d ? 0.17 : 0.12);
+      var isAlpine3d = landformStyle3d === 'alpine';           // sharp horn, no crater, snow above the tree line
+      var summitRadius3d = radius3d * (isShieldIsland3d ? 0.17 : (isAlpine3d ? 0.05 : 0.12));
       var landformGeometry3d = new THREE.CylinderGeometry(
         summitRadius3d,
         radius3d,
@@ -3829,12 +4048,12 @@
       var landformBaseColor3d = new THREE.Color(color3d);
       var landformLowColor3d = landformBaseColor3d.clone().multiplyScalar(isShieldIsland3d ? 0.62 : 0.68);
       var landformMidColor3d = landformBaseColor3d.clone().lerp(
-        new THREE.Color(isShieldIsland3d ? 0x335d43 : 0x75584c),
-        isShieldIsland3d ? 0.58 : 0.42
+        new THREE.Color(isShieldIsland3d ? 0x335d43 : (isAlpine3d ? 0x6e7078 : 0x75584c)),
+        isShieldIsland3d ? 0.58 : (isAlpine3d ? 0.7 : 0.42)
       );
       var landformHighColor3d = landformBaseColor3d.clone().lerp(
-        new THREE.Color(isShieldIsland3d ? 0x887b67 : 0x9a8175),
-        0.68
+        new THREE.Color(isShieldIsland3d ? 0x887b67 : (isAlpine3d ? 0xf5f8fc : 0x9a8175)),
+        isAlpine3d ? 0.96 : 0.68
       );
       for (var landformVertex3d = 0; landformVertex3d < landformPositions3d.count; landformVertex3d++) {
         var landformX3d = landformPositions3d.getX(landformVertex3d);
@@ -3850,7 +4069,9 @@
         landformX3d *= landformRoughness3d * landformAsymmetryX3d;
         landformZ3d *= landformRoughness3d * landformAsymmetryZ3d;
         var landformRadial3d = Math.sqrt(landformX3d * landformX3d + landformZ3d * landformZ3d);
-        if (landformY3d > height3d * 0.485) {
+        if (isAlpine3d && landformY3d > height3d * 0.485) {
+          landformY3d = height3d * 0.5 + Math.sin(landformAngle3d * 2 + seed3d) * height3d * 0.012;   // keep the horn sharp
+        } else if (landformY3d > height3d * 0.485) {
           var calderaRatio3d = Math.min(1, landformRadial3d / (summitRadius3d * 1.04));
           landformY3d = height3d * 0.5 - height3d * (isShieldIsland3d ? 0.085 : 0.105) *
             Math.pow(1 - calderaRatio3d, 1.35);
@@ -3860,9 +4081,12 @@
         }
         landformPositions3d.setXYZ(landformVertex3d, landformX3d, landformY3d, landformZ3d);
         var terrainColorRatio3d = Math.max(0, Math.min(1, (landformY3d + height3d * 0.5) / height3d));
-        var landformVertexColor3d = terrainColorRatio3d < 0.58
-          ? landformLowColor3d.clone().lerp(landformMidColor3d, terrainColorRatio3d / 0.58)
-          : landformMidColor3d.clone().lerp(landformHighColor3d, (terrainColorRatio3d - 0.58) / 0.42);
+        var snowLine3d = isAlpine3d ? 0.66 + Math.sin(landformAngle3d * 4 + seed3d) * 0.05 : 0.58;   // ragged snow line
+        var landformVertexColor3d = terrainColorRatio3d < snowLine3d
+          ? landformLowColor3d.clone().lerp(landformMidColor3d, terrainColorRatio3d / snowLine3d)
+          : landformMidColor3d.clone().lerp(landformHighColor3d, isAlpine3d
+            ? Math.min(1, (terrainColorRatio3d - snowLine3d) / 0.12)
+            : (terrainColorRatio3d - snowLine3d) / (1 - snowLine3d));
         landformVertexColor3d.multiplyScalar(0.92 + Math.sin(landformAngle3d * 7 + seed3d) * 0.035);
         landformVertexColors3d[landformVertex3d * 3] = landformVertexColor3d.r;
         landformVertexColors3d[landformVertex3d * 3 + 1] = landformVertexColor3d.g;
@@ -3880,7 +4104,7 @@
         metalness: 0.025
       });
       var landformMesh3d = new THREE.Mesh(landformGeometry3d, landformMaterial3d);
-      landformMesh3d.position.set(x3d, surfTopY + height3d * 0.5 + 0.025, z3d);
+      landformMesh3d.position.set(x3d, (baseY3d == null ? surfTopY : baseY3d) + height3d * 0.5 + 0.025, z3d);
       landformMesh3d.castShadow = geologyHighDetail3d;
       landformMesh3d.receiveShadow = geologyHighDetail3d;
       geologyLandformGeometries3d.push(landformGeometry3d);
@@ -4159,6 +4383,23 @@
       geologyLandformMaterials3d.push(hotspotCraterMaterial3d);
       registerGeologyLandform3d(hotspotCrater3d, 0.55, 0.2, false);
       cnv.dataset.geologyLandformRendering = 'age-progressive-shield-island-relief';
+    } else if (SCENE.id === 'collision') {
+      // The voxel block already carries the topography; these horns break the z-uniform
+      // ridge into peaks and put a snow line where the summit limestone sits.
+      var collisionSurfaceY3d = function (fx3d) {
+        var rowIndex3d = Math.max(0, Math.ceil(collisionTopo(fx3d) * (NY - 1) - 1e-6));
+        return ((NY - 1) / 2 - rowIndex3d) * VOXEL + VOXEL * 0.5;
+      };
+      var summitX3d = (0.55 - 0.5) * WORLD.w, summitY3d = collisionSurfaceY3d(0.55);
+      [[-5.1, 2.0, 1.45, 1.1], [-3.0, 1.55, 1.3, 2.3], [-0.85, 2.6, 1.75, 3.6], [1.35, 1.8, 1.4, 4.9], [3.45, 2.3, 1.62, 6.1], [5.35, 1.4, 1.2, 7.4]]
+        .forEach(function (peak3d, peakIndex3d) {
+          addRuggedGeologyCone3d(summitX3d + Math.sin(peak3d[3]) * 0.22, peak3d[0], peak3d[2], peak3d[1], 0x8b7355, peak3d[3], 'alpine', summitY3d - 0.12);
+        });
+      var foothillX3d = (0.42 - 0.5) * WORLD.w, foothillY3d = collisionSurfaceY3d(0.42);
+      addRuggedGeologyCone3d(foothillX3d, -3.9, 1.25, 1.1, 0x7a6b5e, 8.3, 'alpine', foothillY3d - 0.1);
+      addRuggedGeologyCone3d(foothillX3d + 0.2, 0.6, 1.4, 1.3, 0x76685c, 9.1, 'alpine', foothillY3d - 0.1);
+      addRuggedGeologyCone3d(foothillX3d - 0.1, 4.2, 1.2, 1.0, 0x7d6d5f, 10.4, 'alpine', foothillY3d - 0.1);
+      cnv.dataset.geologyLandformRendering = 'snow-capped-alpine-ridge-relief';
     } else {
       cnv.dataset.geologyLandformRendering = 'voxel-native-relief';
     }
@@ -4276,6 +4517,49 @@
       addGeologyVolcanicAtmosphere3d(1.38, surfTopY + 1.36, -0.25, 0.15, 0xffb45b, 2.4);
     } else if (SCENE.id === 'hotspot') {
       addGeologyVolcanicAtmosphere3d(2.75, surfTopY + 1.11, 0.55, 0.19, 0xff6a2a, 1.6);
+    }
+    var geologyAlpineCloudSprites3d = [];
+    if (SCENE.id === 'collision') {
+      var alpineCloudCount3d = geologyHighDetail3d ? 8 : 5;
+      var alpineCloudBaseY3d = ((NY - 1) / 2 - Math.ceil(collisionTopo(0.55) * (NY - 1) - 1e-6)) * VOXEL + VOXEL * 0.5;
+      for (var alpineCloudIndex3d = 0; alpineCloudIndex3d < alpineCloudCount3d; alpineCloudIndex3d++) {
+        var alpineCloudMaterial3d = new THREE.SpriteMaterial({
+          map: geologyDustTexture3d,
+          color: alpineCloudIndex3d % 3 === 0 ? 0xe2e8f0 : 0xf8fafc,
+          transparent: true,
+          opacity: 0.2,
+          depthWrite: false
+        });
+        var alpineCloudSprite3d = new THREE.Sprite(alpineCloudMaterial3d);
+        alpineCloudSprite3d.userData.geologyCloudSeed = alpineCloudIndex3d * 1.91;
+        alpineCloudSprite3d.userData.geologyCloudBaseX = (0.55 - 0.5) * WORLD.w + Math.sin(alpineCloudIndex3d * 2.3) * WORLD.w * 0.19;
+        alpineCloudSprite3d.userData.geologyCloudBaseY = alpineCloudBaseY3d + 0.55 + (alpineCloudIndex3d % 4) * 0.28;
+        alpineCloudSprite3d.userData.geologyCloudBaseZ = -WORLD.d * 0.42 + (alpineCloudIndex3d + 0.5) * (WORLD.d * 0.84 / alpineCloudCount3d);
+        alpineCloudSprite3d.userData.geologyCloudBaseOpacity = 0.38 + (alpineCloudIndex3d % 3) * 0.06;
+        alpineCloudSprite3d.scale.set(2.6 + (alpineCloudIndex3d % 3) * 0.9, 0.9 + (alpineCloudIndex3d % 2) * 0.3, 1);
+        alpineCloudSprite3d.position.set(alpineCloudSprite3d.userData.geologyCloudBaseX, alpineCloudSprite3d.userData.geologyCloudBaseY, alpineCloudSprite3d.userData.geologyCloudBaseZ);
+        alpineCloudSprite3d.renderOrder = 6;
+        geologyVolcanicAtmosphereGroup3d.add(alpineCloudSprite3d);
+        geologyVolcanicAtmosphereMaterials3d.push(alpineCloudMaterial3d);
+        geologyAlpineCloudSprites3d.push(alpineCloudSprite3d);
+      }
+    }
+    cnv.dataset.geologyAlpineCloudRendering = geologyAlpineCloudSprites3d.length ? 'drifting-summit-cloud-sprites' : 'not-applicable';
+    cnv.dataset.geologyAlpineCloudCount = String(geologyAlpineCloudSprites3d.length);
+    function updateGeologyAlpineClouds3d(time3d) {
+      if (!geologyAlpineCloudSprites3d.length) return;
+      var cloudTime3d = reducedMotion3d ? 0.61 : time3d;
+      var cloudFrontZ3d = WORLD.d * 0.5 - (Number(sliceZ) || 0) * VOXEL;
+      geologyAlpineCloudSprites3d.forEach(function (cloudSprite3d) {
+        var cloudSeed3d = cloudSprite3d.userData.geologyCloudSeed;
+        cloudSprite3d.visible = !focusLens && cloudSprite3d.userData.geologyCloudBaseZ < cloudFrontZ3d + 0.4;
+        cloudSprite3d.position.set(
+          cloudSprite3d.userData.geologyCloudBaseX + Math.sin(cloudTime3d * 0.09 + cloudSeed3d) * 0.55,
+          cloudSprite3d.userData.geologyCloudBaseY + Math.sin(cloudTime3d * 0.17 + cloudSeed3d * 0.6) * 0.08,
+          cloudSprite3d.userData.geologyCloudBaseZ
+        );
+        cloudSprite3d.material.opacity = cloudSprite3d.userData.geologyCloudBaseOpacity * (0.82 + Math.sin(cloudTime3d * 0.23 + cloudSeed3d) * 0.18);
+      });
     }
     cnv.dataset.geologyVolcanicAtmosphereRendering = geologyVolcanicVentMeta3d
       ? 'animated-steam-plume-and-incandescent-crater-rim'
@@ -4466,6 +4750,7 @@
         var depthShade = 0.74 + 0.26 * (1 - v.y / Math.max(1, NY - 1));
         col.multiplyScalar(ao * depthShade);
         if ((SCENE.palette[v.key] || {}).glow) col.multiplyScalar(1.5);   // molten / core layers read hotter & glowing (re-boosted past the depth shade)
+        if (SCENE.id === 'collision' && v.key === 'summitLimestone') col.lerp(WHITE, 0.5);   // snow line: the summit reads white from any distance
         // when a rock type is selected, make every voxel of that type glow and let
         // the rest recede — so its distribution through the crust pops out.
         if (highlightKey && !(SCENE.id === 'deepEarth' && geologyScienceStage3d > 0)) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
@@ -4508,6 +4793,7 @@
       updateGeologySurfaceEffects3d(reducedMotion3d ? 0.82 : t);
       updateGeologyHydrothermalField3d(reducedMotion3d ? 0.79 : t);
       updateGeologyVolcanicAtmosphere3d(reducedMotion3d ? 0.74 : t);
+      updateGeologyAlpineClouds3d(reducedMotion3d ? 0.61 : t);
       updateGeologyDeepEarthVisuals3d(reducedMotion3d ? 0.76 : t);
       updateUndoPreview();
     }
@@ -6045,6 +6331,7 @@ function updateCoreRig3d(dt3d) {
       updateGeologySurfaceEffects3d(geologyMotionTime3d);
       updateGeologyHydrothermalField3d(geologyMotionTime3d);
       updateGeologyVolcanicAtmosphere3d(geologyMotionTime3d);
+      updateGeologyAlpineClouds3d(geologyMotionTime3d);
       updateSurveyMarker3d();
       updateCoreRig3d(fpDt);
       for (var atmosphereUpdateIndex3d = 0; atmosphereUpdateIndex3d < atmosphereMoteCount3d; atmosphereUpdateIndex3d++) {
@@ -6267,8 +6554,8 @@ function updateCoreRig3d(dt3d) {
   // baseline that locks current strata before the upcoming resolution refactor.
   try {
     window.__alloGeologyPure = {
-      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
-      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
+      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, collisionKeyAt: collisionKeyAt, collisionTopo: collisionTopo, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
+      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
       coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigFeedProfile: coreRigFeedProfile, coreRigFormationLoad: coreRigFormationLoad, coreRigIntegrityLoss: coreRigIntegrityLoss, coreRigIntegrityFromStress: coreRigIntegrityFromStress, coreRigQualitySummary: coreRigQualitySummary, coreRigTrajectoryScan: coreRigTrajectoryScan, coreRigTrajectorySnapshot: coreRigTrajectorySnapshot, coreRigTrajectorySummary: coreRigTrajectorySummary, coreRigBoreBrief: coreRigBoreBrief, coreRigCoreCassette: coreRigCoreCassette, coreRigCompressedCore: coreRigCompressedCore, coreRigCompareReports: coreRigCompareReports, coreRigNextExperiment: coreRigNextExperiment, coreRigReportStableId: coreRigReportStableId, coreRigIntervalScanMs: coreRigIntervalScanMs, coreRigIntervalScanning: coreRigIntervalScanning, coreRigIntervalFeedback: coreRigIntervalFeedback, coreRigFormationCue: coreRigFormationCue, coreRigChallengeProgress: coreRigChallengeProgress, coreRigProgramKey: coreRigProgramKey, coreRigProgramCatalog: coreRigProgramCatalog, coreRigProgramRating: coreRigProgramRating, coreRigCertificationTier: coreRigCertificationTier, coreRigCertificationReward: coreRigCertificationReward, coreRigCertificationXpTarget: coreRigCertificationXpTarget, normalizeCoreRigPrograms: normalizeCoreRigPrograms, advanceCoreRigCertification: advanceCoreRigCertification, coreRigCertificationSummary: coreRigCertificationSummary, coreRigCertificationGuidance: coreRigCertificationGuidance, coreRigCertificationTiers: coreRigCertificationTiers, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); }, coreRigFeedModes: function () { return Object.keys(CORE_RIG_FEED_MODES); },
       fieldExpeditions: function () { return FIELD_EXPEDITIONS; }, sceneVoxelKeys: function (sceneId) { return SCENES[sceneId] ? SCENES[sceneId].voxelKeys.slice() : []; }, fieldExpeditionFor: fieldExpeditionFor, beginFieldRun: beginFieldRun, retireFieldRunEntry: retireFieldRunEntry, advanceFieldRun: advanceFieldRun, fieldRunReward: fieldRunReward, fieldRankForXp: fieldRankForXp, fieldSpecimenName: fieldSpecimenName, fieldCollectibleKeys: fieldCollectibleKeys, recordFieldDiscovery: recordFieldDiscovery, fieldDiscoveryProgress: fieldDiscoveryProgress, fieldJournalEntries: fieldJournalEntries, fieldJournalSummary: fieldJournalSummary,
@@ -8293,6 +8580,32 @@ function updateCoreRig3d(dt3d) {
           v.text('Relatively fixed plume', 350, 172, 'end')
         ];
       }
+      function collisionSchematicDiagram(v) {
+        return [
+          v.mark('rect', 'asthenosphere', { key: 'asthenosphere', x: 0, y: 168, width: 360, height: 22, fill: v.color('asthenosphere') }),
+          v.mark('polygon', 'lithMantle', { key: 'lithosphere', points: '0,118 200,160 360,150 360,168 0,168', fill: v.color('lithMantle') }),
+          v.mark('polygon', 'crustRoot', { key: 'crust-root', points: '0,92 95,92 360,130 360,150 200,160 0,118', fill: v.color('crustRoot') }),
+          v.mark('polygon', 'molasse', { key: 'molasse', points: '0,92 95,92 95,104 0,104', fill: v.color('molasse') }),
+          v.mark('polygon', 'foldedStrata', { key: 'folded-strata', points: '95,92 150,50 200,22 250,50 280,58 360,58 360,130', fill: v.color('foldedStrata') }),
+          v.mark('polygon', 'schist', { key: 'schist', points: '120,88 360,106 360,120 110,98', fill: v.color('schist') }),
+          v.mark('polygon', 'gneiss', { key: 'gneiss', points: '150,60 168,42 190,50 222,54 232,84 176,94 140,82', fill: v.color('gneiss') }),
+          v.mark('ellipse', 'leucogranite', { key: 'leucogranite', cx: 206, cy: 70, rx: 14, ry: 8, fill: v.color('leucogranite') }),
+          v.mark('polygon', 'summitLimestone', { key: 'summit-limestone', points: '186,34 200,22 214,34 210,42 190,42', fill: v.color('summitLimestone') }),
+          v.mark('polygon', 'suture', { key: 'suture', points: '300,58 318,58 324,78 306,82', fill: v.color('suture') }),
+          v.mark('path', 'thrustZone', { key: 'thrust', d: 'M 95 92 L 360 130', fill: 'none', stroke: v.color('thrustZone'), strokeWidth: 6, strokeLinecap: 'round' }),
+          v.h('line', { key: 'converge-left', x1: 18, y1: 142, x2: 84, y2: 142, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.h('line', { key: 'converge-right', x1: 342, y1: 142, x2: 286, y2: 142, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Plates converge', 185, 146, 'middle'),
+          v.h('line', { key: 'uplift', x1: 300, y1: 50, x2: 300, y2: 20, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Uplift', 308, 30, 'start'),
+          v.text('Foreland basin', 6, 86, 'start'),
+          v.line('summit-leader', 214, 30, 262, 24),
+          v.text('Sea-floor limestone on top', 266, 26, 'start'),
+          v.line('thrust-leader', 250, 114, 250, 100),
+          v.text('Thrust fault', 250, 98, 'middle'),
+          v.text('Deep crustal root', 150, 132, 'middle')
+        ];
+      }
       function sceneSchematicSVG(info) {
         var W = 360, H = 190;
         var bg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
@@ -8328,7 +8641,7 @@ function updateCoreRig3d(dt3d) {
           return h('line', { key: key, x1: x1, y1: y1, x2: x2, y2: y2, stroke: mutedColor, strokeWidth: 1.25, vectorEffect: 'non-scaling-stroke' });
         }
         var v = { h: h, mark: mark, color: color, text: textNode, line: leader, bg: bg, edge: edge, arrow: arrow, arrowId: arrowId };
-        var diagrams = { geode: geodeSchematicDiagram, deepEarth: deepEarthSchematicDiagram, subduction: subductionSchematicDiagram, ridge: ridgeSchematicDiagram, hotspot: hotspotSchematicDiagram };
+        var diagrams = { geode: geodeSchematicDiagram, deepEarth: deepEarthSchematicDiagram, subduction: subductionSchematicDiagram, ridge: ridgeSchematicDiagram, hotspot: hotspotSchematicDiagram, collision: collisionSchematicDiagram };
         var draw = diagrams[info.sceneId] || geodeSchematicDiagram;
         var descText = info.ariaLabel.indexOf(info.title + '. ') === 0 ? info.ariaLabel.slice(info.title.length + 2) : info.ariaLabel;
         return h('svg', {
@@ -9805,7 +10118,7 @@ function updateCoreRig3d(dt3d) {
                     h('p', { className: 'mt-2 text-[10.5px] font-semibold ' + muted }, 'Schematic model — not to scale. Colors are illustrative.'))),
             SCENE.id !== 'crust' ? sceneSignalPanel() : null,
             inInvestigation ? sceneSequencePanel() : null,
-            h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : ((SCENE.id === 'deepEarth' || SCENE.id === 'subduction') ? t('stem.geology.layers', 'Layers') : t('stem.geology.minerals', 'Minerals'))),
+            h('div', { className: 'text-[11px] font-bold ' + muted }, (feat.crossSection || SCENE.id === 'collision') ? t('stem.geology.rocks', 'Rock types') : (SCENE.id === 'geode' ? t('stem.geology.minerals', 'Minerals') : t('stem.geology.layers', 'Layers'))),
             strataList(),
             fieldJournalPanel(),
             feat.fossils ? fossilStrip() : null,

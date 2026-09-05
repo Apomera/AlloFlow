@@ -254,3 +254,16 @@ desktop/web-app/firestore-debug.log
 /mcp-testing/refinement-study/private/
 /mcp-testing/refinement-study/reviewer-packets/
 /calibration-runs/
+# check_quarantine writes this on every run; it is a test-run artifact, not source.
+.quarantine-status.json
+
+# Session review output: screenshots, audio captures and MCP live runs under
+# scratch/ (about 1 GB on 2026-09-05) and one-off output/. Same git add -A
+# hazard as reading_library/.cache above; durable results live in reports/.
+/scratch/
+/output/
+
+# desktop/mcp/build_mcpb.cjs installs the pinned Playwright and Ace runtimes
+# here from runtime/package.json + package-lock.json (both tracked). The
+# installed tree is build residue: 6,855 files.
+desktop/mcp/runtime/node_modules/

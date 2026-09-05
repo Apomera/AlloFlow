@@ -310,7 +310,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("'rain>soil': {");
     expect(source).toContain("t('stem.watercycle.pilot_why_you_changed', 'Why you changed')");
     expect(source).toContain("className: 'wc-pilot-transition-evidence'");
-    expect(source).toContain("setPilot({ snapshot: null, lastChange: null, lastCycle: null });");
+    expect(source).toContain("setPilot({ snapshot: null, lastChange: null, lastCycle: null");
   });
 
   it('continues landfall through visible, playable watershed pathways', () => {
@@ -652,7 +652,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('@media print{.wc-pilot-sky-thermal{');
   });
 
-  it('guides a four-climate fair test with accessible progress and a smart next mission', () => {
+  it('guides a four-climate comparison without presenting it as a single-variable test', () => {
     expect(source).toContain('var pilotPinnedComparisonRows = pilotComparisonRows.filter(function(row)');
     expect(source).toContain('var pilotUnpinnedComparisonRows = pilotComparisonRows.filter(function(row)');
     expect(source).toContain('var pilotNextComparisonRow = pilotUnpinnedComparisonRows.reduce(function(best, row)');
@@ -665,8 +665,8 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("'aria-valuenow': pinnedPilotComparisonCount");
     expect(source).toContain("className: 'wc-pilot-compare-checklist'");
     expect(source).toContain("var missionState = row.pinned ? 'pinned' : (row.current ? 'current' : 'todo');");
-    expect(source).toContain("t('stem.watercycle.pilot_compare_fair_test_title', 'Fair-test rule')");
-    expect(source).toContain('Use the same rise and steering strategy in every climate so starting conditions are the main variable.');
+    expect(source).toContain("t('stem.watercycle.pilot_compare_environment_title', 'Comparing environments')");
+    expect(source).toContain('Use the same rise and steering strategy to compare these environments. Presets change several conditions together; they do not isolate the effect of humidity or temperature.');
     expect(source).toContain('onClick: function() { chooseScenario(pilotNextComparisonRow.id); }');
   });
 

@@ -201,23 +201,29 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain(expectedDescriptions.sheepEye_desc);
     }
 
+    // Byte parity first: once the two copies are identical, parsing the mirror a second time
+    // can only confirm what the buffers already proved, and this catalog is ~6.9MB.
     const sourceCatalogBytes = readFileSync('ui_strings.js');
     const publicCatalogBytes = readFileSync('desktop/web-app/public/ui_strings.js');
-    const sourceCatalog = JSON.parse(sourceCatalogBytes.toString('utf8'));
-    const publicCatalog = JSON.parse(publicCatalogBytes.toString('utf8'));
-    expect(sourceCatalog.stem.dissection).toMatchObject(expectedDescriptions);
-    expect(publicCatalog.stem.dissection).toMatchObject(expectedDescriptions);
     expect(publicCatalogBytes.equals(sourceCatalogBytes)).toBe(true);
+    expect(JSON.parse(sourceCatalogBytes.toString('utf8')).stem.dissection).toMatchObject(expectedDescriptions);
 
     const languageFiles = readdirSync('lang').filter((file) => file.endsWith('.js')).sort();
     expect(languageFiles.length).toBeGreaterThan(0);
     for (const languageFile of languageFiles) {
-      const sourceText = readFileSync('lang/' + languageFile, 'utf8');
-      const publicText = readFileSync('desktop/web-app/public/lang/' + languageFile, 'utf8');
-      expect(JSON.parse(sourceText).stem.dissection).toMatchObject(expectedDescriptions);
-      expect(JSON.parse(publicText).stem.dissection).toMatchObject(expectedDescriptions);
+      const sourceBytes = readFileSync('lang/' + languageFile);
+      const publicBytes = readFileSync('desktop/web-app/public/lang/' + languageFile);
+      // This pair was parsed twice and never compared, so a mirror could drift in any key the
+      // assertion below does not read and still pass. Compare the bytes, then parse once.
+      expect(publicBytes.equals(sourceBytes), languageFile + ' mirror').toBe(true);
+      expect(JSON.parse(sourceBytes.toString('utf8')).stem.dissection, languageFile).toMatchObject(expectedDescriptions);
     }
-  }, 60000);
+    // Measured 2026-09-04 on an idle machine: this test reads ~1GB (63 language packs at a 7.3MB
+    // median, each in two copies, plus the 6.9MB catalog) and needs ~110s of I/O. The old 60s
+    // budget sat UNDER the test's own floor, so it failed whenever the machine was busy and the
+    // failure read as flakiness. Narrowing the 63-pack sweep to a dedicated i18n test would be
+    // the real fix; that is a coverage decision for the owner, not something a timeout can do.
+  }, 240000);
 
   it('models a persistent, accessible procedural instrument workflow', () => {
     for (const filePath of DISSECTION_PATHS) {
@@ -1373,7 +1379,11 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
   });
 });
 
-describe('dissection improved UI render', () => {
+// Every test here renders the whole 18k-line tool, and several also parse the 6.9MB ui_strings
+// catalog. That does not fit vitest's 5s default on a busy disk, and the sibling describe at the
+// top of this file already carries a budget; this one was simply missing it, which is why tests
+// in this block failed intermittently with "Test timed out in 5000ms".
+describe('dissection improved UI render', { timeout: 60000 }, () => {
   beforeEach(() => {
     resetStemLab();
     loadTool('stem_lab/stem_tool_dissection.js', 'dissection');

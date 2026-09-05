@@ -70,7 +70,8 @@ describe('NOTEBOOK_TEMPLATE_META — kind metadata table', () => {
     // Accents must resolve in _accentClasses (indigo/sky/violet/amber/rose/emerald/cyan/slate);
     // a typo'd accent would silently fall back to slate and collide with the All chip.
     const known = new Set(['indigo', 'sky', 'violet', 'amber', 'rose', 'emerald', 'cyan', 'slate']);
-    const accents = Object.values(H.NOTEBOOK_TEMPLATE_META).map(m => m.accent);
+    Object.values(H.NOTEBOOK_TEMPLATE_META).forEach(meta=>expect(known.has(meta.accent)).toBe(true));
+    const accents = ['cornell-notes','lab-report','reading-response','double-entry','guided-notes','q-and-a','anchor-chart'].map(kind=>H.NOTEBOOK_TEMPLATE_META[kind].accent);
     accents.forEach(a => expect(known.has(a)).toBe(true));
     // The six note kinds + anchor-chart should all be visually distinct.
     expect(new Set(accents).size).toBe(accents.length);

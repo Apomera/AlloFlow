@@ -30,8 +30,8 @@ describe('finalized-cycle client closure', () => {
     const spm = component('AeSpm', 'AeAuditExport');
 
     expect(walkthroughs).toContain("teacher.active !== false && !aeCycleFinalized(teacher)");
-    expect(walkthroughs).toContain('disabled={cycleFinalized || (teachers.length === 0 && !canAddStaff)}');
-    expect(walkthroughs).toContain("showForm && role === 'evaluator' && !cycleFinalized");
+    expect(walkthroughs).toContain('disabled={!showForm && (cycleFinalized || (teachers.length === 0 && !canAddStaff))}');
+    expect(walkthroughs).toContain("showForm && role === 'evaluator' && (!cycleFinalized || editingRecord)");
     expect(walkthroughs).toContain("!record.publishedAt && role === 'evaluator' && !aeCycleFinalized(teacher)");
     expect(walkthroughs).toContain('disabled={readOnlyPreview || aeCycleFinalized(teacher)}');
     expect(formals).toContain('disabled={!selectedTeacher || cycleFinalized || records.some');
@@ -46,11 +46,11 @@ describe('finalized-cycle client closure', () => {
   it('keeps client mutators closed even if a stale control invokes them', () => {
     const panel = component('EducatorEvaluationPanel', '');
     expect(panel).toContain('const isTeacherCycleClosed = (teacherId)');
-    expect(panel).toContain("if (isTeacherCycleClosed(data && data.teacherId)) return '';");
-    expect(panel).toContain("if (isTeacherCycleClosed(teacherId)) return '';");
+    expect(panel).toContain("if (!target || target.active === false || aeCycleFinalized(target)) return '';");
+    expect(panel.match(/if \(!target \|\| target.active === false \|\| aeCycleFinalized\(target\)\) return '';/g)).toHaveLength(3);
     expect(panel).toContain('record.teacherAcknowledgedAt || isTeacherCycleClosed(record.teacherId)');
     expect(panel).toContain("record.finalizedAt || isTeacherCycleClosed(record.teacherId)");
     expect(panel).toContain("record.status === 'locked' || isTeacherCycleClosed(record.teacherId)");
-    expect(panel).toContain('if (isTeacherCycleClosed(teacherId)) return;');
+    expect(panel).toContain('if (isTeacherCycleClosed(teacherId)) return false;');
   });
 });

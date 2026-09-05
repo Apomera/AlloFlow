@@ -17,6 +17,7 @@ function LiveSessionDockView(props) {
     TEACHER_ONLY_TYPES,
     _alloMbBridgeActive,
     _alloStudentSafeResources,
+    activeSessionAppId,
     activeSessionCode,
     activeSignals,
     activeUnitId,
@@ -186,16 +187,17 @@ function LiveSessionDockView(props) {
     try {
       const rosterCount = Object.keys(sessionData && sessionData.roster || {}).length;
       const transportLabel = _alloMbBridgeActive() ? t('live_dock.transport_mailbox') || 'Class Mailbox' : 'Firebase';
-      const trace = typeof window !== 'undefined' && window.__alloSessionSyncTrace || [];
+      const trace = (typeof window !== 'undefined' && window.__alloSessionSyncTrace || []).filter(ev => ev.detail?.sessionPath === 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode);
       let lastSync = null;
       let lastProblem = null;
       for (let i = trace.length - 1; i >= 0; i--) {
         const ev = trace[i];
-        if (!lastSync && (ev.event === 'sync:write-ok' || ev.event === 'mailbox:pack-cycle')) lastSync = ev;
-        if (!lastProblem && /REFUSED|write-failed|transport-unavailable/.test(ev.event)) lastProblem = ev;
+        const mailboxFailure = ev.event === 'mailbox:pack-cycle' && Number(ev.detail?.failed) > 0;
+        if (!lastSync && (ev.event === 'sync:write-ok' || ev.event === 'mailbox:pack-reference-published' || ev.event === 'mailbox:pack-cycle' && !mailboxFailure)) lastSync = ev;
+        if (!lastProblem && (/REFUSED|write-failed|transport-unavailable/.test(ev.event) || mailboxFailure || ev.event === 'mailbox:pack-reference-failed')) lastProblem = ev;
         if (lastSync && lastProblem) break;
       }
-      const problemIsCurrent = lastProblem && (!lastSync || lastProblem.at > lastSync.at);
+      const problemIsCurrent = lastProblem && (!lastSync || trace.lastIndexOf(lastProblem) > trace.lastIndexOf(lastSync));
       const ageSec = lastSync ? Math.max(0, Math.round((Date.now() - lastSync.at) / 1000)) : null;
       return /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -218,13 +220,13 @@ function LiveSessionDockView(props) {
           fontSize: '0.72rem',
           fontWeight: 700,
           fontFamily: 'inherit',
-          border: '1px solid ' + (problemIsCurrent ? '#fecaca' : '#bbf7d0'),
-          background: problemIsCurrent ? '#fef2f2' : '#f0fdf4',
-          color: problemIsCurrent ? '#991b1b' : '#166534'
+          border: '1px solid ' + (problemIsCurrent ? '#fecaca' : lastSync ? '#bbf7d0' : '#cbd5e1'),
+          background: problemIsCurrent ? '#fef2f2' : lastSync ? '#f0fdf4' : '#f8fafc',
+          color: problemIsCurrent ? '#991b1b' : lastSync ? '#166534' : '#475569'
         }
       }, /*#__PURE__*/React.createElement("span", {
         "aria-hidden": "true"
-      }, problemIsCurrent ? '⚠️' : '🟢'), /*#__PURE__*/React.createElement("span", null, rosterCount + ' ' + (rosterCount === 1 ? t('live_dock.student') || 'student' : t('live_dock.students') || 'students') + ' · ' + transportLabel), /*#__PURE__*/React.createElement("span", {
+      }, problemIsCurrent ? '⚠️' : lastSync ? '🟢' : '○'), /*#__PURE__*/React.createElement("span", null, rosterCount + ' ' + (rosterCount === 1 ? t('live_dock.student') || 'student' : t('live_dock.students') || 'students') + ' · ' + transportLabel), /*#__PURE__*/React.createElement("span", {
         style: {
           marginLeft: 'auto',
           fontWeight: 600,

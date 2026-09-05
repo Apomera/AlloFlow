@@ -343,7 +343,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ── Extended state for badges & AI ──
-      var _ext = labToolData._multExt || { badges: {}, totalCorrect: 0, sessionCorrect: 0, hiddenCorrect: 0, squaresAnswered: {}, rowsAnswered: {}, showAI: false, aiResponse: '', aiLoading: false, showBadges: false };
+      var _ext = Object.assign({ badges: {}, totalCorrect: 0, sessionCorrect: 0, hiddenCorrect: 0, squaresAnswered: {}, rowsAnswered: {}, showAI: false, aiResponse: '', aiLoading: false, showBadges: false }, labToolData._multExt || {});
       var extUpd = function(obj) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { _multExt: Object.assign({}, prev._multExt || _ext, obj) });
@@ -406,6 +406,17 @@ window.StemLab = window.StemLab || {
 
       // ── Input disabled state ──
       var inputDisabled = labToolData._multInputDisabled || false;
+      var autoAdvancePending = !!(_mt.active && !_mt.paused && labToolData._multAdvanceTimer);
+      React.useEffect(function() {
+        if ((!_mt.active || _mt.paused) && labToolData._multAdvanceTimer) {
+          clearTimeout(labToolData._multAdvanceTimer);
+          setLabToolData(function(previous) { return Object.assign({}, previous, { _multAdvanceTimer: null }); });
+        }
+      }, [_mt.active, _mt.paused, labToolData._multAdvanceTimer]);
+      React.useEffect(function() {
+        var timer = labToolData._multAdvanceTimer;
+        return function() { if (timer) clearTimeout(timer); };
+      }, [labToolData._multAdvanceTimer]);
       var setInputDisabled = function(val) {
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multInputDisabled: val }); });
       };
@@ -435,6 +446,10 @@ window.StemLab = window.StemLab || {
 
       // ── Generate next problem ──
       function nextProblem() {
+        if (labToolData._multAdvanceTimer) {
+          clearTimeout(labToolData._multAdvanceTimer);
+          setLabToolData(function(previous) { return Object.assign({}, previous, { _multAdvanceTimer: null }); });
+        }
         var factors = pickFactors(exploreDifficulty, (_mt.adaptiveHistory || []));
         // Decide presentation mode based on quizMode
         var mode = 'mult';
@@ -466,7 +481,7 @@ window.StemLab = window.StemLab || {
           correct = multTableChallenge.a * multTableChallenge.b;
         }
         var ok = parseWholeAnswer(multTableAnswer) === correct;
-        announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
+        announceToSR(ok ? 'Correct!' : 'Not quite. Review the feedback before the next question.');
 
         // Per-fact mastery tracking (persistent across sessions)
         var fkey = tkey(multTableChallenge.a, multTableChallenge.b);
@@ -587,15 +602,50 @@ window.StemLab = window.StemLab || {
           });
         }
 
-        // Disable input and auto-advance
+        // Keep untimed feedback available until the learner chooses to continue.
         setInputDisabled(true);
-        var delay = ok ? 1200 : (_mt.active ? 1500 : 2000);
+        if (!_mt.active || _mt.paused) return;
+        var delay = ok ? 1200 : 1500;
         var _advanceTimer = setTimeout(function() {
+          setLabToolData(function(previous) { return Object.assign({}, previous, { _multAdvanceTimer: null }); });
           nextProblem();
           var _inp = document.getElementById('multtable-input');
           if (_inp) _inp.focus();
         }, delay);
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multAdvanceTimer: _advanceTimer }); });
+      }
+
+      function renderFactStrategy() {
+        if (!multTableChallenge || !multTableFeedback || _mt.active) return null;
+        var c = multTableChallenge;
+        var product = c.a * c.b;
+        var rows = c.mode === 'div' ? c.divisor : c.a;
+        var cols = c.mode === 'div' ? product / c.divisor : c.b;
+        if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || cols < 1 || rows > 12 || cols > 12) return null;
+        var key = rows + ':' + cols + ':' + c.mode;
+        var split = _ext.factSplitKey === key ? Math.max(1, Math.min(rows, _ext.factSplit || 1)) : Math.min(5, rows);
+        var rest = rows - split;
+        var options = Array.from(new Set([Math.min(5, rows), Math.max(1, Math.floor(rows / 2)), 1]));
+        var w = cols * 26 + 90, height = rows * 26 + 55;
+        return h('details', { className:'bg-white border border-pink-200 rounded-xl p-3 mt-3', key:key, 'data-fact-strategy':true },
+          h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className:'text-sm font-bold text-pink-800 cursor-pointer' }, t('stem.multtable.build_fact_strategy', 'Build this fact from smaller facts')),
+          h('p', { className:'text-sm text-slate-700 mt-2' }, c.mode === 'div' ? t('stem.multtable.division_strategy_reason', 'Use the related multiplication fact to check the division. Each row is one equal group.') : t('stem.multtable.split_strategy_reason', 'Split the rows into two groups. Multiply each group, then add the parts. The total number of dots stays the same.')),
+          h('div', { role:'group', 'aria-label':t('stem.multtable.choose_row_split', 'Choose a row split'), className:'flex flex-wrap gap-2 mt-3' }, options.map(function(value) {
+            return h('button', { key:value, type:'button', 'aria-pressed':split === value, onClick:function() { extUpd({factSplitKey:key, factSplit:value}); },
+              style:{minHeight:44, padding:'6px 12px', border:'2px solid #9d174d', borderRadius:8, background:split === value ? '#9d174d' : '#fff', color:split === value ? '#fff' : '#831843', fontWeight:800} }, value+' + '+(rows-value)+' '+t('stem.multtable.rows_label', 'rows'));
+          })),
+          h('div', { role:'region', tabIndex:0, 'aria-label':t('stem.multtable.strategy_array_scroll', 'Scrollable strategy dot array'), style:{overflowX:'auto', marginTop:12} },
+            h('svg', { viewBox:'0 0 '+w+' '+height, role:'img', 'aria-label':rows+' × '+cols+' = '+split+' × '+cols+' + '+rest+' × '+cols, style:{minWidth:w, width:'100%', maxHeight:380, display:'block', background:'#fff'}, 'data-fact-strategy-array':true },
+              Array.from({length:rows*cols}, function(_, i) { var row=Math.floor(i/cols), col=i%cols; return h('circle', {key:i, cx:26+col*26, cy:30+row*26, r:7, fill:row<split ? '#1d4ed8' : '#b45309', 'data-strategy-part':row<split ? 'first' : 'second'}); }),
+              rest > 0 && h('line', {x1:12, y1:17+split*26, x2:cols*26+12, y2:17+split*26, stroke:'#0f172a', strokeWidth:2, strokeDasharray:'5 3'}),
+              h('text', {x:cols*26+24, y:24+split*13, fill:'#1d4ed8', fontSize:16, fontWeight:800}, split),
+              rest > 0 && h('text', {x:cols*26+24, y:24+split*26+rest*13, fill:'#92400e', fontSize:16, fontWeight:800}, rest),
+              h('text', {x:cols*13+13, y:height-5, textAnchor:'middle', fill:'#0f172a', fontSize:16, fontWeight:800}, cols+' '+t('stem.multtable.dots_each_row', 'in each row')))),
+          h('div', {role:'status', className:'text-sm font-bold text-slate-800 mt-3', 'data-fact-strategy-equation':true},
+            h('p', null, rows+' × '+cols+' = ('+split+' × '+cols+') + ('+rest+' × '+cols+')'),
+            h('p', null, (split*cols)+' + '+(rest*cols)+' = '+product),
+            c.mode === 'div' && h('p', null, product+' ÷ '+rows+' = '+cols)),
+          h('p', {className:'text-xs text-slate-700 mt-2'}, t('stem.multtable.strategy_reflect', 'Which smaller fact did you know already? Try another split and explain why the total stays the same.')));
       }
 
       // ── AI Tutor ──
@@ -996,7 +1046,7 @@ window.StemLab = window.StemLab || {
 
           // Pedagogy note
           h('details', { className: 'bg-white rounded-xl border border-indigo-200 p-3' },
-            h('summary', { className: 'text-xs font-bold text-indigo-700 cursor-pointer' }, t('stem.multtable.why_patterns_beat_brute_memorization', '💡 Why patterns beat brute memorization')),
+            h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'text-xs font-bold text-indigo-700 cursor-pointer' }, t('stem.multtable.why_patterns_beat_brute_memorization', '💡 Why patterns beat brute memorization')),
             h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
               h('p', {}, h('b', {}, t('stem.multtable.you_only_need_to_memorize_about_a_thir', 'You only need to memorize about a third of the table. ')),
                 t('stem.multtable.anything_in_the_1s_2s_5s_10s_11s_colum', 'Anything in the 1s, 2s, 5s, 10s, 11s columns has an easy rule. The squares are a small set (12 facts). What remains is the "tricky middle" — about 15 facts — that needs real recall: 6×7, 6×8, 6×9, 7×8, 7×9, 8×9 and their twins.')
@@ -1054,12 +1104,9 @@ window.StemLab = window.StemLab || {
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-pink-100' }, 'Use arrays, patterns, and fact families to reason toward fluent multiplication and division.'),
-                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-pink-200' }, 'Recommended next move'),
-                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, multNext)
-                )
+                h('p', { className: 'mt-2 text-sm text-white' }, multNext)
               ),
-              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+              h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
                   { label: 'Focus', value: multTabLabel },
                   { label: 'Correct', value: String(_ext.totalCorrect || 0) },
@@ -1072,7 +1119,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Multiplication reasoning pathway' },
+            h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Multiplication reasoning pathway' },
               [
                 { n: '1', title: 'Observe', detail: 'See the fact as an array or pattern.' },
                 { n: '2', title: 'Predict', detail: 'Use a known relationship.' },
@@ -1083,7 +1130,7 @@ window.StemLab = window.StemLab || {
                   h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-pink-200' }, step.detail))
                 );
               })
-            )
+            ))
           )
         ),
         h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2' },
@@ -1093,7 +1140,7 @@ window.StemLab = window.StemLab || {
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: t('stem.multtable.toggle_hidden_mode_h_2', 'Toggle hidden mode (H)')
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
-            h('div', { className: 'text-xs font-bold text-emerald-700' }, exploreScore.correct + '/' + exploreScore.total),
+            h('div', { className: 'text-xs font-bold text-emerald-700', style: { color: ctx.isContrast ? '#000000' : undefined } }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', { 
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse motion-reduce:animate-none'
@@ -1106,7 +1153,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
             h('button', { onClick: askAI,
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)' },
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined },
               title: t('stem.multtable.ai_tutor', 'AI Tutor (?)')
             }, t('stem.multtable.ai', '\uD83E\uDDE0 AI')),
             // Mute toggle (v3)
@@ -1135,7 +1182,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-label': t('stem.multtable.reset', 'Reset'),
               title: t('stem.multtable.reset_all', 'Reset all'),
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full text-rose-700 border border-rose-200 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)' }
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full text-rose-700 border border-rose-200 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined }
             }, t('stem.multtable.reset_2', '\u21BA Reset'))
         ),
 
@@ -1495,7 +1542,16 @@ window.StemLab = window.StemLab || {
         })(),
 
         // ── 12×12 Grid ──
-        h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
+        h(React.Fragment, null,
+          h('section', { className: 'rounded-xl border border-pink-200 bg-white p-4 space-y-3' },
+            h('h3', { className: 'text-base font-bold text-pink-900' }, t('stem.multtable.focus_one_fact', 'Explore one fact')),
+            h('p', { className: 'text-sm text-slate-700' }, t('stem.multtable.focus_fact_prompt', 'Choose two factors, then build an array and connect the related facts.')),
+            h('div', { className: 'flex flex-wrap gap-3 items-end' },
+              [['visualA',visualA,t('stem.multtable.factor_one','First factor')],['visualB',visualB,t('stem.multtable.factor_two','Second factor')]].map(function(item) {
+                return h('label', { key:item[0], className:'text-sm font-bold text-slate-700' }, item[2], h('select', { value:item[1], className:'block rounded-lg border border-pink-300 bg-white p-2 text-lg text-pink-900', onChange:function(e){var patch={};patch[item[0]]=Number(e.target.value);extUpd(patch);} }, Array.from({length:12},function(_,i){return h('option',{key:i,value:i+1},i+1);}))); }),
+              h('button', { type:'button', className:'rounded-lg bg-pink-700 text-white px-4 py-3 font-bold', onClick:function(){extUpd({mtTab:'visual'});} },t('stem.multtable.build_fact','Build this fact')))),
+          h('details', { className:'rounded-xl border border-pink-200 bg-white p-3', 'data-full-fact-table':true },
+            h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className:'cursor-pointer font-bold text-pink-900'},t('stem.multtable.open_full_table','Full multiplication table')), h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
           h('table', { className: 'border-collapse w-full text-center' },
             h('caption', { className: 'sr-only' }, t('stem.multtable.12_by_12_multiplication_table', '12 by 12 multiplication table')), h('thead', null,
               h('tr', null,
@@ -1554,7 +1610,7 @@ window.StemLab = window.StemLab || {
               })
             )
           )
-        ),
+        ))),
 
         // ── Action buttons ──
         h('div', { className: 'flex gap-2 flex-wrap' },
@@ -1625,8 +1681,10 @@ window.StemLab = window.StemLab || {
           ),
           // Feedback
           multTableFeedback && h('p', {
-            className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
+            role: 'status', 'aria-live': 'polite',
+            className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-700' : 'text-red-700')
           }, multTableFeedback.msg),
+          renderFactStrategy(),
 
           // Fact family (correct answer + bridge to division)
           multTableFeedback && multTableFeedback.correct && multTableFeedback.factFamily && h('div', {
@@ -1647,15 +1705,15 @@ window.StemLab = window.StemLab || {
           ),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[11px] text-slate-600 animate-pulse motion-reduce:animate-none' }, t('stem.multtable.next_question_coming', 'Next question coming...')),
-            h('button', { 'aria-label': t('stem.multtable.skip_next', 'Skip Next'),
+            h('p', { className: 'text-xs text-slate-700' }, autoAdvancePending ? t('stem.multtable.next_question_coming', 'Next question coming...') : t('stem.multtable.read_feedback_first', 'Take time to read the feedback. Continue when you are ready.')),
+            h('button', { 'aria-label': autoAdvancePending ? t('stem.multtable.skip_next', 'Skip Next') : t('stem.multtable.next_when_ready', 'Next question'),
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-700 transition-all'
-            }, t('stem.multtable.skip_next_2', 'Skip \u2192 Next'))
+            }, autoAdvancePending ? t('stem.multtable.skip_next_2', 'Skip \u2192 Next') : t('stem.multtable.next_when_ready', 'Next question'))
           )
         ),
 
@@ -1691,7 +1749,9 @@ window.StemLab = window.StemLab || {
             mastered:   { label: '🟢 Mastered (≥' + iq.threshold + '%)', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
           }[state];
           sm.color = { struggling: '#b91c1c', building: '#92400e', mastered: '#047857' }[state];
-          return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-indigo-300 space-y-2' },
+          return h('details', { className: 'mt-3 p-3 rounded-xl bg-white border border-indigo-300 space-y-2', 'data-teacher-mastery-demo': true },
+            h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold text-indigo-800' }, t('stem.multtable.teacher_data_activity', 'Teacher activity: explore a hypothetical mastery threshold')),
+            h('p', { className: 'text-sm text-slate-700' }, t('stem.multtable.simulation_notice', 'This is simulated data, not your practice results. Use the mastery heatmap above to review answers you have actually given.')),
             h('h3', { className: 'text-sm font-black text-indigo-700' }, t('stem.multtable.fact_mastery_discovery', '🎯 Fact mastery discovery')),
             h('p', { className: 'text-[11px] text-slate-700' }, t('stem.multtable.sliders_for_mastery_threshold_and_sele', 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.')),
             h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
@@ -1726,7 +1786,7 @@ window.StemLab = window.StemLab || {
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.multtable.explain_mastery_learning_thresholds', 'Explain mastery learning thresholds.'),
               'aria-label': t('stem.multtable.mastery_explanation', 'Explain mastery learning thresholds'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.design_note_discrete_3_state_mastery_m', 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.'))
+            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.threshold_reflection', 'How does changing the threshold change the support you would offer? A label alone cannot explain a learner’s understanding.'))
           );
         })()
         )  // end of Practice tab wrapper

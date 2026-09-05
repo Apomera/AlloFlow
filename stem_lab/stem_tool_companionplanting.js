@@ -11400,7 +11400,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 }, __alloT('stem.companionplanting.grow', "▶ Grow!")),
 
-                !allPlanted && React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.companionplanting.plant_all_three_seeds_to_begin', "Plant all three seeds to begin"))
+                !allPlanted && React.createElement("span", { className: "text-[11px] text-slate-600 italic" + (ctx.isContrast ? " text-white" : "") }, __alloT('stem.companionplanting.plant_all_three_seeds_to_begin', "Plant all three seeds to begin"))
 
               ),
 

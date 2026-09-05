@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Resume card names the saved step and disables actions while busy.",
+    "Guided Customize opens the picker; Next names its destination.",
+    "Tour fits 1200×850; all navigation controls visible and at least 44px tall.",
+    "Tour fits 360×780; all navigation controls visible and at least 44px tall.",
+    "Tour fits 320×568; all navigation controls visible and at least 44px tall.",
+    "Tour fits 667×375; all navigation controls visible and at least 44px tall.",
+    "Space activates Next and Back once.",
+    "Long instructions scroll independently; Finish remains visible.",
+    "Escape closes tour; targeted axe check has no violations."
+  ],
+  "errors": []
+}

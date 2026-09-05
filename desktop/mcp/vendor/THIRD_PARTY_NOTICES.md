@@ -18,3 +18,11 @@ redistributed artifacts.
 The complete license text is supplied by the corresponding package
 distribution. Keep this notice beside the assets when copying them into a
 runner image; do not replace the files with an unpinned CDN copy.
+
+## EPUBCheck 5.3.0
+
+W3C EPUBCheck, maintained by the DAISY Consortium. MIT license; dependency notices and licenses are included in epubcheck/. Official distribution: https://github.com/w3c/epubcheck/releases/tag/v5.3.0
+
+## Ace by DAISY 1.4.6
+
+The pinned @daisy/ace-cli npm runtime is MIT licensed. It runs EPUB accessibility checks with the existing Chromium installation; its dependency licenses accompany the packaged npm modules. https://github.com/daisy/ace/tree/v1.4.6

@@ -105,6 +105,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function round(v, n) { var m = Math.pow(10, n || 0); return Math.round(v * m) / m; }
 
+  // Small seedlings still respire. Do not round a positive carbon cost to zero.
+  function formatCarbon(value) {
+    var v = finiteOr(value, 0);
+    if (v !== 0 && Math.abs(v) < 0.01) return (v < 0 ? '-' : '') + '<0.01 kg C';
+    return round(v, 2) + ' kg C';
+  }
+
+  // One signed scale for the two saved carbon balances. A deficit extends left
+  // of zero; a surplus extends right. Neither a camera change nor separate scales
+  // can exaggerate the effect. Values come from the saved trial, not the live tree.
+  function discoveryCarbonComparison(record) {
+    var values = ['control', 'drought'].map(function (id) {
+      var summary = record && record[id] && record[id].summary || {};
+      return finiteOr(summary.meanNet, 0) * Math.max(0, finiteOr(summary.yearsCompleted, 0));
+    });
+    var low = Math.min(0, values[0], values[1]);
+    var high = Math.max(0, values[0], values[1]);
+    var span = high - low || 1;
+    return {
+      zero: -low / span * 100,
+      hasDeficit: low < 0,
+      values: values,
+      bars: values.map(function (value) {
+        return { start: (Math.min(0, value) - low) / span * 100, width: Math.abs(value) / span * 100 };
+      })
+    };
+  }
+
+  // Clone the same starting tree and change only weather. Keep both runs as evidence.
+  function runDroughtDiscovery(startTree, speciesId, env, allocation) {
+    var baseline = cloneTreeSnapshot(startTree, speciesId);
+    var controlEnv = normaliseExperimentEnv(Object.assign({}, env, { droughtYears: [] }));
+    var dryEnv = normaliseExperimentEnv(Object.assign({}, controlEnv, {
+      droughtYears: [baseline.age, baseline.age + 1, baseline.age + 2]
+    }));
+    return {
+      version: 1, baseline: baseline, env: controlEnv, alloc: normaliseAlloc(allocation),
+      control: runExperimentTrial(baseline, speciesId, controlEnv, allocation, 3),
+      drought: runExperimentTrial(baseline, speciesId, dryEnv, allocation, 3)
+    };
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 1: GRADE BANDS
   //
@@ -207,9 +249,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // Saturating light response. Doubling light near zero nearly doubles the rate;
   // doubling it in full sun barely moves. This is why an understory seedling is
   // light-limited and a canopy tree is not.
-  function lightFactor(light) {
+  function lightFactor(light, shadeTolerance) {
     var L = clamp(light, 0, 1);
-    return L / (L + 0.22);
+    var shade = clamp(finiteOr(shadeTolerance, 0), 0, 1);
+    return L / (L + 0.22 * (1 - 0.65 * shade));
   }
   // CO2 only enters through open stomata, so the CO2 term is gated by aperture.
   function co2Factor(co2ppm, aperture) {
@@ -281,14 +324,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // Gross photosynthesis for one year, in kg of carbon.
   function grossPhotosynthesis(sp, env, leafArea, aperture) {
     var fT = tempFactor(env.tempC, sp.leafType);
-    var fL = lightFactor(env.light);
+    var fL = lightFactor(env.light, sp.shadeTol);
     var fC = co2Factor(env.co2ppm, aperture);
     var fW = clamp(env.soilWater, 0, 1);
     // Liebig gate on the two supply terms (light and CO2 are substitutable only up to
     // the smaller of the two), then temperature and water scale the whole rate.
     var supply = Math.min(fL, fC);
     var seasonLen = sp.leafType === 'needle' ? 1.0 : 0.62; // needles work a longer year
-    var gross = sp.amax * effectiveLeafArea(leafArea) * supply * fT * fW * seasonLen;
+    // A qualitative shade strategy: efficient capture in low light comes with a
+    // modest capacity cost in bright light. These coefficients are teaching
+    // assumptions, not fitted measurements or a ranking of real species.
+    var shadeCapacity = 1 - 0.12 * clamp(finiteOr(sp.shadeTol, 0), 0, 1);
+    var gross = sp.amax * effectiveLeafArea(leafArea) * supply * fT * fW * seasonLen * shadeCapacity;
     return {
       gross: Math.max(0, gross),
       factors: { light: fL, co2: fC, temp: fT, water: fW },
@@ -297,6 +344,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         { aperture: aperture, co2AtFullAperture: co2Factor(env.co2ppm, 1) }
       )
     };
+  }
+
+  // Root mass per unit leaf area proxies uptake capacity relative to canopy
+  // demand. Saturation prevents unlimited roots from curing drought. At the
+  // reference ratio 0.1 kg C / m2, access equals the soil-water setting; it can
+  // rise at most 25%. This is a hydration INDEX, not soil moisture or litres.
+  // No soil water or no roots means no access. Parameters are pedagogical.
+  function rootWaterAccess(st, soilWater) {
+    var roots = Math.max(0, finiteOr(st && st.rootMass, 0));
+    var leaves = Math.max(0, finiteOr(st && st.leafArea, 0));
+    var soil = clamp(finiteOr(soilWater, 0), 0, 1);
+    var capacity = roots > 0 ? 1.25 * roots / (roots + 0.025 * leaves) : 0;
+    return { soilWater: soil, capacity: capacity, effectiveWater: clamp(soil * capacity, 0, 1) };
+  }
+
+  // Shared by live readouts, trials, annual growth, response curves and seasonal
+  // accounts. The environmental slider stays unchanged; the tree determines how
+  // well its roots can supply its canopy under those conditions.
+  function treePhysiology(st, sp, env) {
+    var access = rootWaterAccess(st, env.soilWater);
+    var aperture = stomatalAperture(access.effectiveWater, sp.droughtTol, env.forcedClose);
+    if (access.effectiveWater === 0) aperture = 0;
+    var photo = grossPhotosynthesis(sp, Object.assign({}, env, { soilWater: access.effectiveWater }), st.leafArea, aperture);
+    photo.aperture = aperture;
+    photo.waterAccess = access;
+    return photo;
   }
 
   // Maintenance respiration. The point students consistently miss: a big tree does not
@@ -346,10 +419,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       drought: rawEnv.drought === true
     };
 
-    var aperture = stomatalAperture(
-      safeEnv.soilWater, safeSpecies.droughtTol, safeEnv.forcedClose);
-    var annualPhoto = grossPhotosynthesis(
-      safeSpecies, safeEnv, safeTree.leafArea, aperture);
+    var annualPhoto = treePhysiology(safeTree, safeSpecies, safeEnv);
+    var aperture = annualPhoto.aperture;
     var annualGross = Math.max(0, finiteOr(annualPhoto.gross, 0));
     var annualResp = Math.max(0, finiteOr(
       maintenanceRespiration(safeSpecies, safeTree), 0));
@@ -546,8 +617,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     next.history = st.history.slice();
     if (!st.alive) return next;
 
-    var aperture = stomatalAperture(env.soilWater, sp.droughtTol, env.forcedClose);
-    var photo = grossPhotosynthesis(sp, env, st.leafArea, aperture);
+    var photo = treePhysiology(st, sp, env);
+    var aperture = photo.aperture;
     var resp = maintenanceRespiration(sp, st);
     var net = photo.gross - resp;
 
@@ -599,7 +670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     next.sapwoodMass = canopySupport.sapwoodMass;
     next.heartwoodMass = st.heartwoodMass + canopySupport.converted;
 
-    next.rootMass = clamp(st.rootMass + toRoot * 0.7 - st.rootMass * 0.06, 0.05, 4000);
+    next.rootMass = clamp(st.rootMass + toRoot * 0.7 - st.rootMass * 0.06, 0, 4000);
 
     // Leaf area is capped by sapwood cross-section — the pipe model. A canopy cannot
     // outrun the plumbing that feeds it, which is why leaf area tracks tree size
@@ -831,8 +902,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     for (var i = 0; i < requested && st.alive; i++) {
       var env = envForYear(envCfg, st.age);
-      var aperture = stomatalAperture(env.soilWater, sp.droughtTol, false);
-      var probe = grossPhotosynthesis(sp, env, st.leafArea, aperture);
+      var probe = treePhysiology(st, sp, env);
+      var aperture = probe.aperture;
       counts[probe.limiting.id] = (counts[probe.limiting.id] || 0) + 1;
       var historyBefore = st.history.length;
       var ringsBefore = st.rings.length;
@@ -1071,6 +1142,188 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // the answer under the student mid-question; and an unrotated bank lets a student
   // score by position instead of by biology.
   // ─────────────────────────────────────────────────────────
+  // Grove Journey v1: a bounded, annual teaching model. Save decisions, then replay
+  // them to restore canonical state. No campaign mutations touch the lab tree.
+  var GROVE_PATCHES = [
+    { name: 'Sunny ridge', habitat: 'exposed', light: 0.92, water: -0.12 },
+    { name: 'Open meadow', habitat: 'exposed', light: 0.88, water: -0.08 },
+    { name: 'Stream bend', habitat: 'damp', light: 0.74, water: 0.15 },
+    { name: 'Woodland edge', habitat: 'sheltered', light: 0.62, water: 0.02 },
+    { name: 'Canopy shelter', habitat: 'sheltered', light: 0.48, water: 0.06 },
+    { name: 'Wet hollow', habitat: 'damp', light: 0.64, water: 0.18 },
+    { name: 'Young woodland', habitat: 'sheltered', light: 0.66, water: 0.03 },
+    { name: 'Southern clearing', habitat: 'exposed', light: 0.90, water: -0.10 },
+    { name: 'Gravel bank', habitat: 'damp', light: 0.82, water: 0.10 }
+  ];
+  var GROVE_PRIORITIES = [
+    { id: 'roots', name: 'Build roots', icon: '↧', copy: 'Improve future water access. Less food goes to offspring.', alloc: { leaf: 0.15, root: 0.45, wood: 0.15, store: 0.20, repro: 0.05 } },
+    { id: 'reserve', name: 'Keep reserves', icon: '◒', copy: 'Save food for difficult years. Grow and reproduce more slowly.', alloc: { leaf: 0.15, root: 0.15, wood: 0.15, store: 0.50, repro: 0.05 } },
+    { id: 'offspring', name: 'Invest in offspring', icon: '✣', copy: 'Spend reproductive savings on seeds or shoots. Less new food is stored.', alloc: { leaf: 0.15, root: 0.15, wood: 0.15, store: 0.10, repro: 0.45 } }
+  ];
+  var GROVE_DECK = [
+    { id: 'calm', title: 'A gentle growing year', icon: '☀', water: 0.70, temp: 22, damage: 0, copy: 'Steady moisture gives the grove a chance to grow and save food.' },
+    { id: 'wet', title: 'Rain returns', icon: '☂', water: 0.84, temp: 20, damage: 0, copy: 'More soil moisture helps water reach the leaves. Sheltered patches still receive less light.' },
+    { id: 'dry', title: 'A dry growing season', icon: '☀', water: 0.24, temp: 28, damage: 0, copy: 'Dry soil restricts water access. Closed stomata also restrict carbon uptake.' },
+    { id: 'storm', title: 'A storm opens the canopy', icon: '≋', water: 0.66, temp: 21, damage: 0.28, copy: 'One patch loses some leaf tissue. The opening leaves more light for the following years.' }
+  ];
+  function groveSeed(raw) { return String(raw == null ? 'GROVE-01' : raw).trim().slice(0, 32) || 'GROVE-01'; }
+  function groveRandom(seed, purpose) {
+    return seeded(hashStr('grove-v1|' + groveSeed(seed) + '|' + purpose))();
+  }
+  function groveConfig(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return { version: 1, seed: groveSeed(raw.seed), mode: raw.mode === 'generated' ? 'generated' : 'deck',
+      choices: (raw.version === 1 && Array.isArray(raw.choices) ? raw.choices : []).slice(0, 8).map(function (c) {
+        c = c && typeof c === 'object' ? c : {};
+        return { priority: GROVE_PRIORITIES.some(function (p) { return p.id === c.priority; }) ? c.priority : 'reserve', route: c.route === 'seed' ? 'seed' : 'mixed' };
+      }) };
+  }
+  function groveEvent(raw, year) {
+    var cfg = groveConfig(raw), ev, lastDry = false;
+    for (var y = 1; y <= clamp(Math.floor(finiteOr(year, 1)), 1, 8); y++) {
+      var r = groveRandom(cfg.seed, 'weather|' + y);
+      var index = y === 1 ? 0 : Math.floor(r * GROVE_DECK.length);
+      if (lastDry && index === 2) index = 1;
+      ev = Object.assign({}, GROVE_DECK[index]);
+      if (cfg.mode === 'generated' && y > 1) {
+        ev.water = round(0.24 + groveRandom(cfg.seed, 'moisture|' + y) * 0.60, 2);
+        if (lastDry) ev.water = Math.max(0.55, ev.water);
+        ev.temp = Math.round(18 + groveRandom(cfg.seed, 'temperature|' + y) * 11);
+        ev.damage = r > 0.76 ? round(0.15 + groveRandom(cfg.seed, 'wind|' + y) * 0.20, 2) : 0;
+        ev.id = ev.damage ? 'storm' : ev.water < 0.42 ? 'dry' : ev.water > 0.70 ? 'wet' : 'calm';
+        var template = GROVE_DECK.filter(function (e) { return e.id === ev.id; })[0];
+        ev.title = template.title; ev.icon = template.icon; ev.copy = template.copy;
+      }
+      // Introductory storms target the two founding adult-canopy sites.
+      ev.patch = [0, 4][Math.floor(groveRandom(cfg.seed, 'storm-patch|' + y) * 2)];
+      ev.year = y;
+      lastDry = ev.water < 0.42;
+    }
+    return ev;
+  }
+  function groveStart(raw) {
+    var cfg = groveConfig(raw);
+    var trees = [{ id: 'oak-parent', species: 'oak', years: 40, patch: 0 }, { id: 'aspen-parent', species: 'aspen', years: 25, patch: 4 }, { id: 'aspen-young', species: 'aspen', years: 4, patch: 6 }].map(function (entry) {
+      var tree = newTree(entry.species), sp = speciesById(entry.species);
+      for (var y = 1; y < entry.years; y++) tree = simulateYear(tree, sp, { tempC: 22, light: 0.8, soilWater: 0.7, co2ppm: 420 }, normaliseAlloc());
+      // Adults bring carbon accumulated during their explicitly pre-grown lives.
+      return { id: entry.id, parent: null, cloneGroup: entry.id, patch: entry.patch, born: 0, route: 'founder', tree: tree };
+    });
+    return { config: cfg, year: 0, trees: trees, gaps: [], receipts: [] };
+  }
+  function groveEnvironment(state, patch, event) {
+    var site = GROVE_PATCHES[patch];
+    return { tempC: event.temp, soilWater: clamp(event.water + site.water, 0, 1), co2ppm: 420,
+      light: clamp(site.light + (state.gaps.indexOf(patch) >= 0 ? 0.18 : 0), 0.05, 1) };
+  }
+  function groveSummary(state) {
+    var living = state.trees.filter(function (n) { return n.tree.alive; });
+    var established = living.filter(function (n) { return n.parent && n.born < state.year; });
+    var sites = [];
+    established.forEach(function (n) { if (sites.indexOf(n.patch) < 0) sites.push(n.patch); });
+    return { living: living.length, established: established.length, descendantPatches: sites.length,
+      newArrivals: living.filter(function (n) { return n.parent && n.born === state.year; }).length,
+      ended: state.year >= 8 || !living.length, success: state.year >= 8 && sites.length >= 2 };
+  }
+  function groveAdvance(state, rawChoice) {
+    if (groveSummary(state).ended) return state;
+    var choice = groveConfig({ version: 1, choices: [rawChoice] }).choices[0];
+    var priority = GROVE_PRIORITIES.filter(function (p) { return p.id === choice.priority; })[0];
+    var year = state.year + 1, event = groveEvent(state.config, year);
+    var next = { config: state.config, year: year, trees: [], gaps: state.gaps.slice(), receipts: state.receipts.slice() };
+    var deaths = 0, spent = 0, attempts = 0, newNodes = [], foodNet = 0, damaged = 0, landings = [], losses = [];
+    // Storm damage acts before this year's physiology; the light gap persists.
+    if (event.damage && state.trees.some(function (n) { return n.patch === event.patch && n.tree.alive && n.tree.leafArea > 0; }) && next.gaps.indexOf(event.patch) < 0) next.gaps.push(event.patch);
+    state.trees.forEach(function (node) {
+      var before = node.tree, input = Object.assign({}, before);
+      if (before.alive && event.damage && node.patch === event.patch) {
+        input.leafMass *= 1 - event.damage; input.leafArea *= 1 - event.damage; damaged++;
+      }
+      var env = groveEnvironment(next, node.patch, event);
+      if (input.alive) foodNet += treePhysiology(input, speciesById(input.speciesId), env).gross - maintenanceRespiration(speciesById(input.speciesId), input);
+      var grown = simulateYear(input, speciesById(input.speciesId), env, priority.alloc);
+      // Scenario assumption, stated in the disclosure: shallow-rooted trees three years old or
+      // younger face an extra mortality draw when their patch is dry this year. The draw is
+      // keyed on year and individual, so it is independent of weather and of other trees.
+      if (grown.alive && grown.age <= 3 && env.soilWater < 0.35) {
+        var risk = clamp((0.35 - env.soilWater) / 0.35, 0, 1) * 0.8 * (1 - speciesById(input.speciesId).droughtTol * 0.5);
+        if (groveRandom(state.config.seed, 'seedling|' + year + '|' + node.id) < risk) grown = Object.assign({}, grown, { alive: false, causeOfDeath: 'dry_seedling' });
+      }
+      if (before.alive && !grown.alive) { deaths++; losses.push({ id: node.id, patch: node.patch, speciesId: before.speciesId, age: grown.age, cause: grown.causeOfDeath || 'unknown' }); }
+      next.trees.push(Object.assign({}, node, { tree: grown }));
+    });
+    // Resolve reproduction after all existing individuals advance; new arrivals do
+    // not grow or reproduce in their birth turn. Costs remain individual kg C.
+    next.trees.forEach(function (node) {
+      var tree = node.tree, mature = tree.speciesId === 'oak' ? 20 : 10;
+      if (!tree.alive || tree.age < mature || choice.priority !== 'offspring') return;
+      var strategy = strategyById(tree.speciesId === 'aspen' && choice.route === 'mixed' ? 'root_sucker' : tree.speciesId === 'oak' ? 'seed_animal' : 'seed_wind');
+      var count = Math.min(3, Math.floor(tree.seedsBanked / strategy.cost));
+      tree.seedsBanked = Math.max(0, tree.seedsBanked - count * strategy.cost);
+      attempts += count; spent += count * strategy.cost;
+      for (var a = 0; a < count; a++) {
+        var key = year + '|' + node.id + '|' + strategy.id + '|' + a;
+        var candidates = GROVE_PATCHES.map(function (_, i) { return i; }).filter(function (p) {
+          return strategy.diversity === 1 || Math.abs(p % 3 - node.patch % 3) + Math.abs(Math.floor(p / 3) - Math.floor(node.patch / 3)) <= 1;
+        });
+        var patch = candidates[Math.floor(groveRandom(state.config.seed, 'landing|' + key) * candidates.length)];
+        var env = groveEnvironment(next, patch, event);
+        var suitability = clamp(env.soilWater / 0.55, 0, 1) * clamp(env.light / 0.70, 0.25, 1);
+        var density = next.trees.concat(newNodes).filter(function (n) { return n.tree.alive && n.patch === patch; }).length;
+        var landing = { patch: patch, route: strategy.id, parent: node.id, outcome: 'arrived', limit: 'none' };
+        landings.push(landing);
+        if (density >= 3) { landing.outcome = 'crowded'; landing.limit = 'space'; continue; }
+        if (groveRandom(state.config.seed, 'establish|' + key) >= strategy.establish * suitability) {
+          // Record which prescribed patch condition most reduced the odds. A miss at full
+          // suitability is the route's own base establishment chance, so it is labelled chance.
+          var wet = clamp(env.soilWater / 0.55, 0, 1), lit = clamp(env.light / 0.70, 0.25, 1);
+          landing.outcome = 'failed';
+          landing.limit = wet < 1 && wet <= lit ? 'moisture' : lit < 1 ? 'light' : 'chance';
+          continue;
+        }
+        var id = 'y' + year + ':' + node.id + ':' + a;
+        newNodes.push({ id: id, parent: node.id, cloneGroup: strategy.diversity ? id : node.cloneGroup,
+          patch: patch, born: year, route: strategy.id, tree: newTree(tree.speciesId) });
+      }
+    });
+    next.trees = next.trees.concat(newNodes);
+    next.receipts.push({ year: year, event: event, choice: choice, attempts: attempts, spent: spent,
+      arrivals: newNodes.length, deaths: deaths, damaged: damaged, net: foodNet, landings: landings, losses: losses,
+      living: groveSummary(next).living, established: groveSummary(next).established,
+        // Whole-grove stores, so the Keep reserves card leaves a visible trail in the evidence.
+        reserves: round(next.trees.reduce(function (s, n) { return s + (n.tree.alive ? Math.max(0, n.tree.reserves) : 0); }, 0), 2),
+        banked: round(next.trees.reduce(function (s, n) { return s + (n.tree.alive ? Math.max(0, n.tree.seedsBanked) : 0); }, 0), 2) });
+    return next;
+  }
+  function groveRestore(raw) {
+    var config = groveConfig(raw), state = groveStart(config);
+    config.choices.forEach(function (choice) { state = groveAdvance(state, choice); });
+    return state;
+  }
+  function groveSceneState(state, patch, requestedId) {
+    patch = clamp(Math.floor(finiteOr(patch, 4)), 0, 8);
+    var nodes = state.trees.filter(function (n) { return n.patch === patch; });
+    var node = nodes.filter(function (n) { return n.id === requestedId; })[0] || nodes.filter(function (n) { return n.tree.alive; })[0] || nodes[0];
+    if (!node) return null;
+    var event = state.year ? state.receipts[state.receipts.length - 1].event : groveEvent(state.config, 1);
+    var env = groveEnvironment(state, patch, event), species = speciesById(node.tree.speciesId);
+    return { node: node, env: env, species: species, visual: deriveTreeVisualState(node.tree, species, env, 'summer'),
+      key: ['grove', state.config.seed, state.config.mode, state.year, node.id, JSON.stringify(state.config.choices)].join('|') };
+  }
+
+  function groveDiscoveries(state) {
+    var out = [];
+    if (state.year) out.push('first-year');
+    if (state.receipts.some(function (r) { return r.event.water < 0.42; })) out.push('dry-year');
+    if (state.gaps.length) out.push('canopy-gap');
+    if (groveSummary(state).established) out.push('next-generation');
+    if (groveSummary(state).success) out.push('living-legacy');
+    if (state.receipts.some(function (r) { return (r.losses || []).some(function (l) { return l.cause === 'dry_seedling'; }); })) out.push('young-loss');
+    return out;
+  }
+
+  var GROVE_CSS = ".allo-tree-grove{color:var(--grove-ink);font-size:14px;line-height:1.55;min-width:0}\n.allo-tree-grove *{box-sizing:border-box}\n.allo-tree-grove h2,.allo-tree-grove h3,.allo-tree-grove p{margin:0}\n.allo-tree-grove p+p{margin-top:9px}\n.grove-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}\n.grove-header h2{font-size:clamp(28px,3.8vw,42px);line-height:1.12;letter-spacing:-.035em;margin:6px 0 10px}\n.grove-header p{max-width:650px;color:var(--grove-muted)}\n.grove-eyebrow{font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--grove-muted)}\n.grove-year{display:grid;min-width:110px;text-align:center;border-left:1px solid var(--grove-line);padding-left:24px}\n.grove-year strong{font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.grove-year span{font-size:11px;color:var(--grove-muted)}\n.grove-progress{display:flex;gap:7px;margin-bottom:20px}.grove-progress span{flex:1;border-radius:5px;border:1px solid var(--grove-line);text-align:center;font-size:11px;background:var(--grove-card)}\n.grove-progress .is-complete{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n.grove-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,1fr);gap:22px;align-items:start}\n.grove-landscape{min-width:0;padding:15px;border:1px solid var(--grove-line);border-radius:22px;background:var(--grove-wash)}\n.grove-stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 4px 14px;font-size:11px;color:var(--grove-muted)}\n.grove-stats strong{font-size:19px;color:var(--grove-ink);font-variant-numeric:tabular-nums;margin-right:3px}\n.grove-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;isolation:isolate}\n.grove-patch{position:relative;border:1px solid var(--grove-line);background:var(--grove-patch);border-radius:15px;padding:9px 4px 7px;cursor:pointer;min-width:0;color:var(--grove-ink);font:inherit;text-align:center;transition:box-shadow .15s ease}\n.grove-patch.is-damp{background:var(--grove-damp)}.grove-patch.is-exposed{background:var(--grove-exposed)}\n.grove-patch:hover{box-shadow:inset 0 0 0 2px var(--grove-accent)}.grove-patch.is-selected{outline:3px solid var(--grove-accent);outline-offset:1px;z-index:1}\n.grove-patch-name{display:block;font-size:10px;font-weight:750;line-height:1.25;min-height:25px}.grove-patch-count{display:block;font-size:10px;font-weight:650;line-height:1.2}\n.grove-patch svg{display:block;width:100%;height:auto;max-height:116px;overflow:visible}\n.grove-caption{font-size:12px;line-height:1.5;color:var(--grove-muted);margin-top:9px!important}\n.grove-inspect{padding:15px 3px 0;margin-top:12px;border-top:1px solid var(--grove-line)}.grove-inspect h3{font-size:16px}\n.grove-inspect p,.grove-inspect li{font-size:12px}.grove-inspect ul{padding-left:18px;margin:9px 0}\n.grove-inspect details{margin-top:10px}.allo-tree-grove summary{cursor:pointer;font-weight:750;padding:8px 0;font-size:13px;min-height:36px}\n.grove-decisions{min-width:0}.grove-decisions h3{font-size:21px;line-height:1.25;margin:5px 0 10px;letter-spacing:-.02em}\n.grove-setup,.grove-forecast,.grove-ending{padding:18px;background:var(--grove-card);border:1px solid var(--grove-line);border-radius:17px}\n.grove-setup>label,.grove-turn>div>label{display:block;font-size:12px;font-weight:750;margin:16px 0 5px}\n.allo-tree-grove select,.allo-tree-grove input:not([type=radio]){width:100%;min-width:0;min-height:42px;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;padding:7px 9px}\n.grove-priorities{border:0;margin:17px 0 10px;padding:0;min-width:0}.grove-priorities legend{font-size:13px;font-weight:800;margin-bottom:8px}\n.grove-priority{display:flex;align-items:start;gap:10px;padding:12px;margin-bottom:8px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card);cursor:pointer}\n.grove-priority.is-selected{border-color:var(--grove-accent);box-shadow:inset 3px 0 var(--grove-accent);background:var(--grove-wash)}\n.grove-priority input{margin-top:4px;accent-color:var(--grove-accent);flex-shrink:0;width:16px;height:16px}.grove-priority strong{display:block;font-size:14px}.grove-priority span span{display:block;font-size:12px;color:var(--grove-muted);margin-top:2px}\n.grove-action{display:block;width:100%;border:1px solid var(--grove-accent);border-radius:10px;background:var(--grove-accent);color:var(--grove-on-accent);font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:10px 12px;margin-top:14px;cursor:pointer}\n.grove-action:disabled{opacity:.5;cursor:not-allowed}.grove-replay{border-top:1px solid var(--grove-line);margin-top:16px;padding-top:3px}.grove-replay .grove-action{background:var(--grove-card);color:var(--grove-ink);border-color:var(--grove-line);font-weight:650;font-size:12px;margin-top:9px}\n.grove-receipt{margin-top:22px;padding:20px;border:1px solid var(--grove-line);border-left:4px solid var(--grove-accent);border-radius:14px;background:var(--grove-card)}.grove-receipt h3{font-size:20px;margin:4px 0 10px}\n.grove-notebook{margin-top:12px;border-top:1px solid var(--grove-line);padding:8px 2px}.grove-notebook p,.grove-notebook li{font-size:13px}.grove-notebook li+li{margin-top:5px}.grove-notebook a{color:var(--grove-ink);text-decoration:underline}\n.allo-tree-grove button:focus-visible,.allo-tree-grove summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}\n.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-stats,.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-field:has(#treelab-species),.allo-tree-lab:has(.allo-tree-grove) .allo-tree-setup-label{display:none!important}\n@media(max-width:960px){.grove-layout{grid-template-columns:1fr}.grove-map{max-width:680px;margin:auto}.grove-patch svg{max-height:130px}.grove-decisions{display:block}.grove-header{gap:12px}.grove-year{padding-left:12px;min-width:85px}}\n@media(max-width:480px){.grove-landscape{padding:10px;border-radius:16px}.grove-map{gap:6px}.grove-patch{border-radius:10px;padding:8px 2px}.grove-patch-name{font-size:9px}.grove-patch-count{font-size:9px}.grove-stats{gap:6px}.grove-stats strong{font-size:16px}.grove-stats span{flex:1;min-width:65px}.grove-header h2{font-size:28px}.grove-year strong{font-size:23px}.grove-progress{gap:4px}}\n.grove-patch-badge{position:absolute;top:5px;right:5px;font-size:10px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;background:var(--grove-accent);color:var(--grove-on-accent)}.grove-patch-badge.is-loss{background:var(--grove-ink);color:var(--grove-card)}\n.grove-predict{margin-top:14px;padding:12px 14px 14px;border:1px dashed var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-predict .grove-eyebrow{display:block}\n.grove-receipt h4,.grove-ending h4{font-size:13px;margin:14px 0 4px}.grove-where,.grove-ledger{padding-left:18px;margin:6px 0}.grove-where li,.grove-ledger li{font-size:13px}.grove-where li+li,.grove-ledger li+li{margin-top:4px}\n.grove-prediction{margin-top:12px;padding:10px 12px;border-left:3px solid var(--grove-accent);background:var(--grove-wash);border-radius:6px}.grove-prediction h4{margin-top:0}\n.grove-chart{margin:12px 0;padding:10px 12px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-chart svg{display:block;width:100%;max-width:520px;height:auto}.grove-chart figcaption{font-size:12px;font-weight:750;margin-bottom:6px}\n.grove-chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grove-muted);margin-top:6px}.grove-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}\n.grove-patch-dry{position:absolute;top:5px;left:5px;font-size:9px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;border:1px solid var(--grove-ink);color:var(--grove-ink);background:var(--grove-card)}.grove-patch.is-dry-next{border-style:dashed;border-color:var(--grove-ink)}\n.grove-risk{margin-top:10px!important;padding:8px 10px;border-radius:8px;border:1px dashed var(--grove-line);font-size:12px;line-height:1.5;color:var(--grove-ink)}\n.grove-notebook ul{list-style:disc;padding-left:20px;margin:8px 0}.grove-notebook ol{list-style:decimal;padding-left:24px;margin:8px 0}\n.allo-tree-grove textarea{width:100%;min-width:0;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:13px;padding:8px 9px;resize:vertical}.grove-ending label{display:block;font-size:12px;font-weight:750;margin:14px 0 5px}\n@media(prefers-reduced-motion:reduce){.grove-patch{transition:none}}\n";
+  GROVE_CSS += "\n.grove-view-switch{display:flex;flex-wrap:wrap;margin:0 0 10px}.grove-closeup-selectors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.grove-closeup label{display:block;font-size:12px;font-weight:750;margin-bottom:4px}.grove-closeup-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px;margin:12px 0 8px}.grove-closeup-heading span{font-size:12px;color:var(--grove-muted)}.grove-closeup-canvas{height:clamp(350px,48vh,540px);width:100%;border:1px solid var(--grove-line);border-radius:13px;overflow:hidden;background:var(--grove-card)}.grove-camera-controls{display:flex;flex-wrap:wrap;gap:2px;margin-top:10px}.grove-closeup-empty{padding:60px 20px;text-align:center;border:1px dashed var(--grove-line);border-radius:14px;min-height:240px;display:grid;align-content:center;gap:12px}.grove-closeup-empty p{color:var(--grove-muted)}@media(max-width:480px){.grove-closeup-selectors{grid-template-columns:1fr}.grove-closeup-canvas{height:360px}}\n";
   var QUIZ_RAW = [
     { q: 'A young tree grows in deep shade. Then sunlight reaches it, and it grows faster. What did it need more of?', a: ['Sunlight', 'Wind', 'Cold air', 'Darkness'], correct: 0, band: 'k2',
       why: 'Leaves use sunlight to make sugar. Deep shade gave the young tree too little light, so more sunlight helped it grow.' },
@@ -1284,6 +1537,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     };
   })();
 
+  // Reuse the shared viewer with a stable ref; only one tree canvas is mounted.
+  var GROVE_3D_SUBJECT = '';
+  function GROVE_3D_ATTACH(node) {
+    if (node) FRAMED_ONCE = false;
+    TREE3D.attach(node);
+  }
+
   // ── Palettes ──────────────────────────────────────────────────────────────
   // Hex only, everywhere in this section: a THREE material cannot resolve
   // var(--token), and a canvas fillStyle silently IGNORES one, leaving the previous
@@ -1460,7 +1720,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var env = envRaw && typeof envRaw === 'object' ? envRaw : {};
     var season = ['spring', 'summer', 'autumn', 'winter'].indexOf(seasonRaw) >= 0 ? seasonRaw : 'summer';
     var water = clamp(typeof env.soilWater === 'number' && isFinite(env.soilWater) ? env.soilWater : 0.7, 0, 1);
-    var aperture = stomatalAperture(water, typeof sp.droughtTol === 'number' ? sp.droughtTol : 0.5, false);
+    var access = rootWaterAccess(st, water);
+    var aperture = access.effectiveWater === 0 ? 0 : stomatalAperture(access.effectiveWater, typeof sp.droughtTol === 'number' ? sp.droughtTol : 0.5, env.forcedClose);
     var waterStress = clamp(1 - aperture, 0, 1);
     var deficitTolerance = Math.max(1, Math.round(6 + (sp.droughtTol || 0) * 8));
     var carbonStress = clamp((typeof st.deficitYears === 'number' ? st.deficitYears : 0) / deficitTolerance, 0, 1);
@@ -1862,7 +2123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // too coarse to.
     var pr2 = Math.max(10, 512 * poolFrac);
     var sg = ctx.createRadialGradient(512, 512, pr2 * 0.06, 512, 512, pr2);
-    sg.addColorStop(0, 'rgba(0,0,0,0.30)');
+    sg.addColorStop(0, 'rgba(0,0,0,0.22)');
     sg.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = sg; ctx.fillRect(0, 0, 1024, 1024);
     // The rim dissolves into the horizon so the world has no visible edge.
@@ -2350,7 +2611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       api.scene.background = new THREE.Color(pal.lo);
       // The shell fogs 5.2 to 11.0, tuned for a compact object on a bench. Push it
       // out so the tree itself stays crisp and only the distant wood dissolves.
-      api.scene.fog = new THREE.Fog(new THREE.Color(mixHex(pal.lo, pal.mid, 0.30)).getHex(), 14, 62);
+      api.scene.fog = new THREE.Fog(new THREE.Color(mixHex(pal.lo, pal.mid, 0.30)).getHex(), 10, 52);
 
       var sunTex = sunTexture(THREE, sunHex);
       if (sunTex) {
@@ -2395,7 +2656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       //    colour and turned every green in the scene fluorescent.
       var keyLight = null;
       api.scene.traverse(function (o) {
-        if (o.isAmbientLight) o.intensity = 0.13;
+        if (o.isAmbientLight) o.intensity = api.dark ? 0.23 : 0.18;
         else if (o.isDirectionalLight) {
           if (o.castShadow && !keyLight) keyLight = o;
           else {
@@ -2404,7 +2665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             if (o.userData._treeBaseIntensity == null) {
               o.userData._treeBaseIntensity = o.intensity;
             }
-            o.intensity = o.userData._treeBaseIntensity * 0.34;
+            o.intensity = o.userData._treeBaseIntensity * 0.42;
           }
         }
       });
@@ -2432,7 +2693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       group.add(new THREE.HemisphereLight(
         new THREE.Color(pal.mid).getHex(),
         new THREE.Color(mixHex(groundNear, '#4a3a24', 0.35)).getHex(),
-        api.dark ? 0.26 : 0.40
+        api.dark ? 0.30 : 0.48
       ));
     }
 
@@ -2805,7 +3066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         specular: flat ? 0x000000 : 0x16331d
       });
       if (!flat) {
-        cardMat.emissive = new THREE.Color(0x0b1f10);
+        // A neutral fill avoids tinting yellow and brown autumn leaves green.
+        cardMat.emissive = new THREE.Color(0x10100e);
         cardMat.userData._preserveBaseEmissive = true;
       }
       cardMat.userData._keepOpaqueOnRecede = true;
@@ -3060,7 +3322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    far plate that runs out into the fog, so there is no disc edge hanging in
     //    space where the world stops. ──
     var lawnR = Math.max(rootSpread * 2.2, crownR * 2.0, trunkR * 12, 2.2);
-    var GROUND_R = 30;
+    var GROUND_R = 40;
     var groundMat = new THREE.MeshPhongMaterial({
       color: flat ? 0x333333 : 0xffffff,
       map: flat ? null : groundTexture(THREE, groundNear, groundFar, lawnR * 0.85 / GROUND_R),
@@ -3190,83 +3452,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     if (!flat) {
 
-      // ── The wood beyond. A subject standing in a void reads as a specimen on a
-      //    table; a horizon gives it somewhere to BE. Three InstancedMeshes, so the
-      //    whole treeline costs three draw calls rather than two hundred. ──
-      //
-      // Two earlier passes got this wrong in opposite directions. Mixing the colour
-      // 40% toward the horizon to fake aerial perspective turned them into pale
-      // cut-outs floating over the grass; making every one an identical cone turned
-      // them into a Christmas tree farm. Fog does the distance properly, so the
-      // colour only wants a hint of it, and the wood needs BOTH silhouettes.
-      var farHex = mixHex('#16351f', pal.lo, 0.10);
-      if (season === 'winter') farHex = mixHex('#2c3644', pal.lo, 0.22);
-      else if (season === 'autumn') farHex = mixHex('#5c4413', pal.lo, 0.13);
-      else if (dry) farHex = mixHex('#4e4520', pal.lo, 0.14);
-      // UNLIT on purpose. A lit distant tree picks up the same key and hemisphere as
-      // the subject, comes back brighter than the thing in front of it, and reads as
-      // pale cardboard. A treeline wants to be a SILHOUETTE that only the fog lifts,
-      // which is exactly what a fogged MeshBasicMaterial gives.
+      // Distant woodland supports the focal tree with softer, smaller silhouettes.
+      // Each crown is merged once and instanced: varied outlines keep the three
+      // tree draw calls while avoiding isolated cones and round balls on sticks.
+      var farHex = mixHex('#365845', pal.lo, 0.18);
+      if (season === 'winter') farHex = mixHex('#46505b', pal.lo, 0.24);
+      else if (season === 'autumn') farHex = mixHex('#75613a', pal.lo, 0.20);
+      else if (dry) farHex = mixHex('#6d6848', pal.lo, 0.20);
+      if (api.dark) farHex = mixHex(farHex, '#182b35', 0.35);
       function farMat(hex) {
-        return new THREE.MeshBasicMaterial({
-          color: flat ? 0xffffff : new THREE.Color(hex).getHex(), fog: true
-        });
+        return new THREE.MeshBasicMaterial({ color: new THREE.Color(hex).getHex(), fog: true });
       }
       var farTreeMat = farMat(farHex);
-      var farRoundMat = farMat(mixHex(farHex, '#000000', 0.22));
-      var farTrunkMat = farMat(mixHex('#221a12', pal.lo, 0.10));
+      var farRoundMat = farMat(mixHex(farHex, '#273d30', 0.12));
+      var farTrunkMat = farMat(mixHex('#544938', pal.lo, 0.24));
+      var coniferPieces = [];
+      [[0.29, 0.57, -0.20], [0.23, 0.56, 0.02], [0.15, 0.50, 0.27]].forEach(function (tier, i) {
+        var geo = new THREE.ConeGeometry(tier[0], tier[1], 9, 1);
+        var pos = geo.attributes.position;
+        for (var v = 0; v < pos.count; v++) {
+          var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+          var ripple = 1 + 0.10 * Math.sin(Math.atan2(z, x) * 5 + i);
+          pos.setXYZ(v, x * ripple, y, z * ripple);
+        }
+        geo.computeVertexNormals();
+        geo.translate(i === 1 ? 0.025 : 0, tier[2], 0);
+        coniferPieces.push(geo);
+      });
+      var roundPieces = [];
+      [[0.27, -0.16, -0.02, 0], [0.28, 0.14, 0, 0.04], [0.28, 0, 0.19, -0.03]].forEach(function (lobe, i) {
+        var geo = blobGeom(THREE, lobe[0], 230 + i);
+        geo.translate(lobe[1], lobe[2], lobe[3]);
+        roundPieces.push(geo);
+      });
       var NCONE = 46, NROUND = 46;
-      var fCone = new THREE.InstancedMesh(new THREE.ConeGeometry(0.30, 1, 7), farTreeMat, NCONE);
-      var fRound = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 14, 10), farRoundMat, NROUND);
-      var fTrunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.030, 0.048, 1, 5), farTrunkMat, NCONE + NROUND);
+      var fCone = new THREE.InstancedMesh(mergeStaticGeometries(THREE, coniferPieces), farTreeMat, NCONE);
+      var fRound = new THREE.InstancedMesh(mergeStaticGeometries(THREE, roundPieces), farRoundMat, NROUND);
+      var fTrunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.025, 0.040, 1, 5), farTrunkMat, NCONE + NROUND);
+      fCone.name = 'tree-distant-conifers';
+      fRound.name = 'tree-distant-broadleaf';
+      fTrunk.name = 'tree-distant-trunks';
       var dummy = new THREE.Object3D();
       var frnd = seeded(2029);
       function farStand(i, mesh, yFrac, hScale) {
         var fa = frnd() * 6.2832;
-        // Two belts. A single random band leaves obvious gaps you can see the void
-        // through; a near belt backed by a taller far one reads as depth in the wood.
-        var belt = i % 3 === 0;
-        var fd = belt ? (9.5 + frnd() * 5) : (15 + frnd() * 10);
-        var fh = (belt ? 0.7 + frnd() * 1.1 : 1.2 + frnd() * 2.6);
+        var nearBelt = i % 3 === 0;
+        var fd = nearBelt ? (16 + frnd() * 6) : (24 + frnd() * 10);
+        var fh = nearBelt ? (0.8 + frnd() * 1.2) : (1.4 + frnd() * 2.4);
         var fx = Math.cos(fa) * fd, fz = Math.sin(fa) * fd;
         dummy.position.set(fx, fh * yFrac, fz);
-        dummy.scale.set(fh * hScale, fh, fh * hScale);
+        dummy.scale.set(fh * hScale, fh, fh * hScale * (0.8 + frnd() * 0.35));
         dummy.rotation.set(0, fa, 0);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        dummy.position.set(fx, fh * 0.15, fz);
-        dummy.scale.set(1, fh * 0.34, 1);
+        // Neutral instance tint: the material already supplies the tree colour.
+        mesh.setColorAt(i, new THREE.Color().setScalar(0.91 + frnd() * 0.09));
+        // Extend the stem into the merged crown, avoiding floating silhouettes.
+        dummy.position.set(fx, fh * 0.26, fz);
+        dummy.scale.set(1, fh * 0.54, 1);
         dummy.rotation.set(0, 0, 0);
         dummy.updateMatrix();
         return dummy.matrix.clone();
       }
       for (var fi = 0; fi < NCONE; fi++) fTrunk.setMatrixAt(fi, farStand(fi, fCone, 0.62, 0.85));
-      for (var fj = 0; fj < NROUND; fj++) fTrunk.setMatrixAt(NCONE + fj, farStand(fj, fRound, 0.74, 0.80));
-      fCone.instanceMatrix.needsUpdate = true;
-      fRound.instanceMatrix.needsUpdate = true;
-      fTrunk.instanceMatrix.needsUpdate = true;
-      group.add(fCone);
-      group.add(fRound);
-      group.add(fTrunk);
+      for (var fj = 0; fj < NROUND; fj++) fTrunk.setMatrixAt(NCONE + fj, farStand(fj, fRound, 0.68, 0.92));
+      [fCone, fRound, fTrunk].forEach(function (mesh) {
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        group.add(mesh);
+      });
 
-      // ── Hills beyond the wood. ──
-      //
-      // The treeline ended at a flat horizon line, so the world visibly stopped where
-      // the trees did. One ring of low domes behind it gives the landscape a third
-      // depth plane, and aerial perspective comes free: they are unlit and fogged like
-      // the treeline (a lit distant hill comes back brighter than the subject), and at
-      // 20-28 units they sit deep in the 14-62 fog band, so each is hazier the further
-      // back it stands. One InstancedMesh, one draw call.
+      // Low, overlapping hills sit behind both belts. Smooth geometry and fog keep
+      // the horizon quiet; the near tree retains the crispest edges and colours.
       var NHILL = 9;
-      var hillMat = farMat(mixHex(farHex, pal.lo, 0.35));
-      var hills = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), hillMat, NHILL);
+      var hillMat = farMat(mixHex(farHex, pal.lo, api.dark ? 0.18 : 0.40));
+      var hills = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 24, 12), hillMat, NHILL);
+      hills.name = 'tree-distant-hills';
       var hrnd = seeded(9377);
       for (var hI = 0; hI < NHILL; hI++) {
         var ha = hrnd() * 6.2832;
-        var hd = 20 + hrnd() * 8;
-        var hw = 6 + hrnd() * 7;
-        var hh2 = 1.1 + hrnd() * 1.9;
-        // Centre sits at y=0 so only the upper half shows: a dome, not a ball.
+        var hd = 32 + hrnd() * 10;
+        var hw = 9 + hrnd() * 8;
+        var hh2 = 1.4 + hrnd() * 2.4;
         dummy.position.set(Math.cos(ha) * hd, 0, Math.sin(ha) * hd);
         dummy.scale.set(hw, hh2, hw * (0.7 + hrnd() * 0.5));
         dummy.rotation.set(0, ha + hrnd(), 0);
@@ -3331,18 +3598,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // same alpha-tested card treatment the canopy does.
       var grassTex = grassTexture(THREE);
       if (grassTex) {
-        var tuftMat = new THREE.MeshPhongMaterial({
-          map: grassTex, alphaTest: 0.4, transparent: false, side: THREE.DoubleSide,
+        // The illustrative meadow already carries the sampled floor-light tint.
+        // Unlit blade cards avoid a second directional-light penalty that turned
+        // the small vertical cards into black scribbles against the ground.
+        var tuftMat = new THREE.MeshBasicMaterial({
+          // Use the white blade drawing only as an opacity mask. Mipmapped RGB
+          // from transparent black pixels otherwise puts dark fringes on the blades.
+          alphaMap: grassTex, alphaTest: 0.4, transparent: false, side: THREE.DoubleSide,
           color: new THREE.Color(
             season === 'winter' ? mixHex(groundNear, '#94825f', 0.58)
             : season === 'autumn' ? mixHex(groundNear, '#b8a54e', 0.6)
             : dry ? mixHex(groundNear, '#c4b070', 0.6)
-            : mixHex(groundNear, '#69a94e', 0.60)).getHex(),
-          shininess: 0
+            : mixHex(groundNear, '#69a94e', api.dark ? 0.16 : 0.32)).getHex()
         });
-        // A vertical card catches almost nothing from a key light overhead, so without
-        // this the tufts render as dark scribbles on a lit lawn.
-        if (!flat) tuftMat.emissive = new THREE.Color(tuftMat.color).multiplyScalar(0.11);
+        if (api.dark) tuftMat.color.multiplyScalar(0.72);
         // ── Where the ground cover actually grows. ──
         //
         // Uniform scatter is what made the foreground read as empty wallpaper: the same
@@ -3369,7 +3638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // Sparse everywhere is still a lawn, so keep a floor: bare earth under a
           // dense canopy is the point, empty frame is not.
           if (trnd() > 0.20 + here * 0.80) continue;
-          var ts = 0.055 + trnd() * 0.048;
+          var ts = 0.032 + trnd() * 0.042;
           placed.push({
             x: Math.cos(ta) * td, z: Math.sin(ta) * td, s: ts,
             r: trnd() * 6.2832, t: (trnd() - 0.5) * 0.24,
@@ -3380,6 +3649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
         if (placed.length) {
           var tufts = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), tuftMat, placed.length);
+          tufts.name = 'tree-ground-cover';
           var tuftColor = new THREE.Color();
           for (var tp = 0; tp < placed.length; tp++) {
             var P = placed[tp];
@@ -3389,7 +3659,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             dummy.updateMatrix();
             tufts.setMatrixAt(tp, dummy.matrix);
             if (!flat) {
-              tuftColor.set(tuftMat.color).multiplyScalar(P.dim);
+              // Instance colour multiplies the material colour. Applying green twice
+              // made the meadow nearly black; instances only carry brightness.
+              tuftColor.setRGB(P.dim, P.dim, P.dim);
               tufts.setColorAt(tp, tuftColor);
             }
           }
@@ -3567,6 +3839,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var cardDummy = new THREE.Object3D();
     var dynamicColor = new THREE.Color();
     var lastCanopySignature = '';
+    var lastPoseSignature = '';
+    var lastPoseAtRest = false;
     function frame(now, sceneProps, reducedNow) {
       var liveProps = sceneProps || props;
       var reducedFrame = !!reducedNow || !!liveProps.reduced;
@@ -3593,6 +3867,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       ].join('|');
       var recolorCanopy = canopySignature !== lastCanopySignature;
       lastCanopySignature = canopySignature;
+      // A resting canopy needs new matrices only when its biological state changes
+      // or wind has just stopped. Keep exact phase values so reduced motion still
+      // responds to seasonal scrubbing, drought and recovery without animation.
+      var poseSignature = [phaseNow, visualNow.waterStress,
+        visualNow.carbonStress, reducedFrame].join('|');
+      var updateCanopyPose = gust > 0 || !lastPoseAtRest ||
+        poseSignature !== lastPoseSignature || recolorCanopy;
+      lastPoseSignature = poseSignature;
+      lastPoseAtRest = gust === 0;
 
       // The whole tree bends from the base. Calm wind and reduced motion restore the
       // exact resting pose rather than leaving the last animated angle behind.
@@ -3604,7 +3887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       // Inner masses follow the median timing of their local foliage region. This is
       // what prevents a dark green blob remaining after the silhouette cards detach.
-      for (var i = 0; i < foliage.length; i++) {
+      for (var i = 0; updateCanopyPose && i < foliage.length; i++) {
         var f = foliage[i];
         var massState = leafCardState(f.traits, phaseNow,
           sp.leafType, visualNow.carbonStress, visualNow.waterStress);
@@ -3635,7 +3918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       // Each card keeps its stable place, but its own timing controls scale, colour
       // and release. Wind is an optional layer on top of that biological state.
-      if (cards) {
+      if (cards && updateCanopyPose) {
         for (var ci2 = 0; ci2 < cardSpec.length; ci2++) {
           var sc2 = cardSpec[ci2];
           var leafState = leafCardState(sc2.traits, phaseNow,
@@ -3662,7 +3945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (recolorCanopy && cards.instanceColor) cards.instanceColor.needsUpdate = true;
       }
 
-      if (cloneLeafMesh) {
+      if (cloneLeafMesh && updateCanopyPose) {
         for (var ck2 = 0; ck2 < cloneCards.length; ck2++) {
           var cloneSpec = cloneCards[ck2];
           var cloneState = leafCardState(cloneSpec.traits, phaseNow,
@@ -3683,7 +3966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
       }
 
-      if (leafFall) {
+      if (leafFall && (!reducedFrame || updateCanopyPose)) {
         for (var li = 0; li < leafSeeds.length; li++) {
           var s = leafSeeds[li];
           var fallState = leafCardState(s.spec.traits, phaseNow,
@@ -3754,7 +4037,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       if (sky) sky.rotation.y = t * 0.004;
 
       // A slow shared circuit with per-bird radius, height and phase.
-      if (birdMesh && birdSeeds) {
+      if (birdMesh) birdMesh.visible = !reducedFrame;
+      if (birdMesh && birdSeeds && !reducedFrame) {
         for (var bi2 = 0; bi2 < birdSeeds.length; bi2++) {
           var B = birdSeeds[bi2];
           var ba = t * 0.10 + B.ph;
@@ -4051,10 +4335,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-workbench{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-areas:"scene mission" "scene controls";grid-template-rows:auto minmax(0,1fr);gap:20px;align-items:start;}',
         '.allo-tree-workbench-mission{grid-area:mission;min-width:0;}',
         '.allo-tree-workbench-mission>.allo-tree-mission>.allo-tree-card{margin-bottom:0!important;}',
-        '.allo-tree-workbench-scene{grid-area:scene;min-width:0;}',
+        '.allo-tree-workbench-scene{grid-area:scene;min-width:0;align-self:stretch;}',
         '.allo-tree-workbench-controls{grid-area:controls;min-width:0;}',
         '.allo-tree-workbench>*{min-width:0;}',
         '.allo-tree-workbench-sticky{position:sticky;top:12px;}',
+        // Let learners scroll through an expanded season guide or a short window.
+        '.allo-tree-workbench-sticky:has(details[open]){position:static;}',
+        '@media(max-height:899px){.allo-tree-workbench-sticky{position:static;}}',
         '.allo-tree-workbench-scene>.allo-tree-workbench-sticky>.allo-tree-card{border-color:var(--scene-edge)!important;box-shadow:0 22px 50px var(--scene-shadow)!important;}',
         // ── Full screen actually being full screen. ──
         //
@@ -4433,7 +4720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-leaf-orbit{display:grid;place-items:center;width:51px;height:51px;border-radius:50%;background:var(--tree-accent);color:var(--accent-ink);font-size:27px;box-shadow:0 9px 20px var(--accent-shadow);}',
         '.allo-tree-engine-kicker{margin-top:8px;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-engine-name{margin-top:2px;font-size:12px;font-weight:950;line-height:1.15;color:var(--tree-ink);}',
-        '.allo-tree-engine-setting{margin-top:4px;font-size:10px;font-weight:800;color:var(--tree-accent);}',
+        '.allo-tree-engine-setting{margin-top:4px;font-size:10px;font-weight:800;color:var(--tree-ink);}',
         '.allo-tree-story-verdict{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:7px 10px;align-items:center;margin-top:11px;padding:10px 12px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:12px;background:var(--chapter-bg);}',
         '.allo-tree-story-verdict-label{font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-story-verdict strong{font-size:12px;color:var(--tree-ink);}',
@@ -4718,7 +5005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var sp = speciesById(d.speciesId || 'oak');
       var tree = normaliseTree(d.tree, sp.id);
       var speed = speedById(d.speed || 'slow');
-      var playing = !!d.playing && tree.alive;
+      var playing = !!d.playing && tree.alive && view !== 'grove';
       var yearPhase = typeof d.yearPhase === 'number' && isFinite(d.yearPhase) ? d.yearPhase : 0;
       // Seasons only cycle at the slow speed. Above that they would strobe, and every
       // change rebuilds the whole WebGL scene — at 25 yr/s that is 100 rebuilds a
@@ -4751,8 +5038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // hindsight once the ring has already been laid.
       var liveEnv = envForYear(envCfg, tree.age);
       var inDrought = !!liveEnv.drought;
-      var aperture = stomatalAperture(liveEnv.soilWater, sp.droughtTol, false);
-      var live = grossPhotosynthesis(sp, liveEnv, tree.leafArea, aperture);
+      var live = treePhysiology(tree, sp, liveEnv);
+      var aperture = live.aperture;
       var liveResp = maintenanceRespiration(sp, tree);
       var liveNet = live.gross - liveResp;
       // Season total spread over a ~180-day growing season. The prose beside this
@@ -4783,13 +5070,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       function buildConditionEffect(factor, before, after, nextCfg, mode) {
         var nextEnv = envForYear(nextCfg, tree.age);
-        var nextAperture = stomatalAperture(nextEnv.soilWater, sp.droughtTol, false);
-        var nextLive = grossPhotosynthesis(sp, nextEnv, tree.leafArea, nextAperture);
+        var nextLive = treePhysiology(tree, sp, nextEnv);
         var nextResp = maintenanceRespiration(sp, tree);
         var nextLim = nextLive.limiting || live.limiting || {};
         return {
           seq: lastEffect && typeof lastEffect.seq === 'number' ? lastEffect.seq + 1 : 1,
           factor: factor,
+          age: tree.age,
           before: before,
           after: after,
           netBefore: liveNet,
@@ -4804,6 +5091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var nextCfg = Object.assign({}, envCfg);
         nextCfg[field] = value;
         var patch = {
+          missionChanged: true,
           lastEffect: buildConditionEffect(factor, envCfg[field], value, nextCfg, 'slider'),
           lastYearOutcome: null,
           weatherEvent: null
@@ -5083,7 +5371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var seen = Object.assign({}, d.limitsSeen || {});
         for (var i = 0; i < n && st.alive; i++) {
           var env = envForYear(envCfg, st.age);
-          var probe = grossPhotosynthesis(sp, env, st.leafArea, stomatalAperture(env.soilWater, sp.droughtTol, false));
+          var probe = treePhysiology(st, sp, env);
           seen[probe.limiting.id] = true;
           st = simulateYear(st, sp, env, alloc);
         }
@@ -5125,7 +5413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var seen = Object.assign({}, d.limitsSeen || {});
         for (var i = 0; i < whole && st.alive; i++) {
           var env = envForYear(envCfg, st.age);
-          var probe = grossPhotosynthesis(sp, env, st.leafArea, stomatalAperture(env.soilWater, sp.droughtTol, false));
+          var probe = treePhysiology(st, sp, env);
           seen[probe.limiting.id] = true;
           st = simulateYear(st, sp, env, alloc);
         }
@@ -5226,6 +5514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           historyClaimYear: null, historyClaim: null,
           yearPhase: 0, droughtYears: [], lastEffect: null, lastYearOutcome: null,
           weatherEvent: null, growAdvancedOpen: false, goalReached: null,
+          discovery: null, discoveryMode: null, missionChanged: false, missionReflection: null,
+          discoveries: {}, missionReflectionOpen: false, reflectionDraft: '', fieldNotes: [],
           // The record belongs to the tree that earned it, and the 3D scene reads its
           // clone count from spreadTotals — a fresh seedling was inheriting the
           // previous tree's whole stand of clones.
@@ -5284,7 +5574,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           Math.round(Math.log(1 + Math.max(0, tree.leafArea || 0)) * 2),
           Math.round(treeVisual.rootVigor * 4)
         ].join(':');
-      TREE3D.sync({
+      if (view !== 'grove' && GROVE_3D_SUBJECT) { GROVE_3D_SUBJECT = ''; FRAMED_ONCE = false; }
+      if (view !== 'grove') TREE3D.sync({
         selected: sceneSelection,
         dark: isDark,
         contrast: isContrast,
@@ -5443,7 +5734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, [
           h('span', { key: 'a', style: { color: T.dim } }, label),
           h('span', { key: 'b', style: { fontWeight: 800, color: hex, whiteSpace: 'nowrap' } },
-            round(value, 2) + ' kg C')
+            formatCarbon(value))
         ]);
       }
 
@@ -5558,8 +5849,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             : lim.viaStomata
               ? __alloT('stem.treelab.full_why_stomata',
                 'Water is the limit. ' + CO2 + ' is running lower, but only because water stress has closed the stomata that let it in.')
-              : __alloT('stem.treelab.full_why_' + (lim.id || 'none'),
-                limLabel + ' is the limit right now. Raise it and the rate moves; raise anything else and it will not.'))
+              : __alloT('stem.treelab.full_constraints_' + (lim.id || 'none'),
+                limLabel + ' is a current constraint. Other inputs can also affect the rate; compare one change at a time.'))
         ]);
       }
 
@@ -5630,7 +5921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, [
           h('div', { key: 'title', className: 'allo-tree-effect-title' }, [
             h('span', { key: 'dot', 'aria-hidden': 'true', style: { width: 9, height: 9, borderRadius: 99, background: factorTone } }),
-            h('span', { key: 'text' }, __alloT('stem.treelab.effect_title', 'Cause \u2192 effect'))
+            h('span', { key: 'text' }, __alloT('stem.treelab.effect_record_title', 'Last change') + (typeof lastEffect.age === 'number' ? ' · ' + __alloT('stem.treelab.age', 'Age') + ' ' + lastEffect.age : ''))
           ]),
           h('div', { key: 'grid', className: 'allo-tree-effect-grid' }, [
             effectTile('changed',
@@ -5643,13 +5934,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               signedDelta + __alloT('stem.treelab.effect_from_change', ' from this change'),
               deltaTone),
             effectTile('limit',
-              __alloT('stem.treelab.effect_limiting', 'Now limiting'),
+              __alloT('stem.treelab.effect_limit_then', 'Limiting at that change'),
               limitingLabel,
-              __alloT('stem.treelab.effect_smallest', 'The smallest input sets the rate.'),
+              __alloT('stem.treelab.effect_interaction', 'Light and carbon dioxide constrain supply; water and temperature also affect the rate.'),
               limitingTone)
           ]),
           h('div', { key: 'response', className: 'allo-tree-effect-response' }, [
-            h('strong', { key: 'label' }, __alloT('stem.treelab.effect_tree_response', 'Tree response: ')),
+            h('strong', { key: 'label' }, __alloT('stem.treelab.effect_past_response', 'Response to that change: ')),
             h('span', { key: 'copy' }, conditionResponse(lastEffect, delta).replace(/^Visible response:\s*/, ''))
           ])
         ]);
@@ -5984,7 +6275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             borderLeft: '4px solid ' + factorTone, fontSize: 10.5, fontWeight: 850
           }
         }, [
-          h('span', { key: 'factor' }, experimentFactorLabel(lastEffect.factor)),
+          h('span', { key: 'factor' }, __alloT('stem.treelab.effect_record_title', 'Last change') + ': ' + experimentFactorLabel(lastEffect.factor)),
           h('span', { key: 'delta', style: { color: delta > 0.005 ? T.good : (delta < -0.005 ? T.bad : T.dim) } },
             arrow + ' ' + signed)
         ]);
@@ -6301,7 +6592,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]),
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
             __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
-          full ? null : seasonRow()
+          full ? null : causeEffectPanel(),
+          full ? null : foldPanel('seasons', __alloT('stem.treelab.explore_seasons', 'Explore seasons and leaves'), seasonRow())
         ], undefined, 'allo-tree-viewer-card');
       }
 
@@ -6562,7 +6854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var actionTable = needle ? needleActions : broadActions;
         function carbonText(value, signed) {
           var clean = Math.abs(value) < 0.0005 ? 0 : value;
-          return (signed && clean > 0 ? '+' : '') + round(clean, 2) + ' kg C';
+          return (signed && clean > 0 ? '+' : '') + formatCarbon(clean);
         }
         function balanceWords(value) {
           if (value > 0.005) return band === 'k2'
@@ -7227,12 +7519,233 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      function foldPanel(id, title, content) {
+        return h('details', { key: 'fold-' + id, className: 'allo-tree-fold', 'data-tree-fold': id }, [
+          h('summary', { key: 'summary' }, title),
+          h('div', { key: 'content', className: 'allo-tree-fold-body' }, content)
+        ]);
+      }
+
+      function focusDiscovery() {
+        setTimeout(function () {
+          var node = document.getElementById('treelab-discovery-heading');
+          if (node) node.focus({ preventScroll: true });
+        }, 0);
+      }
+
+      function discoveryPanel() {
+        var raw = d.discovery && typeof d.discovery === 'object' ? d.discovery : {};
+        var prediction = ['less', 'same', 'more'].indexOf(raw.prediction) >= 0 ? raw.prediction : null;
+        var record = raw.record && raw.record.version === 1 && raw.record.baseline &&
+          raw.record.control && raw.record.control.summary && raw.record.drought && raw.record.drought.summary ? raw.record : null;
+        if (record && (!Number.isFinite(record.baseline.heightM) || !Number.isFinite(record.baseline.age) ||
+          ![record.control, record.drought].every(function (result) {
+            return result.tree && Number.isFinite(result.tree.heightM) &&
+              ['meanNet', 'yearsCompleted', 'endAge', 'endHeight'].every(function (key) { return Number.isFinite(result.summary[key]); });
+          }))) record = null;
+        var answer = ['less', 'same', 'more'].indexOf(raw.answer) >= 0 ? raw.answer : null;
+        var comparison = discoveryCarbonComparison(record);
+        var dryFood = comparison.values[1];
+        var usualFood = comparison.values[0];
+        var actual = record ? (Math.abs(dryFood - usualFood) < 0.001 ? 'same' : (dryFood < usualFood ? 'less' : 'more')) : null;
+        var finished = !!record && !!answer;
+        var labels = {
+          less: __alloT('stem.treelab.discovery_less', 'Less food left'),
+          same: __alloT('stem.treelab.discovery_same', 'About the same'),
+          more: __alloT('stem.treelab.discovery_more', 'More food left')
+        };
+        function choices(kind, selected, onChoose) {
+          return h('div', { key: kind, className: 'allo-tree-discovery-choices', role: 'group',
+            'aria-label': kind === 'predict' ? __alloT('stem.treelab.discovery_prediction', 'Your prediction') : __alloT('stem.treelab.discovery_evidence', 'What the evidence shows') },
+            ['less', 'same', 'more'].map(function (id) {
+              return btn(kind + '-' + id, labels[id], function () { onChoose(id); }, {
+                pressed: selected === id, disabled: !record && !tree.alive
+              });
+            }));
+        }
+        var content = [
+          h('div', { key: 'kicker', className: 'allo-tree-discovery-kicker' }, __alloT('stem.treelab.discovery_kicker', 'Your first discovery')),
+          h('h3', { key: 'title', id: 'treelab-discovery-heading', tabIndex: -1 },
+            __alloT('stem.treelab.discovery_title', 'What happens when rain stops?')),
+          h('ol', { key: 'steps', className: 'allo-tree-discovery-steps', 'aria-label': __alloT('stem.treelab.discovery_steps', 'Discovery progress') },
+            [__alloT('stem.treelab.predict', 'Predict'), __alloT('stem.treelab.discovery_test', 'Test'), __alloT('stem.treelab.explain', 'Explain')].map(function (label, i) {
+              var done = i === 0 ? !!prediction : (i === 1 ? !!record : finished);
+              return h('li', { key: i, 'data-done': done ? 'true' : 'false',
+                'aria-current': !finished && i === (record ? 2 : (prediction ? 1 : 0)) ? 'step' : undefined },
+                (done ? '\u2713 ' : (i + 1) + '. ') + label);
+            }))
+        ];
+        if (!record) {
+          content.push(h('p', { key: 'prompt' }, __alloT('stem.treelab.discovery_prompt',
+            'Predict how three dry years will change the food left for growth. We will compare two copies of this tree. Only water changes.')));
+          content.push(choices('predict', prediction, function (value) {
+            CLOCK.stop();
+            updMulti({ playing: false, discovery: { prediction: value } });
+          }));
+          content.push(btn('run-discovery', __alloT('stem.treelab.discovery_run', 'Test 3 dry years'), function () {
+            if (!prediction || !tree.alive) return;
+            CLOCK.stop();
+            var result = runDroughtDiscovery(tree, sp.id, envCfg, alloc);
+            updMulti({
+              playing: false, yearPhase: 0, tree: result.drought.tree,
+              droughtYears: [], lastEffect: null, weatherEvent: null,
+              lastYearOutcome: summariseYearAdvance(result.baseline, result.drought.tree, 3),
+              missionChanged: true, discovery: { prediction: prediction, record: result, answer: null },
+              discoveries: Object.assign({}, d.discoveries, { firstRing: true, comparison: true })
+            });
+            srSay(__alloT('stem.treelab.discovery_tested', 'Comparison ready. Read both results, then choose what the evidence shows.'));
+            focusDiscovery();
+          }, { primary: true, disabled: !prediction || !tree.alive }));
+          if (!tree.alive) content.push(h('p', { key: 'dead' }, __alloT('stem.treelab.discovery_dead', 'Start a new seedling to try this discovery.')));
+        } else {
+          var startAge = record.baseline.age;
+          content.push(h('p', { key: 'fair' }, __alloT('stem.treelab.discovery_fair_duration', 'Same starting tree and food allocation. Both trials run for up to three years. Only water differs.')));
+          content.push(h('p', { key: 'prediction' }, __alloT('stem.treelab.discovery_you_predicted', 'Your prediction: ') + (labels[prediction] || __alloT('stem.treelab.discovery_unrecorded', 'Not recorded'))));
+          var trialDetails = h('div', { key: 'comparison', className: 'allo-tree-discovery-results' },
+            [['control', __alloT('stem.treelab.discovery_usual', 'Usual water')], ['drought', __alloT('stem.treelab.discovery_dry', 'Three dry years')]].map(function (item) {
+              var result = record[item[0]], summary = result.summary;
+              var food = summary.meanNet * summary.yearsCompleted;
+              return h('div', { key: item[0], className: 'allo-tree-discovery-result' }, [
+                h('strong', { key: 'label' }, item[1]),
+                h('div', { key: 'food', className: 'allo-tree-discovery-number' }, formatCarbon(food)),
+                h('div', { key: 'meaning' }, food < 0
+                  ? __alloT('stem.treelab.discovery_deficit', 'Food shortfall; reserves were needed')
+                  : __alloT('stem.treelab.discovery_surplus', 'Food left after staying alive')),
+                h('div', { key: 'time' }, __alloT('stem.treelab.age', 'Age') + ' ' + startAge + ' → ' + summary.endAge),
+                h('div', { key: 'height' }, __alloT('stem.treelab.height_label', 'Height') + ': ' + round(record.baseline.heightM, 2) + ' → ' + round(summary.endHeight, 2) + ' m'),
+                !summary.alive ? h('div', { key: 'died' }, __alloT('stem.treelab.discovery_ended', 'This tree died before or at the end of the trial.')) : null
+              ]);
+            }));
+          content.push(discoveryFoodFigure(record, comparison));
+          content.push(h('p', { key: 'question' }, __alloT('stem.treelab.discovery_read', 'Compare the food left in the two results. What did the dry tree have?')));
+          content.push(choices('evidence', answer, function (value) {
+            updMulti({ discovery: Object.assign({}, raw, { answer: value }),
+              missionReflection: value,
+              discoveries: Object.assign({}, d.discoveries, { reflection: true }) });
+          }));
+          if (answer) content.push(h('div', { key: 'feedback', role: 'status', className: 'allo-tree-discovery-feedback' }, [
+            h('strong', { key: 'head' }, answer === actual
+              ? __alloT('stem.treelab.discovery_supported', 'You used the evidence.')
+              : __alloT('stem.treelab.discovery_revise', 'You tested an idea. Take another look.')),
+            h('p', { key: 'body' }, labels[actual] + '. ' + (actual === 'less'
+              ? __alloT('stem.treelab.discovery_why_less', 'Less water reduces food making and can close the leaf pores that let carbon dioxide in. Keeping other conditions the same helps us link the difference to water.')
+              : __alloT('stem.treelab.discovery_why_other', 'Under these starting conditions, the model did not show the usual lower-food result. Other constraints and maintenance costs also matter. Try another starting tree.'))),
+            h('p', { key: 'rethink' }, prediction === actual
+              ? __alloT('stem.treelab.discovery_prediction_supported', 'The comparison supports your prediction.')
+              : __alloT('stem.treelab.discovery_prediction_revised', 'A changed prediction is useful learning. Your comparison gives you a reason to revise it.'))
+          ]));
+          content.push(foldPanel('discovery-details', __alloT('stem.treelab.discovery_details', 'Inspect heights, ages and carbon numbers'), [trialDetails, discoveryGrowthFigure(record)]));
+          content.push(h('p', { key: 'now', className: 'allo-tree-discovery-context' }, __alloT('stem.treelab.discovery_now',
+            'These are saved trial results. The scene shows your live tree and its current conditions; it may have grown since this comparison.')));
+          if (finished) content.push(btn('recover', __alloT('stem.treelab.discovery_recover', 'Watch 3 years of recovery'), function () {
+            stepYears(3);
+            updMulti({ discoveryMode: 'free', missionReflection: answer, discoveries: Object.assign({}, d.discoveries, { recovery: true }) });
+          }, { disabled: !tree.alive, primary: true }));
+        }
+        content.push(btn('free', __alloT('stem.treelab.discovery_free', 'Explore freely'), function () { upd('discoveryMode', 'free'); }, { tone: 'ghost' }));
+        content.push(discoveryNotebook());
+        return h('section', { className: 'allo-tree-discovery', 'data-discovery-phase': record ? (finished ? 'complete' : 'explain') : 'predict' }, card(content));
+      }
+
+      function discoveryFoodFigure(record, comparison) {
+        var names = [__alloT('stem.treelab.discovery_usual', 'Usual water'), __alloT('stem.treelab.discovery_dry', 'Three dry years')];
+        return h('figure', { key: 'food-evidence', className: 'allo-tree-food-evidence', 'data-discovery-comparison': 'true' }, [
+          h('figcaption', { key: 'title' }, __alloT('stem.treelab.discovery_food_evidence', 'Compare the food left over')),
+          h('p', { key: 'meaning' }, __alloT('stem.treelab.discovery_food_evidence_sub', 'Food made minus food used to stay alive, across this trial.')),
+          comparison.values.map(function (value, i) {
+            var geometry = comparison.bars[i];
+            var meaning = value < 0
+              ? __alloT('stem.treelab.discovery_food_debt', 'Shortfall: needed saved food')
+              : (value === 0 ? __alloT('stem.treelab.discovery_food_even', 'No food left over') : __alloT('stem.treelab.discovery_food_balance', 'Food left for growth and saving'));
+            return h('div', { key: i, className: 'allo-tree-food-evidence-row', 'data-carbon-balance': value }, [
+              h('div', { key: 'head', className: 'allo-tree-food-evidence-head' }, [
+                h('strong', { key: 'name' }, names[i]),
+                band === 'k2' ? null : h('strong', { key: 'amount' }, formatCarbon(value))
+              ]),
+              h('div', { key: 'track', className: 'allo-tree-food-evidence-track', 'aria-hidden': 'true' }, [
+                h('span', { key: 'bar', className: 'allo-tree-food-evidence-bar', style: { left: geometry.start + '%', width: geometry.width + '%', background: value < 0 ? T.warn : T.accent } }),
+                h('span', { key: 'zero', className: 'allo-tree-food-evidence-zero', style: { left: 'clamp(0px, ' + comparison.zero + '%, calc(100% - 2px))' } })
+              ]),
+              h('span', { key: 'meaning', className: 'allo-tree-food-evidence-meaning' }, meaning),
+              band === 'k2' ? h('span', { key: 'accessible-amount', className: 'allo-tree-sr-only' }, formatCarbon(value)) : null
+            ]);
+          }),
+          h('p', { key: 'scale', className: 'allo-tree-food-evidence-scale' }, comparison.hasDeficit
+            ? __alloT('stem.treelab.discovery_food_signed_scale', 'Both bars use one scale. A bar left of the zero line is a food shortfall; a bar right of it is food left over.')
+            : __alloT('stem.treelab.discovery_food_shared_scale', 'Both bars start at zero and use one scale. A longer bar means more food left over.')),
+          record.control.summary.yearsCompleted !== record.drought.summary.yearsCompleted
+            ? h('p', { key: 'early' }, __alloT('stem.treelab.discovery_unequal_years', 'One tree died earlier. These totals include only the years each tree lived; inspect the ages below.')) : null
+        ]);
+      }
+
+      function discoveryGrowthFigure(record) {
+        var values = [record.baseline.heightM, record.control.tree.heightM, record.drought.tree.heightM];
+        var max = Math.max(0.5, values[0], values[1], values[2]);
+        var names = [__alloT('stem.treelab.discovery_before', 'Before'), __alloT('stem.treelab.discovery_usual', 'Usual water'), __alloT('stem.treelab.discovery_dry_short', 'Dry years')];
+        return h('figure', { key: 'growth', className: 'allo-tree-discovery-figure' }, [
+          h('svg', { key: 'svg', viewBox: '0 0 360 150', role: 'img', 'aria-label': names.map(function (name, i) { return name + ': ' + round(values[i], 2) + ' m'; }).join('. ') }, [
+            h('line', { key: 'ground', x1: 10, y1: 115, x2: 350, y2: 115, stroke: T.dim }),
+            values.map(function (value, i) {
+              var x = 60 + i * 120, size = Math.max(3, value / max * 90);
+              return h('g', { key: i }, [
+                h('line', { key: 'trunk', x1: x, y1: 115, x2: x, y2: 115 - size, stroke: T.accent, strokeWidth: 4, strokeDasharray: i === 0 ? '3 2' : undefined }),
+                h('ellipse', { key: 'crown', cx: x, cy: 115 - size * 0.75, rx: Math.max(5, size * 0.23), ry: Math.max(4, size * 0.25), fill: i === 0 ? T.cardAlt : T.accent, stroke: T.accent }),
+                h('text', { key: 'value', x: x, y: 14, textAnchor: 'middle', fill: T.text, fontSize: 12 }, round(value, 2) + ' m'),
+                h('text', { key: 'label', x: x, y: 138, textAnchor: 'middle', fill: T.text, fontSize: 11 }, names[i])
+              ]);
+            })
+          ]),
+          h('figcaption', { key: 'caption' }, __alloT('stem.treelab.discovery_scale', 'Height comparison · one shared scale. Shapes are schematic.'))
+        ]);
+      }
+
+      function discoveryNotebook() {
+        var earned = d.discoveries || {};
+        var items = [
+          [earned.firstRing || tree.rings.length > 0, __alloT('stem.treelab.discovery_ring', 'First ring recorded')],
+          [earned.comparison, __alloT('stem.treelab.discovery_pair', 'A fair comparison')],
+          [earned.reflection, __alloT('stem.treelab.discovery_reflection', 'An idea explained')]
+        ].filter(function (item) { return item[0]; });
+        return items.length ? h('div', { key: 'notebook', className: 'allo-tree-discovery-notebook', 'aria-label': __alloT('stem.treelab.discovery_notebook', 'Field notebook') },
+          [items.map(function (item, i) { return h('span', { key: i }, '\u2713 ' + item[1]); }),
+          Array.isArray(d.fieldNotes) && d.fieldNotes.length ? foldPanel('saved-notes', __alloT('stem.treelab.saved_explanations', 'My explanations'), d.fieldNotes.filter(function (note) { return note && typeof note === 'object'; }).map(function (note, i) { return h('p', { key: i }, (note.outcome ? __alloT('stem.treelab.age', 'Age') + ' ' + note.outcome.ageBefore + ' → ' + note.outcome.ageAfter + ': ' : '') + String(note.explanation || '')); })) : null]) : null;
+      }
+
+      function reflectionPanel() {
+        if (!d.missionReflectionOpen || !yearOutcome) return null;
+        return card([
+          h('h3', { key: 'title', id: 'treelab-reflection', tabIndex: -1 }, __alloT('stem.treelab.reflect_result', 'Explain this result')),
+          h('label', { key: 'label', htmlFor: 'treelab-reflection-text' }, __alloT('stem.treelab.reflection_prompt', 'What changed? Use one number or ring from this result.')),
+          h('textarea', { key: 'input', id: 'treelab-reflection-text', value: d.reflectionDraft || '',
+            onChange: function (e) { upd('reflectionDraft', e.target.value); }, style: { width: '100%', color: T.text, background: T.card, border: '1px solid ' + T.border, padding: 8 } }),
+          btn('save-reflection', __alloT('stem.treelab.reflection_save', 'Save my explanation'), function () {
+            updMulti({ missionReflection: d.reflectionDraft.trim(), missionReflectionOpen: false,
+              fieldNotes: (Array.isArray(d.fieldNotes) ? d.fieldNotes : []).concat([{ explanation: d.reflectionDraft.trim(), outcome: yearOutcome }]).slice(-10),
+              discoveries: Object.assign({}, d.discoveries, { reflection: true }) });
+            srSay(__alloT('stem.treelab.reflection_saved', 'Explanation saved in your field notebook.'));
+          }, { primary: true, disabled: !(d.reflectionDraft || '').trim() })
+        ]);
+      }
+
+      function simpleFoodPanel() {
+        if (!tree.alive) return card([heading(__alloT('stem.treelab.discovery_food_stopped', 'This tree has stopped making food'))]);
+        var total = Math.max(live.gross, liveResp, 0.0001);
+        return card([
+          heading(__alloT('stem.treelab.discovery_food_title', 'Food for your tree'), __alloT('stem.treelab.discovery_food_sub', 'Leaves make food. Living parts use some. What is left can help the tree grow.')),
+          bar(__alloT('stem.treelab.discovery_food_made', 'Food made'), live.gross / total, T.good),
+          bar(__alloT('stem.treelab.discovery_food_used', 'Food used to stay alive'), liveResp / total, T.warn),
+          h('p', { key: 'result' }, liveNet < 0 ? __alloT('stem.treelab.discovery_food_short', 'Not enough this year. The tree needs its saved food.') : __alloT('stem.treelab.discovery_food_left', 'There is food left for growth and saving.'))
+        ]);
+      }
+
+
       function missionPanel() {
-        var changed = inDrought || d.alloc != null ||
-          d.light != null || d.soilWater != null || d.tempC != null || d.co2ppm != null;
+        if (d.discoveryMode !== 'free' && !experimentActive) return discoveryPanel();
+        var changed = d.missionChanged === true || !!lastEffect || inDrought || (d.missionChanged !== false && (d.alloc != null ||
+          d.light != null || d.soilWater != null || d.tempC != null || d.co2ppm != null));
         var grown = tree.age > 1;
-        var explained = experiment.phase === 'explain' ||
-          !!(experimentTrials.A || experimentTrials.B);
+        var explained = !!d.missionReflection || !!(experiment.explanation || '').trim() ||
+          [experimentTrials.A, experimentTrials.B].some(function (trial) { return trial && (trial.explanation || '').trim(); });
         var steps = [
           [changed, band === 'k2' ? __alloT('stem.treelab.mission_change_k2', 'Change sunlight or water') : __alloT('stem.treelab.mission_change', 'Change one thing'),
             band === 'k2' ? __alloT('stem.treelab.mission_change_note_k2', 'Move one slider or try a short drought.') : __alloT('stem.treelab.mission_change_note', 'Shape the conditions or carbon split.')],
@@ -7272,6 +7785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ]);
             })),
           h('div', { key: 'actions', style: { position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap' } }, [
+            btn('review-discovery', d.discovery && d.discovery.record ? __alloT('stem.treelab.discovery_review', 'Review my discovery') : __alloT('stem.treelab.discovery_guided', 'Try a guided discovery'), function () { upd('discoveryMode', null); }, { small: true, tone: 'ghost', disabled: experimentActive }),
             btn('mission-weather', inDrought
               ? '\uD83C\uDF27 ' + __alloT('stem.treelab.end_drought', 'Bring back the rain')
               : '\u2600 ' + __alloT('stem.treelab.mission_try_drought', 'Try a 3-year drought'),
@@ -7280,16 +7794,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             btn('mission-grow', '\u2192 ' + __alloT('stem.treelab.mission_grow_10', 'Grow 10 years'),
               function () { stepYears(10); },
               { small: true, primary: nextStepIndex === 1, tone: nextStepIndex === 1 ? undefined : 'ghost', disabled: !tree.alive || experimentActive }),
-            btn('mission-investigate', '\uD83D\uDD2C ' + (band === 'k2' ? __alloT('stem.treelab.begin_investigation_k2', 'Tell what happened') : __alloT('stem.treelab.begin_investigation', 'Start investigation')),
+            btn('mission-investigate', yearOutcome ? __alloT('stem.treelab.reflect_result', 'Explain this result') : '\uD83D\uDD2C ' + (band === 'k2' ? __alloT('stem.treelab.begin_investigation_k2', 'Tell what happened') : __alloT('stem.treelab.begin_investigation', 'Start investigation')),
               function () {
-                beginExperiment();
+                if (yearOutcome) { upd('missionReflectionOpen', true); } else { beginExperiment(); }
                 setTimeout(function () {
-                  var target = document.getElementById('treelab-investigation');
+                  var target = document.getElementById(yearOutcome ? 'treelab-reflection' : 'treelab-investigation');
+                  if (target && yearOutcome) target.focus({ preventScroll: true });
                   if (target && target.scrollIntoView) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
                 }, 0);
               },
               { small: true, primary: nextStepIndex === 2, tone: nextStepIndex === 2 ? undefined : 'ghost', disabled: experimentActive })
           ])
+          , discoveryNotebook()
         ], { borderTop: '4px solid ' + T.accent }));
       }
       function advancedGateway() {
@@ -7608,7 +8124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           if (limitId === 'light') {
             return band === 'k2'
               ? __alloT('stem.treelab.memory_cause_light_k2', 'Light was the ingredient in shortest supply, so it set the pace.')
-              : __alloT('stem.treelab.memory_cause_light', 'Light was the smallest input, so extra carbon dioxide, water, or warmth could not raise the rate.');
+              : __alloT('stem.treelab.memory_light_interaction', 'Light constrained the supply of energy. Water and temperature could still change the overall rate.');
           }
           if (limitId === 'temperature') {
             return band === 'k2'
@@ -7620,7 +8136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ? __alloT('stem.treelab.memory_cause_co2_k2', 'Carbon dioxide was the ingredient in shortest supply at the leaf doors.')
               : __alloT('stem.treelab.memory_cause_co2', 'Carbon dioxide supply was the smallest input at the stomata, so it set the photosynthetic ceiling.');
           }
-          return __alloT('stem.treelab.memory_cause_unknown', 'The smallest model input set the photosynthetic rate for this year.');
+          return __alloT('stem.treelab.memory_interaction', 'The conditions worked together to set the photosynthetic rate for this year.');
         }
 
         var resultText = selectedStress
@@ -7838,7 +8354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             selectedLimiter,
             selectedLimitId === 'water' && apertureKnown && selected.aperture < 0.6
               ? __alloT('stem.treelab.memory_causal_condition_water', 'Dryness triggered the leaf response.')
-              : __alloT('stem.treelab.memory_causal_condition_copy', 'The smallest model input set the rate.'),
+              : __alloT('stem.treelab.memory_causal_interaction', 'The conditions together shaped the rate.'),
             FACTOR_HUE(selectedLimitId), selectedLimitId),
           causalStep('leaf', '\uD83C\uDF43',
             band === 'k2'
@@ -8573,10 +9089,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, flowMarker('1',
           __alloT('stem.treelab.flow_observe', 'Observe and grow'),
           __alloT('stem.treelab.flow_observe_note', 'Read the living tree, move time forward, and see what its carbon budget can afford.')), 'grow-flow-observe');
-        pushKeyed(kids, timeScaleRibbon(), 'grow-timescales');
+        pushKeyed(kids, foldPanel('timescales', __alloT('stem.treelab.explore_timescales', 'How tree time works'), timeScaleRibbon()), 'grow-timescales');
         pushKeyed(kids, playbackPanel(), 'grow-playback');
+        pushKeyed(kids, yearOutcomePanel(), 'grow-outcome');
+        pushKeyed(kids, reflectionPanel(), 'grow-reflection');
 
-        pushKeyed(kids, card([
+        var budgetCard = card([
           heading(__alloT('stem.treelab.this_year', 'This year’s carbon budget'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.budget_sub_g68', 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.')
@@ -8592,13 +9110,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             }, __alloT('stem.treelab.dead_budget',
               'Nothing. A dead tree makes no sugar and spends none. Its stored carbon stays in the wood.'))
             : h('div', { key: 'nums', className: 'allo-tree-budget-equation', role: 'group', 'aria-label': __alloT('stem.treelab.budget_equation', 'Carbon budget equation') }, [
-              statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', round(live.gross, 2) + ' kg C', T.good),
+              statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', formatCarbon(live.gross), T.good),
               h('span', { key: 'minus', className: 'allo-tree-budget-operator', 'aria-hidden': 'true' }, '\u2212'),
               statTile('spent', atLeast(band, 'g68')
                 ? __alloT('stem.treelab.tile_resp', 'Maintenance respiration')
-                : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
+                : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), formatCarbon(liveResp), T.warn),
               h('span', { key: 'equals', className: 'allo-tree-budget-operator', 'aria-hidden': 'true' }, '='),
-              statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
+              statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', formatCarbon(liveNet), liveNet >= 0 ? T.accent : T.bad)
             ]),
           // The three tiles are one subtraction, so it is also drawn AS one: a single
           // bar of the year's gross, split into the slice burned to stay alive and
@@ -8622,7 +9140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               key: 'eq', role: 'img',
               'aria-label': __alloT('stem.treelab.budget_bar_alt', 'Budget bar. ')
                 + round(gross, 2) + ' ' + __alloT('stem.treelab.alt_kgc_made', 'kg C made') + ', '
-                + round(resp, 2) + ' ' + __alloT('stem.treelab.alt_kgc_maint', 'kg C spent on maintenance') + ', '
+                + formatCarbon(resp) + ' ' + __alloT('stem.treelab.maintenance_cost', 'spent on maintenance') + ', '
                 + (deficit
                   ? round(-liveNet, 2) + ' ' + __alloT('stem.treelab.alt_kgc_reserves', 'kg C drawn from reserves.')
                   : round(liveNet, 2) + ' ' + __alloT('stem.treelab.alt_kgc_left', 'kg C left to grow with.')),
@@ -8652,10 +9170,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('strong', { key: 'a' }, __alloT('stem.treelab.limiting_now', 'Limiting right now: ') + limName),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 4 } },
               atLeast(band, 'g912')
-                ? __alloT('stem.treelab.limit_note_g912', 'The rate follows the smallest term. Raising any other input changes nothing until this one stops being the smallest.')
+                ? __alloT('stem.treelab.limit_interaction_g912', 'This is a constraint, not the only influence. Light and CO₂ share a supply gate; water and temperature also scale the rate. Test one input at a time.')
                 : (atLeast(band, 'g35')
-                  ? __alloT('stem.treelab.limit_note_g35', 'This is the one running short. Adding more of anything else will not help until you fix this one.')
-                  : __alloT('stem.treelab.limit_note_k2', 'This is what the tree needs more of.'))),
+                  ? __alloT('stem.treelab.limit_interaction_g35', 'This factor is holding growth back. Other conditions can also matter. Change one thing and compare the result.')
+                  : __alloT('stem.treelab.limit_interaction_k2', 'Several things help a tree make food. Try sunlight or water and watch what changes.'))),
             // Drought makes the CO2 term the smallest NUMBER, but water is the cause:
             // the stomata that admit CO2 are shut. Saying "CO2" here would send a
             // student off to add CO2, which this tool teaches is useless.
@@ -8669,7 +9187,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.negative_year', 'The tree is spending more than it makes and is living off reserves. A few years of this is survivable. Many are not.')) : null,
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
-        ], undefined, 'allo-tree-budget-card'), 'grow-budget');
+        ], undefined, 'allo-tree-budget-card');
+        pushKeyed(kids, band === 'k2' ? simpleFoodPanel() : budgetCard, 'grow-budget');
+        if (band === 'k2') pushKeyed(kids, foldPanel('budget', __alloT('stem.treelab.explore_numbers', 'See the carbon numbers'), budgetCard), 'grow-budget-details');
         pushKeyed(kids, treeMemoryPanel(), 'grow-memory');
 
         // ── The objective ───────────────────────────────────────────────────
@@ -8729,7 +9249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   ? __alloT('stem.treelab.goal_need_seed', 'Full size. Move some carbon into reproduction to finish it.')
                   : (seedFrac >= 1
                     ? __alloT('stem.treelab.goal_need_height', 'Enough banked to reproduce. It still has growing to do.')
-                    : __alloT('stem.treelab.goal_hint', 'Leaves earn the carbon, wood buys height, roots buy water. The split is yours.'))))
+                    : __alloT('stem.treelab.goal_root_tradeoff', 'Leaves earn carbon, wood supports the canopy, and roots help supply water. Extra roots also cost carbon to maintain. Try a balance that fits your conditions.'))))
           ]), 'grow-goal');
         }
 
@@ -8794,6 +9314,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('light'))),
           slider('water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
             function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('water'))),
+          band === 'k2' ? foldPanel('temperature', __alloT('stem.treelab.explore_temperature', 'Explore temperature'),
+slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC, -5, 45, 1,
+            function (v) { changeCondition('tempC', v, 'temperature'); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('temperature')))) :
           slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC, -5, 45, 1,
             function (v) { changeCondition('tempC', v, 'temperature'); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('temperature'))),
           atLeast(band, 'g68') ? slider('co2', CO2 + ' concentration', envCfg.co2ppm, 180, 900, 10,
@@ -8810,7 +9333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost', disabled: experimentLocked })
               : null
           ]),
-          causeEffectPanel(),
+          null,
           atLeast(band, 'g68') ? h('div', { key: 'ap', style: { marginTop: 6 } },
             bar(__alloT('stem.treelab.stomata_open', 'Stomata open'), aperture, T.accent,
               aperture < 0.9
@@ -8818,7 +9341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
         ], undefined, 'allo-tree-conditions-card'), 'grow-conditions');
 
-        pushKeyed(kids, card([
+        var allocationCard = card([
           heading(__alloT('stem.treelab.spend_it', 'Where does the surplus go?'),
             __alloT('stem.treelab.spend_it_sub', 'The tree cannot do all of these at once. More wood means fewer seeds this year.')),
           // The five sliders are shares of ONE surplus, so the whole is drawn as one
@@ -8858,6 +9381,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           allocSlider('wood', __alloT('stem.treelab.wood', 'Wood (height and rings)'), '#f59e0b'),
           allocSlider('repro', __alloT('stem.treelab.reproduction', 'Reproduction'), '#ec4899'),
           allocSlider('store', __alloT('stem.treelab.reserves', 'Stored reserves'), '#38bdf8'),
+          foldPanel('root-water', __alloT('stem.treelab.root_water_title', 'How roots supply this canopy'),
+            h('div', { className: 'allo-tree-root-water', style: { fontSize: 12, color: T.text, lineHeight: 1.6 } }, [
+              h('p', { key: 'why' }, band === 'k2'
+                ? __alloT('stem.treelab.root_water_young', 'More roots can help thirsty leaves. Roots need food too. Your choice grows new roots after a year passes, if food is left over.')
+                : __alloT('stem.treelab.root_water_explain', 'Roots supply water; leaves create demand. More roots can improve access, with diminishing returns and a maintenance cost. Allocation builds roots after a year passes, only when carbon is left over.')),
+              h('div', { key: 'soil' }, __alloT('stem.treelab.root_soil_setting', 'Soil water setting: ') + Math.round(liveEnv.soilWater * 100) + '%'),
+              h('div', { key: 'access', 'data-water-access': round(live.waterAccess.effectiveWater, 4) }, __alloT('stem.treelab.root_access_index', 'Canopy water-access index: ') + Math.round(live.waterAccess.effectiveWater * 100) + ' / 100'),
+              h('div', { key: 'cost' }, __alloT('stem.treelab.root_annual_cost', 'Yearly root maintenance: ') + formatCarbon(sp.respRate * tree.rootMass)),
+              tree.alive ? (function () {
+                var projected = simulateYear(tree, sp, liveEnv, alloc);
+                if (!projected.alive) return h('p', { key: 'preview', style: { color: T.bad } }, __alloT('stem.treelab.root_preview_survival', 'Under these conditions the tree is not projected to survive the next year. Restore its carbon balance before investing in growth.'));
+                var access = rootWaterAccess(projected, liveEnv.soilWater);
+                return h('div', { key: 'preview', 'data-root-preview': round(access.effectiveWater, 4), style: { marginTop: 10, padding: 10, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } }, [
+                  h('strong', { key: 'title' }, __alloT('stem.treelab.root_preview_title', 'After one year with these shares')),
+                  h('div', { key: 'index' }, __alloT('stem.treelab.root_preview_access', 'Water-access index: ') + Math.round(live.waterAccess.effectiveWater * 100) + ' → ' + Math.round(access.effectiveWater * 100) + ' / 100'),
+                  h('div', { key: 'cost' }, __alloT('stem.treelab.root_preview_cost', 'Yearly root upkeep: ') + formatCarbon(sp.respRate * tree.rootMass) + ' → ' + formatCarbon(sp.respRate * projected.rootMass)),
+                  h('div', { key: 'assumption', style: { color: T.dim, marginTop: 4 } }, __alloT('stem.treelab.root_preview_assumption', 'Preview holds today’s weather steady and includes changes in both roots and leaves. The tree has not advanced yet.'))
+                ]);
+              })() : null,
+              h('p', { key: 'boundary', style: { color: T.dim } }, __alloT('stem.treelab.root_access_boundary', 'The index combines soil water and roots per unit leaf area. It is not a water volume. More roots cannot supply water from completely dry soil.')),
+              h('p', { key: 'try' }, __alloT('stem.treelab.root_investigation', 'Try this: hold the weather steady, change the root share, then advance a year. Did water access improve enough to cover the extra upkeep?'))
+            ])),
           canopySupportPanel(),
           h('div', { key: 'run', style: { marginTop: 10, display: 'flex', flexWrap: 'wrap' } }, [
             btn('y1', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { disabled: !tree.alive || experimentActive }),
@@ -8865,14 +9410,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             btn('y50', __alloT('stem.treelab.plus_50', '+50 years'), function () { stepYears(50); }, { disabled: !tree.alive || experimentActive }),
             btn('rst', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { tone: 'ghost' })
           ]),
-          yearOutcomePanel(),
           h('div', {
             key: 'year-outcome-live', className: 'allo-tree-sr-only',
             'data-year-outcome-live': 'true',
             role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'
           }, yearOutcomeAnnouncement()),
           !tree.alive ? postMortem() : null
-        ]), 'grow-spend');
+        ]);
+        pushKeyed(kids, band === 'k2' ? foldPanel('allocation', __alloT('stem.treelab.explore_allocation', 'Explore where food goes'), allocationCard) : allocationCard, 'grow-spend');
 
         pushKeyed(kids, advancedGateway(), 'grow-advanced-gateway');
         var advancedKids = [];
@@ -9633,8 +10178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // Aperture is recomputed per sample, not carried over: sweeping soil water
           // while holding the stomata where they were would draw a tree that keeps
           // breathing through a drought.
-          var ap = stomatalAperture(e.soilWater, sp.droughtTol, false);
-          pts.push({ x: x, y: grossPhotosynthesis(sp, e, tree.leafArea, ap).gross });
+          pts.push({ x: x, y: treePhysiology(tree, sp, e).gross });
         }
         return pts;
       }
@@ -9946,7 +10490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         kids.push(card([
           heading(__alloT('stem.treelab.what_limits', 'What is limiting the rate?'),
             atLeast(band, 'g912')
-              ? __alloT('stem.treelab.limits_sub_g912', 'Four factors, and the rate follows the smallest of them. This is the question a living tree answers every hour, and its answer is recorded permanently in the rings.')
+              ? __alloT('stem.treelab.limits_interaction_g912', 'Four interacting factors shape the rate. Light and CO₂ constrain supply; temperature and water scale it. Compare the response curves and the record in the rings.')
               : __alloT('stem.treelab.limits_sub_g68', 'Four things a tree needs. Whichever is shortest sets the speed, no matter how much of the others there is.')),
           bar(__alloT('stem.treelab.light', 'Light'), live.factors.light, tone(FACTOR_HUE('light'))),
           bar(CO2, live.factors.co2, tone(FACTOR_HUE('co2'))),
@@ -10612,6 +11156,405 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('strong', { key: 't' }, title),
             h('div', { key: 'p' }, copy)
           ])
+        ]);
+      }
+
+      function viewGrove() {
+        var started = !!(d.groveRun && d.groveRun.version === 1);
+        var config = groveConfig(started ? d.groveRun : { seed: d.groveSeed, mode: d.groveMode });
+        var grove = groveRestore(config), summary = groveSummary(grove);
+        var forecast = groveEvent(config, grove.year + 1);
+        var selection = clamp(Math.floor(finiteOr(d.grovePatch, 4)), 0, 8);
+        var priorityId = GROVE_PRIORITIES.some(function (p) { return p.id === d.grovePriority; }) ? d.grovePriority : 'reserve';
+        var route = d.groveRoute === 'seed' ? 'seed' : 'mixed';
+        var last = grove.receipts[grove.receipts.length - 1];
+        var prev = grove.receipts.length > 1 ? grove.receipts[grove.receipts.length - 2] : null;
+        var journalNames = { 'first-year': 'Read a year in the grove', 'dry-year': 'Observed a dry year', 'canopy-gap': 'Found a canopy opening', 'next-generation': 'Established a descendant', 'living-legacy': 'Left a living legacy', 'young-loss': 'Lost a young tree to dry soil', 'prediction-hit': 'Made a prediction that matched the evidence', 'fair-replay': 'Compared two runs of the same grove' };
+        var journal = (Array.isArray(d.groveJournal) ? d.groveJournal : []).filter(function (id, i, all) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(journalNames, id) && all.indexOf(id) === i; });
+        groveDiscoveries(grove).forEach(function (id) { if (journal.indexOf(id) < 0) journal.push(id); });
+        // Predictions and the run ledger are learner records kept beside the replayable run,
+        // never inside it: the save format stays seed + mode + choices.
+        var predictions = (Array.isArray(d.grovePredictions) ? d.grovePredictions : []).filter(function (p) { return p && typeof p === 'object' && Number.isFinite(p.year); });
+        var ledger = (Array.isArray(d.groveLedger) ? d.groveLedger : []).filter(function (e) { return e && typeof e === 'object' && typeof e.key === 'string' && Array.isArray(e.priorities); });
+        var pending = d.grovePending && typeof d.grovePending === 'object' ? d.grovePending : {};
+        function saveRun(nextConfig, message, prediction) {
+          var nextState = groveRestore(nextConfig), found = journal.slice();
+          groveDiscoveries(nextState).forEach(function (id) { if (found.indexOf(id) < 0) found.push(id); });
+          var nextSummary = groveSummary(nextState);
+          var kept = predictions.filter(function (p) { return p.year <= nextState.year; });
+          if (prediction) kept.push(prediction);
+          var ledgerNext = ledger.slice();
+          if (nextSummary.ended && nextConfig.choices.length) {
+            var entryKey = nextConfig.seed + '|' + nextConfig.mode + '|' + JSON.stringify(nextConfig.choices);
+            ledgerNext = ledgerNext.filter(function (e) { return e.key !== entryKey; });
+            ledgerNext.push({ key: entryKey, seed: nextConfig.seed, mode: nextConfig.mode, priorities: nextConfig.choices.map(function (c) { return c.priority; }),
+              years: nextState.year, living: nextSummary.living, established: nextSummary.established, patches: nextSummary.descendantPatches, success: nextSummary.success });
+            ledgerNext = ledgerNext.slice(-12);
+          }
+          if (prediction && nextState.receipts.length) {
+            var outcome = predictionOutcome(prediction, nextState.receipts[nextState.receipts.length - 1]);
+            if ((outcome.arrivals === true || outcome.food === true) && found.indexOf('prediction-hit') < 0) found.push('prediction-hit');
+          }
+          if (ledgerNext.filter(function (e) { return e.seed === nextConfig.seed && e.mode === nextConfig.mode; }).length >= 2 && found.indexOf('fair-replay') < 0) found.push('fair-replay');
+          updMulti({ groveRun: nextConfig, groveJournal: found, grovePredictions: kept, groveLedger: ledgerNext, grovePending: null, playing: false });
+          srSay(message);
+        }
+        function advance() {
+          if (!started || summary.ended) return;
+          var nextConfig = Object.assign({}, config, { choices: config.choices.concat([{ priority: priorityId, route: route }]) });
+          var next = groveRestore(nextConfig), result = next.receipts[next.receipts.length - 1];
+          var guess = pending.arrivals || pending.food ? { year: next.year, arrivals: pending.arrivals || '', food: pending.food || '' } : null;
+          saveRun(nextConfig, 'Year ' + next.year + ' complete. ' + result.arrivals + ' new arrivals; ' + groveSummary(next).established + ' established descendants.', guess);
+        }
+        function glyph(node, index, count) {
+          var x = count === 1 ? 70 : count === 2 ? 48 + index * 43 : 33 + index * 37;
+          var adult = node.tree.age >= 10, scale = adult ? 1 : 0.48;
+          var leaf = isContrast ? '#ffffff' : node.tree.speciesId === 'oak' ? '#276347' : '#61915d';
+          return h('g', { key: node.id, transform: 'translate(' + x + ' 87) scale(' + scale + ')' }, [
+            h('ellipse', { key: 'shadow', cx: 0, cy: 1, rx: 20, ry: 5, fill: isContrast ? '#666' : '#244d3833' }),
+            h('path', { key: 'trunk', d: 'M-3 0 L-2-48 L2-48 L4 0Z M0-16 L-14-31 L-12-33 L2-23Z M0-27 L12-40 L14-38 L2-20Z', fill: isContrast ? '#fff' : node.tree.speciesId === 'aspen' ? '#e1dcca' : '#74563a' }),
+            node.tree.speciesId === 'oak'
+              ? h('path', { key: 'crown', d: 'M-23-27 C-39-35-33-49-23-51 C-31-66-13-75-3-68 C7-84 29-70 23-58 C40-55 34-35 22-34 C19-21-10-18-23-27Z', fill: leaf })
+              : h('path', { key: 'crown', d: 'M0-83 C-17-72-24-47-18-32 C-12-20 13-21 20-37 C24-54 13-75 0-83Z', fill: leaf }),
+            h('path', { key: 'light', d: node.tree.speciesId === 'oak' ? 'M-23-49 Q-27-64-9-64 M-8-68 Q2-76 13-66' : 'M-12-43 Q-17-59-2-74', fill: 'none', stroke: isContrast ? '#000' : '#bad795', strokeWidth: 4, strokeLinecap: 'round', opacity: 0.6 })
+          ]);
+        }
+        function snag(node, index) {
+          // A dead tree stays on the map as a bare trunk: it is part of the record, not a
+          // living count. Drawn first so living crowns sit in front.
+          return h('g', { key: 'snag-' + node.id, transform: 'translate(' + (124 - index * 13) + ' 87) scale(0.8)' }, [
+            h('ellipse', { key: 'shadow', cx: 0, cy: 1, rx: 12, ry: 3, fill: isContrast ? '#666' : '#244d3822' }),
+            h('path', { key: 'trunk', d: 'M-3 0 L-2-30 L-7-37 L0-33 L3-41 L4 0Z', fill: isContrast ? '#bbbbbb' : '#8a8577' })
+          ]);
+        }
+        function action(key, label, fn, disabled) {
+          return h('button', { key: key, type: 'button', className: 'grove-action', onClick: fn, disabled: !!disabled }, label);
+        }
+        var site = GROVE_PATCHES[selection];
+        var selectedNodes = grove.trees.filter(function (n) { return n.patch === selection; });
+        // Next year's prescribed moisture per patch, so the forecast can say what it means here.
+        var dryNext = summary.ended ? [] : GROVE_PATCHES.map(function (_, i) { return i; }).filter(function (i) { return groveEnvironment(grove, i, forecast).soilWater < 0.35; });
+        var youngAtRisk = grove.trees.filter(function (n) { return n.tree.alive && n.tree.age + 1 <= 3 && dryNext.indexOf(n.patch) >= 0; }).length;
+        var inspect3d = d.groveView === '3d';
+        var portrait = groveSceneState(grove, selection, d.groveTree);
+        if (inspect3d && portrait) {
+          var subject = config.seed + '|' + config.mode + '|' + portrait.node.id;
+          if (GROVE_3D_SUBJECT !== subject) { FRAMED_ONCE = false; GROVE_3D_SUBJECT = subject; }
+          TREE3D.sync({
+            dark: isDark, contrast: isContrast, reduced: reduceMotion,
+            selected: d.grovePart === 'crown' && !portrait.node.tree.alive ? null : (d.grovePart || null),
+            onPick: function (id) { upd('grovePart', id); },
+            onStatus: function (status) { upd('groveViewerStatus', status); },
+            sceneKey: portrait.key,
+            sceneProps: { inspectionId: portrait.node.id, species: portrait.species, tree: portrait.node.tree,
+              season: 'summer', visualPhase: canonicalPhaseForSeason('summer'), clones: 0,
+              visual: portrait.visual, wind: reduceMotion ? 0 : 0.25,
+              light: portrait.env.light, soilWater: portrait.env.soilWater, tempC: portrait.env.tempC,
+              dry: portrait.env.soilWater < 0.35, cracked: portrait.env.soilWater < 0.12,
+              weatherEvent: null, reduced: reduceMotion }
+          });
+        }
+        function closeup() {
+          var status = portrait ? TREE3D.status() : 'idle';
+          var ready = status === 'ready';
+          var partCopy = { crown: 'Leaves capture light. Their area and water stress come from this campaign tree.',
+            trunk: 'The trunk supports the canopy and carries water. Its size comes from this tree’s growth history.',
+            roots: 'Roots are shown as a schematic cutaway. The model tracks root mass, not an exact underground root shape.' };
+          return h('section', { key: 'closeup', className: 'grove-closeup', 'aria-label': 'Campaign tree in 3D' }, [
+            h('div', { key: 'selectors', className: 'grove-closeup-selectors' }, [
+              h('div', { key: 'patch' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-patch' }, 'Habitat patch'),
+                h('select', { key: 'select', id: 'grove-inspect-patch', value: selection, onChange: function (e) { upd('grovePatch', Number(e.target.value)); } }, GROVE_PATCHES.map(function (p, i) { return h('option', { key: i, value: i }, p.name); }))]),
+              portrait ? h('div', { key: 'tree' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-tree' }, 'Tree to inspect'),
+                h('select', { key: 'select', id: 'grove-inspect-tree', value: portrait.node.id, onChange: function (e) { upd('groveTree', e.target.value); } }, selectedNodes.map(function (node, index) {
+                  return h('option', { key: node.id, value: node.id }, (index + 1) + '. ' + speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + (node.tree.alive ? '' : ' · died'));
+                }))]) : null
+            ]),
+            portrait ? h('div', { key: 'portrait' }, [
+              h('div', { key: 'title', className: 'grove-closeup-heading' }, [h('h3', { key: 'name' }, portrait.species.name),
+                h('span', { key: 'size' }, 'Age ' + portrait.node.tree.age + ' · ' + round(portrait.node.tree.heightM, 1) + ' m tall · ' + round(portrait.node.tree.dbhCm, 1) + ' cm across')]),
+              h('div', { key: 'canvas', ref: GROVE_3D_ATTACH, className: 'grove-closeup-canvas', role: 'img',
+                'aria-label': '3D summer illustration of ' + portrait.species.name + ', age ' + portrait.node.tree.age + ', ' + round(portrait.node.tree.heightM, 1) + ' metres tall, in ' + site.name + '. ' + (portrait.node.tree.alive ? 'Living tree.' : 'This tree has died.') + (portrait.visual.severeWaterStress ? ' Leaves show water stress.' : '') }),
+              !ready ? h('p', { key: 'status', role: 'status', className: 'grove-caption' }, status === 'failed'
+                ? '3D is unavailable on this device. The habitat map and tree measurements remain available.' : 'Loading the 3D tree… You can keep using the map and campaign controls.') : null,
+              h('div', { key: 'camera', className: 'grove-camera-controls', role: 'group', 'aria-label': 'Campaign camera controls' }, [
+                btn('left', '↶', function () { TREE3D.nudge(-0.22, 0); }, { small: true, ariaLabel: 'Rotate tree left', disabled: !ready }),
+                btn('right', '↷', function () { TREE3D.nudge(0.22, 0); }, { small: true, ariaLabel: 'Rotate tree right', disabled: !ready }),
+                btn('up', '↑', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: 'Tilt tree view up', disabled: !ready }),
+                btn('down', '↓', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: 'Tilt tree view down', disabled: !ready }),
+                btn('in', '+', function () { TREE3D.zoom(-0.4); }, { small: true, ariaLabel: 'Zoom in on tree', disabled: !ready }),
+                btn('out', '−', function () { TREE3D.zoom(0.4); }, { small: true, ariaLabel: 'Zoom out from tree', disabled: !ready }),
+                btn('reset', 'Reset view', function () { TREE3D.reset(); }, { small: true, disabled: !ready })
+              ]),
+              h('div', { key: 'parts', role: 'group', 'aria-label': 'Inspect campaign tree parts' }, ['crown', 'trunk', 'roots'].map(function (part) {
+                return btn(part, part === 'crown' ? 'Leaves' : part === 'trunk' ? 'Trunk' : 'Roots', function () { upd('grovePart', d.grovePart === part ? null : part); }, { small: true, pressed: d.grovePart === part, disabled: !ready || part === 'crown' && !portrait.node.tree.alive });
+              })),
+              h('p', { key: 'part-copy', className: 'grove-caption', 'aria-live': 'polite' }, partCopy[d.grovePart] || 'Drag to orbit, or use the camera buttons. Select a part to inspect its role.'),
+              h('p', { key: 'conditions', className: 'grove-caption' }, (grove.year ? 'Year ' + grove.year + ' conditions' : 'Starting conditions') + ': ' + Math.round(portrait.env.soilWater * 100) + '% soil moisture · ' + Math.round(portrait.env.light * 100) + '% light · ' + portrait.env.tempC + ' °C.'),
+              h('p', { key: 'time', className: 'grove-caption' }, 'A summer illustration of this tree’s current state, with ' + (grove.year ? 'the last completed year’s conditions.' : 'the starting patch conditions.') + ' Viewing does not advance time. Background woodland is scenery; the habitat map records your actual grove.')
+            ]) : h('div', { key: 'empty', className: 'grove-closeup-empty' }, [h('h3', { key: 'title' }, 'Room for a future tree.'),
+              h('p', { key: 'copy' }, 'No tree has arrived in ' + site.name + ' yet. Choose another patch above, or return to the habitat map to follow your grove’s spread.')])
+          ]);
+        }
+
+        function journeyChart() {
+          var series = [{ year: 0, living: grove.trees.filter(function (n) { return n.born === 0; }).length, established: 0 }]
+            .concat(grove.receipts.map(function (r) { return { year: r.year, living: r.living, established: r.established }; }));
+          if (series.length < 2) return null;
+          var W = 330, H = 150, padL = 26, padR = 82, padT = 12, padB = 24;
+          var top = Math.max(4, Math.max.apply(null, series.map(function (p) { return p.living; })));
+          var step = top <= 6 ? 2 : top <= 12 ? 4 : top <= 20 ? 5 : 10, maxY = Math.ceil(top / step) * step;
+          var x = function (year) { return padL + (W - padL - padR) * year / 8; };
+          var y = function (v) { return padT + (H - padT - padB) * (1 - v / maxY); };
+          // Pairs validated with the dataviz palette checker against the light card (#ffffff) and
+          // dark card (#1e293b) surfaces; dash and marker shape carry identity without colour.
+          var colours = isContrast ? ['#ffffff', '#ffff00'] : isDark ? ['#059669', '#d97706'] : ['#059669', '#b45309'];
+          var defs = [{ id: 'living', name: 'Living trees', short: 'living', colour: colours[0], dash: 'none', square: false },
+            { id: 'established', name: 'Established descendants', short: 'established', colour: colours[1], dash: '6 4', square: true }];
+          var ticks = []; for (var v = 0; v <= maxY; v += step) ticks.push(v);
+          var end = series[series.length - 1], close = Math.abs(y(end.living) - y(end.established)) < 11;
+          return h('figure', { key: 'chart', className: 'grove-chart' }, [
+            h('figcaption', { key: 'cap' }, 'Living trees and established descendants by year'),
+            h('svg', { key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Line chart. ' + defs.map(function (s) { return s.name + ' by year: ' + series.map(function (p) { return p[s.id]; }).join(', '); }).join('. ') + '. The timeline below lists the same years.' }, [
+              h('g', { key: 'grid' }, ticks.map(function (tick) { return h('g', { key: tick }, [h('line', { key: 'l', x1: padL, x2: W - padR, y1: y(tick), y2: y(tick), stroke: T.border, strokeWidth: 1 }), h('text', { key: 't', x: padL - 6, y: y(tick) + 3.5, textAnchor: 'end', fontSize: 10, fill: T.dim }, tick)]); })),
+              h('g', { key: 'years' }, series.map(function (p) { return h('text', { key: p.year, x: x(p.year), y: H - 8, textAnchor: 'middle', fontSize: 10, fill: T.dim }, p.year); })),
+              defs.map(function (s, si) {
+                var labelY = y(end[s.id]) + 3.5 + (close ? (si ? 7 : -7) : 0);
+                return h('g', { key: s.id }, [
+                  h('polyline', { key: 'line', points: series.map(function (p) { return x(p.year) + ',' + y(p[s.id]); }).join(' '), fill: 'none', stroke: s.colour, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeDasharray: s.dash }),
+                  series.map(function (p) {
+                    var mark = s.square ? h('rect', { key: 'm', x: x(p.year) - 4, y: y(p[s.id]) - 4, width: 8, height: 8, fill: s.colour, stroke: T.card, strokeWidth: 2 })
+                      : h('circle', { key: 'm', cx: x(p.year), cy: y(p[s.id]), r: 4, fill: s.colour, stroke: T.card, strokeWidth: 2 });
+                    return h('g', { key: p.year }, [h('title', { key: 't' }, 'Year ' + p.year + ': ' + p[s.id] + ' ' + s.short), mark]);
+                  }),
+                  h('text', { key: 'label', x: x(8) + 9, y: labelY, fontSize: 10, fill: T.text }, end[s.id] + ' ' + s.short)
+                ]);
+              })
+            ]),
+            h('div', { key: 'legend', className: 'grove-chart-legend', 'aria-hidden': true }, defs.map(function (s) { return h('span', { key: s.id }, [h('i', { key: 'k', style: { background: s.colour } }), s.name]); }))
+          ]);
+        }
+        function whereList(r) {
+          var lines = [];
+          if (r.damaged && r.event.damage) lines.push({ key: 'storm', text: GROVE_PATCHES[r.event.patch].name + ': the storm removed leaf tissue from ' + r.damaged + (r.damaged === 1 ? ' tree.' : ' trees.') });
+          var limits = { moisture: 'dry soil lowered the odds', light: 'shade lowered the odds', chance: 'chance alone', space: 'no space left' };
+          var groups = {}, order = [];
+          GROVE_PATCHES.forEach(function (site, i) {
+            var here = (r.landings || []).filter(function (l) { return l.patch === i; });
+            if (!here.length) return;
+            var arrived = here.filter(function (l) { return l.outcome === 'arrived'; }).length, parts = [];
+            if (arrived) parts.push(arrived + ' took root');
+            ['moisture', 'light', 'chance', 'space'].forEach(function (limit) {
+              var n = here.filter(function (l) { return l.outcome !== 'arrived' && l.limit === limit; }).length;
+              if (n) parts.push(n + ' failed, ' + limits[limit]);
+            });
+            var signature = parts.join(' \u00b7 '); if (!groups[signature]) { groups[signature] = []; order.push(signature); } groups[signature].push(site.name);
+          });
+          // Patches with identical outcomes share one line, so a dry year reads as one fact.
+          order.forEach(function (signature) {
+            var names = groups[signature], each = names.length > 1 ? signature.replace(/(\d+) (took root|failed)/g, '$1 $2 each') : signature;
+            lines.push({ key: 'land-' + signature, text: names.join(', ') + ': ' + each + '.' });
+          });
+          (r.losses || []).forEach(function (loss) {
+            lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + ', age ' + loss.age + (loss.cause === 'dry_seedling' ? ', died in dry soil while still small.' : loss.cause === 'senescence' ? ', died of old age.' : ', ran out of stored food and died.') + ' Its trunk stays on the map as a snag.' });
+          });
+          if (!lines.length) return null;
+          return h('div', { key: 'where' }, [h('h4', { key: 'h' }, 'Where it happened'),
+            h('ul', { key: 'l', className: 'grove-where', 'aria-label': 'Where it happened' }, lines.map(function (line) { return h('li', { key: line.key }, line.text); }))]);
+        }
+        function predictionOutcome(guess, r) {
+          var bucket = r.arrivals === 0 ? 'none' : r.arrivals <= 2 ? 'some' : 'many', actual = r.net < 0 ? 'shortfall' : 'surplus';
+          return { bucket: bucket, actual: actual,
+            arrivals: guess.arrivals === 'none' || guess.arrivals === 'some' || guess.arrivals === 'many' ? guess.arrivals === bucket : null,
+            food: guess.food === 'surplus' || guess.food === 'shortfall' ? guess.food === actual : null };
+        }
+        function predictionCheck(r) {
+          var guess = predictions.filter(function (p) { return p.year === r.year; })[0];
+          if (!guess || !(guess.arrivals || guess.food)) return null;
+          var outcome = predictionOutcome(guess, r), bucket = outcome.bucket;
+          var names = { none: 'no arrivals', some: '1 or 2 arrivals', many: '3 or more arrivals' }, lines = [];
+          if (names[guess.arrivals]) {
+            var hit = guess.arrivals === bucket;
+            lines.push((hit ? 'Matched: ' : 'Missed: ') + 'you predicted ' + names[guess.arrivals] + '; ' + r.arrivals + ' arrived.' + (hit ? '' : ' Each landing depends on patch conditions, space and a chance draw, so the same choice can turn out differently.'));
+          }
+          if (guess.food === 'surplus' || guess.food === 'shortfall') {
+            var actual = outcome.actual, match = outcome.food === true;
+            lines.push((match ? 'Matched: ' : 'Missed: ') + 'you predicted a ' + guess.food + '; the grove had a ' + actual + '.' + (match ? '' : actual === 'shortfall'
+              ? (r.event.water < 0.42 ? ' Dry soil closed stomata, which also limits carbon uptake.' : r.damaged ? ' Lost leaf tissue meant less photosynthesis while maintenance costs continued.' : ' Living wood and roots cost food every year, even in a calm one.')
+              : ' Moisture and light let photosynthesis outpace maintenance this year.'));
+          }
+          return h('div', { key: 'prediction', className: 'grove-prediction', 'data-grove-prediction': true }, [h('h4', { key: 'h' }, 'Your prediction'),
+            lines.map(function (t, i) { return h('p', { key: i }, t); })]);
+        }
+        function ledgerBlock() {
+          var currentKey = config.seed + '|' + config.mode + '|' + JSON.stringify(config.choices);
+          var mine = ledger.filter(function (e) { return e.key === currentKey; })[0];
+          function noteField() {
+            if (!mine) return null;
+            return h('div', { key: 'note' }, [h('label', { key: 'l', htmlFor: 'grove-note' }, 'Your reflection'),
+              h('textarea', { key: 't', id: 'grove-note', rows: 3, maxLength: 240, value: mine.note || '', placeholder: 'What would you try differently next time, and why?',
+                onChange: function (e) { var text = e.target.value; upd('groveLedger', function (prev) { return (Array.isArray(prev) ? prev : []).map(function (entry) { return entry && entry.key === currentKey ? Object.assign({}, entry, { note: text }) : entry; }); }); } }),
+              h('p', { key: 'c', className: 'grove-caption' }, 'Saved with this run. It appears when you compare later runs of the same grove.')]);
+          }
+          var others = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode && e.key !== currentKey; });
+          if (!others.length) return h('div', { key: 'ledger-empty' }, [noteField(), h('p', { key: 'p', className: 'grove-caption' }, 'Replay this grove with different priorities. Its weather stays the same, so the comparison is fair.')]);
+          var hidden = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' };
+          return h('div', { key: 'ledger' }, [h('h4', { key: 'h' }, 'Other runs of ' + config.seed),
+            h('ul', { key: 'l', className: 'grove-ledger', 'aria-label': 'Earlier runs of this grove' }, others.slice().reverse().map(function (e) {
+              var cards = e.priorities.map(function (id) { return GROVE_PRIORITIES.filter(function (p) { return p.id === id; })[0] || GROVE_PRIORITIES[1]; });
+              return h('li', { key: e.key }, [
+                h('span', { key: 'icons', 'aria-hidden': true }, cards.map(function (c) { return c.icon; }).join('')),
+                h('span', { key: 'names', style: hidden }, 'Priorities: ' + cards.map(function (c) { return c.name; }).join(', ') + '.'),
+                ' \u00b7 ' + e.established + ' established in ' + e.patches + (e.patches === 1 ? ' patch' : ' patches') + ' \u00b7 ' + e.living + ' living' + (e.success ? ' \u00b7 goal reached' : e.years < 8 ? ' \u00b7 ended in year ' + e.years : '') + (e.note ? ' \u00b7 \u201c' + String(e.note).slice(0, 240) + '\u201d' : '')
+              ]);
+            })),
+            h('p', { key: 'note', className: 'grove-caption' }, 'Same code and event mode mean the same weather every year. Differences come from your priorities, the routes chosen and each landing\u2019s chance draw.'), noteField()]);
+        }
+        return h('section', { className: 'allo-tree-grove', 'aria-label': 'Grove campaign', style: {
+          '--grove-card': T.card, '--grove-ink': T.text, '--grove-muted': T.dim, '--grove-line': T.border,
+          '--grove-wash': isContrast ? '#000' : isDark ? '#122e2a' : '#eff6ed', '--grove-accent': T.accent,
+          '--grove-on-accent': T.onAccent, '--grove-patch': isContrast ? '#0a0a0a' : isDark ? '#263d33' : '#dce8ce',
+          '--grove-damp': isContrast ? '#0a0a0a' : isDark ? '#203a42' : '#d6e9e6',
+          '--grove-exposed': isContrast ? '#0a0a0a' : isDark ? '#3b3c2b' : '#eee5c9'
+        } }, [
+          h('style', { key: 'style' }, GROVE_CSS),
+          h('header', { key: 'head', className: 'grove-header' }, [
+            h('div', { key: 'intro' }, [h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'A SMALL FOREST · A LASTING STORY'),
+              h('h2', { key: 'title' }, 'Leave a living legacy.'),
+              h('p', { key: 'copy' }, band === 'k2' ? 'Help your grove through eight years. Give new trees a chance to take root.' : 'Guide a grove through eight years. Keep a lineage alive and establish descendants in two patches.')]),
+            h('div', { key: 'year', className: 'grove-year' }, [h('strong', { key: 'n' }, grove.year + ' / 8'), h('span', { key: 'l' }, 'years completed')])
+          ]),
+          h('div', { key: 'progress', className: 'grove-progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': grove.year, 'aria-label': 'Years completed' }, Array.from({ length: 8 }, function (_, i) {
+            return h('span', { key: i, className: i < grove.year ? 'is-complete' : '', 'aria-hidden': true }, i + 1);
+          })),
+          h('div', { key: 'layout', className: 'grove-layout' }, [
+            h('div', { key: 'landscape', className: 'grove-landscape' }, [
+              h('div', { key: 'stats', className: 'grove-stats' }, [
+                h('span', { key: 'live' }, [h('strong', { key: 'v', 'data-grove-living': true }, summary.living), ' living trees']),
+                h('span', { key: 'offspring' }, [h('strong', { key: 'v', 'data-grove-established': true }, summary.established), ' established descendants']),
+                h('span', { key: 'patches' }, [h('strong', { key: 'v' }, summary.descendantPatches + ' / 2'), ' descendant patches'])
+              ]),
+              h('div', { key: 'views', className: 'grove-view-switch', role: 'group', 'aria-label': 'Grove view' }, [
+                btn('map', 'Habitat map', function () { upd('groveView', 'map'); }, { pressed: !inspect3d }),
+                btn('3d', '3D close-up', function () { upd('groveView', '3d'); }, { pressed: inspect3d })
+              ]),
+              inspect3d ? closeup() : h('div', { key: 'map', className: 'grove-map', role: 'group', 'aria-label': 'Grove habitat patches' }, GROVE_PATCHES.map(function (patch, i) {
+                var living = grove.trees.filter(function (n) { return n.patch === i && n.tree.alive; });
+                var dead = grove.trees.filter(function (n) { return n.patch === i && !n.tree.alive; });
+                var gained = last ? last.landings.filter(function (l) { return l.patch === i && l.outcome === 'arrived'; }).length : 0;
+                var lost = last ? last.losses.filter(function (l) { return l.patch === i; }).length : 0;
+                var gap = grove.gaps.indexOf(i) >= 0;
+                return h('button', { key: i, type: 'button', className: 'grove-patch is-' + patch.habitat + (i === selection ? ' is-selected' : '') + (dryNext.indexOf(i) >= 0 ? ' is-dry-next' : ''),
+                  'aria-pressed': i === selection, 'aria-label': patch.name + ': ' + living.length + ' living trees' + (gap ? ', canopy opening' : '') + (dead.length ? ', ' + dead.length + ' dead' : '') + (gained ? ', ' + gained + ' arrived this year' : '') + (lost ? ', ' + lost + ' lost this year' : '') + (dryNext.indexOf(i) >= 0 ? ', dry next year' : ''),
+                  onClick: function () { upd('grovePatch', i); } }, [
+                  h('span', { key: 'name', className: 'grove-patch-name' }, patch.name),
+                  gained || lost ? h('span', { key: 'badge', className: 'grove-patch-badge' + (gained ? '' : ' is-loss'), 'aria-hidden': true }, (gained ? '+' + gained : '') + (gained && lost ? ' ' : '') + (lost ? '\u2212' + lost : '')) : null,
+                  dryNext.indexOf(i) >= 0 ? h('span', { key: 'dry', className: 'grove-patch-dry', 'aria-hidden': true }, 'dry next') : null,
+                  h('svg', { key: 'trees', viewBox: '0 0 140 100', 'aria-hidden': true, focusable: 'false' }, [
+                    h('ellipse', { key: 'ground', cx: 70, cy: 85, rx: 64, ry: 12, fill: isContrast ? '#444' : '#91b18b44' }),
+                    dead.slice(0, 3).map(function (node, idx) { return snag(node, idx); }),
+                    living.length ? living.map(function (node, idx) { return glyph(node, idx, living.length); }) : h('path', { key: 'empty', d: 'M65 84 Q68 74 64 71 M69 86 Q69 76 74 72 M73 86 Q77 82 79 77', fill: 'none', stroke: isContrast ? '#fff' : '#6c8b61', strokeWidth: 2 })
+                  ]),
+                  h('span', { key: 'label', className: 'grove-patch-count' }, (living.length ? living.length + (living.length === 1 ? ' tree' : ' trees') : 'Open ground') + (dead.length ? ' \u00b7 ' + dead.length + (dead.length === 1 ? ' snag' : ' snags') : '') + (gap ? ' \u00b7 gap' : ''))
+                ]);
+              })),
+              inspect3d ? null : h('p', { key: 'legend', className: 'grove-caption' }, 'Rounded crown: oak \u00b7 Narrow crown: aspen \u00b7 Small tree: young individual \u00b7 Bare grey trunk: a dead tree left standing (a snag). Badges mark this year\u2019s arrivals (+) and losses (\u2212). Map symbols are not to scale.'),
+              h('section', { key: 'inspect', className: 'grove-inspect', 'aria-label': 'Selected patch' }, [
+                h('h3', { key: 'title' }, site.name),
+                h('p', { key: 'habitat' }, site.habitat.charAt(0).toUpperCase() + site.habitat.slice(1) + ' habitat · ' + Math.round(groveEnvironment(grove, selection, forecast).light * 100) + '% light setting' + (summary.ended ? '' : ' \u00b7 next year ' + Math.round(groveEnvironment(grove, selection, forecast).soilWater * 100) + '% soil moisture' + (dryNext.indexOf(selection) >= 0 ? ' (dry)' : '')) + (grove.gaps.indexOf(selection) >= 0 ? ' · a storm opened the canopy' : '')),
+                selectedNodes.length ? h('ul', { key: 'trees' }, selectedNodes.map(function (node) {
+                  return h('li', { key: node.id }, speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + ' · ' + (!node.tree.alive ? 'died; lineage record retained' : node.parent ? node.born === grove.year ? 'new arrival; survival not yet established' : 'established descendant' : 'founding tree') + (node.parent ? ' · ' + (node.route === 'root_sucker' ? 'clonal shoot' : 'seed offspring') : ''));
+                })) : h('p', { key: 'empty' }, 'No trees here yet. A seed may arrive from farther away; root suckers stay in the parent’s patch or an adjacent one.'),
+                !inspect3d && portrait ? action('inspect-tree', 'Explore this patch’s trees in 3D', function () { upd('groveView', '3d'); }) : null,
+                h('details', { key: 'traits' }, [h('summary', { key: 's' }, 'Species traits and stored food'),
+                  h('p', { key: 'p' }, 'These traits are already present. Choosing a resource priority does not change genes.'),
+                  selectedNodes.filter(function (n) { return n.tree.alive; }).map(function (node) {
+                    var species = speciesById(node.tree.speciesId);
+                    return h('p', { key: node.id }, species.name + ': shade tolerance ' + Math.round(species.shadeTol * 100) + '/100; drought tolerance ' + Math.round(species.droughtTol * 100) + '/100. Food reserve: ' + formatCarbon(Math.max(0, node.tree.reserves)) + '; reproductive savings: ' + formatCarbon(node.tree.seedsBanked) + '.');
+                  })])
+              ])
+            ]),
+            h('section', { key: 'choices', className: 'grove-decisions', 'aria-label': 'Journey decisions' }, [
+              !started ? h('div', { key: 'setup', className: 'grove-setup' }, [
+                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YOUR FIRST GROVE'),
+                h('h3', { key: 'title' }, 'Three trees. Eight years. What will take root?'),
+                h('p', { key: 'copy' }, 'Two adults bring reproductive savings from their earlier lives. A young aspen is already growing nearby. Your single-tree lab stays separate.'),
+                h('label', { key: 'ml', htmlFor: 'grove-mode' }, 'Events'),
+                h('select', { key: 'mode', id: 'grove-mode', value: config.mode, onChange: function (e) { upd('groveMode', e.target.value); } }, [h('option', { key: 'deck', value: 'deck' }, 'Event deck · authored scenarios'), h('option', { key: 'generated', value: 'generated' }, 'Generated weather · bounded combinations')]),
+                h('p', { key: 'modehelp', className: 'grove-caption' }, config.mode === 'deck' ? 'A repeatable draw of gentle years, rain, drought and storms.' : 'Temperature, moisture and storm strength are combined by rules. This is procedural weather, not AI-generated biology.'),
+                h('label', { key: 'sl', htmlFor: 'grove-seed' }, 'Grove code'),
+                h('input', { key: 'seed', id: 'grove-seed', maxLength: 32, value: d.groveSeed == null ? 'GROVE-01' : d.groveSeed, onChange: function (e) { upd('groveSeed', e.target.value); } }),
+                h('p', { key: 'seedhelp', className: 'grove-caption' }, 'The same code and event mode give the same weather. Try another strategy fairly.'),
+                (function () { var runs = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode; }).length; return runs ? h('p', { key: 'runs', className: 'grove-caption' }, runs === 1 ? '1 completed run on this code is remembered for comparison.' : runs + ' completed runs on this code are remembered for comparison.') : null; })(),
+                action('start', 'Begin Grove Journey', function () { saveRun(config, 'Grove Journey started. Read the forecast and choose a resource priority.'); })
+              ]) : summary.ended ? h('div', { key: 'ending', className: 'grove-ending', 'data-grove-ending': true }, [
+                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'THE GROVE’S STORY'),
+                h('h3', { key: 'title' }, summary.success ? 'A living legacy.' : summary.living ? 'The story can grow further.' : 'This grove’s run has ended.'),
+                h('p', { key: 'copy' }, summary.established + ' descendants survived beyond their arrival year, across ' + summary.descendantPatches + ' patches. ' + (summary.success ? 'You reached the two-patch goal.' : 'Try changing an earlier priority and compare the same weather.')),
+                h('p', { key: 'new' }, summary.newArrivals ? summary.newArrivals + ' arrivals in the last year are too new to count as established.' : 'Your field journal stays with you across runs.'),
+                ledgerBlock()
+              ]) : h('div', { key: 'turn', className: 'grove-turn' }, [
+                h('div', { key: 'forecast', className: 'grove-forecast' }, [
+                  h('span', { key: 'year', className: 'grove-eyebrow' }, 'YEAR ' + (grove.year + 1) + ' · FORECAST'),
+                  h('h3', { key: 'title' }, forecast.icon + ' ' + forecast.title), h('p', { key: 'copy' }, forecast.copy),
+                  h('p', { key: 'numbers', className: 'grove-caption' }, forecast.temp + ' °C · ' + Math.round(forecast.water * 100) + '% baseline soil moisture' + (forecast.damage ? ' · ' + GROVE_PATCHES[forecast.patch].name + ' loses ' + Math.round(forecast.damage * 100) + '% of leaf tissue' : '') + '. Patch moisture varies.' + (forecast.water < 0.42 ? ' Trees three years old or younger face extra risk in dry patches.' : '')),
+                  dryNext.length ? h('p', { key: 'risk', className: 'grove-risk' }, 'Dry next year: ' + dryNext.map(function (i) { return GROVE_PATCHES[i].name; }).join(', ') + '. ' + (youngAtRisk ? youngAtRisk + (youngAtRisk === 1 ? ' young tree stands there and faces extra risk. ' : ' young trees stand there and face extra risk. ') : '') + 'New arrivals in dry patches rarely take root.') : null,
+                ]),
+                h('fieldset', { key: 'priorities', className: 'grove-priorities' }, [h('legend', { key: 'legend' }, 'Choose this year’s priority'), GROVE_PRIORITIES.map(function (priority) {
+                  return h('label', { key: priority.id, className: 'grove-priority' + (priorityId === priority.id ? ' is-selected' : '') }, [
+                    h('input', { key: 'radio', type: 'radio', name: 'grove-priority', value: priority.id, checked: priorityId === priority.id, onChange: function () { upd('grovePriority', priority.id); } }),
+                    h('span', { key: 'content' }, [h('strong', { key: 'title' }, priority.icon + ' ' + priority.name), h('span', { key: 'copy' }, priority.copy)])
+                  ]);
+                })]),
+                priorityId === 'offspring' ? h('div', { key: 'route' }, [h('label', { key: 'label', htmlFor: 'grove-route' }, 'Reproduction route'),
+                  h('select', { key: 'select', id: 'grove-route', value: route, onChange: function (e) { upd('groveRoute', e.target.value); } }, [h('option', { key: 'mixed', value: 'mixed' }, 'Oak seeds + local aspen shoots'), h('option', { key: 'seed', value: 'seed' }, 'Seeds from both species')]),
+                  h('p', { key: 'help', className: 'grove-caption' }, 'Shoots establish more often nearby. Seeds can reach all patches but often fail. Neither route guarantees survival.')]) : null,
+                h('div', { key: 'predict', className: 'grove-predict' }, [
+                  h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'PREDICT, THEN CHECK \u00b7 OPTIONAL'),
+                  h('label', { key: 'al', htmlFor: 'grove-predict-arrivals' }, band === 'k2' ? 'How many new trees will arrive this year?' : 'How many new arrivals do you expect this year?'),
+                  h('select', { key: 'as', id: 'grove-predict-arrivals', value: pending.arrivals || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { arrivals: e.target.value })); } }, [
+                    h('option', { key: 'skip', value: '' }, 'Skip this prediction'), h('option', { key: 'none', value: 'none' }, 'None'), h('option', { key: 'some', value: 'some' }, '1 or 2'), h('option', { key: 'many', value: 'many' }, '3 or more')]),
+                  h('label', { key: 'fl', htmlFor: 'grove-predict-food' }, band === 'k2' ? 'Will the grove make more food than it uses?' : 'Will the grove make more food than it uses overall?'),
+                  h('select', { key: 'fs', id: 'grove-predict-food', value: pending.food || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { food: e.target.value })); } }, [
+                    h('option', { key: 'skip', value: '' }, 'Skip this prediction'), h('option', { key: 'surplus', value: 'surplus' }, 'Yes, a surplus'), h('option', { key: 'shortfall', value: 'shortfall' }, 'No, a shortfall')]),
+                  h('p', { key: 'help', className: 'grove-caption' }, 'The evidence after the year checks your prediction. A miss is useful: it shows where the model surprised you.')
+                ]),
+                action('advance', 'Live through year ' + (grove.year + 1) + ' →', advance),
+                h('p', { key: 'time', className: 'grove-caption' }, 'One click advances one whole year. Each tree uses its own food budget; these cards do not alter inherited traits.')
+              ]),
+              started ? h('div', { key: 'replay', className: 'grove-replay' }, [
+                action('undo', 'Try the previous year again', function () { saveRun(Object.assign({}, config, { choices: config.choices.slice(0, -1) }), 'Returned to the previous year with the same forecast.'); }, !grove.year),
+                h('details', { key: 'restart' }, [h('summary', { key: 's' }, 'Replay or choose a new grove'),
+                  h('p', { key: 'p', className: 'grove-caption' }, 'Replaying resets this grove’s timeline. Your journal and lab tree stay saved.'),
+                  action('same', 'Replay this grove from the start', function () { saveRun(Object.assign({}, config, { choices: [] }), 'Same grove restarted; the weather sequence is unchanged.'); }),
+                  action('new', 'Return to grove setup', function () { updMulti({ groveRun: null, groveSeed: config.seed, groveMode: config.mode, groveJournal: journal, grovePredictions: [], grovePending: null }); srSay('Grove setup opened. Change the code or event mode to begin another run.'); })]),
+                h('p', { key: 'seed', className: 'grove-caption' }, config.seed + ' · ' + (config.mode === 'deck' ? 'Event deck' : 'Generated weather') + ' · saved with this lab')
+              ]) : null
+            ])
+          ]),
+          h('section', { key: 'receipt', className: 'grove-receipt', 'aria-label': 'Latest year evidence', 'aria-live': 'polite', 'aria-atomic': true }, last ? [
+            h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YEAR ' + last.year + ' · WHAT HAPPENED'),
+            h('h3', { key: 'title' }, last.event.title),
+            h('p', { key: 'priority' }, 'Priority used: ' + GROVE_PRIORITIES.filter(function (p) { return p.id === last.choice.priority; })[0].name + '.'),
+            h('p', { key: 'result' }, last.arrivals + (last.arrivals === 1 ? ' new arrival · ' : ' new arrivals · ') + last.established + ' established descendants · ' + last.deaths + (last.deaths === 1 ? ' tree lost.' : ' trees lost.')),
+            h('p', { key: 'why' }, (last.net < 0 ? 'The grove used more food than it made overall. Trees with a shortfall drew on their own reserves.' : 'The grove made more food than it used overall; each tree allocated its own surplus to your chosen priority.') + (last.damaged ? ' The storm removed leaf tissue from ' + last.damaged + ' trees.' : '')),
+            h('p', { key: 'stored' }, 'Stored food across living trees: ' + formatCarbon(last.reserves) + (prev ? ' (' + (last.reserves >= prev.reserves ? 'up ' : 'down ') + formatCarbon(Math.abs(round(last.reserves - prev.reserves, 2))) + ' from last year)' : '') + '. Reproductive savings: ' + formatCarbon(last.banked) + '.'),
+            last.attempts ? h('p', { key: 'chance' }, last.attempts + ' reproductive attempts used ' + formatCarbon(last.spent) + '. Landings, moisture, light, chance and available space determined which arrived. Arrivals must survive another year to count toward the goal.') : h('p', { key: 'no-attempt' }, 'No reproductive attempts this year. Mature trees spend their reproductive savings when you choose Invest in offspring.'),
+            whereList(last),
+            predictionCheck(last),
+            h('p', { key: 'history-note', className: 'grove-caption' }, summary.ended ? 'This is the final year’s evidence. Your journal retains the whole run.' : 'This is evidence from the completed year. The forecast above describes the next year.')
+          ] : h('p', { key: 'empty' }, 'Your first year’s evidence will appear here. Establishment is a milestone; a seed landing alone is not a surviving next generation.')),
+          h('details', { key: 'journal', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'Field journal · ' + journal.length + (journal.length === 1 ? ' discovery' : ' discoveries')),
+            h('p', { key: 'intro' }, 'Discoveries carry between runs. They recognise observations, not permanent strength bonuses.'),
+            journal.length ? h('ul', { key: 'discoveries' }, journal.map(function (id) { return h('li', { key: id }, journalNames[id]); })) : h('p', { key: 'empty' }, 'Complete a year to begin your journal.'),
+            journeyChart(),
+            h('ol', { key: 'timeline', 'aria-label': 'Journey timeline' }, grove.receipts.map(function (r) { return h('li', { key: r.year }, 'Year ' + r.year + ': ' + r.event.title + ' · ' + GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0].name + ' · ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses.'); }))]),
+          h('details', { key: 'science', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'How this model works · evolution, genes and old growth'),
+            h('p', { key: 'model' }, 'This is a small ecological teaching model. Weather ranges, reproductive maturity (oak 20 years; aspen 10), establishment chances and the three-living-trees-per-patch limit are scenario assumptions. Moisture and light are prescribed patch settings, not a shared soil-water simulation. Storm gaps persist for this eight-year run. Trees three years old or younger face an extra chance of dying when their patch is dry; older trees die here only if their stored food runs out.'),
+            h('p', { key: 'evolution' }, 'Natural selection acts on existing heritable variation through differences in survival and reproduction across generations. Trees do not choose useful mutations. This first journey models species differences and reproduction, not within-species genetic evolution. Its allocation cards are resource decisions in a game abstraction.'),
+            h('p', { key: 'gmo' }, 'Choosing parents for breeding and deliberately modifying genes are human interventions. A future trait experiment would label those separately from natural selection and show costs as well as benefits. No gene editing or mutation upgrades occur here.'),
+            h('p', { key: 'old' }, 'Old growth is more than a collection of old trees: forest structure, dead wood, habitat and regeneration matter, with definitions varying by forest type. An eight-year grove cannot become an old-growth forest. A future legacy scenario would start with an established forest.'),
+            h('p', { key: 'invasive' }, 'Invasive species need specific hosts and mechanisms. Emerald ash borer belongs in an ash-focused scenario; this oak-and-aspen journey does not simulate it.'),
+            h('p', { key: 'sources' }, [h('a', { key: 'e', href: 'https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/natural-selection/', target: '_blank', rel: 'noopener noreferrer' }, 'UC Berkeley: natural selection'), ' · ', h('a', { key: 'f', href: 'https://research.fs.usda.gov/treesearch/5546', target: '_blank', rel: 'noopener noreferrer' }, 'US Forest Service: old-growth structure')])])
         ]);
       }
 
@@ -11916,6 +12859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         { id: 'chem', label: __alloT('stem.treelab.tab_chem', 'Chemistry'), icon: '☀️' },
         { id: 'transport', label: __alloT('stem.treelab.tab_transport', 'Transport'), icon: '↕️', min: 'g35' },
         { id: 'spread', label: __alloT('stem.treelab.tab_spread', 'Spread'), icon: '🌱' },
+        { id: 'grove', label: __alloT('stem.treelab.tab_grove', 'Grove Journey'), icon: '🌲' },
         { id: 'compare', label: __alloT('stem.treelab.tab_compare', 'Compare'), icon: '⚖️', min: 'g35' },
         { id: 'quiz', label: __alloT('stem.treelab.tab_quiz', 'Check'), icon: '✓' }
       ].filter(function (t) { return !t.min || atLeast(band, t.min); });
@@ -11960,6 +12904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ? __alloT('stem.treelab.chapter_spread_cue', 'Try a mixed strategy, then run another decade.')
               : __alloT('stem.treelab.chapter_spread_seed_cue', 'Compare two seed routes, then run another decade.'))
         },
+        grove: { hint: 'Survive and renew', title: 'Grove Journey', intro: 'An optional eight-year campaign of survival and reproduction.', cue: 'Read the forecast. Leave a next generation.' },
         compare: {
           hint: __alloT('stem.treelab.tab_compare_hint', 'Test tree strategies'),
           title: __alloT('stem.treelab.chapter_compare', 'Compare five ways to be a tree'),
@@ -12137,8 +13082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]),
           h('p', { key: 'trade', className: 'allo-tree-species-tradeoff' },
             band === 'k2'
-              ? __alloT('stem.treelab.traits_tradeoff_k2', 'Every kind of tree has things it does well and places where another tree may do better.')
-              : __alloT('stem.treelab.traits_tradeoff', 'These model traits are tradeoffs, not grades. An advantage in one environment can carry a cost in another.'))
+              ? __alloT('stem.treelab.traits_work_k2', 'Each kind of tree has different strengths. Some use dim light better. Roots help bring water to the leaves, but need food too.')
+              : __alloT('stem.treelab.traits_work', 'Shade tolerance improves low-light capture, with a small bright-light capacity cost in this model. Roots help supply the canopy with water but add maintenance cost. Species also differ in growth and respiration, so shade tolerance alone does not predict the winner.'))
         ]);
       }
 
@@ -12146,14 +13091,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       switch (view) {
         case 'chem': body = viewChem(); break;
         case 'transport': body = viewTransport(); break;
+        case 'grove': body = viewGrove(); break;
         case 'spread': body = viewSpread(); break;
         case 'compare': body = viewCompare(); break;
         case 'quiz': body = viewQuiz(); break;
         default: body = viewGrow();
       }
 
+      var discoveryCss = [
+        '.is-discovery-layout .allo-tree-hero-title{font-size:28px!important;}',
+        '.is-discovery-layout .allo-tree-hero-copy>div:first-child{display:none!important;}',
+        '.is-discovery-layout [data-tree-chapter=grow] .allo-tree-chapter-copy,.is-discovery-layout [data-tree-chapter=grow] .allo-tree-chapter-cue{display:none;}',
+        '.is-discovery-layout .allo-tree-hero-stats{margin-top:8px;gap:6px;}',
+        '.is-discovery-layout .allo-tree-hero-stat{display:flex;align-items:baseline;gap:6px;padding:4px 8px;min-width:0;box-shadow:none;}',
+        '.is-discovery-layout .allo-tree-chapter{padding:9px 12px!important;min-height:0!important;}',
+        '.is-discovery-layout .allo-tree-workbench{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:16px;}',
+        '.allo-tree-discovery h3{font-size:22px;line-height:1.2;margin:8px 0 12px;font-weight:850;}',
+        '.allo-tree-discovery p{font-size:14px;line-height:1.5;margin:10px 0;}',
+        '.allo-tree-discovery-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--tree-accent);}',
+        '.allo-tree-discovery-steps{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:10px 0 16px;}',
+        '.allo-tree-discovery-steps li{padding:5px 8px;border:1px solid var(--lab-edge);border-radius:8px;font-size:12px;}',
+        '.allo-tree-discovery-steps [aria-current=step]{border:2px solid var(--tree-accent);font-weight:800;}',
+        '.allo-tree-discovery-steps [data-done=true]{color:var(--tree-ink);font-weight:700;}',
+        '.allo-tree-discovery-choices{display:flex;flex-wrap:wrap;margin:12px 0;}',
+        '.allo-tree-discovery-results{display:grid;grid-template-columns:1fr 1fr;gap:10px;}',
+        '.allo-tree-discovery-result{border:1px solid var(--lab-edge);border-radius:12px;padding:12px;min-width:0;font-size:12px;line-height:1.6;}',
+        '.allo-tree-discovery-number{font-size:20px;font-weight:800;margin:4px 0;}',
+        '.allo-tree-food-evidence{margin:14px 0;padding:12px;border:1px solid var(--lab-edge);border-radius:12px;background:var(--hero-chip);}',
+        '.allo-tree-food-evidence>figcaption{font-size:15px;font-weight:850;color:var(--tree-ink);}',
+        '.allo-tree-discovery .allo-tree-food-evidence p{font-size:12px;margin:6px 0 12px;}',
+        '.allo-tree-food-evidence-row{margin:12px 0;}',
+        '.allo-tree-food-evidence-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;font-size:13px;}',
+        '.allo-tree-food-evidence-track{position:relative;height:18px;margin:6px 0;border-radius:4px;background:var(--chapter-border);overflow:hidden;}',
+        '.allo-tree-food-evidence-bar{position:absolute;height:100%;border-radius:3px;}',
+        '.allo-tree-food-evidence-zero{position:absolute;top:0;bottom:0;width:2px;background:var(--tree-ink);}',
+        '.allo-tree-food-evidence-meaning{font-size:11px;color:var(--tree-muted);}',
+        '.allo-tree-discovery .allo-tree-food-evidence-scale{font-size:11px;margin-bottom:0;}',
+        '@media(max-width:960px){.is-discovery-layout .allo-tree-workbench{grid-template-columns:minmax(0,1fr);grid-template-areas:"mission" "scene" "controls";}}',
+        '.allo-tree-discovery-figure{margin:12px 0;}',
+        '.allo-tree-discovery-figure svg{display:block;width:100%;max-height:150px;}',
+        '.allo-tree-discovery-figure figcaption{font-size:11px;color:var(--tree-muted);}',
+        '.allo-tree-discovery-feedback{padding:12px;border-left:4px solid var(--tree-accent);background:var(--hero-chip);border-radius:8px;}',
+        '.allo-tree-discovery-context{font-size:12px!important;color:var(--tree-muted);}',
+        '.allo-tree-discovery-notebook{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;font-size:12px;}',
+        '.allo-tree-discovery-notebook span{padding:4px 7px;border:1px solid var(--lab-edge);border-radius:8px;}',
+        '.allo-tree-fold{margin:10px 0;border:1px solid var(--lab-edge);border-radius:12px;background:var(--hero-chip);}',
+        '.allo-tree-fold>summary{padding:12px;cursor:pointer;font-weight:700;font-size:13px;min-height:44px;box-sizing:border-box;}',
+        '.allo-tree-fold>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
+        '.allo-tree-fold-body{padding:0 10px 10px;}',
+        '@media(max-width:760px){.is-discovery-layout .allo-tree-hero-stats{display:none;}.is-discovery-layout .allo-tree-setup-label{display:none;}.is-discovery-layout .allo-tree-workbench{grid-template-columns:minmax(0,1fr);grid-template-areas:"mission" "scene" "controls";}.is-discovery-layout .allo-tree-hero{padding:10px!important;gap:10px!important;}.is-discovery-layout .allo-tree-hero-title{font-size:24px!important;}.allo-tree-discovery h3{font-size:20px;}.allo-tree-discovery p{font-size:13px;}}'
+      ].join('\n');
+
+
       return h('div', {
-        className: 'allo-tree-lab' + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
+        className: 'allo-tree-lab is-discovery-layout' + (band === 'k2' ? ' is-young' : '') + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
         style: {
           '--tree-glow': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.11)' : 'rgba(16,185,129,.14)'),
           '--sun-glow': isContrast ? 'transparent' : (isDark ? 'rgba(251,191,36,.07)' : 'rgba(250,204,21,.13)'),
@@ -12185,12 +13176,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           background: isContrast ? T.bg : (isDark ? 'linear-gradient(180deg,#0b1f1c 0,#0f172a 390px,#0f172a 100%)' : 'linear-gradient(180deg,#eefaf4 0,#f8fafc 390px,#f8fafc 100%)'), color: T.text, padding: 16, borderRadius: 20, minHeight: 400, boxShadow: isContrast ? 'none' : (isDark ? '0 26px 70px rgba(2,6,23,.28)' : '0 26px 70px rgba(15,23,42,.08)')
         }
       }, [
-        h('style', { key: 'visual-css' }, visualCss),
+        h('style', { key: 'visual-css' }, visualCss + discoveryCss),
         h('div', {
           key: 'top', className: 'allo-tree-hero',
           style: {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 18,
-            flexWrap: 'wrap', marginBottom: 14, padding: '20px 22px', borderRadius: 18,
+            flexWrap: 'wrap', marginBottom: 10, padding: '12px 16px', borderRadius: 18,
             border: '1px solid ' + (isContrast ? T.border : (isDark ? '#2f5c50' : '#a7d7c4')),
             background: isContrast ? T.card : (isDark
               ? 'linear-gradient(135deg,#102c2a 0%,#172033 62%,#2a2415 100%)'
@@ -12204,7 +13195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('h3', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
               '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
             h('div', { key: 's', style: { fontSize: 13, color: T.dim, marginTop: 7, maxWidth: 570, lineHeight: 1.55 } },
-              __alloT('stem.treelab.subtitle', 'Grow a tree through changing conditions, discover what limits it, and help it make the next generation.')),
+              __alloT('stem.treelab.discovery_subtitle', 'Make a prediction. Grow a tree. Discover what changed.')),
             h('div', { key: 'quick', className: 'allo-tree-hero-stats' }, [
               h('span', { key: 'age', className: 'allo-tree-hero-stat' }, [
                 h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.age', 'Age')),
@@ -12309,7 +13300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             return ctx.React.cloneElement(node, { key: 'card' + i });
           })
           : body),
-        view === 'quiz' ? null : speciesIdentityCard(),
+        view === 'quiz' || view === 'grove' ? null : speciesIdentityCard(),
         chapterBridge()
       ]);
     }
@@ -12317,10 +13308,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
   // Expose the pure engine for tests. No DOM, no ctx, no React.
   window.__alloTreeLabEngine = {
+    formatCarbon: formatCarbon, runDroughtDiscovery: runDroughtDiscovery,
+    groveSceneState: groveSceneState, groveConfig: groveConfig, groveStart: groveStart, groveRestore: groveRestore, groveAdvance: groveAdvance, groveEvent: groveEvent, groveEnvironment: groveEnvironment, groveSummary: groveSummary, groveDiscoveries: groveDiscoveries, GROVE_PATCHES: GROVE_PATCHES, GROVE_PRIORITIES: GROVE_PRIORITIES,
+    discoveryCarbonComparison: discoveryCarbonComparison,
     lightFactor: lightFactor, co2Factor: co2Factor, tempFactor: tempFactor,
     stomatalAperture: stomatalAperture, limitingFactor: limitingFactor,
     grossPhotosynthesis: grossPhotosynthesis, maintenanceRespiration: maintenanceRespiration,
     seasonalCarbonTrace: seasonalCarbonTrace,
+    rootWaterAccess: rootWaterAccess, treePhysiology: treePhysiology,
     ringWidthMm: ringWidthMm, newTree: newTree, projectCanopySupport: projectCanopySupport,
     simulateYear: simulateYear, summariseYearAdvance: summariseYearAdvance,
     normaliseAlloc: normaliseAlloc, normaliseTree: normaliseTree, envForYear: envForYear,

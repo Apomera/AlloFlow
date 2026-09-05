@@ -40,6 +40,14 @@ const probes = `
           content.labels
         ];
 
+        probe.applyStillPhase = function (phase) {
+          content.frame(Date.now(), Object.assign({}, api.sceneProps, { visualPhase: phase }), true);
+          var arrays = [];
+          meshes.crown.traverse(function (mesh) {
+            if (mesh.isInstancedMesh) arrays.push(Array.from(mesh.instanceMatrix.array));
+          });
+          return JSON.stringify(arrays);
+        };
         probe.builds += 1;
         probe.pickIds = (content.picks || []).map(function (mesh) {
           return mesh && mesh.userData ? (mesh.userData.partId || null) : null;
@@ -345,4 +353,23 @@ test('keyboard anatomy controls update selectedPart when the staged UI exposes t
     ).toBe(id);
     await expect(button).toHaveAttribute('aria-pressed', 'true');
   }
+});
+// Resting poses must still change when the learner changes the seasonal state.
+test('reduced motion updates seasonal leaf state but reuses an unchanged resting pose', async ({ page }) => {
+  await mountTree(page, { reduced: true, season: 'autumn' });
+  const result = await page.evaluate(() => {
+    const probe = (window as any).__tree3dProbe;
+    const spring = probe.applyStillPhase(0.20);
+    probe.matrixWrites = 0;
+    const stillSpring = probe.applyStillPhase(0.20);
+    const restingWrites = probe.matrixWrites;
+    probe.matrixWrites = 0;
+    const lateAutumn = probe.applyStillPhase(0.94);
+    return { restingWrites, stateWrites: probe.matrixWrites,
+      restingUnchanged: spring === stillSpring, seasonChanged: spring !== lateAutumn };
+  });
+  expect(result.restingWrites).toBe(0);
+  expect(result.restingUnchanged).toBe(true);
+  expect(result.stateWrites).toBeGreaterThan(0);
+  expect(result.seasonChanged).toBe(true);
 });

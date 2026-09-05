@@ -75,6 +75,7 @@ const literals = (source, re) => [...new Set([...source.matchAll(re)]
   .filter((t) => /[A-Za-z]{3}/.test(t)))];
 
 const notices = literals(script, /notice\('((?:[^'\\]|\\.)*)'/g);
+const savedResults = literals(script, /(?:reload|reloadAfterConfirmedSave)\('((?:[^'\\]|\\.)*)'/g);
 const dialogs = literals(script, /(?:confirmT|promptT|window\.(?:confirm|prompt))\('((?:[^'\\]|\\.)*)'/g);
 // Messages that carry a value are written as one sentence with numbered slots
 // and filled by fmt(), so the whole sentence is what gets translated.
@@ -107,7 +108,7 @@ if (INCLUDE_SERVER) {
   server = literals(gs, /srError_\('[a-z_]+', '((?:[^'\\]|\\.)*)'/g).filter((t) => !technical.test(t));
 }
 
-const candidates = [...notices, ...dialogs, ...templates, ...markupText, ...server];
+const candidates = [...notices, ...savedResults, ...dialogs, ...templates, ...markupText, ...server];
 const missing = candidates.filter((t) => !covered(t) && !fragment(t) && !DENY.has(t) && !/@[a-z]+\./i.test(t));
 const fragments = candidates.filter((t) => !covered(t) && fragment(t));
 

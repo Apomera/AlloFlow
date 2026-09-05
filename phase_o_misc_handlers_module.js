@@ -750,6 +750,28 @@ const _resolveBlueprintInstructionalText = (type, raw, instructionalContext, lan
         : candidate;
 };
 
+const _blueprintActivityOptions = (item, settings, onlyExplicit = false) => {
+    const row = item && typeof item === 'object' ? item : {};
+    if ((row.type || row.tool) !== 'brainstorm') return {};
+    const config = row.config && typeof row.config === 'object' ? row.config : {};
+    const hasOptions = ['activityMode', 'activityConfig', 'mode'].some(key =>
+        Object.prototype.hasOwnProperty.call(row, key) || Object.prototype.hasOwnProperty.call(config, key));
+    if (onlyExplicit && !hasOptions) return {};
+    const matrix = _getBlueprintGenerationMatrix();
+    if (matrix && typeof matrix.normalizeActivityOptions === 'function') return matrix.normalizeActivityOptions(row, settings || {});
+    const requested = String(row.activityMode || config.activityMode || row.mode || config.mode || '').trim().toLowerCase();
+    const raw = row.activityConfig || config.activityConfig || {};
+    if (requested === 'discussion') {
+        const protocol = String(raw.protocol || '').trim().toLowerCase();
+        return { activityMode: requested, activityConfig: { protocol: ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'].includes(protocol) ? protocol : 'think-pair-share' } };
+    }
+    if (requested === 'jigsaw') {
+        const size = Number(raw.groupSize);
+        return { activityMode: requested, activityConfig: { groupSize: Number.isFinite(size) && size >= 2 && size <= 6 ? Math.floor(size) : 4 } };
+    }
+    return { activityMode: 'ideas', activityConfig: {} };
+};
+
 const getBlueprintResourcePlan = (blueprint) => {
     const toolDirectives = (blueprint && blueprint.toolDirectives) || {};
     const plannedRows = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
@@ -779,8 +801,7 @@ const getBlueprintResourcePlan = (blueprint) => {
             // activity mode ('ideas' | 'discussion' | 'jigsaw') plus options.
             // Optional and additive — plans without it behave exactly as before
             // (the dispatcher defaults to idea starters).
-            activityMode: (typeof item === 'object' && item && typeof item.activityMode === 'string') ? item.activityMode : null,
-            activityConfig: (typeof item === 'object' && item && item.activityConfig && typeof item.activityConfig === 'object') ? item.activityConfig : null
+            ..._blueprintActivityOptions(typeof item === 'object' && item ? { ...item, type } : { type }, null, true)
         };
         if (typeof item === 'object' && item) {
             if (typeof item.generationAction === 'string') row.generationAction = item.generationAction;
@@ -1316,10 +1337,7 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         // Activities redesign (2026-08-16): forward a brainstorm step's activity
         // mode into the dispatcher's configOverride. Guarded on the tool so a
         // stray field on another row type cannot change behavior.
-        if (type === 'brainstorm' && finalResources[i].activityMode) {
-            stepConfig.activityMode = finalResources[i].activityMode;
-            if (finalResources[i].activityConfig) stepConfig.activityConfig = finalResources[i].activityConfig;
-        }
+        Object.assign(stepConfig, _blueprintActivityOptions(finalResources[i], executionSettingsSnapshot));
         // The standards audit is post-hoc: it audits whatever it can find. Left
         // to itself, selectCurriculumArtifacts GUESSES its own scope — by
         // curriculumId, else a "latest analysis anchor" heuristic, else every
@@ -2265,10 +2283,7 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     };
     // Activities redesign (2026-08-16): rebuilds honor the plan row's activity
     // mode, so a discussion/jigsaw step rebuilds as the same kind of activity.
-    if (row.tool === 'brainstorm' && typeof row.activityMode === 'string') {
-      rebuildConfig.activityMode = row.activityMode;
-      if (row.activityConfig && typeof row.activityConfig === 'object') rebuildConfig.activityConfig = row.activityConfig;
-    }
+    Object.assign(rebuildConfig, _blueprintActivityOptions(row, rebuildDispatchSnapshot));
     const rebuildMatrix = _resolveBlueprintExecutionMatrix(
       Object.assign({ type: row.tool }, row), rebuildDispatchSnapshot,
       Array.isArray(history) ? history : [], null, true

@@ -344,3 +344,41 @@ describe('educator evaluation material audit integrity', () => {
     expect(harness.rows('Audit')).toEqual(auditBefore);
   });
 });
+
+
+describe('SPM finalization with its matching annual rating', () => {
+  const mutation = { teacherId: 't1', event: 'FINALIZED', entityType: 'spm', entityId: 'spm-material-audit', version: 1 };
+  const finalize = workspace => {
+    const record = workspace.spms.find(item => item.id === mutation.entityId);
+    Object.assign(record, { status: 'locked', rating: 3, ratingRationale: 'Results support the selected rating.' });
+    workspace.teachers.find(item => item.id === 't1').ratings.lea = 3;
+  };
+  it('records both changes in one revision with one canonical SPM audit entry', () => {
+    const harness = repositoryFixture(); seedResultsSubmittedSpm(harness);
+    const before = harness.invoke('bootstrap'); const auditBefore = harness.rows('Audit').length;
+    const saved = saveAs(harness, finalize, mutation);
+    expect(saved.revision).toBe(before.revision + 1);
+    expect(saved.workspace.teachers.find(item => item.id === 't1').ratings.lea).toBe(3);
+    expect(saved.workspace.spms.find(item => item.id === mutation.entityId).status).toBe('locked');
+    expect(harness.rows('Audit')).toHaveLength(auditBefore + 1);
+    expectCanonicalAuditRow(latestAuditRow(harness), { ...mutation, summary: 'SPM results locked and annual rating recorded' });
+  });
+  it.each([
+    ['mismatched annual rating', workspace => { workspace.teachers.find(item => item.id === 't1').ratings.lea = 2; }],
+    ['unrelated annual domain', workspace => { workspace.teachers.find(item => item.id === 't1').ratings.domains.d1 = 1; }],
+    ['educator profile edit', workspace => { workspace.teachers.find(item => item.id === 't1').assignment = 'Unrelated assignment edit'; }],
+    ['peer educator rating', workspace => { workspace.teachers.find(item => item.id === 'peer-02').ratings.lea = 2; }],
+    ['private evidence edit', workspace => { workspace.walkthroughs.find(item => item.id === 'walk-t1-private').evidence = 'Unrelated edited evidence'; }],
+  ])('atomically rejects a finalization carrying a %s', (_label, extraChange) => {
+    const harness = repositoryFixture(); seedResultsSubmittedSpm(harness);
+    expectAtomicRejection(harness, workspace => { finalize(workspace); extraChange(workspace); }, mutation);
+  });
+  it.each([
+    { ...mutation, teacherId: 'peer-02' },
+    { ...mutation, entityId: 'wrong-record' },
+    { ...mutation, event: 'RATING_UPDATED' },
+  ])('rejects an incorrectly bound finalization audit (%#)', claimed => {
+    const harness = repositoryFixture(); seedResultsSubmittedSpm(harness);
+    expectAtomicRejection(harness, finalize, claimed);
+  });
+});

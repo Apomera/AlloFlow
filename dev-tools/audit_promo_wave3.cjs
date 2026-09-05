@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
+const {stemTools, selTools} = require('./promo_site_facts.cjs').getPromoFacts();
 const shellPages = [
     'index.html', 'about.html', 'tools.html', 'features.html', 'remediation.html', 'ways-to-use.html',
     'for-districts.html', 'students.html', 'library.html', 'calculator.html',
@@ -81,7 +82,7 @@ const siteScript = read('site.js');
 });
 
 const home = read('index.html');
-check(home.includes('<title>AlloFlow | Open-Source AI Classroom Assistant</title>'), 'index.html: search title is not the canonical product identity');
+check(home.includes('<title>AlloFlow | Free AI Tools for Differentiated Instruction</title>'), 'index.html: search title must identify AlloFlow and its differentiated-instruction purpose');
 check(attribute(home, /<meta\s+name="description"[^>]*>/i, 'content').includes('open-source AI classroom assistant'), 'index.html: search description is missing the product category');
 check(home.includes('AlloFlow &middot; open-source AI classroom assistant'), 'index.html: visible hero identity is missing');
 check(home.includes('"https://github.com/Apomera/AlloFlow"') && home.includes('"https://www.youtube.com/@AlloFlow"'), 'index.html: official identity links are missing from structured data');
@@ -90,8 +91,8 @@ check(home.includes('id="homeToolFinder"') && home.includes('action="tools.html"
 check(home.includes('id="homeRemediation"'), 'index.html: remediation overview is not static');
 check(home.includes('class="community-feedback-band"'), 'index.html: feedback invitation is not static');
 check(home.includes('data-target="400" data-suffix="+">400+</div>'), 'index.html: static documented-feature count is not crawler-readable');
-check(home.includes('data-target="143">143</div>'), 'index.html: static STEM count is not synchronized to 143');
-check(home.includes('data-target="70">70</div>'), 'index.html: static SEL count is not synchronized to 70');
+check(home.includes(`data-target="${stemTools}">${stemTools}</div>`), 'index.html: static STEM count is not synchronized to the registry');
+check(home.includes(`data-target="${selTools}">${selTools}</div>`), 'index.html: static SEL count is not synchronized to the registry');
 check(home.includes('data-target="60" data-suffix="+">60+</div>'), 'index.html: static language-resource count is not crawler-readable');
 check(!home.includes('id="hero-copy-btn"'), 'index.html: old copy-link hero CTA remains');
 check(home.includes('src="tool-catalog-data.js"') && home.includes('src="tool-finder.js"'), 'index.html: finder enhancement scripts are not static');

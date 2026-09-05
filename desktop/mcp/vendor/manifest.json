@@ -11,17 +11,301 @@
     "tesseractCore": "tesseract.js-core@5.1.0"
   },
   "files": [
-    { "path": "THIRD_PARTY_NOTICES.md", "normalization": "lf", "sha256": "ab336fc61c6dd997cc1a9b6194b9d89e1cdc1ebc3094d3ad1b9055d70ff9d782", "bytes": 1060 },
-    { "path": "axe.min.js", "sha256": "b511cd9dec01c76f4b2ad1723b66b6db37d4c2eb4ed199076e1829d9ee7b75e3", "bytes": 553290 },
-    { "path": "fontkit.umd.min.js", "sha256": "d8df561b9fba98e24f2e5130e40948809281bbbc55a20c412359f1a0a5eb35a6", "bytes": 758440 },
-    { "path": "pako.min.js", "sha256": "ede2693a4a6a5126b9d35669062b358ecab6ae7b9b86a1cf302feb45a8514907", "bytes": 46859 },
-    { "path": "pdf-lib.min.js", "sha256": "0f9a5cad07941f0826586c94e089d89b918c46e5c17cf2d5a3c6f666e3bc694f", "bytes": 525099 },
-    { "path": "pdf.worker.min.js", "sha256": "feabdf309770ed24bba31a5467836cdc8cf639c705af27d52b585b041bb8527b", "bytes": 1087212 },
-    { "path": "pdfjs.min.js", "sha256": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946", "bytes": 320004 },
-    { "path": "tessdata/eng.traineddata.gz", "sha256": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91", "bytes": 2952873 },
-    { "path": "tesseract-core.wasm", "sha256": "b47a852b19181ae0999f9d970c368cd351135a320ea978b35bd38602d8bcc0bc", "bytes": 3457035 },
-    { "path": "tesseract-core.wasm.js", "sha256": "fe68f746dc186bb19e2c55de3514d3d6c4036ede53488b5a4db00dfe3f75e5f1", "bytes": 4734776 },
-    { "path": "tesseract.min.js", "sha256": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8", "bytes": 66695 },
-    { "path": "tesseract.worker.min.js", "sha256": "aca1229639fc9907d86f96e825955a2b7c5716d17f3bc3acd71f9c7ab66181fc", "bytes": 123724 }
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "normalization": "lf",
+      "sha256": "6458f02d08267f92c0f02e476f652fe904d63667da18916d97837ad7f5bd8cff",
+      "bytes": 1536
+    },
+    {
+      "path": "axe.min.js",
+      "sha256": "b511cd9dec01c76f4b2ad1723b66b6db37d4c2eb4ed199076e1829d9ee7b75e3",
+      "bytes": 553290
+    },
+    {
+      "path": "fontkit.umd.min.js",
+      "sha256": "d8df561b9fba98e24f2e5130e40948809281bbbc55a20c412359f1a0a5eb35a6",
+      "bytes": 758440
+    },
+    {
+      "path": "pako.min.js",
+      "sha256": "ede2693a4a6a5126b9d35669062b358ecab6ae7b9b86a1cf302feb45a8514907",
+      "bytes": 46859
+    },
+    {
+      "path": "pdf-lib.min.js",
+      "sha256": "0f9a5cad07941f0826586c94e089d89b918c46e5c17cf2d5a3c6f666e3bc694f",
+      "bytes": 525099
+    },
+    {
+      "path": "pdf.worker.min.js",
+      "sha256": "feabdf309770ed24bba31a5467836cdc8cf639c705af27d52b585b041bb8527b",
+      "bytes": 1087212
+    },
+    {
+      "path": "pdfjs.min.js",
+      "sha256": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946",
+      "bytes": 320004
+    },
+    {
+      "path": "tessdata/eng.traineddata.gz",
+      "sha256": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91",
+      "bytes": 2952873
+    },
+    {
+      "path": "tesseract-core.wasm",
+      "sha256": "b47a852b19181ae0999f9d970c368cd351135a320ea978b35bd38602d8bcc0bc",
+      "bytes": 3457035
+    },
+    {
+      "path": "tesseract-core.wasm.js",
+      "sha256": "fe68f746dc186bb19e2c55de3514d3d6c4036ede53488b5a4db00dfe3f75e5f1",
+      "bytes": 4734776
+    },
+    {
+      "path": "tesseract.min.js",
+      "sha256": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8",
+      "bytes": 66695
+    },
+    {
+      "path": "tesseract.worker.min.js",
+      "sha256": "aca1229639fc9907d86f96e825955a2b7c5716d17f3bc3acd71f9c7ab66181fc",
+      "bytes": 123724
+    },
+    {
+      "path": "epubcheck/epubcheck.jar",
+      "sha256": "f7f96617c929371821609b88c8484d6dc9f24fe916499863c46094c5fb778a65",
+      "bytes": 1223671
+    },
+    {
+      "path": "epubcheck/lib/accessors-smart-2.4.9.jar",
+      "sha256": "accdd5c7ac4c49b155890aaea1ffca2a9ccd5826b562dd95a99fc1887003e031",
+      "bytes": 29904
+    },
+    {
+      "path": "epubcheck/lib/asm-9.3.jar",
+      "sha256": "1263369b59e29c943918de11d6d6152e2ec6085ce63e5710516f8c67d368e4bc",
+      "bytes": 122176
+    },
+    {
+      "path": "epubcheck/lib/common-image-3.9.4.jar",
+      "sha256": "a5f41991d2492f28ce4f04b82abfffb89f5ffa9dfc87f4e58f10d526e5ba4a83",
+      "bytes": 85550
+    },
+    {
+      "path": "epubcheck/lib/common-io-3.9.4.jar",
+      "sha256": "cc7c27947bf21a75fbc3d613e79bdd8619908e67b88cc7d73091a55876e4fd38",
+      "bytes": 89993
+    },
+    {
+      "path": "epubcheck/lib/common-lang-3.9.4.jar",
+      "sha256": "a521b797d58f65b80fa8ca365d95911622408cab220fd5d852169805f640acbd",
+      "bytes": 119561
+    },
+    {
+      "path": "epubcheck/lib/commons-codec-1.19.0.jar",
+      "sha256": "5c3881e4f556855e9c532927ee0c9dfde94cc66760d5805c031a59887070af5f",
+      "bytes": 374716
+    },
+    {
+      "path": "epubcheck/lib/commons-compress-1.28.0.jar",
+      "sha256": "e1522945218456f3649a39bc4afd70ce4bd466221519dba7d378f2141a4642ca",
+      "bytes": 1117221
+    },
+    {
+      "path": "epubcheck/lib/commons-io-2.20.0.jar",
+      "sha256": "df90bba0fe3cb586b7f164e78fe8f8f4da3f2dd5c27fa645f888100ccc25dd72",
+      "bytes": 563971
+    },
+    {
+      "path": "epubcheck/lib/commons-lang3-3.18.0.jar",
+      "sha256": "4eeeae8d20c078abb64b015ec158add383ac581571cddc45c68f0c9ae0230720",
+      "bytes": 702952
+    },
+    {
+      "path": "epubcheck/lib/error_prone_annotations-2.36.0.jar",
+      "sha256": "77440e270b0bc9a249903c5a076c36a722c4886ca4f42675f2903a1c53ed61a5",
+      "bytes": 19401
+    },
+    {
+      "path": "epubcheck/lib/failureaccess-1.0.3.jar",
+      "sha256": "cbfc3906b19b8f55dd7cfd6dfe0aa4532e834250d7f080bd8d211a3e246b59cb",
+      "bytes": 10763
+    },
+    {
+      "path": "epubcheck/lib/galimatias-0.1.3.jar",
+      "sha256": "b37cbc4513584ed6aa1d8f7529ebe77abbe28c1f54ec63b0ff28a00a2d9d2a9a",
+      "bytes": 107357
+    },
+    {
+      "path": "epubcheck/lib/guava-33.4.8-jre.jar",
+      "sha256": "f3d7f57f67fd622f4d468dfdd692b3a5e3909246c28017ac3263405f0fe617ed",
+      "bytes": 3023797
+    },
+    {
+      "path": "epubcheck/lib/httpclient5-5.1.3.jar",
+      "sha256": "28c759254f4e35319e078bb6ffea75676608dc12cb243b24fb3c8732522977fe",
+      "bytes": 797934
+    },
+    {
+      "path": "epubcheck/lib/httpcore5-5.1.3.jar",
+      "sha256": "f2bf2f2c7772169c9e30699719667ad30f9b46c4e9d7841907deb2d12d9923fe",
+      "bytes": 850808
+    },
+    {
+      "path": "epubcheck/lib/httpcore5-h2-5.1.3.jar",
+      "sha256": "d0e78ba15aa8ebe77982b660ac4b09a95d6e035dbdbea762577dc1c8e2935807",
+      "bytes": 232137
+    },
+    {
+      "path": "epubcheck/lib/icu4j-77.1.jar",
+      "sha256": "b3640b9f416a4411fd33c59abbeea8fd57d024c23e1819bf9673220a97499fe3",
+      "bytes": 14663227
+    },
+    {
+      "path": "epubcheck/lib/imageio-core-3.9.4.jar",
+      "sha256": "244843a7bc8ecf6efb20aa5f817e977addafb3f6b0ce70393b3e6d1109591fae",
+      "bytes": 116474
+    },
+    {
+      "path": "epubcheck/lib/imageio-jpeg-3.9.4.jar",
+      "sha256": "cdc95ecde53b012774790ead020879af6c76928c8d8e0be4b964528937ec1b7d",
+      "bytes": 92263
+    },
+    {
+      "path": "epubcheck/lib/imageio-metadata-3.9.4.jar",
+      "sha256": "580a334f8e20c99ff9127fa9b0022b0f02a981b46e6b38e0df393052329a6324",
+      "bytes": 81866
+    },
+    {
+      "path": "epubcheck/lib/isorelax-20030108.jar",
+      "sha256": "3427152431cf7f967f92e69e5cac16147c5d8fb4b4e5a8a72f5291788efcff8c",
+      "bytes": 192602
+    },
+    {
+      "path": "epubcheck/lib/j2objc-annotations-3.0.0.jar",
+      "sha256": "88241573467ddca44ffd4d74aa04c2bbfd11bf7c17e0c342c94c9de7a70a7c64",
+      "bytes": 12467
+    },
+    {
+      "path": "epubcheck/lib/jackson-annotations-2.18.2.jar",
+      "sha256": "581bd61000ef7648943f781ca05689e56d03f6052748365a8e2b3a9b5d3fa32f",
+      "bytes": 78494
+    },
+    {
+      "path": "epubcheck/lib/jackson-core-2.18.2.jar",
+      "sha256": "d8054ae7c0d1c2d2f55d28e46026ebe5892881f3fab5f439233184381c3b4a1f",
+      "bytes": 597807
+    },
+    {
+      "path": "epubcheck/lib/jackson-databind-2.18.2.jar",
+      "sha256": "4b364e6850dc89172fcf1d4dd26b8ff5488eda44ff4657e22dd265203dd5ab3c",
+      "bytes": 1658755
+    },
+    {
+      "path": "epubcheck/lib/jing-20181222.jar",
+      "sha256": "e5e13fa92d9461f37b7c3d760780ea07cca5b7947440f99ebb7608b5b168aaa3",
+      "bytes": 764033
+    },
+    {
+      "path": "epubcheck/lib/json-path-2.8.0.jar",
+      "sha256": "9601707e95cd79fb98570a01ea8cfb857b5cde948744d6e0edf733c11002c95b",
+      "bytes": 277582
+    },
+    {
+      "path": "epubcheck/lib/json-path-assert-2.8.0.jar",
+      "sha256": "5de6305e6e1df4f4c1ad603f1d7ac2394b474c767b8165701a492643ac34a56a",
+      "bytes": 16606
+    },
+    {
+      "path": "epubcheck/lib/json-smart-2.4.10.jar",
+      "sha256": "70cab5e9488630dc631b1fc6e7fa550d95cddd19ba14db39ceca7cabfbd4e5ae",
+      "bytes": 120206
+    },
+    {
+      "path": "epubcheck/lib/jspecify-1.0.0.jar",
+      "sha256": "1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab",
+      "bytes": 3819
+    },
+    {
+      "path": "epubcheck/lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+      "sha256": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99",
+      "bytes": 2199
+    },
+    {
+      "path": "epubcheck/lib/sac-1.3.jar",
+      "sha256": "003785669f921aafe4f137468dd20a01a36111e94fd7449f26c16e7924d82d23",
+      "bytes": 15808
+    },
+    {
+      "path": "epubcheck/lib/Saxon-HE-11.4.jar",
+      "sha256": "42e35494dc2e6b5e97256ae7cdf2b7ce30439c352566f35de02bed3a06a2b169",
+      "bytes": 5109857
+    },
+    {
+      "path": "epubcheck/lib/slf4j-api-1.7.36.jar",
+      "sha256": "d3ef575e3e4979678dc01bf1dcce51021493b4d11fb7f1be8ad982877c16a1c0",
+      "bytes": 41125
+    },
+    {
+      "path": "epubcheck/lib/slf4j-nop-1.7.36.jar",
+      "sha256": "c214958b07816cb4412b30c7bdbd4308ffdc6ba2a83767b8f3a9229cbd9274d6",
+      "bytes": 3946
+    },
+    {
+      "path": "epubcheck/lib/xercesImpl-2.12.2.jar",
+      "sha256": "6fc991829af1708d15aea50c66f0beadcd2cfeb6968e0b2f55c1b0909883fe16",
+      "bytes": 1446149
+    },
+    {
+      "path": "epubcheck/lib/xml-apis-1.4.01.jar",
+      "sha256": "a840968176645684bb01aed376e067ab39614885f9eee44abe35a5f20ebe7fad",
+      "bytes": 220536
+    },
+    {
+      "path": "epubcheck/lib/xmlresolver-4.4.3-data.jar",
+      "sha256": "a57db23d75c3580cb15eb6e1a854683f4579cfd265f5cf1011a6983d9aed0f1f",
+      "bytes": 1027769
+    },
+    {
+      "path": "epubcheck/lib/xmlresolver-4.4.3.jar",
+      "sha256": "9d642c96c3f6811e20a9f6cfee3ca15ec84ecb939f6be639fee065670773a7d1",
+      "bytes": 152670
+    },
+    {
+      "path": "epubcheck/LICENSE.txt",
+      "sha256": "30639fa2b228607910b33c58b3748e7a94c29795d14e1134cbb5f287daf284e9",
+      "bytes": 1561
+    },
+    {
+      "path": "epubcheck/licenses/Apache-2.0.txt",
+      "sha256": "d8621ec2eee5b9ca3c65f8492505f3590de8574fac0fdf5132a77232dba47abc",
+      "bytes": 11326
+    },
+    {
+      "path": "epubcheck/licenses/BSD-3-Clause.txt",
+      "sha256": "ffd50d49a26c28c3603d878470ed9e1374c36d581a57197db0239bc47f1f3298",
+      "bytes": 1484
+    },
+    {
+      "path": "epubcheck/licenses/MIT.txt",
+      "sha256": "63348cbb4123077d700324ecbd3fe086e6535ea0a6e0dc7893f47a20e6fa05f7",
+      "bytes": 1061
+    },
+    {
+      "path": "epubcheck/licenses/MPL-2.0.txt",
+      "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+      "bytes": 16725
+    },
+    {
+      "path": "epubcheck/licenses/W3C.txt",
+      "sha256": "312cc97521c9108bb3012ba16903ddfcb0b3a3a86799e2687e9e5d6819eb2dc9",
+      "bytes": 2468
+    },
+    {
+      "path": "epubcheck/THIRD-PARTY.txt",
+      "sha256": "d7c5ab8c2be53106872536734e275873be7a43aba7068734183e28b82a8dc80d",
+      "bytes": 2555
+    }
   ]
 }

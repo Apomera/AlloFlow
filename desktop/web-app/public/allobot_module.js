@@ -1792,6 +1792,8 @@ const ALLOBOT_DEFAULT_ACCESSORY_PROFILE = Object.freeze({
 const ALLOBOT_AVATAR_WIDTH = 64;
 const ALLOBOT_VIEWPORT_GUTTER = 10;
 const ALLOBOT_POSITION_EXTENT = ALLOBOT_AVATAR_WIDTH + ALLOBOT_VIEWPORT_GUTTER;
+const ALLOBOT_HUD_TOP_UNITS = 54;
+const ALLOBOT_HUD_HEADROOM_PX = Math.ceil(ALLOBOT_HUD_TOP_UNITS * (ALLOBOT_RENDER_PX / 100)) + ALLOBOT_VIEWPORT_GUTTER;
 const ALLOBOT_PROP_SAFE_GUTTER = 46;
 const ALLOBOT_ANIMATION_CLASS_BY_NAME = Object.freeze({
   "wave-hello": "animate-allo-wave-hello",
@@ -2499,7 +2501,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setViseme(mouthShapes[index]);
       index = (index + 1) % mouthShapes.length;
       if (Math.random() > 0.8) index = (index + 1) % mouthShapes.length;
-    }, 120);
+    }, 180);
     return () => clearInterval(interval);
   }, [isTalking, motionDisabled]);
   useEffect(() => {
@@ -3740,12 +3742,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const voiceCueDirection = voiceCueState === "listening" ? "inbound" : voiceCueState === "talking" ? "outbound" : "none";
   const voiceCueColor = theme === "contrast" ? "#FACC15" : voiceCueState === "listening" ? "#22D3EE" : colors.eye;
   const voiceCuePaths = voiceCueState === "listening" ? {
-    leftOuter: "M30 41 Q24 48 30 55",
-    leftInner: "M31.5 44 Q28 48 31.5 52",
-    rightOuter: "M70 41 Q76 48 70 55",
-    rightInner: "M68.5 44 Q72 48 68.5 52",
-    leftDotX: 31.5,
-    rightDotX: 68.5
+    leftOuter: "M28 41 Q22 48 28 55",
+    leftInner: "M29.4 44 Q25.8 48 29.4 52",
+    rightOuter: "M72 41 Q78 48 72 55",
+    rightInner: "M70.6 44 Q74.2 48 70.6 52",
+    leftDotX: 28.5,
+    rightDotX: 71.5
   } : {
     leftOuter: "M25 41 Q31 48 25 55",
     leftInner: "M23.5 44 Q27 48 23.5 52",
@@ -3958,7 +3960,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const faceLensesCoverEyes = effectiveAccessory === "scholar-specs" || effectiveAccessory === "librarian-kit";
   const eyeDetailsVisible = blinkScale >= 0.5;
   const cheekColor = theme === "contrast" ? "#FACC15" : "#F9A8D4";
-  const cheekOpacity = isSleeping ? 0.28 : effectiveMood === "happy" ? 0.62 : effectiveMood === "sad" ? 0.16 : 0.3;
+  const baseCheekOpacity = isSleeping ? 0.28 : effectiveMood === "happy" ? 0.62 : effectiveMood === "sad" ? 0.16 : 0.3;
+  const cheekOpacity = theme === "contrast" ? Math.min(1, baseCheekOpacity * 2.2) : baseCheekOpacity;
   const getMouthPath = () => {
     if (isTalking) {
       switch (viseme) {
@@ -3981,12 +3984,13 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         return "M 47 59 Q 50 57 53 59 Q 50 61 47 59";
       case "idle":
       default:
-        return "M 43 58.5 Q 50 63.5 57 58.5";
+        return "M 43 58.5 Q 50 63.5 57 58.5 Q 50 63.5 43 58.5";
     }
   };
   const avatarDepthFilter = theme === "contrast" ? "drop-shadow(0 2px 0 #000000)" : theme === "dark" ? "drop-shadow(0 2px 3px rgba(0,0,0,0.70)) drop-shadow(0 0 1px rgba(255,255,255,0.16))" : "drop-shadow(0 2px 3px rgba(15,23,42,0.28))";
   const trailFilter = isFlightActive ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)` : avatarDepthFilter;
   const generationStageNames = ["analyze", "build", "finalize"];
+  const hudHeadroomLift = effectiveMood === "thinking" && !isSleeping ? Math.max(0, ALLOBOT_HUD_HEADROOM_PX - position.y) : 0;
   const renderGenerationStageRail = () => /* @__PURE__ */ React.createElement("g", { "data-allo-generation-stage-rail": generationStage || "cycling", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("rect", { x: "30", y: "-54", width: "40", height: "9", rx: "4.5", fill: generationHudColors.panel, fillOpacity: generationHudColors.panelOpacity, stroke: generationHudColors.track, strokeOpacity: "0.58", strokeWidth: "0.75" }), /* @__PURE__ */ React.createElement("path", { d: "M 36 -49.5 H 64", stroke: generationHudColors.queued, strokeWidth: "1", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: `M 36 -49.5 H ${[36, 50, 64][generationAnimationPhase]}`, stroke: generationHudColors.complete, strokeWidth: "1", strokeLinecap: "round" }), generationStageNames.map((stageName, index) => {
     const nodeState = index === generationAnimationPhase ? "active" : generationStage && index < generationAnimationPhase ? "complete" : "queued";
     const nodeColor = nodeState === "active" ? generationHudColors.active : nodeState === "complete" ? generationHudColors.complete : generationHudColors.queued;
@@ -4384,7 +4388,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             animation: antenna-spring 0.5s ease-out forwards;
             transform-origin: 50px 15px;
         }
-        .mouth-transition { transition: d 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mouth-transition { transition: d 0.12s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes bot-breathe {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.02, 0.98); }
@@ -4440,14 +4444,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         [data-allobot-detail="compact"] [data-allobot-antenna-layer="socket-highlight"] { display: none; }
         @keyframes gesture-left {
             0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(8px, -6px); }
+            50% { transform: translate(4px, -3px); }
         }
         @keyframes gesture-right {
             0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-8px, -6px); }
+            50% { transform: translate(-4px, -3px); }
         }
-        .animate-gesture-left { animation: gesture-left 0.8s ease-in-out infinite; }
-        .animate-gesture-right { animation: gesture-right 0.8s ease-in-out infinite; }
+        .animate-gesture-left { animation: gesture-left 1.6s ease-in-out infinite; }
+        .animate-gesture-right { animation: gesture-right 1.6s ease-in-out infinite; }
         @keyframes wave-hello {
             0%, 100% { transform: rotate(0deg); }
             15% { transform: rotate(-14deg); }
@@ -4539,9 +4543,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 /* State-reactive: accessory "works" while generating, then a one-shot pop when done.
    Targets the animate-allobot-* wrappers, so the reduce-motion [class*="animate-"]
    override below still wins and disables these too. */
-@keyframes allobotWorking { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes allobotWorking { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 @keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
-.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
+/* Thinking bobs the prop at half the body period, so it stays in phase with
+   the breath every cycle instead of beating against it at 0.85s. */
+.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 1.5s ease-in-out infinite; }
 .allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
 /* Generation signatures. These stay inside the existing hologram so the
    orange body remains the universal working state. Every class includes
@@ -4646,6 +4652,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       "data-allobot-body-state": bodyVisualState,
       tabIndex: isSleeping ? void 0 : 0,
       "data-help-key": "bot_avatar",
+      "data-allobot-hud-lift": hudHeadroomLift > 0 ? String(hudHeadroomLift) : void 0,
       "aria-keyshortcuts": isSleeping ? void 0 : "ArrowLeft ArrowRight ArrowUp ArrowDown",
       "aria-describedby": isSleeping ? void 0 : moveInstructionsId,
       "aria-label": isSleeping ? void 0 : t("bot.aria_active"),
@@ -4657,7 +4664,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         // bubble/chat were invisible during STEM tools. While the lab is open, lift
         // the bot to 10500: above the lab, below the voice overlays (10999/11500).
         zIndex: showStemLab ? 10500 : void 0,
-        top: `${position.y}px`,
+        top: `${position.y + hudHeadroomLift}px`,
         right: `${position.x}px`,
         transform: motionDisabled ? "translateY(0px) scale(1)" : `translateY(${isHovered && !isDragging && !isSleeping ? "-5px" : "0px"}) scale(${isSquashed ? "1.1, 0.9" : "1"})`,
         touchAction: "none",
@@ -5339,7 +5346,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           "g",
           {
             className: !motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? isTalking ? "animate-gesture-right" : "animate-float-hands" : "",
-            style: { animationDelay: isTalking ? "0s" : "0.5s" }
+            style: { animationDelay: isTalking ? "-0.8s" : "0.5s" }
           },
           /* @__PURE__ */ React.createElement("g", { "data-allobot-arm": "right", "data-allobot-arm-role": rightHandRole }, /* @__PURE__ */ React.createElement("path", { d: rightArmPath, stroke: hardwareVisual.shadow, strokeWidth: "7", strokeLinecap: "round", fill: "none", style: { transition: motionDisabled ? "none" : "d 180ms ease" } }), /* @__PURE__ */ React.createElement("path", { "data-allobot-arm-layer": "core", d: rightArmPath, stroke: colors.gradFrom, strokeWidth: "4.5", strokeLinecap: "round", fill: "none", style: { transition: motionDisabled ? "none" : "d 180ms ease" } }))
         )), /* @__PURE__ */ React.createElement(
@@ -5590,7 +5597,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           "g",
           {
             className: !motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? isTalking ? "animate-gesture-right" : "animate-float-hands" : "",
-            style: { animationDelay: isTalking ? "0s" : "0.5s" }
+            style: { animationDelay: isTalking ? "-0.8s" : "0.5s" }
           },
           /* @__PURE__ */ React.createElement("circle", { "data-allobot-hand": "right", "data-allobot-hand-layer": "palm", "data-allobot-hand-role": rightHandRole, cx: rightHandX, cy: rightHandY, r: "6.5", fill: `url(#${svgPaintIds.body})`, stroke: theme === "contrast" ? "#000000" : colors.jetpackStroke, strokeWidth: theme === "contrast" ? "2" : "1.5", style: { transition: motionDisabled ? "none" : "cx 180ms ease, cy 180ms ease" } }),
           /* @__PURE__ */ React.createElement("path", { "data-allobot-hand-layer": "lower-shade", d: ["M", rightHandX - 4.2, rightHandY + 2.1, "Q", rightHandX, rightHandY + 5.2, rightHandX + 4.2, rightHandY + 2.1].join(" "), stroke: colors.gradTo, strokeWidth: "1.1", strokeLinecap: "round", fill: "none", opacity: "0.58", style: { transition: motionDisabled ? "none" : "d 180ms ease" } }),
@@ -5680,21 +5687,26 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
               )
             )
           )
-        ), /* @__PURE__ */ React.createElement("g", { "data-allobot-face-state": faceVisualState }, isSleeping ? /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-500" }, /* @__PURE__ */ React.createElement("path", { d: "M34 49 Q39 53 44 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M56 49 Q61 53 66 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" })) : /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("g", { "data-allobot-face-state": faceVisualState }, isSleeping ? /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-500" }, /* @__PURE__ */ React.createElement("path", { d: "M33 49 Q38 53 43 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M57 49 Q62 53 67 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" })) : /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
           "g",
           {
             "data-allobot-prop-gaze": accessoryRenderSide || "center",
             "data-allobot-soft-gaze": hoverGazeEngaged ? "engaged" : accessoryRenderSide ? "prop" : "resting",
-            "data-allobot-eye-details": eyeDetailsVisible ? faceLensesCoverEyes ? "simplified" : "visible" : "hidden",
-            opacity: eyeDetailsVisible ? 1 : 0,
             style: { transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? "none" : "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)" }
           },
           /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye": "left", cx: "38", cy: "48", rx: eyeRx, ry: eyeRy * blinkScale, fill: colors.eye, stroke: visorVisual.eyeOutline, strokeWidth: theme === "contrast" ? "1.5" : "1.1", className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
           /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye": "right", cx: "62", cy: "48", rx: eyeRx, ry: eyeRy * blinkScale, fill: colors.eye, stroke: visorVisual.eyeOutline, strokeWidth: theme === "contrast" ? "1.5" : "1.1", className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
-          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "left", cx: 38 + eyeGlossDx, cy: 48 + eyeGlossDy, rx: eyeHighlightRx, ry: eyeHighlightRy * blinkScale, fill: eyeGlossFill, stroke: eyeCoreVisual.rim, strokeWidth: eyeCoreVisual.rimWidth, opacity: eyeGlossOpacity, style: eyeGlintDrift, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
-          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "right", cx: 62 + eyeGlossDx, cy: 48 + eyeGlossDy, rx: eyeHighlightRx, ry: eyeHighlightRy * blinkScale, fill: eyeGlossFill, stroke: eyeCoreVisual.rim, strokeWidth: eyeCoreVisual.rimWidth, opacity: eyeGlossOpacity, style: eyeGlintDrift, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
-          !faceLensesCoverEyes && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-primary", cx: "37.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-primary", cx: "61.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-secondary", cx: "38.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-secondary", cx: "62.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }))
-        )), /* @__PURE__ */ React.createElement("g", { "data-allobot-face-cue": "soft-cheeks", opacity: cheekOpacity, pointerEvents: "none" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "28.5", cy: "56.5", rx: "2.8", ry: "1.25", fill: cheekColor }), /* @__PURE__ */ React.createElement("ellipse", { cx: "71.5", cy: "56.5", rx: "2.8", ry: "1.25", fill: cheekColor })), /* @__PURE__ */ React.createElement(
+          /* @__PURE__ */ React.createElement(
+            "g",
+            {
+              "data-allobot-eye-details": eyeDetailsVisible ? faceLensesCoverEyes ? "simplified" : "visible" : "hidden",
+              opacity: eyeDetailsVisible ? 1 : 0
+            },
+            /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "left", cx: 38 + eyeGlossDx, cy: 48 + eyeGlossDy, rx: eyeHighlightRx, ry: eyeHighlightRy * blinkScale, fill: eyeGlossFill, stroke: eyeCoreVisual.rim, strokeWidth: eyeCoreVisual.rimWidth, opacity: eyeGlossOpacity, style: eyeGlintDrift, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+            /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "right", cx: 62 + eyeGlossDx, cy: 48 + eyeGlossDy, rx: eyeHighlightRx, ry: eyeHighlightRy * blinkScale, fill: eyeGlossFill, stroke: eyeCoreVisual.rim, strokeWidth: eyeCoreVisual.rimWidth, opacity: eyeGlossOpacity, style: eyeGlintDrift, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+            !faceLensesCoverEyes && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-primary", cx: "37.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-primary", cx: "61.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-secondary", cx: "38.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-secondary", cx: "62.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }))
+          )
+        )), /* @__PURE__ */ React.createElement("g", { "data-allobot-face-cue": "soft-cheeks", opacity: cheekOpacity, pointerEvents: "none" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "28.5", cy: "55.8", rx: "2.8", ry: "1.15", fill: cheekColor }), /* @__PURE__ */ React.createElement("ellipse", { cx: "71.5", cy: "55.8", rx: "2.8", ry: "1.15", fill: cheekColor })), /* @__PURE__ */ React.createElement(
           "path",
           {
             "data-allobot-mouth": isTalking ? "talking" : effectiveMood,
@@ -5731,31 +5743,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             opacity: visorVisual.cueOpacity
           },
           effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 39 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
-          effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M33 39 Q38 41 43 43", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
-          effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 42 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
+          effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M33 42.5 Q38 40 43 38.5", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
+          effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M33.5 40.6 Q38 40.1 42.5 40.6", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
           effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M57 42 Q62 39 67 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
-          effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M57 43 Q62 41 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
+          effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M57 38.5 Q62 40 67 42.5", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
           effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M57 39 Q62 37 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }),
-          effectiveMood === "happy" && /* @__PURE__ */ React.createElement(
-            "path",
-            {
-              "data-allobot-face-cue": "happy-cheeks",
-              d: "M27 55 Q30 58 33 55 M67 55 Q70 58 73 55",
-              stroke: colors.mouth,
-              strokeWidth: "1.5",
-              fill: "none",
-              strokeLinecap: "round"
-            }
-          ),
           effectiveMood === "sad" && /* @__PURE__ */ React.createElement(
             "path",
             {
               "data-allobot-face-cue": "sad-tear",
-              d: "M29 55 C29 55 26.5 58.2 26.5 60.2 A2.5 2.5 0 0 0 31.5 60.2 C31.5 58.2 29 55 29 55 Z",
+              d: "M29 58.4 C29 58.4 27 60 27 61 A2 2 0 0 0 31 61 C31 60 29 58.4 29 58.4 Z",
               fill: colors.eye
             }
           ),
-          effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("g", { "data-allobot-face-cue": "thinking-dots", fill: colors.eye }, /* @__PURE__ */ React.createElement("circle", { cx: "71", cy: "55.5", r: "1.1" }), /* @__PURE__ */ React.createElement("circle", { cx: "73.5", cy: "58.5", r: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "71.5", cy: "61.2", r: "0.7" }))
+          effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("g", { "data-allobot-face-cue": "thinking-dots", fill: colors.eye }, /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "1.1" }), /* @__PURE__ */ React.createElement("circle", { cx: "76.3", cy: "48.8", r: "0.85" }), /* @__PURE__ */ React.createElement("circle", { cx: "78", cy: "45.8", r: "0.6" }))
         )), effectiveAccessory && /* @__PURE__ */ React.createElement(
           "g",
           {

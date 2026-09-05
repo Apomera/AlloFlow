@@ -2053,8 +2053,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         };
 
-        return h('div', { className: 'calculus-shell max-w-5xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'calculus-shell max-w-5xl mx-auto animate-in fade-in duration-200', style: { position: 'relative' } },
 
+          (ctx.renderTutorial || function () { return null; })('calculus', ctx._tutCalculus || []),
           h('style', null, css),
 
           // Header

@@ -60,7 +60,7 @@ describe('Area & Perimeter Lab', () => {
       compare: 'Area and perimeter can change differently',
       composite: 'Decompose an L-shape',
       investigate: 'Same area, different perimeter',
-      challenge: 'Deterministic set',
+      challenge: 'Practice',
     };
 
     for (const [mode, anchor] of Object.entries(expected)) {

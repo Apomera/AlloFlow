@@ -154,7 +154,7 @@ const AnchorChartSection = React.memo((props) => {
   const [refinePrompt, setRefinePrompt] = React.useState('');
   const [isRefining, setIsRefining] = React.useState(false);
 
-  const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
+  const callGeminiImageEdit = props.allowRuntimeAi !== false ? (props.callGeminiImageEdit === undefined ? (typeof window !== 'undefined' && window.callGeminiImageEdit) : props.callGeminiImageEdit) : null;
   const addToast = props.addToast || (() => {});
 
   const handleRefineIcon = async () => {
@@ -173,7 +173,7 @@ const AnchorChartSection = React.memo((props) => {
       const fullRefinePrompt = `${trimmed}. Maintain the hand-drawn classroom-anchor-chart marker sketch style in ${marker.name} ink on a white background. No text or labels.`;
       const resultB64 = await callGeminiImageEdit(fullRefinePrompt, rawB64);
       if (resultB64) {
-        onChange({ ...section, iconUrl: resultB64 });
+        if (props.onIconChange) props.onIconChange(resultB64); else onChange({ ...section, iconUrl: resultB64 });
         setRefinePrompt('');
         addToast('Image refined successfully!', 'success');
       }
@@ -200,8 +200,8 @@ const AnchorChartSection = React.memo((props) => {
     next[idx] = text;
     onChange({ ...section, bullets: next });
   };
-  const addBullet = () => onChange({ ...section, bullets: bullets.concat(['']) });
-  const removeBullet = (idx) => onChange({ ...section, bullets: bullets.filter((_, i) => i !== idx) });
+  const addBullet = () => onChange({ ...section, bullets: bullets.concat(['']), bulletIds: (section.bulletIds || bullets.map((_,i)=>section.id+'-bullet-'+i)).concat([_ac_genId('bullet')]) });
+  const removeBullet = (idx) => onChange({ ...section, bullets: bullets.filter((_, i) => i !== idx), bulletIds: (section.bulletIds || bullets.map((_,i)=>section.id+'-bullet-'+i)).filter((_,i)=>i!==idx) });
 
   return (
     <div
@@ -415,9 +415,11 @@ const AnchorChartView = React.memo((props) => {
   const generatedContent = props.generatedContent;
   const handleNoteUpdate = props.handleNoteUpdate || (() => {});
   const isTeacherMode = !!props.isTeacherMode;
-  const callImagen = props.callImagen || null;
-  const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
+  const allowRuntimeAi = props.allowRuntimeAi !== false;
+  const callImagen = allowRuntimeAi && isTeacherMode ? (props.callImagen || null) : null;
+  const callGeminiImageEdit = allowRuntimeAi && isTeacherMode ? (props.callGeminiImageEdit === undefined ? (typeof window !== 'undefined' && window.callGeminiImageEdit) : props.callGeminiImageEdit) : null;
   const t = props.t || ((k, d) => d || k);
+  const tx = (key,fallback) => { const value=t(key); return value && value!==key ? value : fallback; };
   const activeSessionCode = props.activeSessionCode || null;
   const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
 
@@ -433,14 +435,15 @@ const AnchorChartView = React.memo((props) => {
   const chartMeta = _chartTypeMeta(chartType);
   const chartLabel = chartMeta.label || 'Anchor chart';
   const layout = _layoutForChartType(chartType);
-  const sections = Array.isArray(data.sections) ? data.sections : [];
+  const normalizeSections = value => window.AlloModules?.StudioResponse?.anchorSections(value) || (Array.isArray(value?.sections) ? value.sections.map((section,index)=>({...section,id:section.id || 'section-'+index,bulletIds:(section.bullets||[]).map((_,i)=>section.bulletIds?.[i] || (section.id || 'section-'+index)+'-bullet-'+i)})) : []);
+  const sections = normalizeSections(data);
   const lessonRef = data.lessonRef || {};
   const interactive = data.interactive || { armed: false, rubric: '' };
 
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
 
   const handleSuggestRubric = async () => {
-    if (!props.callGemini && !window.callGemini) {
+    if (!allowRuntimeAi || !isTeacherMode || (props.callGemini === null) || (!props.callGemini && !window.callGemini)) {
       addToastProp('AI generation needs an active connection. Please try again.');
       return;
     }
@@ -475,7 +478,8 @@ const AnchorChartView = React.memo((props) => {
     }
   };
 
-  const [isEditing, setIsEditing] = React.useState(false);
+  const [editingRequested, setIsEditing] = React.useState(false);
+  const isEditing = isTeacherMode && editingRequested;
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState('idle');  // 'idle' | 'rendering' | 'error'
   const paperRef = React.useRef(null);
@@ -516,18 +520,30 @@ const AnchorChartView = React.memo((props) => {
       try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (_) {}
     };
   }, [showInteractiveDialog]);
-  // Student-side state: answers keyed by section id+idx, and grading result.
-  const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
-  const [gradingState, setGradingState] = React.useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
-  const [gradingResult, setGradingResult] = React.useState(null); // { strength, growthNudge, xpAwarded, hadPriorXp } | null
-  // Anti-regrind guard (mirrors the note-taking module): only XP ABOVE this
-  // session's previous best for this chart is awarded, so resubmitting can't
-  // farm XP. Local-only — resets on reload, which also clears the answers.
-  const [awardedXp, setAwardedXp] = React.useState(0);
-  React.useEffect(() => { setAwardedXp(0); }, [generatedContent && generatedContent.id]);
-  const callGeminiProp = props.callGemini || (typeof window !== 'undefined' && window.callGemini) || null;
-  const addXpProp = typeof props.addXp === 'function' ? props.addXp : null;
-  const addToastProp = typeof props.addToast === 'function' ? props.addToast : (msg) => { try { console.log('[anchor-toast]', msg); } catch (_) {} };
+  // Learner work is projected from the shared response document by the host boundary.
+  const studentAnswers = data.studentAnswers || {};
+  const gradingResult = data.feedback || null;
+  const awardedXp = Number(data.prevFeedbackScore) || 0;
+  const [gradingState, setGradingState] = React.useState('idle');
+  const callGeminiProp = allowRuntimeAi ? (props.callGemini === undefined ? (typeof window !== 'undefined' && window.callGemini) : props.callGemini) : null;
+  const addXpProp = !props.previewMode && typeof props.addXp === 'function' ? props.addXp : null;
+  const addToastProp = typeof props.addToast === 'function' ? props.addToast : () => {};
+  const currentChart = React.useRef(null), mounted = React.useRef(true);
+  currentChart.current = { id: generatedContent?.id, studentAnswers, isTeacherMode, allowRuntimeAi };
+  React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  React.useEffect(() => { setGradingState('idle'); setIsEditing(false); }, [generatedContent?.id, isTeacherMode]);
+  const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt) => {
+    const update = resource => {
+      if (!resource || resource.id !== resourceId || resource.type !== 'anchor-chart') return resource;
+      const latest = normalizeSections(resource.data);
+      const section = latest.find(row=>row.id===sectionId);
+      if (!section || (expectedPrompt !== undefined && (section.iconPrompt || section.label || '') !== expectedPrompt)) return resource;
+      return { ...resource, data: { ...resource.data, sections: latest.map(row=>row.id===sectionId ? { ...row, iconUrl } : row) } };
+    };
+    if (!currentChart.current.isTeacherMode || !currentChart.current.allowRuntimeAi) return;
+    if (typeof props.onUpdateResource === 'function') props.onUpdateResource(resourceId, update);
+    else if (mounted.current && currentChart.current.id === resourceId) handleNoteUpdate('sections', previous => update({ id:resourceId, type:'anchor-chart', data:{sections:previous} }).data.sections);
+  };
   // Drag-and-drop reorder state. dragSrcIdx = the section being dragged;
   // dragOverIdx = the section currently hovered as the drop target. Used to
   // render visual feedback (opacity + drop-line). Touch devices work via the
@@ -565,7 +581,7 @@ const AnchorChartView = React.memo((props) => {
         // Functional update so the parallel per-section icon writes merge against the LATEST
         // sections instead of a stale snapshot — otherwise the last callImagen to resolve wins and
         // clobbers the other sections' icons (only one would ever show).
-        handleNoteUpdate('sections', (prevSections) => (Array.isArray(prevSections) ? prevSections : (data.sections || [])).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
+        writeIcon(generatedContent.id, s.id, finalUrl, s.iconPrompt || s.label || '');
       }).catch((e) => { console.warn('[AnchorChart] auto icon-gen failed', e && (e.message || e)); });
     });
   }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
@@ -592,7 +608,7 @@ const AnchorChartView = React.memo((props) => {
           console.warn('[AnchorChart] manual-strip failed', stripErr);
         }
       }
-      if (url) updateSection(idx, { ...s, iconUrl: url });
+      if (url) writeIcon(generatedContent.id, s.id, url, s.iconPrompt || s.label || '');
     } catch (e) { console.warn('[AnchorChart] icon regen failed', e && (e.message || e)); }
     finally { setRegenIdx(-1); }
   };
@@ -696,14 +712,9 @@ const AnchorChartView = React.memo((props) => {
       first.focus();
     }
   };
-  const handleStudentAnswerChange = (sectionId, bulletIdx, text) => {
-    setStudentAnswers((prev) => {
-      const sec = Object.assign({}, prev[sectionId] || {});
-      sec[bulletIdx] = text;
-      const next = Object.assign({}, prev);
-      next[sectionId] = sec;
-      return next;
-    });
+  const handleStudentAnswerChange = (sectionId, bulletId, text) => {
+    handleNoteUpdate('studentAnswers', previous => ({ ...previous, [sectionId]: { ...(previous?.[sectionId] || {}), [bulletId]: text } }));
+    handleNoteUpdate('feedback', null);
   };
   // Build a flat student-answer summary for the grading prompt.
   const flattenedAnswers = () => {
@@ -733,7 +744,8 @@ const AnchorChartView = React.memo((props) => {
       return;
     }
     setGradingState('submitting');
-    setGradingResult(null);
+    const requestId = generatedContent.id, requestDraft = JSON.stringify(studentAnswers);
+    handleNoteUpdate('feedback', null);
     try {
       // Standards-based grading: AI sees the topic + rubric + section labels +
       // student's answers. AI does NOT see the teacher's bullets — by design,
@@ -769,29 +781,31 @@ const AnchorChartView = React.memo((props) => {
         '{"strength": "<1-2 sentences, quote their words>", "growthNudge": "<1-2 sentences, one next step>", "accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "suggestedXP": <int 0-120>}'
       ].join('\n');
       const raw = await callGeminiProp(prompt);
+      if (!mounted.current || currentChart.current.id !== requestId || JSON.stringify(currentChart.current.studentAnswers) !== requestDraft || !currentChart.current.allowRuntimeAi) return;
       // Robust JSON extraction (strip any code fences if model added them)
       let txt = String(raw || '').trim();
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
       const m = txt.match(/\{[\s\S]*\}/);
       const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const xpRaw = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      const xpCandidate = Number(parsed.suggestedXP);
+      const xpRaw = Number.isFinite(xpCandidate) ? Math.max(0, Math.min(120, Math.round(xpCandidate))) : 0;
       // Anti-regrind: only award XP above this session's previous best for the chart.
       const delta = Math.max(0, xpRaw - awardedXp);
       const strength = String(parsed.strength || '').slice(0, 600);
       const growthNudge = String(parsed.growthNudge || '').slice(0, 600);
       const result = { strength: strength, growthNudge: growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
-      setGradingResult(result);
+      handleNoteUpdate('feedback', { ...result, draftFingerprint: requestDraft, createdAt: new Date().toISOString() });
       setGradingState('done');
       if (delta > 0 && addXpProp) {
         addXpProp(delta);
-        setAwardedXp(xpRaw);
+        handleNoteUpdate('prevFeedbackScore', Math.max(awardedXp,xpRaw));
         addToastProp(`✨ +${delta} XP earned!`);
       }
     } catch (err) {
       console.warn('[AnchorChart] grading failed', err && err.message);
       setGradingState('error');
       addToastProp('AI grading hit an error. Try again in a moment.');
-    }
+    } finally { if (mounted.current && currentChart.current.id === requestId) setGradingState('idle'); }
   };
 
   // Type gate AFTER all hooks (Rules of Hooks): if this isn't an anchor-chart
@@ -847,13 +861,13 @@ const AnchorChartView = React.memo((props) => {
           ) : null}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button"
+          {isTeacherMode && <button type="button"
             onClick={() => setIsEditing((v) => !v)}
             className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
             aria-pressed={isEditing}
             aria-label={isEditing ? 'Finish editing' : 'Edit chart'}
             data-help-key="anchor_chart_edit_toggle"
-          >{isEditing ? '✓ Done editing' : '✎ Edit'}</button>
+          >{isEditing ? '✓ Done editing' : '✎ Edit'}</button>}
           {/* Interactive mode toggle — teacher only. Shows "Armed" badge when on. */}
           {isTeacherMode ? (
             interactive.armed ? (
@@ -904,7 +918,7 @@ const AnchorChartView = React.memo((props) => {
             {exportState === 'rendering' ? '⏳ Rendering…' : exportState === 'error' ? '⚠ Try again' : '💾 Download PNG'}
           </button>
           <button type="button"
-            onClick={() => { try { window.print(); } catch (_) {} }}
+            onClick={() => { const studio=window.AlloModules?.StudioResponse; const printable=!isTeacherMode && studio ? studio.projectForExport(props.referenceResource || generatedContent, studio.responseFromData('anchor-chart', generatedContent.data)) : generatedContent; if (typeof props.onPrint === 'function') props.onPrint(printable, { worksheet:false, teacherKey:isTeacherMode }); else { try { window.print(); } catch (_) {} } }}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
             aria-label="Print or save as PDF"
             data-help-key="anchor_chart_print_button"
@@ -1037,19 +1051,14 @@ const AnchorChartView = React.memo((props) => {
                   sectionIndex={idx}
                   isEditing={isEditing}
                   onChange={(next) => updateSection(idx, next)}
+                  onIconChange={iconUrl => writeIcon(generatedContent.id, s.id, iconUrl)}
+                  allowRuntimeAi={allowRuntimeAi}
                   onRegenIcon={handleRegenIcon}
                   isRegeneratingIcon={regenIdx === idx}
                   interactiveArmed={!!interactive.armed}
                   viewerIsStudent={!isTeacherMode}
-                  studentAnswers={(function () {
-                    const sid = s.id || s.label;
-                    const sec = studentAnswers[sid] || {};
-                    // Convert {0: 'a', 1: 'b'} → ['a', 'b']
-                    const arr = [];
-                    Object.keys(sec).forEach((k) => { arr[Number(k)] = sec[k]; });
-                    return arr;
-                  })()}
-                  onStudentAnswerChange={(bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text)}
+                  studentAnswers={s.bulletIds.map(id => studentAnswers[s.id]?.[id] || '')}
+                  onStudentAnswerChange={(bidx, text) => handleStudentAnswerChange(s.id, s.bulletIds[bidx], text)}
                   callGeminiImageEdit={callGeminiImageEdit}
                   addToast={addToastProp}
                 />
@@ -1082,16 +1091,16 @@ const AnchorChartView = React.memo((props) => {
             <div className="flex items-start justify-between gap-3 mb-2">
               <div>
                 <div className="text-sm font-bold text-fuchsia-900">🎯 Interactive Anchor Chart</div>
-                <div className="text-[12px] text-fuchsia-800/80 mt-1">Fill in your best answer for each section above, then submit to get AI feedback + earn XP.</div>
+                <div className="text-[12px] text-fuchsia-800/80 mt-1">{tx('anchor_chart.workspace_hint','Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher.')}</div>
               </div>
               <button type="button"
                 onClick={handleSubmitForGrading}
-                disabled={gradingState === 'submitting'}
+                disabled={gradingState === 'submitting' || !callGeminiProp}
                 className="px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60"
                 aria-busy={gradingState === 'submitting'}
               >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
             </div>
-            {gradingState === 'done' && gradingResult ? (
+            {gradingResult ? (
               <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" role="status" aria-live="polite" aria-atomic="true">
                 {gradingResult.strength ? (
                   <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2">

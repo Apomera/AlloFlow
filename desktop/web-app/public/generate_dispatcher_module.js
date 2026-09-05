@@ -864,7 +864,9 @@ function selectCurriculumArtifacts(history, config) {
       selectionMode: selectionMode,
       curriculumId: curriculumKey || null,
       requestedArtifactIds: requestedIds,
-      includedArtifactIds: selected.map(function (artifact) { return artifact.id || null; }).filter(Boolean),
+      artifactFingerprints: typeof window !== 'undefined' && window.AlloModules?.ResourceContentFingerprint?.snapshot
+            ? window.AlloModules.ResourceContentFingerprint.snapshot(selected) : {},
+        includedArtifactIds: selected.map(function (artifact) { return artifact.id || null; }).filter(Boolean),
       includedArtifacts: selected.map(function (artifact) {
         const instructionalText = _auditInstructionalText(artifact);
         return {
@@ -5243,8 +5245,10 @@ ${_itemsBlock}`;
          // Activities redesign (2026-08-16): the sidebar panel passes the chosen
          // activity mode + options via configOverride. Guided mode, blueprints,
          // and AlloBot don't pass one, so they keep generating idea starters.
-         const activityMode = configOverride && typeof configOverride.activityMode === 'string' ? configOverride.activityMode : 'ideas';
-         const activityConfig = configOverride && configOverride.activityConfig && typeof configOverride.activityConfig === 'object' ? configOverride.activityConfig : {};
+         const normalizedActivity = _generationMatrixModule && typeof _generationMatrixModule.normalizeActivityOptions === 'function'
+             ? _generationMatrixModule.normalizeActivityOptions(configOverride || {}) : null;
+         const activityMode = normalizedActivity ? normalizedActivity.activityMode : (configOverride && typeof configOverride.activityMode === 'string' ? configOverride.activityMode : 'ideas');
+         const activityConfig = normalizedActivity ? normalizedActivity.activityConfig : (configOverride && configOverride.activityConfig && typeof configOverride.activityConfig === 'object' ? configOverride.activityConfig : {});
          if (activityMode === 'discussion') {
              const protocol = DISCUSSION_PROTOCOLS.includes(String(activityConfig.protocol || '').toLowerCase()) ? String(activityConfig.protocol).toLowerCase() : 'think-pair-share';
              const stepLabel = t('status_steps.building_discussion') || 'Building discussion kit...';

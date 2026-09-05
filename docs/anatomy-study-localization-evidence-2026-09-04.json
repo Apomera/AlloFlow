@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-04",
+  "scope": "Anatomy study controls, recall announcements, confidence, review rounds, notes, and RTL layout",
+  "languages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "translatedEntriesPerLanguage": 55,
+  "addedEntriesPerLanguage": 54,
+  "replacedEnglishPlaceholdersPerLanguage": 1,
+  "table": "dev-tools/i18n/handtl_anatomy_study_20260904.json",
+  "validation": {
+    "focusedUnitTestsPassed": 65,
+    "unitTestsRecheckedAfterFinalCounterChange": 17,
+    "finalPhoneBrowserWorkflowsPassed": 3,
+    "browser": "Chromium",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "sampledAxeViolations": 0,
+    "sourceDesktopMirrorsMatch": true,
+    "sourceSha256": "B4D716BF2D396F21895A373D2FFAC483FF457D8B92CCE356AE3F41EE1B63BCC3",
+    "catalogScopeAudit": "All 55 target values match in all six catalogs; other anatomy entries unchanged. Concurrent live_connection edits outside anatomy preserved.",
+    "runnerNote": "A thread-worker startup timeout occurred before any tests ran; the final 17 checks passed with a single process worker."
+  },
+  "rtl": {
+    "arabicPageWidthBeforeSkipLinkFix": 10389,
+    "arabicPageWidthAfterSkipLinkFix": 390,
+    "focusedSkipButtonVisibleAndOperable": true,
+    "recallCardTextAlignment": "start",
+    "noteAndRoundFractionDirection": "ltr, isolated from surrounding Arabic"
+  },
+  "unitTestFile": "tests/anatomy_study_localization.test.js",
+  "browserTestFile": "tests/e2e/39-anatomy-study-localization.spec.ts",
+  "limits": [
+    "Study UI translations only; broader anatomy content remains incomplete.",
+    "No native-speaker review or manual screen-reader listening test.",
+    "Axe results cover sampled states and do not establish full accessibility conformance."
+  ]
+}

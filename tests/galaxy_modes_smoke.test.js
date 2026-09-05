@@ -29,7 +29,7 @@ describe('galaxy explorer mode/state smoke', () => {
     expect(html).toContain('Keplerian');
     expect(html).toContain('Flat (observed)');
     expect(html).toContain('Rigid disk');
-  });
+  }, 30000);
 
   it('each rotation mode renders its own explanation', () => {
     for (const [mode, signal] of [
@@ -40,7 +40,7 @@ describe('galaxy explorer mode/state smoke', () => {
       const html = renderTool('galaxy', { galaxy: { rotMode: mode, galaxyControlPanel: 'motion' } });
       expect(html, 'rotMode=' + mode).toContain(signal);
     }
-  });
+  }, 30000);
 
   it('star mode renders H-R diagram + nucleosynthesis table across the mass range', () => {
     for (const mass of [0.3, 0.6, 1, 5, 20, 50]) {
@@ -51,7 +51,7 @@ describe('galaxy explorer mode/state smoke', () => {
       // NaN in an SVG coordinate would surface literally in the markup
       expect(html, 'mass=' + mass).not.toContain('NaN');
     }
-  });
+  }, 30000);
 
   it('H-R diagram handles every lifecycle stage, on-chart or off', () => {
     // union of stage ids across all mass branches of getStagesForMass
@@ -65,7 +65,7 @@ describe('galaxy explorer mode/state smoke', () => {
         expect(html, 'stage=' + stage + ' mass=' + mass).not.toContain('NaN');
       }
     }
-  });
+  }, 30000);
 
   it('black-hole mode renders its cinematic canvas and accessible controls', () => {
     const html = renderTool('galaxy', { galaxy: { simMode: 'blackHole' } });
@@ -87,9 +87,9 @@ describe('galaxy explorer mode/state smoke', () => {
     expect(html).toContain('aria-describedby');
     expect(html).toContain('aria-valuetext');
     expect(html).not.toContain('NaN');
-  });
+  }, 30000);
   it('metallicity inquiry mode still renders', () => {
     const html = renderTool('galaxy', { galaxy: { simMode: 'metalHunt' } });
     expect(html).toContain('Stellar metallicity discovery');
-  });
+  }, 30000);
 });

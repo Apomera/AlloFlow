@@ -41,6 +41,13 @@ var _lazyIcon = function (name) {
     var setGenerationStep = props.setGenerationStep;
     var setGeneratedContent = props.setGeneratedContent;
     var setInputText = props.setInputText;
+    // Bind edits to the resource that created the callback, including async corrections.
+    var updateAnalysisResource = function (updater) {
+      const id = generatedContent && generatedContent.id;
+      if (typeof props.onUpdateResource === 'function') return props.onUpdateResource(id, updater);
+      setGeneratedContent(prev => prev && prev.id === id ? updater(prev) : prev);
+      if (typeof props.setHistory === 'function') props.setHistory(items => items.map(item => item.id === id ? updater(item) : item));
+    };
     var setSelectedGrammarErrors = props.setSelectedGrammarErrors;
     var setSourceRefineInstruction = props.setSourceRefineInstruction;
     // Handlers
@@ -120,7 +127,7 @@ var _lazyIcon = function (name) {
         // Restore exists because a mis-click would otherwise silently discard a
         // real issue with no way back.
         const setGrammarNoteAt = (idx, next) => {
-          setGeneratedContent(prev => ({
+          updateAnalysisResource(prev => ({
             ...prev,
             data: { ...prev.data, grammar: (prev.data.grammar || []).map((g, i) => (i === idx ? next : g)) }
           }));
@@ -196,15 +203,15 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
               addToast(t('process.grammar_fix_failed') || 'No changes applied.', 'warning');
               return;
             }
-            setGeneratedContent(prev => ({
-              ...prev,
-              data: {
-                ...prev.data,
-                originalText: cleaned,
-                grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) && isFixable(g) ? `✓ FIXED: ${g}` : g)
-              }
-            }));
-            setInputText(cleaned);
+            if (typeof props.onCorrectAnalysisText !== 'function') {
+              addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
+              return;
+            }
+            const applied = await props.onCorrectAnalysisText(generatedContent.id, originalText, cleaned, errorsToFix);
+            if (applied === false) {
+              addToast(t('analysis.grammar_source_changed') || 'The source changed while the correction was being prepared. Review it and try again.', 'warning');
+              return;
+            }
             addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
             setSelectedGrammarErrors(new Set());
           } catch (err) {
@@ -233,7 +240,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
                   them to be AI-fixed, so a teacher who corrected anything manually
                   could never clear the list. */}
               {isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && <button aria-label={t('common.check')} onClick={() => {
-              setGeneratedContent(prev => ({
+              updateAnalysisResource(prev => ({
                 ...prev,
                 data: {
                   ...prev.data,

@@ -1523,6 +1523,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // The back button, the tool label and the spell-list headings sit on the
+      // HOST surface - white in light and dark, pure BLACK in the contrast
+      // theme, where slate-600 measured 2.77:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = window.React;
       var h = React.createElement;
       var toolData = ctx.toolData || {};
@@ -1576,7 +1581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       function backBtn(onClick, label) {
         return h('button', {
           onClick: onClick,
-          className: 'transition-colors inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none',
+          className: 'transition-colors inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none' + onHostInk,
           'aria-label': label || 'Back'
         }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, label || 'Back'));
       }
@@ -2017,7 +2022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spellforge', 'Spellforge'))
+            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spellforge', 'Spellforge'))
           ),
 
           // Hero row: AlloBot + headline
@@ -2246,7 +2251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Grimoire
           h('section', { 'aria-label': t('stem.allobotsage.grimoire', 'Grimoire'), className: 'mb-4' },
-            h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' },
+            h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' + onHostInk },
               h('span', null, t('stem.allobotsage.grimoire_2', '\uD83D\uDCDC Grimoire')),
               unlockedSpells.length > 0 && h('span', { className: 'text-[10px] font-normal text-slate-600' },
                 '(' + unlockedSpells.length + ' unlocked)'
@@ -2256,7 +2261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
             ),
             lockedSpells.length > 0 && h('div', null,
-              h('h3', { className: 'text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
+              h('h3', { className: 'text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, 'Yet to discover (' + lockedSpells.length + ')'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 lockedSpells.map(function(s) {
                   return h('div', { key: 'locked-wrap-' + s.id, className: 'flex flex-col gap-1' },

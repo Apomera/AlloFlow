@@ -634,14 +634,61 @@
       function renderModel(op, left, right) {
         if (!showModel) return null;
         if (op === 'add' || op === 'subtract') {
-          var leftParts = splitPlaceValue(left), rightParts = splitPlaceValue(right);
-          return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': t('stem.arithmetic.place_value_decomposition', "Place-value decomposition: ") + left + t('stem.arithmetic.equals', " equals ") + leftParts.join(t('stem.arithmetic.plus', " plus ")) + '; ' + right + t('stem.arithmetic.equals', " equals ") + rightParts.join(t('stem.arithmetic.plus', " plus ")) + '.', style: { background: card, border: '1px solid ' + border } },
-            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.place_value_model', "Place-value model")),
-            h('p', { className: 'font-mono text-sm' }, left + ' = ' + leftParts.join(' + ')),
-            h('p', { className: 'font-mono text-sm' }, right + ' = ' + rightParts.join(' + ')),
-            h('div', { className: 'mt-2 flex flex-wrap gap-1' }, leftParts.concat(rightParts).map(function (part, i) {
-              return h('span', { key: i, className: 'rounded-lg px-2 py-1 text-xs font-bold', style: { background: i < leftParts.length ? opMeta.soft : '#e2e8f0', color: themeSoftText() } }, part);
-            }))
+          var places = Math.max(2, String(Math.max(left + right, 1)).length);
+          var counts = Array.from({ length: places }, function(_, i) { return Math.floor(left / Math.pow(10, i)) % 10 + (op === 'add' ? Math.floor(right / Math.pow(10, i)) % 10 : 0); });
+          var stages = [{ counts: counts.slice(), note: op === 'add' ? t('stem.arithmetic.combine_places', 'Combine the units in matching places. Each disk is worth the value printed inside it.') : t('stem.arithmetic.start_quantity', 'Start with the first number. Exchange a larger unit when a place needs more disks.') }];
+          function saveStage(note, kind) { stages.push({ counts: counts.slice(), note: note, kind: kind || 'exchange' }); }
+          for (var p = 0; p < places - 1; p++) {
+            var unit = Math.pow(10, p);
+            if (op === 'add' && counts[p] >= 10) {
+              counts[p] -= 10; counts[p + 1]++;
+              saveStage('10 × ' + unit + ' = 1 × ' + (unit * 10) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
+            }
+            if (op === 'subtract' && counts[p] < Math.floor(right / unit) % 10) {
+              var donor = p + 1;
+              while (donor < places && counts[donor] === 0) donor++;
+              for (var k = donor; k > p && donor < places; k--) {
+                counts[k]--; counts[k - 1] += 10;
+                saveStage('1 × ' + Math.pow(10, k) + ' = 10 × ' + Math.pow(10, k - 1) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
+              }
+            }
+          }
+          if (op === 'subtract') {
+            counts = counts.map(function(n, i) { return n - Math.floor(right / Math.pow(10, i)) % 10; });
+            saveStage(t('stem.arithmetic.remove_second', 'Now remove the second quantity: ') + left + ' − ' + right + ' = ' + (left - right), 'remove');
+          }
+          var signature = op + ':' + left + ':' + right;
+          var step = d.exchangeSignature === signature ? clampInt(d.exchangeStep, 0, stages.length - 1, 0) : 0;
+          var stage = stages[step];
+          var previousStage = step > 0 ? stages[step - 1] : null;
+          function stageTotal(item) { return item.counts.reduce(function(sum, n, i) { return sum + n * Math.pow(10, i); }, 0); }
+          function stageExpression(item) { return item.counts.map(function(n, i) { return n ? n + ' × ' + Math.pow(10, i) : null; }).filter(Boolean).reverse().join(' + ') || '0'; }
+          var total = stage.counts.reduce(function(sum, n, i) { return sum + n * Math.pow(10, i); }, 0);
+          return h('section', { className: 'rounded-xl p-3 space-y-3', 'data-place-value-model': true, style: { background: card, border: '1px solid ' + border } },
+            h('h3', { className: 'text-sm font-black', style: { color: accentText } }, t('stem.arithmetic.place_value_model', 'Place-value model')),
+            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm' }, stage.note),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 } }, stage.counts.map(function(_, reverseIndex) {
+              var i = places - 1 - reverseIndex, value = Math.pow(10, i), count = stage.counts[i];
+              var delta = previousStage ? count - previousStage.counts[i] : 0;
+              return h('div', { key: i, 'data-place': value, 'data-count': count, 'data-place-delta':delta, style: { border: delta ? '2px dashed ' + accentText : '1px solid ' + border, borderRadius: 8, padding: 8 } },
+                h('p', { className: 'text-xs font-bold mb-2' }, count + ' × ' + value),
+                delta !== 0 && h('p', { className:'text-xs font-bold mb-2', style:{color:accentText} }, (delta > 0 ? '+' : '−') + Math.abs(delta) + ' ' + t('stem.arithmetic.change_in_disks', 'disks from the previous step')),
+                h('div', { role: 'img', 'aria-label': count + ' × ' + value + ' = ' + count * value, style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                  Array.from({ length: count }, function(_, disk) { return h('span', { key: disk, 'aria-hidden': true, style: { minWidth: 28, height: 28, padding: '0 4px', borderRadius: 14, border: '1px solid ' + accentText, display: 'inline-flex', justifyContent: 'center', alignItems: 'center', fontSize: 11, fontWeight: 700, color: text, background: card } }, value); })
+                )
+              );
+            })),
+            previousStage && h('div', { className:'rounded-lg p-3 space-y-2', style:{background:card, border:'1px solid '+border}, 'data-step-comparison':stage.kind },
+              h('p', {className:'text-sm'}, h('strong', null, t('stem.arithmetic.before_step', 'Before this step: ')), stageExpression(previousStage)+' = '+stageTotal(previousStage)),
+              h('p', {className:'text-sm'}, h('strong', null, t('stem.arithmetic.after_step', 'After this step: ')), stageExpression(stage)+' = '+stageTotal(stage)),
+              h('p', {className:'text-sm font-bold', 'data-value-change':true}, stage.kind === 'remove' ? t('stem.arithmetic.removal_changes_value', 'Taking away changes the value: ') + stageTotal(previousStage)+' − '+right+' = '+total : t('stem.arithmetic.exchange_keeps_value', 'The grouping changes, but both representations have value ') + total + '.')),
+            h('p', { className: 'font-mono text-sm', 'data-model-total': total }, stage.counts.map(function(n,i) { return n ? n + ' × ' + Math.pow(10,i) : null; }).filter(Boolean).reverse().join(' + ') + (total ? ' = ' + total : '0 = 0')),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', disabled: step === 0, className: 'rounded-lg border px-3 py-2 text-sm disabled:opacity-50', onClick: function() { update({ exchangeSignature: signature, exchangeStep: step - 1 }); } }, t('stem.arithmetic.previous_exchange', 'Previous step')),
+              h('button', { type: 'button', disabled: step === stages.length - 1, className: 'rounded-lg border px-3 py-2 text-sm disabled:opacity-50', onClick: function() { update({ exchangeSignature: signature, exchangeStep: step + 1 }); } }, t('stem.arithmetic.next_exchange', 'Next step')),
+              h('span', { className: 'self-center text-xs' }, (step + 1) + ' / ' + stages.length),
+              h('p', {className:'text-xs w-full'}, step === stages.length - 1 ? t('stem.arithmetic.explain_final_disks', 'Explain how these disks represent the answer.') : t('stem.arithmetic.predict_next_change', 'Before moving on, predict what will change in the next step.'))
+            )
           );
         }
         if (op === 'multiply') {
@@ -652,26 +699,56 @@
             );
           }
           var rows = Math.min(left, 12), cols = Math.min(right, 12);
+          var rowParts = [Math.floor(left / 10) * 10, left % 10].filter(function(n) { return n > 0; });
+          var colParts = [Math.floor(right / 10) * 10, right % 10].filter(function(n) { return n > 0; });
+          var partials = [], yOffset = 0;
+          rowParts.forEach(function(rowPart) {
+            var xOffset = 0;
+            colParts.forEach(function(colPart) {
+              partials.push({ label: String.fromCharCode(65 + partials.length), row: rowPart, col: colPart, x: xOffset, y: yOffset });
+              xOffset += colPart;
+            });
+            yOffset += rowPart;
+          });
           return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
             h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, left <= 12 && right <= 12 ? t('stem.arithmetic.array_model', "Array model") : t('stem.arithmetic.area_model_decomposition', "Area-model decomposition")),
             left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + t('stem.arithmetic.rows_of', " rows of ") + cols + t('stem.arithmetic.dots', " dots, ") + (rows * cols) + t('stem.arithmetic.total', " total"), style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
               Array.from({ length: rows * cols }).map(function (_, i) { return h('span', { key: i, style: { width: 12, height: 12, borderRadius: '50%', background: opMeta.color } }); })
-            ) : h('div', { role: 'img', 'aria-label': t('stem.arithmetic.area_model_showing_partial_products_fo', "Area model showing partial products for ") + left + t('stem.arithmetic.times', " times ") + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: themeSoftText() } },
-              h('div', { className: 'p-3', style: { background: '#ddd6fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
-              h('div', { className: 'p-3', style: { background: '#ede9fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + right % 10),
-              h('div', { className: 'p-3', style: { background: '#ede9fe' } }, left % 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
-              h('div', { className: 'p-3', style: { background: '#f5f3ff' } }, left % 10 + ' \u00d7 ' + right % 10)
-            )
+            ) : h('div', null, h('div', { role: 'img', 'aria-label': t('stem.arithmetic.area_model_showing_partial_products_fo', 'Area model showing partial products for ') + left + t('stem.arithmetic.times', ' times ') + right, style: { color: themeSoftText() } }, h('svg', { viewBox: '0 0 360 220', 'aria-hidden': true, style: { width: '100%', maxWidth: 480, display: 'block', margin: 'auto' } }, partials.map(function(part, i) {
+                var w = 340 * part.col / right, ht = 200 * part.row / left;
+                return h('g', { key: part.label },
+                  h('rect', { x: 10 + 340 * part.x / right, y: 10 + 200 * part.y / left, width: w, height: ht, fill: ['#ddd6fe','#c4b5fd','#a78bfa','#ede9fe'][i], stroke: '#4c1d95', strokeWidth: 1, 'data-partial-product': part.row * part.col }),
+                  w >= 22 && ht >= 22 && h('text', { x: 10 + 340 * (part.x + part.col / 2) / right, y: 10 + 200 * (part.y + part.row / 2) / left, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: 16, fontWeight: 800 }, part.label));
+              }))), h('div', { className: 'rounded-lg p-3 text-sm', style: { background: '#f5f3ff' } }, partials.map(function(part) { return h('p', { key: part.label }, part.label + ': ' + part.row + ' × ' + part.col + ' = ' + part.row * part.col); }),
+                h('p', { className: 'font-bold mt-2' }, partials.map(function(part) { return part.row * part.col; }).join(' + ') + ' = ' + left * right)))
           );
         }
         var division = calculate('divide', left, right);
-        return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': left + t('stem.arithmetic.objects_divided_into_groups_of', " objects divided into groups of ") + right + t('stem.arithmetic.gives', " gives ") + division.answer + t('stem.arithmetic.groups_with', " groups with ") + division.remainder + t('stem.arithmetic.left_over', " left over"), style: { background: card, border: '1px solid ' + border } },
-          h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.equal_groups_model', "Equal-groups model")),
-          h('div', { className: 'h-6 rounded-full overflow-hidden flex', style: { background: '#e2e8f0' } },
-            h('div', { style: { width: (left > 0 ? ((left - division.remainder) / left * 100) : 0) + '%', background: opMeta.color } }),
-            division.remainder > 0 && h('div', { style: { flex: 1, background: '#f59e0b' } })
+        var sharing = d.divisionMeaning === 'sharing';
+        var groups = sharing ? right : division.answer;
+        var perGroup = sharing ? division.answer : right;
+        var shownGroups = Math.min(groups, 12);
+        return h('section', { className: 'rounded-xl p-3 space-y-3', style: { background: card, border: '1px solid ' + border } },
+          h('h3', { className: 'text-sm font-black', style: { color: accentText } }, t('stem.arithmetic.equal_groups_model', 'Equal-groups model')),
+          h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.arithmetic.division_meaning', 'Meaning of division') },
+            [['groups', t('stem.arithmetic.make_groups', 'Make groups of a given size')], ['sharing', t('stem.arithmetic.share_equally', 'Share among a given number of groups')]].map(function(item) {
+              return h('button', { key: item[0], type: 'button', 'aria-pressed': (sharing ? 'sharing' : 'groups') === item[0], className: 'rounded-lg border px-3 py-2 text-xs font-bold', onClick: function() { update({ divisionMeaning: item[0] }); } }, item[1]);
+            })
           ),
-          h('p', { className: 'mt-2 text-xs font-semibold' }, division.answer + t('stem.arithmetic.complete_groups_of', " complete groups of ") + right + (division.remainder ? t('stem.arithmetic.with', ", with ") + division.remainder + t('stem.arithmetic.left_over_2', " left over.") : t('stem.arithmetic.with_none_left_over', ", with none left over.")))
+          h('p', { className: 'text-sm' }, sharing ? t('stem.arithmetic.sharing_prompt', 'Share equally among ') + right + t('stem.arithmetic.groups_count', ' groups. How many in each group?') : t('stem.arithmetic.grouping_prompt', 'Put ') + right + t('stem.arithmetic.in_each_group', ' in each group. How many complete groups?')),
+          h('p', { className: 'text-sm font-bold' }, groups + t('stem.arithmetic.complete_groups_of', ' complete groups of ') + perGroup + t('stem.arithmetic.with_leftover', ', with ') + division.remainder + t('stem.arithmetic.left_over_summary', ' left over')),
+          h('div', { 'data-division-groups': groups, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 } }, Array.from({ length: shownGroups }, function(_, i) {
+            return h('div', { key: i, className: 'rounded-lg border p-2', 'data-group-size': perGroup },
+              h('p', { className: 'text-xs font-bold mb-2' }, t('stem.arithmetic.group_label', 'Group ') + (i + 1) + ': ' + perGroup),
+              h('div', { 'aria-hidden': true, style: { display: 'flex', flexWrap: 'wrap', gap: 4 } }, Array.from({ length: Math.min(perGroup, 24) }, function(_, dot) { return h('span', { key: dot, style: { width: 10, height: 10, borderRadius: '50%', background: accentText } }); })),
+              perGroup > 24 && h('p', { className: 'text-xs mt-1' }, '24 + ' + (perGroup - 24) + ' = ' + perGroup)
+            );
+          })),
+          groups > shownGroups && h('p', { className: 'text-sm' }, t('stem.arithmetic.more_groups', 'Additional groups not drawn: ') + (groups - shownGroups)),
+          h('p', { role: 'status', className: 'text-sm font-bold', 'data-division-remainder': division.remainder }, t('stem.arithmetic.leftover_label', 'Left over: ') + division.remainder),
+          h('div', { 'aria-hidden': true, className: 'flex flex-wrap gap-1' }, Array.from({ length: Math.min(division.remainder,24) }, function(_,i) { return h('span', { key:i, style:{width:12,height:12,border:'2px solid ' + accentText,background:card} }); })),
+          division.remainder > 24 && h('p', { className: 'text-xs' }, '24 + ' + (division.remainder - 24) + ' = ' + division.remainder),
+          h('p', { className: 'font-mono text-sm' }, left + ' = ' + groups + ' × ' + perGroup + ' + ' + division.remainder)
         );
       }
 

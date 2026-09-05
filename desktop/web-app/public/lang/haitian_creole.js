@@ -13767,7 +13767,19 @@
       "interactive_rock_cycle_mineral_properties": "entèraktif rock cycle, mineral properties & geology",
       "break_materials_into_elements": "Kraze materyèl yo an eleman",
       "balance_chemical_equations_with_visual": "Balance chemical ekwasyon with vizyèl atòm counting.",
-      "plot_data_points_fit_trend": "Plot done pwen, fit trend liy, kalkile correlation."
+      "plot_data_points_fit_trend": "Plot done pwen, fit trend liy, kalkile correlation.",
+      "geometry_measurement": "📐 Jeyometri ak mezi",
+      "data_statistics_probability": "📊 Done, estatistik ak pwobabilite",
+      "life_science_genetics": "🧬 Syans lavi ak jenetik",
+      "human_body_health_safety": "🫀 Kò moun, sante ak sekirite",
+      "ecology_environment_animals": "🌍 Ekoloji, anviwònman ak bèt",
+      "earth_space_science": "🌎 Syans tè a ak espas",
+      "engineering_design": "⚙️ Enjenyri ak konsepsyon",
+      "computing_ai_digital_literacy": "💻 Enfòmatik, IA ak konpetans dijital",
+      "learning_behavioral_science": "🧠 Syans aprantisaj ak konpòtman",
+      "life_skills_careers_economics": "💰 Konpetans lavi, karyè ak ekonomi",
+      "sports_movement_science": "🏅 Syans espò ak mouvman",
+      "strategy_games": "⚔️ Jwèt estrateji"
     },
     "calculus": {
       "left": "Goch",
@@ -78848,7 +78860,17 @@
     "magnetism": {
       "initializing": "🧲 Charging the coils…"
     },
-    "volume_label": "Volume"
+    "volume_label": "Volume",
+    "tutorial": {
+      "region": "Vizit",
+      "step_of": "Etap {current} sou {total}",
+      "skip": "Sote",
+      "back": "Tounen",
+      "next": "Apre",
+      "finish": "Konprann!",
+      "replay": "Konsèy",
+      "replay_aria": "Montre leson"
+    }
   },
   "educator_hub": {
     "title": "Zouti Edikatè",

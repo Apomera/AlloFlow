@@ -12,9 +12,9 @@ describe('Number Line form control accessibility', () => {
 
   it('names the skip-count, tutor, and reflection controls', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': t('stem.numberline.skip_by', 'Skip By')");
-    expect(source).toContain("'aria-label': t('stem.numberline.start_from', 'Start From')");
-    expect(source).toContain("'aria-label': t('stem.numberline.how_many', 'How Many')");
+    expect(source).toContain("label:t('stem.numberline.skip_by','Skip By')");
+    expect(source).toContain("label:t('stem.numberline.start_from','Start From')");
+    expect(source).toContain("label:t('stem.numberline.number_of_hops','Number of hops')");
     expect(source).toContain("'aria-label': t('stem.numberline.ask_about_number_lines', 'Ask about number lines...')");
     expect(source).toContain("'aria-label': t('stem.numberline.hypothesis', 'Fraction relationship hypothesis')");
     expect(source).toContain("'aria-label': t('stem.numberline.explanation', 'Explain how to compare two fractions')");

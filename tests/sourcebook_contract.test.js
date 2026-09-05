@@ -632,7 +632,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(results[0]).toMatchObject({ provider: 'National Gallery of Art Open Access', rightsType: 'cc0', pixelWidth: 4000, pixelHeight: 3100 });
     expect(results[0].rightsMetadataSource).toContain('Wikimedia Commons imageinfo extmetadata');
     const session = window.SourcebookProviders.buildLiveSession(results, { query: 'historic textile study', provider: 'National Gallery of Art Open Access' });
-    expect(window.SourcebookProviders.normalizeLiveSession(session)).toMatchObject({ provider: 'National Gallery of Art Open Access' });
+    expect(window.SourcebookProviders.normalizeLiveSession(session)).toBeNull();
   });
 
   it('searches Smithsonian Open Access through its fixed Commons source category', async () => {
@@ -665,7 +665,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({ provider: 'Smithsonian Open Access', rightsType: 'cc0', kind: 'Science', pixelWidth: 3600, pixelHeight: 2800 });
     const session = window.SourcebookProviders.buildLiveSession(results, { query: 'scientific specimen study', provider: 'Smithsonian Open Access' });
-    expect(window.SourcebookProviders.normalizeLiveSession(session)).toMatchObject({ provider: 'Smithsonian Open Access' });
+    expect(window.SourcebookProviders.normalizeLiveSession(session)).toBeNull();
   });
 
   it('searches Biodiversity Heritage Library while excluding ambiguous item rights', async () => {
@@ -712,7 +712,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(results[0]).toMatchObject({ provider: 'Biodiversity Heritage Library', rightsType: 'pd', kind: 'Botanical', pixelWidth: 4200, pixelHeight: 5600 });
     expect(results[0].rightsMetadataSource).toContain('Wikimedia Commons imageinfo extmetadata');
     const session = window.SourcebookProviders.buildLiveSession(results, { query: 'antique botanical plate', provider: 'Biodiversity Heritage Library' });
-    expect(window.SourcebookProviders.normalizeLiveSession(session)).toMatchObject({ provider: 'Biodiversity Heritage Library' });
+    expect(window.SourcebookProviders.normalizeLiveSession(session)).toBeNull();
   });
 
   it('searches the U.S. National Archives category without treating the collection as blanket public domain', async () => {
@@ -759,7 +759,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(results[0]).toMatchObject({ provider: 'U.S. National Archives', rightsType: 'pd', kind: 'Blueprints', pixelWidth: 5100, pixelHeight: 3400 });
     expect(results[0].rightsMetadataSource).toContain('Wikimedia Commons imageinfo extmetadata');
     const session = window.SourcebookProviders.buildLiveSession(results, { query: 'historical technical drawing', provider: 'U.S. National Archives' });
-    expect(window.SourcebookProviders.normalizeLiveSession(session)).toMatchObject({ provider: 'U.S. National Archives' });
+    expect(window.SourcebookProviders.normalizeLiveSession(session)).toBeNull();
   });
 
 
@@ -867,11 +867,17 @@ describe('Sourcebook initial feature contract', () => {
     const previousStemLab = browserWindow.StemLab;
     const previousProviders = browserWindow.SourcebookProviders;
     const previousMatchMedia = browserWindow.matchMedia;
+    const previousFetch = browserWindow.fetch;
     const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
     const host = document.createElement('div');
     document.body.appendChild(host);
     let reactRoot = null;
     try {
+      browserWindow.fetch = async (url) => {
+        const match = String(url).match(/artworks\/(\d+)$/);
+        if (!match) throw new Error('Unexpected request: ' + url);
+        return { ok: true, json: async () => ({ data: payload.data.find(record => String(record.id) === match[1]), config: payload.config }) };
+      };
       browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
       browserWindow.StemLab = {
         _registry: {}, _order: [],
@@ -926,6 +932,7 @@ describe('Sourcebook initial feature contract', () => {
       browserWindow.StemLab = previousStemLab;
       browserWindow.SourcebookProviders = previousProviders;
       browserWindow.matchMedia = previousMatchMedia;
+      browserWindow.fetch = previousFetch;
       globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
     }
   });
@@ -936,7 +943,7 @@ describe('Sourcebook initial feature contract', () => {
     const aic = sourceWindow.SourcebookProviders.normalizeAicArtwork(
       payload.data[0], payload.config, 'zzzzloadedfacet', 'Blueprints'
     );
-    const cma = sourceWindow.SourcebookProviders.normalizeCmaArtwork({
+    const cmaRecord = {
       id: 9901,
       share_license_status: 'CC0',
       title: 'Verified local facet textile',
@@ -951,10 +958,11 @@ describe('Sourcebook initial feature contract', () => {
         web: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_web.jpg' },
         print: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_print.jpg' }
       }
-    }, 'zzzzloadedfacet', 'Patterns');
+    };
+    const cma = sourceWindow.SourcebookProviders.normalizeCmaArtwork(cmaRecord, 'zzzzloadedfacet', 'Patterns');
     const openverseId = 'a1111111-b222-4ccc-8ddd-e55555555555';
     const openverseDetail = 'https://api.openverse.org/v1/images/' + openverseId + '/';
-    const openverse = sourceWindow.SourcebookProviders.normalizeOpenverseImage({
+    const openverseRecord = {
       id: openverseId,
       title: 'Verified CC0 wood texture',
       creator: 'Open archive contributor',
@@ -973,7 +981,8 @@ describe('Sourcebook initial feature contract', () => {
       detail_url: openverseDetail,
       thumbnail: openverseDetail + 'thumb/',
       tags: [{ name: 'wood' }, { name: 'texture' }]
-    }, 'zzzzloadedfacet', 'Textures');
+    };
+    const openverse = sourceWindow.SourcebookProviders.normalizeOpenverseImage(openverseRecord, 'zzzzloadedfacet', 'Textures');
     const session = sourceWindow.SourcebookProviders.buildLiveSession([aic, cma, openverse], {
       query: 'zzzzloadedfacet', kind: 'All', provider: 'All', rightsScope: 'pd-cc0',
       canLoadMore: false
@@ -991,9 +1000,12 @@ describe('Sourcebook initial feature contract', () => {
     let reactRoot = null;
     let requests = 0;
     try {
-      browserWindow.fetch = () => {
+      browserWindow.fetch = async (url) => {
         requests += 1;
-        return Promise.reject(new Error('Loaded facets must not fetch.'));
+        if (String(url).includes('api.artic.edu')) return { ok: true, json: async () => ({ data: payload.data[0], config: payload.config }) };
+        if (String(url).includes('clevelandart.org')) return { ok: true, json: async () => ({ data: cmaRecord }) };
+        if (String(url) === openverseDetail) return { ok: true, json: async () => openverseRecord };
+        throw new Error('Unexpected request: ' + url);
       };
       browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
       browserWindow.StemLab = {
@@ -1018,6 +1030,8 @@ describe('Sourcebook initial feature contract', () => {
         reactRoot.render(ReactLib.createElement(Harness));
       });
 
+      expect(requests).toBe(3); // One exact record lookup per saved asset.
+      requests = 0;
       const facets = host.querySelector('[data-sourcebook-loaded-facets="true"]');
       expect(facets).toBeTruthy();
       const allChip = facets.querySelector('button[data-sourcebook-loaded-provider="All"]');
@@ -1935,6 +1949,54 @@ describe('Sourcebook initial feature contract', () => {
     expect(malformedRequests).toBe(0);
   });
 
+  it('keeps a Rijksmuseum saved asset visible after another asset is saved', async () => {
+    const source = loadSourcebook().SourcebookProviders;
+    const item = source.normalizeRijksRecord(rijksEdmRecord(), 'historical design', 'Blueprints', '20022259');
+    const curated = source.materials[0];
+    const browserWindow = globalThis.window;
+    const previous = { StemLab: browserWindow.StemLab, SourcebookProviders: browserWindow.SourcebookProviders, fetch: browserWindow.fetch, matchMedia: browserWindow.matchMedia };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div'); document.body.appendChild(host);
+    let reactRoot; let requests = 0; let latestState;
+    try {
+      browserWindow.fetch = async url => {
+        requests++;
+        if (String(url) === 'https://iiif.micr.io/LnWLG/info.json') return { ok: true, json: async () => rijksIiifInfo() };
+        if (String(url) === 'https://data.rijksmuseum.nl/20022259?_profile=edm-framed') return { ok: true, json: async () => rijksEdmRecord() };
+        throw Error('Unexpected source request: ' + url);
+      };
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = { _registry: {}, _order: [], registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); } };
+      vm.runInNewContext(pluginSource, { console, setTimeout, clearTimeout, AbortController, document, navigator: browserWindow.navigator, Image: browserWindow.Image, FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL, window: browserWindow }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({ collection: [item.id], savedAssets: { [item.id]: item }, rightsScope: 'all' });
+        latestState = state;
+        return tool.render({ React: ReactLib, toolData: { sourcebook: state },
+          updateMulti(id, patch) { setState(current => ({ ...current, ...patch })); },
+          update(id, key, value) { setState(current => ({ ...current, [key]: value })); },
+          announceToSR() {}, addToast() {} });
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => { reactRoot = ReactDOMClient.createRoot(host); reactRoot.render(ReactLib.createElement(Harness)); });
+      await ReactLib.act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      expect(host.querySelector('[data-sourcebook-smk-saved-status="ready"]')).toBeTruthy();
+      const curatedCard = host.querySelector('[data-sourcebook-result-card="' + curated.id + '"]');
+      expect(curatedCard).toBeTruthy();
+      await ReactLib.act(async () => { curatedCard.querySelector('button[aria-label^="Save "]').click(); });
+      await ReactLib.act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      await ReactLib.act(async () => { host.querySelector('[data-sourcebook-workflow-step="prepare"]').click(); });
+      expect(host.querySelector('[data-sourcebook-result-card="' + item.id + '"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="' + curated.id + '"]')).toBeTruthy();
+      expect(latestState.savedAssets[item.id].rijksRecordId).toBe('20022259');
+      expect(requests).toBeGreaterThanOrEqual(2);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => reactRoot.unmount());
+      host.remove(); Object.assign(browserWindow, previous);
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
   it('keeps a verified Museums Victoria asset visible across palette mutations and surfaces its context check', async () => {
     const sourceWindow = loadSourcebook();
     const mvItem = Array.from(sourceWindow.SourcebookProviders.normalizeMuseumsVictoriaRecord(
@@ -2361,7 +2423,7 @@ describe('Sourcebook initial feature contract', () => {
 
   it('presents only known live provider identities and exposes Yale, Rijksmuseum, and Museums Victoria through the central registry', () => {
     const window = loadSourcebook();
-    expect(window.SourcebookProviders.version).toBe(59);
+    expect(window.SourcebookProviders.version).toBe(60);
     expect(window.SourcebookProviders.providerPresentation('Yale University Art Gallery Open Access')).toEqual({
       name: 'Yale University Art Gallery Open Access', mark: 'YUAG', known: true
     });
@@ -2568,6 +2630,11 @@ describe('Sourcebook initial feature contract', () => {
     });
     const window = loadSourcebook(async (url, options) => {
       requests.push({ url: String(url), options });
+      if (String(url).includes('commons.wikimedia.org')) return { ok: true, json: async () => ({ query: { pages: [{ pageid: 77, title: 'File:Verified control.jpg', imageinfo: [{
+        url: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Verified_control.jpg',
+        descriptionurl: 'https://commons.wikimedia.org/wiki/File:Verified_control.jpg',
+        extmetadata: { LicenseShortName: { value: 'Public Domain Mark' }, LicenseUrl: { value: 'https://creativecommons.org/publicdomain/mark/1.0/' } }
+      }] }] } }) };
       return { ok: true, json: async () => ({ items: [authoritative] }) };
     });
     const direct = await window.SourcebookProviders.fetchSmkArtwork('kksGB4943', { bypassCache: true });
@@ -2606,7 +2673,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
     const verified = await window.SourcebookProviders.revalidateLiveSession(session, { nowValue: now + 1000, bypassCache: true });
     expect(verified.results).toHaveLength(2);
-    expect(verified.results[0]).toMatchObject({ id: 'commons-live-mixed-control', title: 'Verified Commons control' });
+    expect(verified.results[0]).toMatchObject({ id: 'commons-live-mixed-control', title: 'Verified control' });
     expect(verified.results[1]).toMatchObject({
       title: 'Fresh authoritative anatomy plate', creator: 'Fresh catalog creator',
       description: expect.stringContaining('Fresh description'), recommended: true,
@@ -2951,13 +3018,9 @@ describe('Sourcebook initial feature contract', () => {
     const session = window.SourcebookProviders.buildLiveSession([item], {
       query: 'historic map', kind: 'Maps', provider: 'Library of Congress', rightsScope: 'pd'
     }, now);
-    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)?.results[0]).toMatchObject({
-      id: 'loc-live-74692963', provider: 'Library of Congress'
-    });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
     const palette = window.SourcebookProviders.buildPalette([item.id], {}, 'LOC map', [item]);
-    expect(window.SourcebookProviders.normalizePalette(palette)?.assets[0]).toMatchObject({
-      id: 'loc-live-74692963', provider: 'Library of Congress'
-    });
+    expect(window.SourcebookProviders.normalizePalette(palette)).toBeNull();
 
     const withRights = (rights, overrides = {}) => normalize({
       ...explicitPublicDomain,
@@ -3052,9 +3115,7 @@ describe('Sourcebook initial feature contract', () => {
     const session = window.SourcebookProviders.buildLiveSession([item], {
       query: 'brain diagram', kind: 'Science', provider: 'Wellcome Collection', rightsScope: 'pd'
     }, now);
-    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)?.results[0]).toMatchObject({
-      id: 'wellcome-live-az7qtsqj', provider: 'Wellcome Collection'
-    });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
   });
 
   it('searches the large Wellcome image corpus with server and client rights gates', async () => {
@@ -3144,9 +3205,7 @@ describe('Sourcebook initial feature contract', () => {
     const session = window.SourcebookProviders.buildLiveSession([item], {
       query: 'architectural drawing', kind: 'Blueprints', provider: 'Getty Museum Open Content', rightsScope: 'pd-cc0'
     }, now);
-    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)?.results[0]).toMatchObject({
-      id: item.id, provider: 'Getty Museum Open Content'
-    });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
   });
 
   it('searches Getty objects, then verifies each image media record before admission', async () => {
@@ -3245,9 +3304,7 @@ describe('Sourcebook initial feature contract', () => {
     const session = window.SourcebookProviders.buildLiveSession([item], {
       query: 'quiet wood grain', kind: 'Textures', provider: 'Openverse', rightsScope: 'pd'
     }, now);
-    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)?.results[0]).toMatchObject({
-      id: item.id, provider: 'Openverse'
-    });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
   });
 
   it('searches Openverse broadly while enforcing server and client reuse filters', async () => {
@@ -4540,7 +4597,7 @@ describe('Sourcebook initial feature contract', () => {
       mode: 'tile', aspect: 'banner', tile: 140, usageIntent: 'texture',
       altText: 'Contour lines for a mountain region.', altTextCustomized: true
     }, dataUrl);
-    expect(window.SourcebookProviders.version).toBe(59);
+    expect(window.SourcebookProviders.version).toBe(60);
     expect(html).toContain('<!doctype html>');
     expect(html).toContain(`<img src="${dataUrl}"`);
     expect(html).toContain('download="contour-map-line-drawing.png"');
@@ -4858,7 +4915,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Clear palette filter'");
     expect(pluginSource).toContain("'Select shown ('");
     expect(pluginSource).toContain("'Clear selection'");
-    expect(pluginSource).toContain("'Remove selected ('");
+    expect(pluginSource).toContain("'stem.sourcebook.remove_selected_count'");
     expect(pluginSource).toContain("'Select {title} for palette actions', { title: item.title }");
     expect(pluginSource).toContain("'Download selected package ({count})'");
     expect(pluginSource).toContain("'Export selected .json'");
@@ -4919,7 +4976,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Earlier'");
     expect(pluginSource).toContain("'Later'");
     expect(pluginSource).toContain("ctx.generateText");
-    expect(pluginSource).toContain("'Federated public collections'");
+    expect(pluginSource).toContain("'Public collections'");
     expect(pluginSource).toContain("'National Gallery of Art Open Access'");
     expect(pluginSource).toContain("'Images from the National Gallery of Art'");
     expect(pluginSource).toContain("'Smithsonian Open Access'");
@@ -5249,7 +5306,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(Array.from(P.filterAndSortBoard(board, 'etching', 'recommended')).map((item) => item.id)).toEqual(['m2']);
     // Only providers whose records carry medium emit it; Commons and Openverse builders do not.
     const emitters = (pluginSource.match(/medium: normalizedMedium\(/g) || []).length;
-    expect(emitters).toBe(11);
+    expect(emitters).toBe(12); // The import normalizer now preserves medium too.
     expect(pluginSource).toContain("'data-sourcebook-loaded-medium': entry.medium");
   });
 
@@ -5284,11 +5341,17 @@ describe('Sourcebook initial feature contract', () => {
     const previousStemLab = browserWindow.StemLab;
     const previousProviders = browserWindow.SourcebookProviders;
     const previousMatchMedia = browserWindow.matchMedia;
+    const previousFetch = browserWindow.fetch;
     const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
     const host = document.createElement('div');
     document.body.appendChild(host);
     let reactRoot = null;
     try {
+      browserWindow.fetch = async (url) => {
+        const match = String(url).match(/artworks\/(\d+)$/);
+        if (!match) throw new Error('Unexpected request: ' + url);
+        return { ok: true, json: async () => ({ data: payload.data.find(record => String(record.id) === match[1]), config: payload.config }) };
+      };
       browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
       browserWindow.StemLab = {
         _registry: {}, _order: [],
@@ -5339,6 +5402,7 @@ describe('Sourcebook initial feature contract', () => {
       browserWindow.StemLab = previousStemLab;
       browserWindow.SourcebookProviders = previousProviders;
       browserWindow.matchMedia = previousMatchMedia;
+      browserWindow.fetch = previousFetch;
       globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
     }
   });

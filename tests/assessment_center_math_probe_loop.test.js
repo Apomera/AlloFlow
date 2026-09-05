@@ -138,8 +138,8 @@ describe('inbound: a completed standardized probe reaches probe history', () => 
     // The raw value is validated before coercion; Number(null) is 0, which would
     // otherwise record a missing score as a genuine 0 DCPM.
     expect(h).toContain('rawDcpm');
-    // And the activity string must be one _probeTypeAndScore actually maps.
-    expect(ac).toContain("if (a === 'math' || a === 'math_dcpm' || a === 'math_fluency')");
+    // The record's actual score round trip is covered by assessment_center_math_probe_record.test.js.
+    // Do not pin a mapping that treats generic item counts as DCPM.
   });
 });
 

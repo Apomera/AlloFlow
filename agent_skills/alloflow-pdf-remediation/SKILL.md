@@ -6,7 +6,8 @@ description: Drive AlloFlow's PDF accessibility remediation MCP connector (allof
 # AlloFlow PDF remediation via MCP
 
 The `alloflow-remediation` connector runs AlloFlow's real remediation pipeline
-(headless) on local PDFs. It produces an accessible HTML version, a tagged PDF,
+(headless) on local PDFs, Word documents, slides, spreadsheets, images and text
+files. It produces an accessible HTML version, a tagged PDF,
 and an **honesty-gated verdict** — the pipeline is deliberately conservative
 about what it claims, and you must be too.
 
@@ -26,8 +27,8 @@ through `dataHandling`:
 
 A false `fullAiPipelineReady` does not make the connector unusable. Use its
 keyless tools when they satisfy the request. For full semantic remediation,
-use the Gemini-powered job flow only when the user has an appropriate key and
-is authorized to send that document to Gemini.
+default to the agent-bridge flow below. Use the Gemini-powered job flow when
+the user selects that engine and is authorized to send the document to Gemini.
 
 Use `$alloflow-portable-remediation` when the document exists only as an
 attachment in the active file sandbox, no usable local path is available to
@@ -44,14 +45,15 @@ installed connector's local tools.
    accessible-HTML *content* (semantics, alt text, structure). `pdf_validate_ua`
    judges the exported PDF *bytes* against ISO 14289-1. Never mix them up and
    never average or blend them.
-3. **Jobs, not sync calls.** Remediation takes 5–30 minutes. Always prefer
+3. **Use the selected engine.** For keyless work, use the agent-bridge flow.
+   For Gemini, use jobs rather than synchronous calls. Remediation takes 5–30 minutes. Always prefer
    `pdf_remediate_start` → poll `remediation_job_status` (every 30–60 s; the
    status includes live pipeline telemetry — a throttle wait is normal, not a
    hang) → `remediation_job_result`. The synchronous `pdf_remediate` is only
    for very small documents.
 4. **Quota is the teacher's.** Each remediation makes dozens of Gemini calls on
-   their key. Don't re-run on a whim; don't start a batch without confirming
-   the folder and file count first.
+   their key. Don't re-run on a whim. Use the folder and processing scope the user authorized;
+   ask only when the scope or model-provider choice is genuinely unresolved.
 5. **Never handle their key.** Do not ask the user to paste an API key into the
    conversation, do not read it out of a file, and do not write it into an MCP
    client config. If a key is needed, relay the `setup` text that
@@ -65,7 +67,7 @@ installed connector's local tools.
    `valid-but-quota-exhausted` means wait, not re-key; `unreachable` means you
    could not test it, not that it is broken.
 
-## Standard flow
+## Gemini job flow (when selected)
 
 1. `remediation_capabilities`: follow `onboarding`, then inspect
    `dataHandling` and `keylessToolNames`. If setup is required, call
@@ -109,9 +111,14 @@ When no Gemini key is configured (or the user prefers not to use one),
 The pipeline pauses at each internal model call and publishes it as a pending
 request; you answer, it continues.
 
-1. Start the run, then loop: `remediation_agent_requests` (long-poll,
-   `wait_seconds: 20`) → answer every entry in `pendingRequests` with
-   `remediation_agent_respond` → repeat until `status` is `completed`.
+1. Start with `pdf_remediate_agent_start`: pass `file_path` for one document or
+   `dir_path` for a folder. Use `effort: "thorough"` when the user wants the strongest
+   result; it enables bounded improvement plus independent PDF/UA validation.
+   Loop `remediation_agent_requests` → `remediation_agent_respond_batch` until
+   completed, failed, cancelled, or interrupted. Batch only currently pending
+   independent replies. The batch response includes the next requests and images;
+   consume it before polling again. Drive this loop autonomously; the user does
+   not need to approve or compose each internal model reply.
 2. **Follow each embedded prompt's format contract exactly.** Strict JSON
    where it asks for JSON (no code fences, no commentary), raw HTML where it
    asks for HTML. Malformed replies are discarded by the pipeline's strict
@@ -131,13 +138,77 @@ request; you answer, it continues.
    10–40 requests. Text-first documents are the sweet spot.
 5. The result carries `modelTransport: "agent-bridge"` — relay that the
    engine was your model, plus the same honesty fields as any run.
-6. `remediation_agent_cancel` aborts; written files stay. Runs do not survive
-   a server restart.
+6. `remediation_agent_cancel` aborts; written files stay. Run records survive a
+   server restart: find saved run IDs with `remediation_agent_runs`, poll the intended run, then call `remediation_agent_resume`
+   when it is interrupted. Verified completed files and audio sections are reused;
+   an unfinished document may restart. The client must remain active to answer
+   new model requests. Resumption does not promise background model execution.
 
-## Batch flow
+## Narration and deliverables
+
+Keep both listening styles. `narration: "accessible"` is the recommended default
+when audio is requested: it announces headings, lists, tables and image descriptions.
+`narration: "natural"` provides continuous reading. Do not describe either as a
+replacement for a screen reader. Omit narration when the user did not request audio.
+
+Add narration to an agent start, or call `document_narrate_start` on existing
+accessible HTML to avoid repeating remediation. The narration-only tool defaults
+to accessible mode. Use `document_narration_voices` to inspect configured language support.
+`narration_provider: "auto"` selects Kokoro for English and Piper for supported
+other languages. `narration_language` defaults to the document's HTML language;
+set an explicit BCP-47 override when that metadata is missing or wrong. This does
+not translate the document. `narration_voice` defaults to `auto`.
+Accessible announcements are localized for en/es/fr/de/pt/it. Other configured
+Piper languages support natural narration. When the user asks for audio without
+a specific style, choose accessible where localized, otherwise natural and state
+the choice. Respect an explicit style request; do not silently substitute another.
+Language-tagged blocks and inline phrases switch automatically between Kokoro
+and Piper, including nested phrases in headings, lists, tables and captions.
+Leave provider and voice on auto for multilingual documents. Preserve language
+tags and document structure; no paragraph splitting is required. Both providers run
+locally after public dependency downloads; there is no TTS model API call.
+`readalong_epub` defaults to true when narration is requested.
+
+For a large document or folder, call `document_narration_preflight` first. It uses
+only bundled local helpers and returns ready/blocked files, voice routes, chunk
+counts and a rough audio-duration range. It does not download models or certify
+accessibility. Inspect `contentCoverage` as well as language/style readiness.
+Correct blocked text omissions or missing spoken descriptions before synthesis;
+use authored image alt text, equation `aria-label`/`alttext`, and SVG descriptions.
+Do not invent visual or mathematical meaning to make a coverage check pass.
+Controls, hidden markup and explicitly decorative images are reported exclusions.
+`cachedSections` and `sectionsToSynthesize` show how much audio can be reused.
+`document_narrate_start` accepts `dir_path` for up to 60 accessible HTML files,
+processed sequentially; generated read-along players are excluded from folder inputs.
+Per-file failures remain visible in the final summary. Inspect `outcome` and
+`failedFiles`: terminal status `completed` means the batch finished, not that every
+file succeeded. After correcting the failure, use the returned `retry` tool and
+arguments. Verified final narration files are reused without creating duplicates.
+Changed or missing artifacts are rebuilt using valid cached sections. Editing or
+reordering a document reuses unchanged speech; the final package is always rebuilt
+in the current order. Reports expose `reusedSections` and `generatedSections`.
+
+Remediation `contentCoverage.reviewRequired` blocks automatic narration and tagged
+PDF delivery. Inspect the referenced remediation report for source token ranges,
+extraction problems and scope. Missing tokens can be rewording rather than loss;
+review against the source without bypassing the check or claiming semantic proof.
+The completed state of a run is not proof of full source coverage or certification.
+
+Poll `remediation_agent_requests` for progress. Narration requires no model replies.
+Deliver the MP3/WAV, HTML player and synchronized EPUB resource links, preserving
+coverage and verification disclosures. The HTML player and its MP3 must travel
+together; the EPUB contains its audio. A failed section prevents a complete result;
+resume retries it using the saved sections. EPUB outputs (read-along and `export_alt_format`)
+carry independent `epubValidation` evidence from bundled EPUBCheck and DAISY Ace (runtime
+readiness is `epubVerification` in capabilities/preflight): report each
+check's status (`passed`, `failed`, `review-required`, `unavailable`, `skipped`) and the raw report
+paths. `unavailable` means a runtime (Java, Chromium) was missing, not that the EPUB passed. A
+passing result still sets `humanReviewRequired: true`; never describe it as certification.
+
+## Gemini batch flow
 
 `pdf_batch_remediate_start` on a folder (non-recursive, ≤60 PDFs, skips
-`*-tagged.pdf`). Confirm the file count with the user before starting. The
+`*-tagged.pdf`). Use the folder and scope the user authorized. The
 result has a per-file scoreboard: report failures per file and the verdict
 distribution, not just "done". A cancelled batch keeps its partial scoreboard
 (`remediation_job_result` still works; `partial: true`).

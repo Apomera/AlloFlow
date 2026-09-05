@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// Every test here mounts the real tool, most of them several times; 58 of them ran on
+// vitest's 5s default and any could time out under load - one did, and a single
+// timeout took 70 of 102 tests down with it. One file-level budget, sized like
+// galaxy_scene_build's SCENE_TIMEOUT, instead of 58 trailing arguments.
+vi.setConfig({ testTimeout: 30000 });
 import {
   React,
   ReactDOMClient,
@@ -303,7 +308,7 @@ describe('galaxy canvas lifecycle', () => {
     await React.act(async () => startTour.click());
 
     expect(ensureThree).toHaveBeenCalledTimes(1);
-  });
+  }, 30000);
 
   it('restarts once, after commit, when the selected galaxy type changes', async () => {
     const ensureThree = vi.fn(() => new Promise(() => {}));

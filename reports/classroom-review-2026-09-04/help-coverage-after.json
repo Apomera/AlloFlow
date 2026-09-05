@@ -1,0 +1,407 @@
+{
+  "scope": "Root canonical host, JSX sources, and standalone modules without corresponding JSX source. Literal references only; dynamic expressions and local/tour fallbacks need review. Presence checks do not establish accuracy.",
+  "files": 407,
+  "defined": 1037,
+  "referenced": 1030,
+  "duplicates": [],
+  "invalidDefinitions": [],
+  "missing": [
+    {
+      "key": "adminhub_backup_export",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_backup_restore",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_backup_section",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_connect",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_disconnect",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_save_now",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_section",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_setup_open",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_drive_status",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adminhub_guide_link",
+      "files": [
+        "admin_hub_source.jsx"
+      ]
+    },
+    {
+      "key": "adventure_immersive_reading_practice",
+      "files": [
+        "AlloFlowANTI.txt",
+        "view_adventure_source.jsx"
+      ]
+    },
+    {
+      "key": "adventure_scene_reading_practice",
+      "files": [
+        "AlloFlowANTI.txt",
+        "view_adventure_source.jsx"
+      ]
+    },
+    {
+      "key": "adventure_setup_chk_reading_practice",
+      "files": [
+        "view_adventure_source.jsx"
+      ]
+    },
+    {
+      "key": "adventure_setup_chk_typing_pace",
+      "files": [
+        "view_adventure_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_component_heat_cell",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_manual_link",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_practice_menu",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_saved_scenarios",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_tour_script",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ae_tour_steps",
+      "files": [
+        "educator_evaluation_source.jsx"
+      ]
+    },
+    {
+      "key": "ai_backend_forget_gemini_key",
+      "files": [
+        "view_misc_modals_source.jsx"
+      ]
+    },
+    {
+      "key": "ai_backend_forget_gemini_services_key",
+      "files": [
+        "view_misc_modals_source.jsx"
+      ]
+    },
+    {
+      "key": "ai_backend_gemini_services_key_input",
+      "files": [
+        "view_misc_modals_source.jsx"
+      ]
+    },
+    {
+      "key": "ai_backend_guided_card_canvas",
+      "files": [
+        "view_misc_modals_source.jsx"
+      ]
+    },
+    {
+      "key": "educator_hub_assessment_center_card",
+      "files": [
+        "view_educator_hub_modal_source.jsx"
+      ]
+    },
+    {
+      "key": "educator_hub_research_suite_card",
+      "files": [
+        "view_educator_hub_modal_source.jsx"
+      ]
+    },
+    {
+      "key": "educator_hub_school_rewards_card",
+      "files": [
+        "view_educator_hub_modal_source.jsx"
+      ]
+    },
+    {
+      "key": "glossary_audio_review",
+      "files": [
+        "view_glossary_source.jsx"
+      ]
+    },
+    {
+      "key": "glossary_image_style_mode",
+      "files": [
+        "view_glossary_source.jsx"
+      ]
+    },
+    {
+      "key": "header_return_to_start",
+      "files": [
+        "view_header_source.jsx"
+      ]
+    },
+    {
+      "key": "header_voice_configure_gemini",
+      "files": [
+        "view_header_source.jsx"
+      ]
+    },
+    {
+      "key": "math_open_studio",
+      "files": [
+        "view_sidebar_panels_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_connect",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_copy_snippet",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_copy_source",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_disconnect",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_handoff",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_handoff_copy",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_handoff_download",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_health_hint",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_manual",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_next_step",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_open_check",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_open_portal",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_practice",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_recognition_worksheet",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_roster_bridge",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_roster_download",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_roster_group",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_setup_snippet",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_share_copy",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_share_staff",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_status",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_toggle_setup",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_worksheet_copy",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_worksheet_download",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "schoolrewards_worksheet_row",
+      "files": [
+        "school_rewards_source.jsx"
+      ]
+    },
+    {
+      "key": "sidebar_ai_setup_notice",
+      "files": [
+        "view_full_pack_run_source.jsx",
+        "view_sidebar_panels_source.jsx"
+      ]
+    },
+    {
+      "key": "simplified_instructional_role",
+      "files": [
+        "view_simplified_source.jsx"
+      ]
+    },
+    {
+      "key": "voice_skip_audio",
+      "files": [
+        "AlloFlowANTI.txt"
+      ]
+    }
+  ],
+  "dynamic": [
+    {
+      "file": "onboarding_coach_source.jsx",
+      "expression": "'onboarding_mode_' + m.key"
+    },
+    {
+      "file": "research_hub_source.jsx",
+      "expression": "'research_hub_method_' + pack.id"
+    },
+    {
+      "file": "research_lane_engineering_source.jsx",
+      "expression": "'engineering_cycle_' + s.key"
+    },
+    {
+      "file": "research_lane_humanities_source.jsx",
+      "expression": "'humanities_cycle_' + s.key"
+    },
+    {
+      "file": "research_lane_scientific_source.jsx",
+      "expression": "'workbench_cycle_' + s.key"
+    },
+    {
+      "file": "school_rewards_source.jsx",
+      "expression": "'schoolrewards_step_' + step"
+    },
+    {
+      "file": "view_header_source.jsx",
+      "expression": "isTeacherMode ? \"header_view_student\" : \"header_view_teacher\""
+    },
+    {
+      "file": "view_sidebar_panels_source.jsx",
+      "expression": "helpKey"
+    }
+  ]
+}

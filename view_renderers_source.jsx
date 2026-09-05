@@ -7046,8 +7046,133 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     );
 };
 
+// Flow geometry belongs to this renderer; host state and actions arrive through deps.
+const STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
+const renderFlowShape = (node, isSelected, deps) => {
+    const { isMapLocked, handleNodeMouseDown, handleNodeClick, isChallengeActive, isTeacherMode, handleDeleteNode, mapContainerRef, setConceptMapNodes, t } = deps;
+    const { type, x, y, text, id } = node;
+    const strokeColor = isSelected ? "#6366f1" : "#94a3b8";
+    const strokeWidth = isSelected ? 3 : 2;
+    const onMouseDown = (e) => !isMapLocked && handleNodeMouseDown(e, id);
+    const onClick = (e) => handleNodeClick(e, id);
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleNodeClick(e, id);
+            return;
+        }
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteNode(id);
+            return;
+        }
+        const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+        if (!delta || isMapLocked) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const step = e.shiftKey ? 25 : 10;
+        const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+        const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+        setConceptMapNodes((nodes) => nodes.map((item) => item.id === id ? {
+            ...item,
+            x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
+            y: Math.max(0, Math.min(height, item.y + delta[1] * step))
+        } : item));
+    };
+    const gProps = {
+        transform: `translate(${x},${y})`,
+        role: 'button',
+        tabIndex: 0,
+        focusable: 'true',
+        'aria-label': text,
+        'aria-pressed': isSelected,
+        onMouseDown,
+        onClick,
+        onKeyDown,
+        className: `pointer-events-auto ${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`,
+        key: id
+    };
+    let shape;
+    switch (type) {
+        case 'flow-start':
+        case 'flow-end':
+            shape = (
+                <g>
+                    <ellipse cx="0" cy="0" rx="60" ry="30" fill="#f0f9ff" stroke={strokeColor} strokeWidth={strokeWidth} />
+                    <text x="0" y="5" textAnchor="middle" className="text-xs font-bold pointer-events-none select-none fill-slate-700 font-sans uppercase tracking-wider">{text}</text>
+                </g>
+            );
+            break;
+        case 'flow-decision':
+            shape = (
+                <g>
+                    <polygon points="0,-50 60,0 0,50 -60,0" fill="#fefce8" stroke={strokeColor} strokeWidth={strokeWidth} />
+                    <foreignObject x="-40" y="-20" width="80" height="40" style={STYLE_POINTER_EVENTS_NONE}>
+                         <div className="flex items-center justify-center h-full text-center text-[11px] font-bold leading-tight select-none text-yellow-900 break-words px-1">
+                             {text}
+                         </div>
+                    </foreignObject>
+                </g>
+            );
+            break;
+        case 'flow-note':
+            shape = (
+                <g>
+                    <path d="M-50,-30 L35,-30 L50,-15 L50,30 L-50,30 Z" fill="#fff7ed" stroke={strokeColor} strokeWidth={1} strokeDasharray="4 2"/>
+                    <path d="M35,-30 L35,-15 L50,-15" fill="none" stroke={strokeColor} strokeWidth={1} />
+                    <foreignObject x="-45" y="-25" width="90" height="50" style={STYLE_POINTER_EVENTS_NONE}>
+                         <div className="flex items-center justify-center h-full text-center text-[11px] text-slate-600 italic select-none px-1">
+                             {text}
+                         </div>
+                    </foreignObject>
+                </g>
+            );
+            break;
+        case 'flow-process':
+        default:
+            shape = (
+                <g>
+                    <rect x="-75" y="-30" width="150" height="60" rx="6" fill="white" stroke={strokeColor} strokeWidth={strokeWidth} />
+                    <foreignObject x="-70" y="-25" width="140" height="50" style={STYLE_POINTER_EVENTS_NONE}>
+                         <div className="flex items-center justify-center h-full text-center text-xs font-bold select-none px-1 text-indigo-900 break-words line-clamp-3">
+                             {text}
+                         </div>
+                    </foreignObject>
+                </g>
+            );
+    }
+    return (
+        <g {...gProps}>
+            {shape}
+            {!isChallengeActive && isTeacherMode && !isMapLocked && (
+               <g
+                 aria-hidden="true"
+                 focusable="false"
+                 className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity cursor-pointer"
+                 onClick={(e) => { e.stopPropagation(); handleDeleteNode(id); }}
+                 transform="translate(45, -35)"
+               >
+                   <title>{t('concept_map.tooltips.delete_node')}</title>
+                   <circle r="12" fill="#ef4444" stroke="white" strokeWidth="1"/>
+                   <text textAnchor="middle" dy="3" fill="white" fontSize="10" fontWeight="bold">×</text>
+               </g>
+            )}
+        </g>
+    );
+  };
+const getElbowPath = (sourceNode, targetNode) => {
+    if (!sourceNode || !targetNode) return "";
+    const startX = sourceNode.x;
+    const startY = sourceNode.y + (sourceNode.type === 'flow-decision' ? 50 : 30);
+    const endX = targetNode.x;
+    const endY = targetNode.y - (targetNode.type === 'flow-decision' ? 50 : 30);
+    const midY = (startY + endY) / 2;
+    return `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
+  };
+
 const renderInteractiveMap = (deps) => {
-  const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
+  const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, setConceptMapNodes, t } = deps;
   const handleAccessibleNodeKeyDown = (e, node) => {
       if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -7367,7 +7492,7 @@ const renderInteractiveMap = (deps) => {
                           </div>
                       </div>
                   )}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true">
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden={isVenn ? true : undefined}>
                       {isVenn ? (
                           <g>
                               <defs>
@@ -7520,7 +7645,7 @@ const renderInteractiveMap = (deps) => {
                       </defs>
                       {!isVenn && (conceptMapNodes || [])
                         .filter(node => node.type && node.type.startsWith('flow-'))
-                        .map(node => <React.Fragment key={node.id}>{renderFlowShape(node, connectingSourceId === node.id)}</React.Fragment>)
+                        .map(node => <React.Fragment key={node.id}>{renderFlowShape(node, connectingSourceId === node.id, deps)}</React.Fragment>)
                       }
                       {!isVenn && connectingSourceId && (
                           <rect x="0" y="0" width="100%" height="100%" fill="rgba(99, 102, 241, 0.05)" className="pointer-events-none animate-pulse motion-reduce:animate-none" />

@@ -41,6 +41,14 @@ describe('AlloBot reduced-motion accessibility', () => {
     expect(source).toMatch(/\.animate-float-hands \{[^}]*animation-delay:\s*-?0?\.\d+s/);
     // The antenna is deliberately its own thing; it is not attached like a limb.
     expect(durationOf('antenna-sway')).not.toBe(body);
+    // A thinking prop bobs faster than the breath on purpose, but at an exact
+    // divisor of it, so the two rhythms realign every body cycle. 0.85s beat
+    // against 3s and only lined up every 51s.
+    const working = source.match(/\.allobot-thinking \.animate-allobot-float[^{]*\{\s*animation:\s*allobotWorking\s+([\d.]+)s/);
+    expect(working, 'thinking bob rule missing').toBeTruthy();
+    const ratio = body / Number(working[1]);
+    expect(Math.abs(ratio - Math.round(ratio)), 'thinking bob must divide the body period').toBeLessThan(1e-9);
+    expect(source).toMatch(/@keyframes allobotWorking \{[^}]*\}[^}]*translateY\(-([12](?:\.\d+)?)px\)/);
   });
 
   it('provides local reduced-motion fallbacks for broad transitions', () => {

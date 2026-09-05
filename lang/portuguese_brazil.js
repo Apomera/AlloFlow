@@ -17957,7 +17957,19 @@
       "plot_data_points_fit_trend": "Plote pontos de dados, ajuste linhas de tendência, calcule correlação.",
       "arts_music": "Artes e Música",
       "music_synthesizer": "Sintetizador Musical",
-      "art_design_studio": "Estúdio de Arte e Design"
+      "art_design_studio": "Estúdio de Arte e Design",
+      "geometry_measurement": "📐 Geometria e medição",
+      "data_statistics_probability": "📊 Dados, estatística e probabilidade",
+      "life_science_genetics": "🧬 Ciências da vida e genética",
+      "human_body_health_safety": "🫀 Corpo humano, saúde e segurança",
+      "ecology_environment_animals": "🌍 Ecologia, meio ambiente e animais",
+      "earth_space_science": "🌎 Ciências da Terra e do espaço",
+      "engineering_design": "⚙️ Engenharia e design",
+      "computing_ai_digital_literacy": "💻 Computação, IA e letramento digital",
+      "learning_behavioral_science": "🧠 Ciências da aprendizagem e do comportamento",
+      "life_skills_careers_economics": "💰 Habilidades para a vida, carreiras e economia",
+      "sports_movement_science": "🏅 Ciências do esporte e do movimento",
+      "strategy_games": "⚔️ Jogos de estratégia"
     },
     "periodic": {
       "correct": "✅ Correto!",
@@ -77854,7 +77866,16 @@
     "magnetism": {
       "initializing": "🧲 Charging the coils…"
     },
-    "volume_label": "Volume"
+    "volume_label": "Volume",
+    "tutorial": {
+      "step_of": "Etapa {current} de {total}",
+      "skip": "Pular",
+      "back": "Voltar",
+      "next": "Próximo",
+      "finish": "Entendi!",
+      "replay": "Dicas",
+      "replay_aria": "Mostrar tutorial"
+    }
   },
   "behavior_lens": {
     "title": "BehaviorLens",

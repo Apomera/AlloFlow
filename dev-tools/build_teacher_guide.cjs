@@ -17,6 +17,7 @@ const CONSOLIDATED_PATH = path.join(REPO_ROOT, 'AlloFlow Complete User Manual.md
 const GENERATOR_PATH = 'dev-tools/build_teacher_guide.cjs';
 const MANIFEST_RELATIVE_PATH = 'docs/teacher-guide/guide.json';
 const MAX_SEARCH_RESULTS = 25;
+const PUBLIC_SITE_URL = 'https://apomera.github.io/AlloFlow/';
 // Built from a code point so this file stays pure ASCII on disk. A literal
 // middot here has already been flattened once by a non-UTF-8 write.
 const MIDDOT = String.fromCharCode(0xb7);
@@ -613,6 +614,45 @@ function siteFooter(manifest) {
   ].join('\n');
 }
 
+// Keep search and sharing metadata in the generator so chapter rebuilds retain it.
+function pageMetadata(options) {
+  if (!/^[a-z0-9-]+\.html$/.test(options.pageFile || '')) {
+    throw new Error('Guide page requires an explicit HTML filename.');
+  }
+  const canonical = new URL('guide/' + options.pageFile, PUBLIC_SITE_URL).href;
+  const image = new URL('assets/alloflow-social-preview.png', PUBLIC_SITE_URL).href;
+  const imageAlt = 'AlloFlow: tools for differentiated instruction';
+  const tags = [
+    '  <link rel="canonical" href="' + escapeHtml(canonical) + '">',
+    '  <meta property="og:type" content="website">',
+    '  <meta property="og:site_name" content="AlloFlow">',
+    '  <meta property="og:title" content="' + escapeHtml(options.title) + '">',
+    '  <meta property="og:description" content="' + escapeHtml(options.description) + '">',
+    '  <meta property="og:url" content="' + escapeHtml(canonical) + '">',
+    '  <meta property="og:image" content="' + escapeHtml(image) + '">',
+    '  <meta property="og:image:width" content="1200">',
+    '  <meta property="og:image:height" content="630">',
+    '  <meta property="og:image:alt" content="' + imageAlt + '">',
+    '  <meta name="twitter:card" content="summary_large_image">',
+    '  <meta name="twitter:title" content="' + escapeHtml(options.title) + '">',
+    '  <meta name="twitter:description" content="' + escapeHtml(options.description) + '">',
+    '  <meta name="twitter:image" content="' + escapeHtml(image) + '">',
+    '  <meta name="twitter:image:alt" content="' + imageAlt + '">',
+  ];
+  // Emit only the breadcrumb trail that is already visible on this page.
+  if (options.breadcrumbTitle) {
+    tags.push('  <script type="application/ld+json">' + jsonForHtmlScript({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guide home', item: new URL('guide/index.html', PUBLIC_SITE_URL).href },
+        { '@type': 'ListItem', position: 2, name: options.breadcrumbTitle, item: canonical },
+      ],
+    }) + '</script>');
+  }
+  return tags.join('\n');
+}
+
 function htmlDocument(options) {
   return withFinalNewline([
     '<!doctype html>',
@@ -623,6 +663,7 @@ function htmlDocument(options) {
     '  <meta name="color-scheme" content="light dark">',
     '  <meta name="description" content="' + escapeHtml(options.description) + '">',
     '  <title>' + escapeHtml(options.title) + '</title>',
+    pageMetadata(options),
     options.inlineCss
       ? '  <style>\n' + options.inlineCss + '\n  </style>'
       : '  <link rel="stylesheet" href="guide.css">',
@@ -732,6 +773,8 @@ function buildChapterPage(md, manifest, chapters, chapter, chapterIndex, chapter
     '    </main>',
   ].join('\n');
   return htmlDocument({
+    pageFile: chapter.slug + '.html',
+    breadcrumbTitle: chapter.title,
     title: chapter.title + ' ' + MIDDOT + ' ' + manifest.title,
     description: chapter.summary,
     chapters,
@@ -772,6 +815,7 @@ function buildIndexPage(manifest, chapters) {
     '    </main>',
   ].join('\n');
   return htmlDocument({
+    pageFile: 'index.html',
     title: manifest.title,
     description: manifest.description,
     chapters,
@@ -1026,6 +1070,8 @@ function buildToolReferencePage(manifest, chapters, tools, css) {
     '    </main>',
   ].join('\n');
   return htmlDocument({
+    pageFile: 'tool-reference.html',
+    breadcrumbTitle: 'Tool reference',
     title: 'Tool reference ' + MIDDOT + ' ' + manifest.title,
     description: 'Generated searchable reference for the public AlloFlow tool catalog.',
     chapters,
@@ -1064,6 +1110,7 @@ function buildOfflinePage(md, manifest, chapters, chapterBySource, css, searchSc
   const embeddedData = '  <script type="application/json" id="guide-search-data">'
     + jsonForHtmlScript(embeddedRecords) + '</script>';
   return htmlDocument({
+    pageFile: 'offline.html',
     title: manifest.title + ': offline and print edition',
     description: manifest.description,
     chapters,

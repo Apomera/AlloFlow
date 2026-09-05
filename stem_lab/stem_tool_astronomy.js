@@ -698,6 +698,1146 @@
     ursa_minor: { patternName: 'Little Dipper asterism', description: 'A faint curved handle begins at Polaris and joins the four-star bowl of the Little Dipper.', lines: [[11767,85822,82080,77055,79822,75097,72607,77055]], stars: [[11767,'Polaris',36.5,8,1.97],[85822,'',33.5,26.4,4.35],[82080,'',34.5,47.9,4.21],[77055,'',47.6,66.7,4.29],[79822,'',39.8,76.8,4.95],[75097,'Pherkad',60.5,92,3],[72607,'Kochab',66.5,78.5,2.07]] }
   };
 
+  // Meteor teaching model shared by the SVG chart and the Three.js sky dome.
+  // Coordinates are observer-centred: +Y is up and -Z faces the radiant azimuth.
+  // A shower has parallel velocity vectors; perspective makes tracks diverge.
+  function meteorBound(value, min, max, fallback) {
+    if (value === null || value === '' || typeof value === 'boolean') return fallback;
+    var n = Number(value);
+    return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+  }
+  function meteorSeed(n) {
+    var v = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+    return v - Math.floor(v);
+  }
+  function meteorDirection(az, alt, distance) {
+    var c = Math.cos(alt * D2R), r = distance || 1;
+    return { x: Math.sin(az * D2R) * c * r, y: Math.sin(alt * D2R) * r, z: -Math.cos(az * D2R) * c * r };
+  }
+  function meteorProject(p) {
+    var az = Math.atan2(p.x, -p.z) * R2D;
+    var alt = Math.atan2(p.y, Math.hypot(p.x, p.z)) * R2D;
+    return { x: 300 + az / 70 * 300, y: 350 - alt / 90 * 280, alt: alt };
+  }
+  function meteorTrack(index, frame, altitude, progress, speed) {
+    var seed = index + Math.floor(frame) * 31;
+    var angle = (index * 2.399963 + meteorSeed(seed + 12) * 0.6);
+    var spread = 30 + meteorSeed(seed + 18) * 128;
+    var side = Math.cos(angle) * spread;
+    var up = Math.sin(angle) * spread;
+    var a = altitude * D2R;
+    var travel = 28 + meteorBound(speed, 11, 72, 59) * 0.58;
+    var depth = 154 - meteorBound(progress, 0, 1, 0.5) * travel;
+    function point(d) { return { x: side, y: Math.sin(a) * d + Math.cos(a) * up, z: -Math.cos(a) * d + Math.sin(a) * up }; }
+    return { head: point(depth), tail: point(depth + 32 + meteorSeed(seed + 4) * 48), brightness: 0.55 + meteorSeed(seed + 5) * 0.45 };
+  }
+  function meteorGuide(patternId, altitude) {
+    var pattern = CONSTELLATION_PATTERNS[patternId] || CONSTELLATION_PATTERNS.cassiopeia;
+    var center = meteorDirection(-29, Math.max(23, Math.min(62, altitude - 16)), 1);
+    var az = -29 * D2R, alt = Math.max(23, Math.min(62, altitude - 16)) * D2R;
+    var right = { x: Math.cos(az), y: 0, z: Math.sin(az) };
+    var up = { x: -Math.sin(az) * Math.sin(alt), y: Math.cos(alt), z: Math.cos(az) * Math.sin(alt) };
+    var points = {}, stars = pattern.stars.map(function(s) {
+      var dx = (s[2] - 50) * 0.006, dy = (50 - s[3]) * 0.006;
+      var p = { x: center.x + dx * right.x + dy * up.x, y: center.y + dy * up.y, z: center.z + dx * right.z + dy * up.z };
+      var length = Math.hypot(p.x, p.y, p.z);
+      p.x *= 490 / length; p.y *= 490 / length; p.z *= 490 / length;
+      points[s[0]] = p;
+      return { id: s[0], name: s[1], magnitude: s[4], position: p };
+    });
+    var segments = [];
+    pattern.lines.forEach(function(line) { for (var i = 1; i < line.length; i++) segments.push([points[line[i - 1]], points[line[i]]]); });
+    return { pattern: pattern, stars: stars, segments: segments, center: center };
+  }
+  if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
+    meteorTrack: meteorTrack, meteorProject: meteorProject, meteorDirection: meteorDirection,
+    meteorGuide: meteorGuide, constellationPatterns: CONSTELLATION_PATTERNS
+  });
+
+  function createMeteorSky(THREE, host, reportFailure) {
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
+    var canvas = renderer.domElement;
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:none;cursor:grab';
+    host.appendChild(canvas);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    var scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(76, 1, 0.1, 900);
+    var resources = new Set(), events = [], labels = [], stopped = false, lost = false, raf = 0;
+    var model = null, elapsed = 0, lastTime = 0, onScreen = true, yaw = 0, pitch = 42, zoom = 1;
+    var width = 1, height = 1, guideSignature = '', currentGuide = null, guideGroup = new THREE.Group();
+    var disposeOnError = null;
+    try {
+    scene.add(guideGroup);
+    function own(resource) { resources.add(resource); return resource; }
+    function listen(target, type, fn, options) { target.addEventListener(type, fn, options); events.push(function() { target.removeEventListener(type, fn, options); }); }
+    function geometry(points) { return own(new THREE.BufferGeometry().setFromPoints(points.map(function(p) { return new THREE.Vector3(p.x, p.y, p.z); }))); }
+    function line(points, color, opacity, group) {
+      var item = new THREE.LineSegments(geometry(points), own(new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity, depthWrite: false })));
+      (group || scene).add(item); return item;
+    }
+    function label(color) {
+      var el = document.createElement('span');
+      el.setAttribute('aria-hidden', 'true');
+      el.style.cssText = 'position:absolute;pointer-events:none;font:600 12px system-ui;white-space:nowrap;padding:5px 8px;border-radius:6px;background:rgba(3,7,18,.8);color:' + color;
+      host.appendChild(el); labels.push(el); return el;
+    }
+    var radiantLabel = label('#fde68a'), guideLabel = label('#a5f3fc');
+    function placeLabel(el, point, text) {
+      var v = new THREE.Vector3(point.x, point.y, point.z).project(camera);
+      el.textContent = text;
+      el.style.display = v.z < 1 && v.z > -1 && Math.abs(v.x) < 0.94 && Math.abs(v.y) < 0.9 ? 'block' : 'none';
+      el.style.left = Math.max(6, Math.min(width - el.offsetWidth - 6, (v.x * 0.5 + 0.5) * width + 12)) + 'px';
+      el.style.top = Math.max(6, Math.min(height - 30, (-v.y * 0.5 + 0.5) * height + 8)) + 'px';
+    }
+    var skyMaterial = own(new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false,
+      uniforms: { pollution: { value: 0.375 } },
+      vertexShader: 'varying vec3 vDirection; void main(){vDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: 'varying vec3 vDirection; uniform float pollution; void main(){vec3 d=normalize(vDirection);float h=max(0.0,d.y);vec3 c=mix(vec3(.025,.045,.095),vec3(.002,.006,.022),pow(h,.42));float glow=exp(-h*5.0);c+=vec3(.20,.12,.07)*pollution*glow;float band=exp(-pow((d.x*.42+d.y*.38+d.z*.82)/.145,2.0));float dust=.56+.20*sin(d.x*33.0+d.z*24.0)*sin(d.y*45.0-d.x*28.0);c+=vec3(.075,.085,.145)*band*dust*(1.0-pollution)*smoothstep(0.0,.25,h);gl_FragColor=vec4(c,1.0);}'
+    }));
+    scene.add(new THREE.Mesh(own(new THREE.SphereGeometry(700, 48, 24)), skyMaterial));
+    var starPositions = [], starSizes = [], starMagnitudes = [];
+    for (var i = 0; i < 4200; i++) {
+      var p = meteorDirection(meteorSeed(i + 700) * 360, Math.asin(meteorSeed(i + 900)) * R2D, 580);
+      starPositions.push(p.x, p.y, p.z); starSizes.push(1.0 + Math.pow(meteorSeed(i + 600), 9) * 4.4);
+      starMagnitudes.push(2 + Math.pow(meteorSeed(i + 1000), 0.3) * 5);
+    }
+    var starGeometry = own(new THREE.BufferGeometry());
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    starGeometry.setAttribute('starSize', new THREE.Float32BufferAttribute(starSizes, 1));
+    starGeometry.setAttribute('magnitude', new THREE.Float32BufferAttribute(starMagnitudes, 1));
+    var starMaterial = own(new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { limit: { value: 5.5 }, time: { value: 0 }, pixelRatio: { value: renderer.getPixelRatio() } },
+      vertexShader: 'attribute float starSize; attribute float magnitude; uniform float limit; uniform float time; uniform float pixelRatio; varying float alpha; void main(){alpha=clamp((limit-magnitude+.8)*.8,0.0,1.0)*(.88+.12*sin(time*.8+position.x));gl_PointSize=starSize*pixelRatio;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: 'varying float alpha; void main(){float r=length(gl_PointCoord-.5)*2.0;float glow=exp(-r*r*4.0);gl_FragColor=vec4(.80,.88,1.0,glow*alpha);}'
+    }));
+    scene.add(new THREE.Points(starGeometry, starMaterial));
+    // Layered terrain and a pine silhouette anchor the observer beneath the sky.
+    var ground = new THREE.Mesh(own(new THREE.CircleGeometry(650, 96)), own(new THREE.MeshBasicMaterial({ color: 0x03070c })));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -3; scene.add(ground);
+    for (var layer = 0; layer < 3; layer++) {
+      var ridge = [], radius = 210 + layer * 75;
+      for (var j = 0; j < 160; j++) {
+        var a = j / 160 * Math.PI * 2, b = (j + 1) / 160 * Math.PI * 2;
+        var y1 = 1 + layer * 2 + Math.sin(a * 5 + layer) * 2 + meteorSeed(j + layer * 190) * (3 + layer * 3);
+        var y2 = 1 + layer * 2 + Math.sin(b * 5 + layer) * 2 + meteorSeed((j + 1) % 160 + layer * 190) * (3 + layer * 3);
+        var x1 = Math.sin(a) * radius, z1 = -Math.cos(a) * radius, x2 = Math.sin(b) * radius, z2 = -Math.cos(b) * radius;
+        ridge.push(x1,-4,z1,x1,y1,z1,x2,y2,z2,x1,-4,z1,x2,y2,z2,x2,-4,z2);
+      }
+      var rg = own(new THREE.BufferGeometry()); rg.setAttribute('position', new THREE.Float32BufferAttribute(ridge, 3));
+      scene.add(new THREE.Mesh(rg, own(new THREE.MeshBasicMaterial({ color: [0x050b13,0x0b1625,0x142237][layer], side: THREE.DoubleSide }))));
+    }
+    var trees = [];
+    for (var ti = 0; ti < 150; ti++) {
+      var angle = (ti + meteorSeed(ti + 24) * .9) / 150 * Math.PI * 2, radius = 150 + meteorSeed(ti + 40) * 28;
+      var cx = Math.sin(angle) * radius, cz = -Math.cos(angle) * radius;
+      var tall = 3 + Math.pow(meteorSeed(ti + 60), 2) * 19;
+      for (var branch = 0; branch < 3; branch++) {
+        var base = -1 + branch * tall * 0.21, half = tall * (0.20 - branch * 0.04);
+        trees.push(cx-Math.cos(angle)*half,base,cz-Math.sin(angle)*half,cx,base+tall*.56,cz,cx+Math.cos(angle)*half,base,cz+Math.sin(angle)*half);
+      }
+    }
+    var treeGeometry = own(new THREE.BufferGeometry()); treeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(trees, 3));
+    scene.add(new THREE.Mesh(treeGeometry, own(new THREE.MeshBasicMaterial({ color: 0x02060b, side: THREE.DoubleSide }))));
+    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 64;
+    var ctx = glowCanvas.getContext('2d'), gradient = ctx.createRadialGradient(32,32,0,32,32,32);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)'); gradient.addColorStop(.1,'rgba(235,250,255,.95)'); gradient.addColorStop(.3,'rgba(114,210,255,.3)'); gradient.addColorStop(1,'rgba(90,180,255,0)');
+    ctx.fillStyle = gradient; ctx.fillRect(0,0,64,64);
+    var texture = own(new THREE.CanvasTexture(glowCanvas));
+    var radiant = new THREE.Mesh(own(new THREE.RingGeometry(1.1,1.35,64)), own(new THREE.MeshBasicMaterial({color:0xfbbf24, transparent:true, opacity:.9, side:THREE.DoubleSide, depthWrite:false})));
+    scene.add(radiant);
+    var streaks = [];
+    for (var k = 0; k < 15; k++) {
+      var g = own(new THREE.BufferGeometry()), positions = new Float32Array(24 * 6 * 3), uv = [];
+      for (var seg = 0; seg < 24; seg++) uv.push(seg/24,0,seg/24,1,(seg+1)/24,1,seg/24,0,(seg+1)/24,1,(seg+1)/24,0);
+      g.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+      var mat = own(new THREE.ShaderMaterial({ transparent:true, depthWrite:false, side:THREE.DoubleSide, blending:THREE.AdditiveBlending,
+        uniforms:{ intensity:{value:1} }, vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+        fragmentShader:'varying vec2 vUv; uniform float intensity; void main(){float edge=abs(vUv.y-.5)*2.0;float core=exp(-edge*edge*35.0);float halo=exp(-edge*edge*4.0)*.3;float tail=pow(vUv.x,1.45);vec3 c=mix(vec3(.18,.65,1.0),vec3(1.0,.94,.78),pow(vUv.x,3.0));gl_FragColor=vec4(c,(core+halo)*tail*intensity);}' }));
+      var mesh = new THREE.Mesh(g,mat); mesh.frustumCulled=false; scene.add(mesh);
+      var head = new THREE.Sprite(own(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}))); head.scale.set(2.1,2.1,1); scene.add(head);
+      var guide = line([{x:0,y:0,z:0},{x:0,y:0,z:0}],0xfbbf24,.18); guide.frustumCulled=false;
+      streaks.push({mesh:mesh,head:head,guide:guide});
+    }
+    function clearGuide() {
+      guideGroup.children.slice().forEach(function(item){ guideGroup.remove(item); [item.geometry,item.material].forEach(function(r){ if(r && resources.has(r)){r.dispose();resources.delete(r);} }); });
+    }
+    function syncGuide() {
+      var signature = model.patternId + ':' + model.altitude;
+      if (signature === guideSignature) return;
+      guideSignature = signature; clearGuide();
+      var data = meteorGuide(model.patternId, model.altitude), pts = []; currentGuide = data;
+      data.segments.forEach(function(pair){pts.push(pair[0],pair[1]);});
+      line(pts,0x67e8f9,.55,guideGroup);
+      data.stars.forEach(function(star) {
+        var sprite = new THREE.Sprite(own(new THREE.SpriteMaterial({map:texture,color:star.name==='Betelgeuse'||star.name==='Arcturus'||star.name==='Antares'?0xffbb88:0xdff4ff,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
+        sprite.position.set(star.position.x,star.position.y,star.position.z);
+        var size = Math.max(3,7.5-star.magnitude); sprite.scale.set(size,size,1); guideGroup.add(sprite);
+      });
+    }
+    function draw() {
+      if (stopped || lost || !model) return;
+      var looking = meteorDirection(yaw, pitch, 1); camera.lookAt(looking.x,looking.y,looking.z); camera.updateMatrixWorld();
+      skyMaterial.uniforms.pollution.value = (model.bortle-1)/8;
+      starMaterial.uniforms.limit.value = [6.8,6.5,6,5.5,5,4.5,4,3.5,3][model.bortle-1];
+      starMaterial.uniforms.time.value = elapsed;
+      syncGuide(); guideGroup.children[0].visible = model.constellations;
+      var rad = meteorDirection(0,model.altitude,240); radiant.position.set(rad.x,rad.y,rad.z); radiant.lookAt(0,0,0); radiant.visible=model.radiant;
+      var sample = model.frame + Math.floor(elapsed/8);
+      streaks.forEach(function(item,index){
+        var duration=.8+meteorSeed(index+40)*.6;
+        var birth=index===0?.05:meteorSeed(index+80)*(8-duration);
+        var age=(elapsed%8)-birth;
+        var composite=elapsed===0&&!model.playing;
+        var active = index < model.count && (composite || (age>=0&&age<=duration));
+        item.mesh.visible=item.head.visible=active; item.guide.visible=active && model.paths;
+        if (!active) return;
+        var progress = composite ? .25+meteorSeed(index+2)*.45 : Math.max(0,Math.min(1,age/duration));
+        var track = meteorTrack(index,sample,model.altitude,progress,model.speed);
+        var hx=track.head.x,hy=track.head.y,hz=track.head.z,tx=track.tail.x,ty=track.tail.y,tz=track.tail.z;
+        // Ribbon faces the observer. Its tapered sides create a soft luminous train.
+        var sx=(hy*(tz-hz)-hz*(ty-hy)),sy=(hz*(tx-hx)-hx*(tz-hz)),sz=(hx*(ty-hy)-hy*(tx-hx));
+        var n=Math.hypot(sx,sy,sz)||1; sx/=n;sy/=n;sz/=n;
+        var array=item.mesh.geometry.attributes.position.array, offset=0;
+        var ribbonUv=item.mesh.geometry.attributes.uv.array;
+        for(var vertex=0;vertex<ribbonUv.length;vertex+=2) {
+          var f=ribbonUv[vertex],w=(.07+.65*f)*(ribbonUv[vertex+1]*2-1);
+          array[offset++]=tx+(hx-tx)*f+sx*w;array[offset++]=ty+(hy-ty)*f+sy*w;array[offset++]=tz+(hz-tz)*f+sz*w;
+        }
+        item.mesh.geometry.attributes.position.needsUpdate=true;
+        var fade = Math.min(1, progress*12, (1-progress)*12)*track.brightness;
+        item.mesh.material.uniforms.intensity.value=fade;item.head.material.opacity=fade;
+        item.head.position.set(hx,hy,hz);
+        var ext=item.guide.geometry.attributes.position;ext.setXYZ(0,rad.x,rad.y,rad.z);ext.setXYZ(1,tx,ty,tz);ext.needsUpdate=true;
+      });
+      renderer.render(scene,camera);
+      if(model.radiant) placeLabel(radiantLabel,rad,model.radiantName+' · '+model.altitude+'°'); else radiantLabel.style.display='none';
+      if(model.constellations) {
+        var center=currentGuide.center;
+        placeLabel(guideLabel,{x:center.x*490,y:center.y*490+75,z:center.z*490},model.patternName);
+      } else guideLabel.style.display='none';
+    }
+    function tick(now) {
+      raf=0;
+      if(stopped||lost||document.hidden||!onScreen||!model||!model.playing||model.reduced) {lastTime=0;return;}
+      if(lastTime) elapsed+=Math.min(.05,(now-lastTime)/1000);
+      lastTime=now;draw();raf=requestAnimationFrame(tick);
+    }
+    function wake() {if(!raf&&!stopped&&!lost&&!document.hidden&&onScreen&&model&&model.playing&&!model.reduced)raf=requestAnimationFrame(tick);}
+    function resize() {
+      width=Math.max(1,host.clientWidth);height=Math.max(1,host.clientHeight);camera.aspect=width/height;
+      camera.fov=Math.min(116,Math.max(90,90/camera.aspect))/zoom;camera.updateProjectionMatrix();renderer.setSize(width,height,false);draw();
+    }
+    function nudge(dx,dy) {yaw=((yaw+dx+540)%360)-180;pitch=Math.max(-3,Math.min(88,pitch+dy));draw();}
+    var drag=null;
+    listen(canvas,'pointerdown',function(e){if(e.button!==0||!e.isPrimary)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';host.focus({preventScroll:true});});
+    listen(canvas,'pointermove',function(e){if(!drag||e.pointerId!==drag.id)return;nudge((drag.x-e.clientX)*.15,(e.clientY-drag.y)*.15);drag.x=e.clientX;drag.y=e.clientY;});
+    function endDrag(){drag=null;canvas.style.cursor='grab';}
+    listen(canvas,'pointerup',endDrag);listen(canvas,'pointercancel',endDrag);listen(canvas,'lostpointercapture',endDrag);
+    listen(host,'keydown',function(e){var moves={ArrowLeft:[-5,0],ArrowRight:[5,0],ArrowUp:[0,5],ArrowDown:[0,-5]};if(e.target!==host||e.altKey||e.ctrlKey||e.metaKey)return;if(moves[e.key]){e.preventDefault();nudge(moves[e.key][0],moves[e.key][1]);}else if(e.key==='Home'){e.preventDefault();reset();}});
+    listen(document,'visibilitychange',function(){lastTime=0;if(document.hidden&&raf){cancelAnimationFrame(raf);raf=0;}else wake();});
+    listen(canvas,'webglcontextlost',function(e){e.preventDefault();lost=true;if(raf)cancelAnimationFrame(raf);raf=0;reportFailure();});
+    var observer = typeof ResizeObserver==='function'?new ResizeObserver(resize):null;
+    if(observer)observer.observe(host);else listen(window,'resize',resize);
+    var visibility = typeof IntersectionObserver==='function'?new IntersectionObserver(function(entries){onScreen=entries[0].isIntersecting;lastTime=0;if(!onScreen&&raf){cancelAnimationFrame(raf);raf=0;}else wake();}):null;
+    if(visibility)visibility.observe(host);
+    function reset(){yaw=0;pitch=Math.max(23,Math.min(64,(model?model.altitude:60)-28));zoom=1;resize();}
+    function dispose(){if(stopped)return;stopped=true;if(raf)cancelAnimationFrame(raf);events.forEach(function(fn){fn();});if(observer)observer.disconnect();if(visibility)visibility.disconnect();resources.forEach(function(r){r.dispose();});resources.clear();renderer.dispose();renderer.forceContextLoss();canvas.remove();labels.forEach(function(el){el.remove();});delete host.__meteorDebug;}
+    disposeOnError = dispose;
+    host.__meteorDebug=function(){return {ready:!stopped&&!lost,playing:!!model&&model.playing&&!model.reduced,elapsed:elapsed,sample:model?model.frame:0,count:model?model.count:0,pattern:model?model.patternId:null,guideStars:guideGroup.children.length-1,camera:{yaw:yaw,pitch:pitch,zoom:zoom},calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,raf:!!raf};};
+    disposeOnError = dispose;
+    return {sync:function(next){var changed=!model||model.frame!==next.frame||model.shower!==next.shower;var altChanged=!model||model.altitude!==next.altitude;if(changed)elapsed=0;model=next;if(altChanged)reset();else draw();if(!next.playing||next.reduced){if(raf)cancelAnimationFrame(raf);raf=0;lastTime=0;}wake();},nudge:nudge,reset:reset,zoom:function(amount){zoom=Math.max(.8,Math.min(1.8,zoom+amount));resize();},dispose:dispose};
+    } catch (error) { if (disposeOnError) disposeOnError(); throw error; }
+  }
+
+  // Stable child component keeps animation work out of the tool's render phase.
+  function MeteorSkyView(props) {
+    var React=props.React,h=React.createElement,host=React.useRef(null),viewer=React.useRef(null),latest=React.useRef(props);
+    latest.current=props;
+    var statusState=React.useState('loading'),status=statusState[0],setStatus=statusState[1];
+    var retryState=React.useState(0),retry=retryState[0],setRetry=retryState[1];
+    React.useEffect(function(){
+      if(typeof window.matchMedia!=='function')return;
+      var query=window.matchMedia('(prefers-reduced-motion: reduce)');
+      function change(){latest.current.pause();}
+      if(query.addEventListener)query.addEventListener('change',change);
+      return function(){if(query.removeEventListener)query.removeEventListener('change',change);};
+    },[]);
+    React.useEffect(function(){
+      if(props.mode!=='3d')return;
+      var cancelled=false,instance=null;
+      setStatus('loading');
+      Promise.resolve().then(function(){return window.StemLab.ensureThree({orbit:false,failMessage:'3D sky unavailable. The 2D diagram remains available.'});}).then(function(THREE){
+        if(cancelled)return;
+        instance=createMeteorSky(THREE,host.current,function(){if(!cancelled)setStatus('failed');});viewer.current=instance;
+        instance.sync(latest.current.model);setStatus('ready');
+      }).catch(function(){if(cancelled)return;if(instance)instance.dispose();viewer.current=null;setStatus('failed');});
+      return function(){cancelled=true;if(instance)instance.dispose();viewer.current=null;};
+    },[props.mode,retry]);
+    React.useEffect(function(){if(viewer.current)viewer.current.sync(props.model);});
+    React.useEffect(function(){
+      if(props.mode!=='2d'||!props.model.playing||props.model.reduced)return;
+      var timer=setInterval(function(){if(!document.hidden)latest.current.step();},800);
+      return function(){clearInterval(timer);};
+    },[props.mode,props.model.playing,props.model.reduced]);
+    if(props.mode!=='3d')return props.diagram;
+    function button(label,fn){return h('button',{type:'button',className:'astr-focus',onClick:fn,style:{padding:'9px 12px',minHeight:40,border:'1px solid #475569',borderRadius:8,background:'#0b1628',color:'#e2e8f0',cursor:'pointer'},disabled:status!=='ready'},label);}
+    return h('div',null,
+      h('div',{style:{position:'relative',overflow:'hidden',borderRadius:14,border:'1px solid #334155',background:'#030714'}},
+        h('div',{ref:host,id:'astronomy-meteor-3d',className:'astr-focus',tabIndex:0,role:'group','aria-label':props.sceneLabel,'aria-describedby':'astronomy-meteor-camera-help astronomy-meteor-rate-status',style:{position:'relative',height:'clamp(360px, 52vw, 570px)',width:'100%',outlineOffset:-4}}),
+        h('div',{style:{position:'absolute',top:14,left:14,pointerEvents:'none',padding:'7px 10px',borderRadius:8,background:'rgba(3,7,18,.8)',color:'#cbd5e1',fontSize:11,letterSpacing:1}},props.model.playing&&!props.model.reduced?props.t('stem.astronomy.meteor_live','LIVE · COMPRESSED TIME'):props.t('stem.astronomy.meteor_still','PAUSED · STUDY THE SKY')),
+        status!=='ready'?h('div',{role:'status',style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:24,textAlign:'center',background:'#0b1224',color:'#e2e8f0'}},
+          h('p',null,status==='failed'?props.t('stem.astronomy.meteor_failed','The 3D sky could not start. You can explore the same shower in the 2D diagram.'):props.t('stem.astronomy.meteor_loading','Preparing your night sky…')),
+          status==='failed'?h('button',{type:'button',className:'astr-focus',onClick:function(){setRetry(retry+1);},style:{padding:10,borderRadius:8,background:'#fbbf24',color:'#0f172a',border:0}},props.t('stem.astronomy.meteor_retry','Retry 3D sky')):null):null),
+      h('div',{role:'group','aria-label':props.t('stem.astronomy.meteor_camera','Sky camera controls'),style:{display:'flex',flexWrap:'wrap',gap:6,marginTop:10}},
+        button(props.t('stem.astronomy.meteor_left','Look left'),function(){viewer.current.nudge(-12,0);}),button(props.t('stem.astronomy.meteor_right','Look right'),function(){viewer.current.nudge(12,0);}),
+        button(props.t('stem.astronomy.meteor_up','Look up'),function(){viewer.current.nudge(0,10);}),button(props.t('stem.astronomy.meteor_down','Look down'),function(){viewer.current.nudge(0,-10);}),
+        button(props.t('stem.astronomy.meteor_zoom_in','Zoom in'),function(){viewer.current.zoom(.15);}),button(props.t('stem.astronomy.meteor_zoom_out','Zoom out'),function(){viewer.current.zoom(-.15);}),button(props.t('stem.astronomy.meteor_home','Center radiant'),function(){viewer.current.reset();})),
+      h('p',{id:'astronomy-meteor-camera-help',style:{fontSize:12,color:'#cbd5e1',lineHeight:1.6,margin:'9px 0'}},props.t('stem.astronomy.meteor_camera_help','Drag to look around, or focus the sky and use arrow keys. Home centers the radiant. Use the zoom buttons to change your field of view.'))
+    );
+  }
+
+
+  // ──────────────────────────────────────────────────────────────────
+  // 3D OBSERVATORY — the real sky for a place and time.
+  // Star positions come from a licensed HYG subset (J2000, precessed to
+  // the chosen date). Sun, Moon and planets reuse the positional engine
+  // above. Landscapes, the Milky Way texture, meteors and aurora are
+  // labelled simulations layered onto that computed sky.
+  // ──────────────────────────────────────────────────────────────────
+  var OBSERVATORY_CATALOG_ASSET = __alloAstronomyAssetUrl(
+    'assets/astronomy/hyg-v41-naked-eye.json',
+    'stem_lab/assets/astronomy/hyg-v41-naked-eye.json'
+  );
+  var OBSERVATORY_SITES = [
+    { id: 'moosehead', name: 'Moosehead Lake, Maine', lat: 45.58, lon: -69.72, timeZone: 'America/New_York', env: 'lake' },
+    { id: 'portland', name: 'Portland, Maine', lat: 43.66, lon: -70.26, timeZone: 'America/New_York', env: 'forest' },
+    { id: 'acadia', name: 'Acadia coast, Maine', lat: 44.35, lon: -68.22, timeZone: 'America/New_York', env: 'coast' },
+    { id: 'atacama', name: 'Atacama Desert, Chile', lat: -23.0, lon: -67.75, timeZone: 'America/Santiago', env: 'desert' },
+    { id: 'tromso', name: 'Tromsø, Norway', lat: 69.65, lon: 18.96, timeZone: 'Europe/Oslo', env: 'arctic' },
+    { id: 'fairbanks', name: 'Fairbanks, Alaska', lat: 64.84, lon: -147.72, timeZone: 'America/Anchorage', env: 'arctic' },
+    { id: 'quito', name: 'Quito, Ecuador (equator)', lat: -0.18, lon: -78.47, timeZone: 'America/Guayaquil', env: 'forest' },
+    { id: 'sydney', name: 'Sydney, Australia', lat: -33.87, lon: 151.21, timeZone: 'Australia/Sydney', env: 'coast' },
+    { id: 'custom', name: 'Custom coordinates', lat: null, lon: null, timeZone: null, env: null }
+  ];
+  var OBSERVATORY_ENVIRONMENTS = ['lake', 'forest', 'coast', 'desert', 'arctic'];
+  var OBSERVATORY_RATES = [
+    { id: '1m', msPerSecond: 60000 }, { id: '10m', msPerSecond: 600000 },
+    { id: '1h', msPerSecond: 3600000 }, { id: '1d', msPerSecond: 86400000 }
+  ];
+  // Shower radiants near peak (J2000, degrees), IMO working list values.
+  var METEOR_RADIANTS = {
+    quadrantids: { ra: 230, dec: 49 }, lyrids: { ra: 271, dec: 34 }, etaaqu: { ra: 338, dec: -1 }, perseids: { ra: 48, dec: 58 },
+    orionids: { ra: 95, dec: 16 }, leonids: { ra: 152, dec: 22 }, geminids: { ra: 112, dec: 33 }, ursids: { ra: 217, dec: 76 }
+  };
+  var GALACTIC_POLE = { ra: 192.859, dec: 27.128 }, GALACTIC_CENTER = { ra: 266.405, dec: -28.936 };
+  var GEOMAGNETIC_POLES = { north: { lat: 80.7, lon: -72.7 }, south: { lat: -80.7, lon: 107.3 } }; // approximate dipole poles, 2025
+  var EARTH_RADIUS_KM = 6371;
+
+  // IAU 1976 precession of J2000 mean coordinates to the mean equator of date.
+  function precessJ2000(raDeg, decDeg, d) {
+    var T = (d - 1.5) / 36525;
+    var zeta = (2306.2181 * T + 0.30188 * T * T + 0.017998 * T * T * T) / 3600;
+    var z = (2306.2181 * T + 1.09468 * T * T + 0.018203 * T * T * T) / 3600;
+    var theta = (2004.3109 * T - 0.42665 * T * T - 0.041833 * T * T * T) / 3600;
+    var A = cosd(decDeg) * sind(raDeg + zeta);
+    var B = cosd(theta) * cosd(decDeg) * cosd(raDeg + zeta) - sind(theta) * sind(decDeg);
+    var C = sind(theta) * cosd(decDeg) * cosd(raDeg + zeta) + cosd(theta) * sind(decDeg);
+    return { ra: rev(atan2d(A, B) + z), dec: asind(Math.max(-1, Math.min(1, C))) };
+  }
+  function validTimeZone(zone) {
+    if (typeof zone !== 'string' || !zone) return false;
+    try { new Intl.DateTimeFormat('en-US', { timeZone: zone }); return true; } catch (_) { return false; }
+  }
+  function zoneOffsetMinutes(utcMs, timeZone) {
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', { timeZone: timeZone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(new Date(utcMs));
+      var map = {};
+      parts.forEach(function(part) { map[part.type] = part.value; });
+      var asUtc = Date.UTC(Number(map.year), Number(map.month) - 1, Number(map.day), Number(map.hour) % 24, Number(map.minute), Number(map.second));
+      return Math.round((asUtc - utcMs) / 60000);
+    } catch (_) { return 0; }
+  }
+  function wallTimeToUtcMs(year, month, day, hour, minute, timeZone) {
+    var guess = Date.UTC(year, month - 1, day, hour, minute);
+    if (!Number.isFinite(guess)) return NaN;
+    var offset = zoneOffsetMinutes(guess, timeZone);
+    var utc = guess - offset * 60000;
+    var check = zoneOffsetMinutes(utc, timeZone);
+    if (check !== offset) utc = guess - check * 60000;
+    return utc;
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function utcMsToWallTime(utcMs, timeZone) {
+    var offset = zoneOffsetMinutes(utcMs, timeZone);
+    var shifted = new Date(utcMs + offset * 60000);
+    return {
+      year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate(),
+      hour: shifted.getUTCHours(), minute: shifted.getUTCMinutes(), offsetMinutes: offset,
+      dateText: shifted.getUTCFullYear() + '-' + pad2(shifted.getUTCMonth() + 1) + '-' + pad2(shifted.getUTCDate()),
+      timeText: pad2(shifted.getUTCHours()) + ':' + pad2(shifted.getUTCMinutes()),
+      offsetText: 'UTC' + (offset >= 0 ? '+' : '-') + pad2(Math.floor(Math.abs(offset) / 60)) + ':' + pad2(Math.abs(offset) % 60)
+    };
+  }
+  function browserTimeZone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (_) { return 'UTC'; }
+  }
+  // Normalize persisted observatory state into one unambiguous place + UTC instant.
+  function observatoryResolve(state, nowMs) {
+    state = state && typeof state === 'object' ? state : {};
+    var site = OBSERVATORY_SITES.find(function(s) { return s.id === state.obsSite; }) || OBSERVATORY_SITES[0];
+    var custom = site.id === 'custom';
+    var lat = custom ? meteorBound(state.obsLat, -89.9, 89.9, 45) : site.lat;
+    var lon = custom ? meteorBound(state.obsLon, -180, 180, -69) : site.lon;
+    var timeZone = validTimeZone(state.obsTz) ? state.obsTz : (site.timeZone || browserTimeZone());
+    if (!validTimeZone(timeZone)) timeZone = 'UTC';
+    var now = Number.isFinite(nowMs) ? nowMs : Date.now();
+    var live = state.obsLive !== false, utcMs = now;
+    if (!live && typeof state.obsDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(state.obsDate)) {
+      var dateParts = state.obsDate.split('-').map(Number);
+      var timeParts = typeof state.obsTime === 'string' && /^\d{2}:\d{2}$/.test(state.obsTime) ? state.obsTime.split(':').map(Number) : [21, 0];
+      var candidate = wallTimeToUtcMs(dateParts[0], dateParts[1], dateParts[2], timeParts[0], timeParts[1], timeZone);
+      if (Number.isFinite(candidate) && dateParts[0] >= 1900 && dateParts[0] <= 2099) utcMs = candidate; else live = true;
+    } else live = true;
+    var wall = utcMsToWallTime(utcMs, timeZone);
+    var env = OBSERVATORY_ENVIRONMENTS.indexOf(state.obsEnv) >= 0 ? state.obsEnv : (site.env || 'forest');
+    var rawLayers = state.obsLayers && typeof state.obsLayers === 'object' && !Array.isArray(state.obsLayers) ? state.obsLayers : {};
+    function flag(key, fallback) { return typeof rawLayers[key] === 'boolean' ? rawLayers[key] : fallback; }
+    return {
+      site: site, custom: custom, lat: lat, lon: lon, timeZone: timeZone, live: live, utcMs: utcMs, wall: wall, env: env,
+      layers: { stars: flag('stars', true), lines: flag('lines', true), labels: flag('labels', true), planets: flag('planets', true), sunMoon: flag('sunMoon', true), milkyWay: flag('milkyWay', true), compass: flag('compass', true) },
+      shower: Object.prototype.hasOwnProperty.call(METEOR_RADIANTS, state.obsShower) ? state.obsShower : '',
+      aurora: Math.round(meteorBound(state.obsAurora, 0, 9, 0)),
+      bortle: Math.round(meteorBound(state.obsBortle, 1, 9, 3)),
+      highlight: Object.prototype.hasOwnProperty.call(CONSTELLATION_PATTERNS, state.obsHighlight) ? state.obsHighlight : '',
+      rate: OBSERVATORY_RATES.some(function(r) { return r.id === state.obsRate; }) ? state.obsRate : '10m',
+      playing: state.obsPlaying === true
+    };
+  }
+  function skyInstant(utcMs) {
+    var t = new Date(utcMs);
+    var UTh = t.getUTCHours() + t.getUTCMinutes() / 60 + t.getUTCSeconds() / 3600;
+    return { Y: t.getUTCFullYear(), M: t.getUTCMonth() + 1, D: t.getUTCDate(), UTh: UTh, d: astroDayNumber(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate(), UTh) };
+  }
+  // Sun, Moon, planets and the built-in bright stars for an instant and place.
+  function observatoryBodies(utcMs, lat, lon) {
+    var i = skyInstant(utcMs);
+    var sky = skyNow(i.Y, i.M, i.D, i.UTh, lat, lon);
+    sky.d = i.d;
+    return sky;
+  }
+  // Approximate star colour from B-V colour index.
+  var BV_STOPS = [[-0.33, 155, 176, 255], [0.0, 170, 191, 255], [0.3, 202, 215, 255], [0.58, 248, 247, 255], [0.81, 255, 244, 234], [1.4, 255, 210, 161], [2.0, 255, 204, 111]];
+  function bvToRgb(bv) {
+    var t = Number.isFinite(Number(bv)) ? Math.max(-0.33, Math.min(2.0, Number(bv))) : 0.6;
+    for (var i = 1; i < BV_STOPS.length; i++) {
+      if (t <= BV_STOPS[i][0]) {
+        var a = BV_STOPS[i - 1], b = BV_STOPS[i], f = (t - a[0]) / (b[0] - a[0]);
+        return [(a[1] + (b[1] - a[1]) * f) / 255, (a[2] + (b[2] - a[2]) * f) / 255, (a[3] + (b[3] - a[3]) * f) / 255];
+      }
+    }
+    var last = BV_STOPS[BV_STOPS.length - 1];
+    return [last[1] / 255, last[2] / 255, last[3] / 255];
+  }
+  // Faintest star visible: Bortle baseline, then twilight and moonlight losses.
+  function limitingMagnitude(bortle, sunAlt, moonAlt, moonIllum) {
+    var base = [6.8, 6.5, 6.0, 5.5, 5.0, 4.5, 4.0, 3.5, 3.0][Math.max(0, Math.min(8, Math.round(bortle) - 1))];
+    var twilight = sunAlt > -18 ? Math.min(1, (sunAlt + 18) / 18) : 0;
+    var limit = base - twilight * 7 - Math.max(0, Math.min(1, (sunAlt + 2) / 8)) * 5;
+    if (moonAlt > 0) limit -= Math.min(2.5, Math.max(0, moonIllum) * 2.5 * Math.min(1, 0.3 + moonAlt / 25));
+    return Math.max(-3, limit);
+  }
+  function bearingDeg(lat1, lon1, lat2, lon2) {
+    var dLon = lon2 - lon1;
+    var y = sind(dLon) * cosd(lat2), x = cosd(lat1) * sind(lat2) - sind(lat1) * cosd(lat2) * cosd(dLon);
+    return rev(atan2d(y, x));
+  }
+  function elevationOverGroundArc(distanceDeg, heightKm) {
+    var theta = Math.max(0.001, distanceDeg) * D2R;
+    return atan2d(Math.cos(theta) - EARTH_RADIUS_KM / (EARTH_RADIUS_KM + heightKm), Math.sin(theta));
+  }
+  // Educational auroral-oval geometry: where a simulated curtain would sit for
+  // a given activity level (0-9, Kp-like) at this site. Not a forecast.
+  function auroraGeometry(lat, lon, level) {
+    var kp = Math.max(0, Math.min(9, Math.round(Number(level) || 0)));
+    var pole = lat >= 0 ? GEOMAGNETIC_POLES.north : GEOMAGNETIC_POLES.south;
+    var north = GEOMAGNETIC_POLES.north; // dipole latitude is signed: measure against the north pole only
+    var magneticLatitude = asind(Math.max(-1, Math.min(1, sind(lat) * sind(north.lat) + cosd(lat) * cosd(north.lat) * cosd(lon - north.lon))));
+    var absMag = Math.abs(magneticLatitude);
+    var boundary = 66.5 - 2.0 * kp, width = 5;
+    var towardPole = bearingDeg(lat, lon, pole.lat, pole.lon);
+    var out = { level: kp, magneticLatitude: magneticLatitude, ovalEquatorward: boundary, ovalPoleward: boundary + width, bearingDeg: towardPole, distanceDeg: 0, elevationDeg: 0, topElevationDeg: 0, overhead: false, visible: false, side: 'poleward' };
+    if (kp === 0) return out;
+    if (absMag < boundary) {
+      out.distanceDeg = boundary - absMag;
+    } else if (absMag > boundary + width) {
+      out.distanceDeg = absMag - (boundary + width);
+      out.bearingDeg = rev(towardPole + 180);
+      out.side = 'equatorward';
+    } else {
+      out.overhead = true; out.visible = true; out.elevationDeg = 70; out.topElevationDeg = 90;
+      return out;
+    }
+    // Quiet arcs top out near 170 km; active displays reach 300 km and more.
+    out.elevationDeg = elevationOverGroundArc(out.distanceDeg, 100);
+    out.topElevationDeg = elevationOverGroundArc(out.distanceDeg, 150 + kp * 20);
+    out.visible = out.topElevationDeg > 2;
+    return out;
+  }
+  // NOAA OVATION grid → site probability and the strongest poleward cell. Pure, so it is testable offline.
+  function summarizeOvation(json, lat, lon) {
+    var rows = json && Array.isArray(json.coordinates) ? json.coordinates : [];
+    var lonIdx = Math.round(rev(lon)) % 360, latIdx = Math.max(-90, Math.min(90, Math.round(lat)));
+    var siteProb = 0, ovalProb = 0, ovalLat = latIdx, poleward = lat >= 0 ? 1 : -1;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      if (!r || r[0] !== lonIdx) continue;
+      var cellLat = r[1], prob = Number(r[2]) || 0;
+      if (cellLat === latIdx) siteProb = prob;
+      if ((cellLat - latIdx) * poleward >= 0 && prob > ovalProb) { ovalProb = prob; ovalLat = cellLat; }
+    }
+    return { observationTime: json && json['Observation Time'] || '', forecastTime: json && json['Forecast Time'] || '', siteProb: siteProb, ovalProb: ovalProb, ovalLat: ovalLat, cells: rows.length };
+  }
+  // Curtain geometry from a forecast: the strongest poleward cell stands in for the oval.
+  function auroraFromForecast(lat, lon, forecast) {
+    var prob = Math.max(0, Math.min(100, Number(forecast && forecast.ovalProb) || 0));
+    var ovalLat = Number.isFinite(Number(forecast && forecast.ovalLat)) ? Number(forecast.ovalLat) : lat;
+    var level = Math.max(1, Math.round(prob / 100 * 9));
+    var distanceDeg = Math.abs(ovalLat - lat);
+    var out = { level: level, forecast: true, siteProb: Number(forecast && forecast.siteProb) || 0, ovalProb: prob, ovalLat: ovalLat, bearingDeg: ovalLat >= lat ? 0 : 180, distanceDeg: distanceDeg, elevationDeg: 0, topElevationDeg: 0, overhead: false, visible: false, side: 'poleward' };
+    if (prob < 5) return out;
+    if (distanceDeg < 2.5) { out.overhead = true; out.visible = true; out.elevationDeg = 70; out.topElevationDeg = 90; return out; }
+    out.elevationDeg = elevationOverGroundArc(distanceDeg, 100);
+    out.topElevationDeg = elevationOverGroundArc(distanceDeg, 150 + level * 20);
+    out.visible = out.topElevationDeg > 2;
+    return out;
+  }
+  // Effective shower rate at this site, sharing the simulator's population-index model.
+  function observatoryShowerRate(zhr, radiantAlt, limit) {
+    if (!(radiantAlt > 0)) return 0;
+    return Math.round(zhr * Math.sin(radiantAlt * D2R) / Math.pow(2.2, 6.5 - Math.min(6.5, limit)));
+  }
+  function normalizeCatalog(json) {
+    var rows = json && Array.isArray(json.stars) ? json.stars : [];
+    var n = rows.length, cat = { count: n, hip: new Int32Array(n), ra: new Float64Array(n), dec: new Float64Array(n), mag: new Float32Array(n), ci: new Float32Array(n), con: new Int16Array(n), names: json && json.names ? json.names : {}, codes: json && Array.isArray(json.constellationCodes) ? json.constellationCodes : [], byHip: {}, source: json && json.source ? json.source : 'built-in bright stars', license: json && json.license ? json.license : '', epoch: 'J2000' };
+    for (var i = 0; i < n; i++) {
+      var r = rows[i];
+      cat.hip[i] = r[0] | 0; cat.ra[i] = Number(r[1]); cat.dec[i] = Number(r[2]); cat.mag[i] = Number(r[3]); cat.ci[i] = Number(r[4]); cat.con[i] = r[5] | 0;
+      if (cat.hip[i]) cat.byHip[cat.hip[i]] = i;
+    }
+    return cat;
+  }
+  function fallbackCatalog() {
+    // The 44 built-in bright stars keep the observatory usable offline or when the asset fails.
+    var hipByName = {};
+    Object.keys(CONSTELLATION_PATTERNS).forEach(function(id) { CONSTELLATION_PATTERNS[id].stars.forEach(function(s) { if (s[1]) hipByName[s[1]] = s[0]; }); });
+    var names = {}, rows = BRIGHT_STARS.map(function(s) { var hip = hipByName[s.name] || 0; if (hip) names[hip] = s.name; return [hip, s.ra * 15, s.dec, s.mag, 0.5, -1]; });
+    var cat = normalizeCatalog({ stars: rows, names: names, constellationCodes: [], source: 'built-in bright stars' });
+    cat.fallback = true;
+    return cat;
+  }
+  var observatoryCatalogPromise = null;
+  function loadObservatoryCatalog() {
+    if (observatoryCatalogPromise) return observatoryCatalogPromise;
+    observatoryCatalogPromise = Promise.resolve().then(function() {
+      if (typeof fetch !== 'function' || !OBSERVATORY_CATALOG_ASSET) throw new Error('no fetch');
+      return fetch(OBSERVATORY_CATALOG_ASSET, { cache: 'force-cache' });
+    }).then(function(res) { if (!res.ok) throw new Error('catalog ' + res.status); return res.json(); }).then(function(json) {
+      var cat = normalizeCatalog(json);
+      if (cat.count < 100) throw new Error('catalog too small');
+      return cat;
+    }).catch(function() { observatoryCatalogPromise = null; return fallbackCatalog(); });
+    return observatoryCatalogPromise;
+  }
+  // Horizon-frame positions for every catalog star at one instant. Precession is
+  // cached per catalog and refreshed when the date moves more than a month.
+  function catalogHorizon(catalog, lst, lat, d, radius) {
+    var n = catalog.count;
+    if (!catalog._pre || Math.abs(catalog._pre.d - d) > 30) {
+      var pre = { d: d, sinDec: new Float64Array(n), cosDec: new Float64Array(n), ra: new Float64Array(n) };
+      for (var i = 0; i < n; i++) { var p = precessJ2000(catalog.ra[i], catalog.dec[i], d); pre.ra[i] = p.ra; pre.sinDec[i] = sind(p.dec); pre.cosDec[i] = cosd(p.dec); }
+      catalog._pre = pre;
+    }
+    var pre2 = catalog._pre, positions = new Float32Array(n * 3), alts = new Float32Array(n), azs = new Float32Array(n);
+    var sLat = sind(lat), cLat = cosd(lat), lstDeg = lst * 15, R = radius || 600, up = 0;
+    for (var k = 0; k < n; k++) {
+      var ha = (lstDeg - pre2.ra[k]) * D2R, sd = pre2.sinDec[k], cd = pre2.cosDec[k];
+      var sinAlt = Math.max(-1, Math.min(1, sd * sLat + cd * cLat * Math.cos(ha)));
+      var alt = Math.asin(sinAlt), cosAlt = Math.cos(alt);
+      var cosAz = Math.max(-1, Math.min(1, (sd - sLat * sinAlt) / (cLat * cosAlt || 1e-9)));
+      var az = Math.acos(cosAz); if (Math.sin(ha) > 0) az = Math.PI * 2 - az;
+      positions[k * 3] = Math.sin(az) * cosAlt * R; positions[k * 3 + 1] = sinAlt * R; positions[k * 3 + 2] = -Math.cos(az) * cosAlt * R;
+      alts[k] = alt * R2D; azs[k] = az * R2D; if (alt > 0) up++;
+    }
+    return { positions: positions, alts: alts, azs: azs, up: up };
+  }
+  function horizonPoint(raDeg, decDeg, lst, lat, d, radius) {
+    var p = precessJ2000(raDeg, decDeg, d), hz = equToHorizon(p.ra, p.dec, lst, lat);
+    return Object.assign(meteorDirection(hz.az, hz.alt, radius || 1), { alt: hz.alt, az: hz.az });
+  }
+  if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
+    precessJ2000: precessJ2000, wallTimeToUtcMs: wallTimeToUtcMs, utcMsToWallTime: utcMsToWallTime, zoneOffsetMinutes: zoneOffsetMinutes,
+    observatoryResolve: observatoryResolve, observatoryBodies: observatoryBodies, bvToRgb: bvToRgb, limitingMagnitude: limitingMagnitude,
+    auroraGeometry: auroraGeometry, auroraFromForecast: auroraFromForecast, summarizeOvation: summarizeOvation, observatoryShowerRate: observatoryShowerRate, normalizeCatalog: normalizeCatalog, fallbackCatalog: fallbackCatalog,
+    catalogHorizon: catalogHorizon, horizonPoint: horizonPoint, OBSERVATORY_SITES: OBSERVATORY_SITES, METEOR_RADIANTS: METEOR_RADIANTS,
+    OBSERVATORY_CATALOG_ASSET: OBSERVATORY_CATALOG_ASSET
+  });
+
+  var OBS_SKY_GLSL = [
+    'uniform vec3 sunDir; uniform float sunAlt; uniform vec3 moonDir; uniform float moonGlow; uniform float pollution;',
+    'uniform vec3 galPole; uniform vec3 galCore; uniform float milky; uniform float time;',
+    'vec3 skyHalos(vec3 d){',
+    '  float day=smoothstep(-12.0,4.0,sunAlt); float sd=max(dot(d,sunDir),0.0); float md=max(dot(d,moonDir),0.0);',
+    '  vec3 c=vec3(1.0,0.85,0.6)*pow(sd,200.0)*2.0*smoothstep(-3.0,1.0,sunAlt);',
+    '  c+=vec3(0.55,0.62,0.80)*pow(md,90.0)*0.9*moonGlow*(1.0-day);',
+    '  return c;',
+    '}',
+    'vec3 skyBase(vec3 d){',
+    '  float h=d.y; float hp=max(h,0.0);',
+    '  float day=smoothstep(-12.0,4.0,sunAlt); float dusk=exp(-pow((sunAlt+2.0)/7.0,2.0));',
+    '  vec3 night=mix(vec3(0.030,0.050,0.100),vec3(0.003,0.007,0.024),pow(hp,0.42));',
+    '  vec3 dayc=mix(vec3(0.72,0.83,0.97),vec3(0.24,0.47,0.90),pow(hp,0.55));',
+    '  vec3 c=mix(night,dayc,day);',
+    '  vec3 fd=normalize(vec3(d.x,0.0,d.z)+vec3(1e-4,0.0,0.0)); vec3 fs=normalize(vec3(sunDir.x,0.0,sunDir.z)+vec3(1e-4,0.0,0.0));',
+    '  float toward=max(dot(fd,fs),0.0); float arch=pow(toward,2.5)*exp(-hp*5.0)*dusk;',
+    '  c+=vec3(0.95,0.45,0.15)*arch*0.9+vec3(0.6,0.35,0.5)*exp(-hp*3.0)*dusk*0.25;',
+    '  float sd=max(dot(d,sunDir),0.0);',
+    '  c+=vec3(0.9,0.8,0.7)*pow(sd,8.0)*0.35*day;',
+    '  float md=max(dot(d,moonDir),0.0);',
+    '  c+=vec3(0.55,0.62,0.80)*pow(md,6.0)*0.08*moonGlow*(1.0-day);',
+    '  c+=vec3(0.06,0.07,0.10)*moonGlow*(1.0-day)*exp(-hp*2.0);',
+    '  c+=vec3(0.22,0.13,0.07)*pollution*exp(-hp*5.0)*(1.0-day);',
+    '  float band=exp(-pow(dot(d,galPole)/0.13,2.0)); float core=pow(max(dot(d,galCore),0.0),3.0);',
+    '  float dust=0.55+0.25*sin(d.x*31.0+d.z*27.0+d.y*19.0)*sin(d.y*43.0-d.x*23.0+d.z*17.0);',
+    '  c+=vec3(0.075,0.085,0.15)*band*(0.5+1.4*core)*dust*milky*(1.0-pollution*0.8)*(1.0-day)*(1.0-moonGlow*0.6)*smoothstep(0.0,0.2,h);',
+    '  if(h<0.0) c=mix(c,vec3(0.01,0.015,0.03),min(1.0,-h*6.0));',
+    '  return c;',
+    '}',
+    'vec3 skyColor(vec3 d){ return skyBase(d)+skyHalos(d); }'
+  ].join('\n');
+
+  function createObservatorySky(THREE, host, hooks) {
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, stencil: true, powerPreference: 'low-power' });
+    var canvas = renderer.domElement;
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:none;cursor:grab';
+    host.appendChild(canvas);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    var scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1500);
+    var resources = new Set(), events = [], labelPool = [], stopped = false, lost = false, raf = 0;
+    var model = null, elapsed = 0, lastTime = 0, onScreen = true, yaw = 180, pitch = 30, zoom = 1, width = 1, height = 1;
+    var envGroup = new THREE.Group(), lineGroup = new THREE.Group(), auroraGroup = new THREE.Group(), envSignature = '';
+    var sky = null, current = null, playMs = 0, baseUtc = 0, lastSkyKey = '', moonPhaseDrawn = -9;
+    var waterMaterial = null;
+    var disposeOnError = null;
+    try {
+    scene.add(envGroup); scene.add(lineGroup); scene.add(auroraGroup);
+    function own(resource) { resources.add(resource); return resource; }
+    function listen(target, type, fn, options) { target.addEventListener(type, fn, options); events.push(function() { target.removeEventListener(type, fn, options); }); }
+    function label(kind) {
+      var el = document.createElement('span');
+      el.setAttribute('aria-hidden', 'true');
+      el.dataset.kind = kind;
+      el.style.cssText = 'position:absolute;pointer-events:none;font:600 12px system-ui;white-space:nowrap;padding:3px 7px;border-radius:6px;background:rgba(3,7,18,.72);display:none';
+      host.appendChild(el); labelPool.push(el); return el;
+    }
+    var labelCursor = 0;
+    function beginLabels() { labelCursor = 0; }
+    function placeLabel(point, text, color, kind) {
+      var v = new THREE.Vector3(point.x, point.y, point.z).project(camera);
+      if (!(v.z < 1 && v.z > -1 && Math.abs(v.x) < 0.96 && Math.abs(v.y) < 0.93)) return;
+      var el = labelPool[labelCursor] || label(kind);
+      labelCursor++;
+      el.textContent = text; el.style.color = color; el.style.display = 'block'; el.dataset.kind = kind;
+      var estimatedWidth = text.length * 7 + 14; // avoids a forced layout per label per frame
+      el.style.left = Math.max(4, Math.min(width - estimatedWidth - 4, (v.x * 0.5 + 0.5) * width + 10)) + 'px';
+      el.style.top = Math.max(4, Math.min(height - 26, (-v.y * 0.5 + 0.5) * height - 10)) + 'px';
+    }
+    function endLabels() { for (var i = labelCursor; i < labelPool.length; i++) labelPool[i].style.display = 'none'; }
+    var clock = document.createElement('div');
+    clock.style.cssText = 'position:absolute;top:12px;left:12px;pointer-events:none;padding:7px 10px;border-radius:8px;background:rgba(3,7,18,.8);color:#e2e8f0;font:600 12px system-ui;line-height:1.5;max-width:70%';
+    clock.setAttribute('aria-hidden', 'true');
+    host.appendChild(clock);
+
+    var skyUniforms = {
+      sunDir: { value: new THREE.Vector3(0, -1, 0) }, sunAlt: { value: -40 }, moonDir: { value: new THREE.Vector3(0, -1, 0) }, moonGlow: { value: 0 },
+      pollution: { value: 0.25 }, galPole: { value: new THREE.Vector3(0, 1, 0) }, galCore: { value: new THREE.Vector3(0, -1, 0) }, milky: { value: 1 }, time: { value: 0 }
+    };
+    var domeMaterial = own(new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, uniforms: skyUniforms,
+      // The smooth sky model runs per vertex on a fine sphere; only the sharp Sun/Moon halos run per pixel.
+      vertexShader: OBS_SKY_GLSL + '\nvarying vec3 vDir; varying vec3 vBase; void main(){vDir=position;vBase=skyBase(normalize(position));gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: OBS_SKY_GLSL + '\nvarying vec3 vDir; varying vec3 vBase; void main(){gl_FragColor=vec4(vBase+skyHalos(normalize(vDir)),1.0);}'
+    }));
+    scene.add(new THREE.Mesh(own(new THREE.SphereGeometry(900, 128, 64)), domeMaterial));
+    waterMaterial = own(new THREE.ShaderMaterial({
+      uniforms: skyUniforms, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp,
+      vertexShader: 'varying vec3 vWorld; void main(){vWorld=(modelMatrix*vec4(position,1.0)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: OBS_SKY_GLSL + '\nvarying vec3 vWorld; void main(){vec3 v=normalize(vWorld-cameraPosition);vec3 r=reflect(v,vec3(0.0,1.0,0.0));float rip=sin(vWorld.x*0.35+time*1.1)*sin(vWorld.z*0.29-time*0.8)*0.012;r=normalize(r+vec3(rip,0.0,rip*0.7));vec3 c=skyColor(r)*0.8+vec3(0.006,0.012,0.024);gl_FragColor=vec4(c,1.0);}'
+    }));
+
+    // Catalog stars: one Points cloud, plus a stencil-masked mirror for water.
+    var starGeometry = own(new THREE.BufferGeometry()), starCount = 0;
+    function starMaterial(mirror) {
+      return own(new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, depthTest: !mirror, blending: THREE.AdditiveBlending,
+        stencilWrite: mirror, stencilRef: 1, stencilFunc: mirror ? THREE.EqualStencilFunc : THREE.AlwaysStencilFunc, stencilZPass: THREE.KeepStencilOp,
+        uniforms: { limit: { value: 6 }, pixelRatio: { value: renderer.getPixelRatio() }, time: { value: 0 }, twinkle: { value: 1 }, mirror: { value: mirror ? 1 : 0 } },
+        vertexShader: 'attribute float aMag; attribute vec3 aColor; attribute float aAlt; uniform float limit; uniform float pixelRatio; uniform float time; uniform float twinkle; uniform float mirror; varying float vAlpha; varying vec3 vColor; void main(){float vis=clamp((limit-aMag+0.6)*0.75,0.0,1.0);float ext=clamp(aAlt/12.0,0.0,1.0);float tw=1.0-0.18*twinkle*(0.5+0.5*sin(time*3.0+position.x*0.7+position.z*0.3))*(1.0-ext*0.6);vAlpha=vis*(0.3+0.7*ext)*tw;if(aAlt<0.0)vAlpha=0.0;vColor=aColor;float size=min(1.2+max(0.0,limit-aMag)*0.9,7.5)*pixelRatio*(1.0-0.35*mirror);gl_PointSize=vAlpha>0.0?size:0.0;vec3 p=position;if(mirror>0.5){p.x+=sin(time*1.3+p.z*0.05)*1.5;}gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
+        fragmentShader: 'varying float vAlpha; varying vec3 vColor; uniform float mirror; void main(){float r=length(gl_PointCoord-0.5)*2.0;float glow=exp(-r*r*4.5);gl_FragColor=vec4(vColor,glow*vAlpha*(1.0-0.45*mirror));}'
+      }));
+    }
+    var starPoints = new THREE.Points(starGeometry, starMaterial(false)); starPoints.frustumCulled = false; scene.add(starPoints);
+    var mirrorPoints = new THREE.Points(starGeometry, starMaterial(true)); mirrorPoints.scale.set(1, -1, 1); mirrorPoints.frustumCulled = false; mirrorPoints.renderOrder = 2; scene.add(mirrorPoints);
+    function loadCatalogGeometry(catalog) {
+      starCount = catalog.count;
+      var colors = new Float32Array(starCount * 3), mags = new Float32Array(starCount);
+      for (var i = 0; i < starCount; i++) { var c = bvToRgb(catalog.ci[i]); colors[i * 3] = c[0]; colors[i * 3 + 1] = c[1]; colors[i * 3 + 2] = c[2]; mags[i] = catalog.mag[i]; }
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starCount * 3), 3).setUsage(THREE.DynamicDrawUsage));
+      starGeometry.setAttribute('aAlt', new THREE.BufferAttribute(new Float32Array(starCount), 1).setUsage(THREE.DynamicDrawUsage));
+      starGeometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+      starGeometry.setAttribute('aMag', new THREE.BufferAttribute(mags, 1));
+    }
+    // Constellation lines share one LineSegments with per-vertex colour for the highlight.
+    var lineSegments = [];
+    Object.keys(CONSTELLATION_PATTERNS).forEach(function(id) {
+      CONSTELLATION_PATTERNS[id].lines.forEach(function(line) { for (var i = 1; i < line.length; i++) lineSegments.push({ pattern: id, a: line[i - 1], b: line[i] }); });
+    });
+    var lineGeometry = own(new THREE.BufferGeometry());
+    lineGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lineSegments.length * 6), 3).setUsage(THREE.DynamicDrawUsage));
+    lineGeometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(lineSegments.length * 6), 3).setUsage(THREE.DynamicDrawUsage));
+    var lines = new THREE.LineSegments(lineGeometry, own(new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false })));
+    lines.frustumCulled = false; lineGroup.add(lines);
+
+    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 64;
+    var gctx = glowCanvas.getContext('2d'), gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)'); gradient.addColorStop(0.12, 'rgba(255,250,240,.95)'); gradient.addColorStop(0.35, 'rgba(255,230,180,.28)'); gradient.addColorStop(1, 'rgba(255,220,160,0)');
+    gctx.fillStyle = gradient; gctx.fillRect(0, 0, 64, 64);
+    var glowTexture = own(new THREE.CanvasTexture(glowCanvas));
+    function sprite(color, size, texture) {
+      var s = new THREE.Sprite(own(new THREE.SpriteMaterial({ map: texture || glowTexture, color: color, transparent: true, depthWrite: false, depthTest: false, blending: texture ? THREE.NormalBlending : THREE.AdditiveBlending })));
+      s.scale.set(size, size, 1); s.renderOrder = 3; scene.add(s); return s;
+    }
+    var sunSprite = sprite(0xfff1c2, 70), sunDisc = sprite(0xffffff, 26);
+    var moonCanvas = document.createElement('canvas'); moonCanvas.width = moonCanvas.height = 128;
+    var moonTexture = own(new THREE.CanvasTexture(moonCanvas));
+    var moonSprite = sprite(0xffffff, 24, moonTexture), moonHalo = sprite(0xc7d2fe, 60);
+    var moonMirror = new THREE.Sprite(own(new THREE.SpriteMaterial({ map: glowTexture, color: 0xbfc8dc, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc, stencilZPass: THREE.KeepStencilOp })));
+    moonMirror.scale.set(30, 30, 1); moonMirror.renderOrder = 2; scene.add(moonMirror);
+    function drawMoon(illum, waxing) {
+      var ctx = moonCanvas.getContext('2d'), c = 64, r = 56;
+      ctx.clearRect(0, 0, 128, 128);
+      ctx.fillStyle = 'rgba(40,44,56,0.55)'; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ece9e1'; ctx.beginPath(); ctx.arc(c, c, r, -Math.PI / 2, Math.PI / 2); ctx.closePath(); ctx.fill();
+      var half = Math.abs(2 * illum - 1) * r;
+      ctx.fillStyle = illum > 0.5 ? '#ece9e1' : 'rgba(40,44,56,0.96)';
+      ctx.beginPath(); ctx.ellipse(c, c, Math.max(0.5, half), r, 0, 0, Math.PI * 2); ctx.fill();
+      moonTexture.needsUpdate = true; void waxing;
+    }
+    var planetSprites = {};
+    Object.keys(PLANET_EL).forEach(function(id) { planetSprites[id] = sprite(new THREE.Color(PLANET_EL[id].color).getHex(), { mercury: 5, venus: 10, mars: 6.5, jupiter: 8.5, saturn: 6.5 }[id]); });
+    // Meteor layer reuses the shared shower track model, rotated to the true radiant azimuth.
+    var radiantRing = new THREE.Mesh(own(new THREE.RingGeometry(1.1, 1.35, 64)), own(new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false })));
+    scene.add(radiantRing);
+    var streaks = [];
+    for (var k = 0; k < 12; k++) {
+      var g = own(new THREE.BufferGeometry()), uv = [];
+      for (var seg = 0; seg < 24; seg++) uv.push(seg / 24, 0, seg / 24, 1, (seg + 1) / 24, 1, seg / 24, 0, (seg + 1) / 24, 1, (seg + 1) / 24, 0);
+      g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(24 * 6 * 3), 3).setUsage(THREE.DynamicDrawUsage));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+      var mat = own(new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, uniforms: { intensity: { value: 1 } },
+        vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+        fragmentShader: 'varying vec2 vUv; uniform float intensity; void main(){float edge=abs(vUv.y-.5)*2.0;float core=exp(-edge*edge*35.0);float halo=exp(-edge*edge*4.0)*.3;float tail=pow(vUv.x,1.45);vec3 c=mix(vec3(.18,.65,1.0),vec3(1.0,.94,.78),pow(vUv.x,3.0));gl_FragColor=vec4(c,(core+halo)*tail*intensity);}' }));
+      var mesh = new THREE.Mesh(g, mat); mesh.frustumCulled = false; scene.add(mesh);
+      var head = new THREE.Sprite(own(new THREE.SpriteMaterial({ map: glowTexture, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))); head.scale.set(2.1, 2.1, 1); scene.add(head);
+      streaks.push({ mesh: mesh, head: head });
+    }
+    // Aurora curtains: arcs of additive ribbons at the computed oval elevation.
+    var auroraMaterial = own(new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      uniforms: { time: { value: 0 }, intensity: { value: 0 }, seed: { value: 0 } },
+      vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: 'varying vec2 vUv; uniform float time; uniform float intensity; uniform float seed; void main(){float x=vUv.x*40.0+seed;float rays=0.55+0.45*sin(x+time*0.7)*sin(x*0.37-time*0.45+seed)+0.25*sin(x*2.3+time*1.3);rays=pow(max(rays,0.0),2.2);float vert=smoothstep(0.0,0.12,vUv.y)*(1.0-pow(vUv.y,1.6))+exp(-vUv.y*9.0)*0.5;float edge=smoothstep(0.0,0.08,vUv.x)*smoothstep(1.0,0.92,vUv.x);vec3 c=mix(vec3(0.25,1.0,0.5),vec3(0.8,0.25,0.65),pow(vUv.y,1.4));c=mix(vec3(0.35,0.7,1.0),c,smoothstep(0.0,0.2,vUv.y));gl_FragColor=vec4(c,rays*vert*edge*intensity*0.55);}' }));
+    var curtains = [];
+    for (var ci = 0; ci < 4; ci++) {
+      var cg = own(new THREE.PlaneGeometry(1, 1, 96, 1));
+      var cm = auroraMaterial.clone(); own(cm); cm.uniforms.seed.value = ci * 7.3;
+      var curtain = new THREE.Mesh(cg, cm); curtain.frustumCulled = false; auroraGroup.add(curtain); curtains.push(curtain);
+    }
+    function shapeCurtain(curtain, bearing, spanDeg, altBottom, altTop, radius) {
+      var attr = curtain.geometry.attributes.position, cols = 97;
+      for (var i = 0; i < attr.count; i++) {
+        var col = i % cols, row = Math.floor(i / cols);
+        var az = bearing - spanDeg / 2 + spanDeg * (col / (cols - 1)), alt = row === 0 ? altTop : altBottom;
+        var p = meteorDirection(az, alt, radius);
+        attr.setXYZ(i, p.x, p.y, p.z);
+      }
+      attr.needsUpdate = true;
+    }
+    function updateAurora() {
+      var info = current.aurora;
+      var visible = !!info && info.visible && current.dark > 0.02;
+      auroraGroup.visible = visible;
+      if (!visible) return;
+      curtains.forEach(function(curtain, i) {
+        var bottom = info.overhead ? 50 + i * 9 : Math.max(0.5, info.elevationDeg) + i * 1.2;
+        var top = info.overhead ? Math.min(89, 78 + i * 3) : Math.max(bottom + 2, info.topElevationDeg + i * 2.5);
+        var span = info.overhead ? 150 : Math.min(150, 40 + info.level * 9 + i * 6);
+        shapeCurtain(curtain, info.bearingDeg + (i - 1.5) * 4, span, bottom, top, 520 - i * 20);
+        curtain.material.uniforms.intensity.value = (0.35 + info.level * 0.09) * current.dark * (info.overhead ? 1.1 : Math.min(1, 0.35 + info.topElevationDeg / 12));
+      });
+    }
+    // Landscapes are representative silhouettes, not surveys of the chosen place.
+    function ridge(radius, baseHeight, amplitude, color, seedOffset, sharp) {
+      var pts = [], steps = 180;
+      for (var j = 0; j < steps; j++) {
+        var a = j / steps * Math.PI * 2, b = (j + 1) / steps * Math.PI * 2;
+        var y1 = baseHeight + Math.sin(a * (sharp ? 5 : 2) + seedOffset) * amplitude * 0.5 + meteorSeed(j + seedOffset * 97) * amplitude * (sharp ? 1 : 0.35);
+        var y2 = baseHeight + Math.sin(b * (sharp ? 5 : 2) + seedOffset) * amplitude * 0.5 + meteorSeed((j + 1) % steps + seedOffset * 97) * amplitude * (sharp ? 1 : 0.35);
+        var x1 = Math.sin(a) * radius, z1 = -Math.cos(a) * radius, x2 = Math.sin(b) * radius, z2 = -Math.cos(b) * radius;
+        pts.push(x1, -16, z1, x1, y1, z1, x2, y2, z2, x1, -16, z1, x2, y2, z2, x2, -16, z2);
+      }
+      var geometry = own(new THREE.BufferGeometry()); geometry.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      var mesh = new THREE.Mesh(geometry, own(new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })));
+      envGroup.add(mesh); return mesh;
+    }
+    function trees(count, radius, minHeight, maxHeight, color, skipCenterAz, skipSpan) {
+      var pts = [];
+      for (var ti = 0; ti < count; ti++) {
+        var angle = (ti + meteorSeed(ti + 24) * 0.9) / count * 360;
+        if (skipSpan && Math.abs(((angle - skipCenterAz + 540) % 360) - 180) < skipSpan / 2) continue;
+        var r = radius + meteorSeed(ti + 40) * 30, rad = angle * D2R, cx = Math.sin(rad) * r, cz = -Math.cos(rad) * r;
+        var tall = minHeight + Math.pow(meteorSeed(ti + 60), 2) * (maxHeight - minHeight);
+        for (var branch = 0; branch < 3; branch++) {
+          var base = -2 + branch * tall * 0.21, half = tall * (0.2 - branch * 0.04);
+          pts.push(cx - Math.cos(rad) * half, base, cz - Math.sin(rad) * half, cx, base + tall * 0.56, cz, cx + Math.cos(rad) * half, base, cz + Math.sin(rad) * half);
+        }
+      }
+      var geometry = own(new THREE.BufferGeometry()); geometry.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      envGroup.add(new THREE.Mesh(geometry, own(new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide }))));
+    }
+    function water(shape) {
+      var mesh = new THREE.Mesh(shape, waterMaterial);
+      mesh.rotation.x = -Math.PI / 2; mesh.position.y = -12; mesh.renderOrder = 1; envGroup.add(mesh); return mesh;
+    }
+    function buildEnvironment(env, equatorAz) {
+      envGroup.children.slice().forEach(function(item) {
+        envGroup.remove(item);
+        if (item.geometry && resources.has(item.geometry)) { item.geometry.dispose(); resources.delete(item.geometry); }
+        if (item.material && item.material !== waterMaterial && resources.has(item.material)) { item.material.dispose(); resources.delete(item.material); }
+      });
+      var groundColor = { lake: 0x04080d, forest: 0x03070b, coast: 0x0a0c10, desert: 0x160f0a, arctic: 0x1a2130 }[env] || 0x03070b;
+      var ground = new THREE.Mesh(own(new THREE.CircleGeometry(700, 96)), own(new THREE.MeshBasicMaterial({ color: groundColor })));
+      // The observer stands on a low rise: water sits 12 units below eye level so reflections read as a surface.
+      ground.rotation.x = -Math.PI / 2; ground.position.y = -13; envGroup.add(ground);
+      var eqRad = equatorAz * D2R;
+      if (env === 'lake') {
+        var lake = water(own(new THREE.CircleGeometry(130, 72)));
+        lake.position.set(Math.sin(eqRad) * 135, -12, -Math.cos(eqRad) * 135);
+        ridge(430, 4, 16, 0x0a1422, 3, true); ridge(560, 8, 26, 0x121d30, 7, true);
+        trees(170, 170, 4, 20, 0x02060b, equatorAz, 70);
+        trees(120, 330, 8, 26, 0x050b14, equatorAz, 40);
+      } else if (env === 'forest') {
+        ridge(300, 3, 14, 0x08111c, 5, true); ridge(520, 10, 30, 0x111c2e, 11, true);
+        trees(190, 150, 5, 22, 0x02060b, 0, 0);
+      } else if (env === 'coast') {
+        var sea = water(own(new THREE.CircleGeometry(690, 96, eqRad - Math.PI * 0.62 + Math.PI / 2, Math.PI * 1.24)));
+        sea.position.set(0, -12, 0);
+        ridge(330, 2, 24, 0x0a0f18, 9, true).position.set(-Math.sin(eqRad) * 200, 0, Math.cos(eqRad) * 200);
+        trees(90, 210, 4, 16, 0x03070c, equatorAz, 230);
+      } else if (env === 'desert') {
+        ridge(260, 2, 9, 0x1b120c, 13, false); ridge(420, 5, 14, 0x24170f, 17, false); ridge(620, 14, 22, 0x1a1512, 19, true);
+      } else if (env === 'arctic') {
+        ridge(280, 1, 5, 0x1e2636, 21, false); ridge(480, 7, 20, 0x2a3346, 23, true); ridge(640, 14, 30, 0x1b2233, 29, true);
+      }
+    }
+    function positionsFor(list, radius) { return list.map(function(b) { return Object.assign({}, b, meteorDirection(b.az, b.alt, radius)); }); }
+    // Recompute everything that depends on time or place.
+    function updateSky(utcMs) {
+      var m = model, res = m.resolved, catalog = m.catalog;
+      var bodies = observatoryBodies(utcMs, res.lat, res.lon), d = bodies.d, lst = bodies.lst;
+      var horizon = catalogHorizon(catalog, lst, res.lat, d, 600);
+      starGeometry.attributes.position.array.set(horizon.positions); starGeometry.attributes.position.needsUpdate = true;
+      starGeometry.attributes.aAlt.array.set(horizon.alts); starGeometry.attributes.aAlt.needsUpdate = true;
+      var sunAlt = bodies.sun.alt, moon = bodies.moon, illum = moon.phase.illum;
+      var limit = limitingMagnitude(res.bortle, sunAlt, moon.alt, illum);
+      var dark = 1 - Math.max(0, Math.min(1, (sunAlt + 12) / 16));
+      var sunDir = meteorDirection(bodies.sun.az, sunAlt, 1), moonDir = meteorDirection(moon.az, moon.alt, 1);
+      skyUniforms.sunDir.value.set(sunDir.x, sunDir.y, sunDir.z); skyUniforms.sunAlt.value = sunAlt;
+      skyUniforms.moonDir.value.set(moonDir.x, moonDir.y, moonDir.z); skyUniforms.moonGlow.value = moon.alt > -2 ? illum * Math.min(1, (moon.alt + 2) / 12) : 0;
+      skyUniforms.pollution.value = (res.bortle - 1) / 8; skyUniforms.milky.value = res.layers.milkyWay ? 1 : 0;
+      var pole = horizonPoint(GALACTIC_POLE.ra, GALACTIC_POLE.dec, lst, res.lat, d, 1), core = horizonPoint(GALACTIC_CENTER.ra, GALACTIC_CENTER.dec, lst, res.lat, d, 1);
+      skyUniforms.galPole.value.set(pole.x, pole.y, pole.z); skyUniforms.galCore.value.set(core.x, core.y, core.z);
+      starPoints.material.uniforms.limit.value = limit; mirrorPoints.material.uniforms.limit.value = limit - 1.2;
+      starPoints.visible = res.layers.stars; mirrorPoints.visible = res.layers.stars;
+      // Constellation lines from catalog positions.
+      var lp = lineGeometry.attributes.position.array, lc = lineGeometry.attributes.color.array, drawn = 0;
+      lineSegments.forEach(function(segment, i) {
+        var ia = catalog.byHip[segment.a], ib = catalog.byHip[segment.b], o = i * 6;
+        var ok = ia !== undefined && ib !== undefined && (horizon.alts[ia] > -1 || horizon.alts[ib] > -1);
+        if (!ok) { for (var z = 0; z < 6; z++) lp[o + z] = 0; return; }
+        drawn++;
+        lp[o] = horizon.positions[ia * 3] * 0.995; lp[o + 1] = horizon.positions[ia * 3 + 1] * 0.995; lp[o + 2] = horizon.positions[ia * 3 + 2] * 0.995;
+        lp[o + 3] = horizon.positions[ib * 3] * 0.995; lp[o + 4] = horizon.positions[ib * 3 + 1] * 0.995; lp[o + 5] = horizon.positions[ib * 3 + 2] * 0.995;
+        var hi = segment.pattern === res.highlight, r = hi ? 0.99 : 0.30, g = hi ? 0.93 : 0.62, b = hi ? 0.55 : 0.78, dim = hi ? 1 : 0.55 * dark + 0.1;
+        for (var v = 0; v < 2; v++) { lc[o + v * 3] = r * dim; lc[o + v * 3 + 1] = g * dim; lc[o + v * 3 + 2] = b * dim; }
+      });
+      lineGeometry.attributes.position.needsUpdate = true; lineGeometry.attributes.color.needsUpdate = true;
+      lineGroup.visible = res.layers.lines && !catalog.fallback && limit > 1; // no lines over a daylight sky
+      // Constellation centroids for labels + Find.
+      var centroids = {};
+      Object.keys(CONSTELLATION_PATTERNS).forEach(function(id) {
+        var sx = 0, sy = 0, sz = 0, n = 0, up = 0;
+        CONSTELLATION_PATTERNS[id].stars.forEach(function(s) { var idx = catalog.byHip[s[0]]; if (idx === undefined) return; sx += horizon.positions[idx * 3]; sy += horizon.positions[idx * 3 + 1]; sz += horizon.positions[idx * 3 + 2]; n++; if (horizon.alts[idx] > 2) up++; });
+        if (!n) return;
+        var len = Math.hypot(sx, sy, sz) || 1, y = sy / len;
+        centroids[id] = { x: sx / len * 560, y: y * 560, z: sz / len * 560, alt: asind(Math.max(-1, Math.min(1, y))), az: rev(atan2d(sx, -sz)), up: up > n / 2 };
+      });
+      // Named stars bright enough to label.
+      var named = [];
+      Object.keys(catalog.names).forEach(function(hip) { var idx = catalog.byHip[hip]; if (idx === undefined || catalog.mag[idx] > 1.6 || catalog.mag[idx] > limit || horizon.alts[idx] < 1) return; named.push({ name: catalog.names[hip], x: horizon.positions[idx * 3], y: horizon.positions[idx * 3 + 1], z: horizon.positions[idx * 3 + 2], mag: catalog.mag[idx], alt: horizon.alts[idx], az: horizon.azs[idx] }); });
+      named.sort(function(a, b) { return a.mag - b.mag; });
+      // Sun, Moon, planets.
+      var sunPos = meteorDirection(bodies.sun.az, sunAlt, 560);
+      sunSprite.position.set(sunPos.x, sunPos.y, sunPos.z); sunDisc.position.copy(sunSprite.position);
+      sunSprite.visible = sunDisc.visible = res.layers.sunMoon && sunAlt > -1.5;
+      var moonPos = meteorDirection(moon.az, moon.alt, 560);
+      moonSprite.position.set(moonPos.x, moonPos.y, moonPos.z); moonHalo.position.copy(moonSprite.position);
+      moonMirror.position.set(moonPos.x, -moonPos.y, moonPos.z);
+      moonSprite.visible = res.layers.sunMoon && moon.alt > -1; moonHalo.visible = moonSprite.visible && dark > 0.1; moonMirror.visible = moonSprite.visible && moon.alt > 1;
+      moonHalo.material.opacity = illum * 0.5 * dark; moonMirror.material.opacity = illum * 0.6 * dark;
+      if (Math.abs(illum - moonPhaseDrawn) > 0.004) { drawMoon(illum, moon.phase.waxing); moonPhaseDrawn = illum; }
+      var planetMag = { mercury: 0.2, venus: -4.1, mars: 0.4, jupiter: -2.3, saturn: 0.7 };
+      bodies.planets.forEach(function(p) {
+        var s = planetSprites[p.id], pos = meteorDirection(p.az, p.alt, 560);
+        s.position.set(pos.x, pos.y, pos.z);
+        var vis = Math.max(0, Math.min(1, (limit - planetMag[p.id] + 0.5) * 0.4)) * Math.min(1, Math.max(0, p.alt + 0.5));
+        s.visible = res.layers.planets && vis > 0.02 && p.alt > -0.5; s.material.opacity = vis;
+      });
+      // Shower radiant.
+      var shower = res.shower ? METEOR_RADIANTS[res.shower] : null, radiant = null, rate = 0;
+      if (shower) {
+        radiant = horizonPoint(shower.ra, shower.dec, lst, res.lat, d, 240);
+        rate = observatoryShowerRate(m.showerZhr || 0, radiant.alt, limit);
+        radiantRing.position.set(radiant.x, radiant.y, radiant.z); radiantRing.lookAt(0, 0, 0);
+      }
+      radiantRing.visible = !!radiant && radiant.alt > 0;
+      current = { utcMs: utcMs, lst: lst, d: d, sun: bodies.sun, moon: moon, planets: bodies.planets, limit: limit, dark: dark, starsUp: horizon.up, linesDrawn: drawn, centroids: centroids, named: named, radiant: radiant, rate: rate, meteorCount: Math.min(12, Math.round(rate / 6)), aurora: m.auroraOverride || auroraGeometry(res.lat, res.lon, res.aurora) };
+      updateAurora();
+      clock.textContent = typeof m.formatClock === 'function' ? m.formatClock(utcMs, playing()) : new Date(utcMs).toISOString();
+    }
+    function playing() { return !!model && model.resolved.playing && !model.reduced; }
+    function draw() {
+      if (stopped || lost || !model || !current) return;
+      var looking = meteorDirection(yaw, pitch, 1); camera.lookAt(looking.x, looking.y, looking.z); camera.updateMatrixWorld();
+      skyUniforms.time.value = elapsed;
+      starPoints.material.uniforms.time.value = elapsed; mirrorPoints.material.uniforms.time.value = elapsed;
+      starPoints.material.uniforms.twinkle.value = model.reduced ? 0 : 1;
+      curtains.forEach(function(c) { c.material.uniforms.time.value = model.reduced ? 0 : elapsed; });
+      // Moon: lit limb faces the Sun in screen space.
+      if (moonSprite.visible) {
+        var ms = moonSprite.position.clone().project(camera), ss = sunSprite.position.clone().project(camera);
+        moonSprite.material.rotation = Math.atan2((ss.y - ms.y) * height, (ss.x - ms.x) * width);
+      }
+      // Meteors.
+      var count = current.meteorCount, radiant = current.radiant, active = 0;
+      streaks.forEach(function(item, index) {
+        var show = !!radiant && radiant.alt > 0 && index < count;
+        if (show) {
+          var duration = 0.8 + meteorSeed(index + 40) * 0.6, birth = meteorSeed(index + 80) * (8 - duration), age = (elapsed % 8) - birth;
+          var still = model.reduced || !playing() && elapsed === 0;
+          show = still || (age >= 0 && age <= duration);
+          if (show) {
+            var progress = still ? 0.25 + meteorSeed(index + 2) * 0.45 : Math.max(0, Math.min(1, age / duration));
+            var track = meteorTrack(index, Math.floor(elapsed / 8), radiant.alt, progress, model.showerSpeed || 50);
+            var ca = Math.cos(radiant.az * D2R), sa = Math.sin(radiant.az * D2R);
+            var rot = function(p) { return { x: p.x * ca - p.z * sa, y: p.y, z: p.x * sa + p.z * ca }; };
+            var hd = rot(track.head), tl = rot(track.tail);
+            var hx = hd.x, hy = hd.y, hz = hd.z, tx = tl.x, ty = tl.y, tz = tl.z;
+            var sx = (hy * (tz - hz) - hz * (ty - hy)), sy = (hz * (tx - hx) - hx * (tz - hz)), sz = (hx * (ty - hy) - hy * (tx - hx));
+            var n = Math.hypot(sx, sy, sz) || 1; sx /= n; sy /= n; sz /= n;
+            var array = item.mesh.geometry.attributes.position.array, offset = 0, ribbonUv = item.mesh.geometry.attributes.uv.array;
+            for (var vertex = 0; vertex < ribbonUv.length; vertex += 2) {
+              var f = ribbonUv[vertex], w = (0.07 + 0.65 * f) * (ribbonUv[vertex + 1] * 2 - 1);
+              array[offset++] = tx + (hx - tx) * f + sx * w; array[offset++] = ty + (hy - ty) * f + sy * w; array[offset++] = tz + (hz - tz) * f + sz * w;
+            }
+            item.mesh.geometry.attributes.position.needsUpdate = true;
+            var fade = Math.min(1, progress * 12, (1 - progress) * 12) * track.brightness * Math.max(0.15, current.dark);
+            item.mesh.material.uniforms.intensity.value = fade; item.head.material.opacity = fade; item.head.position.set(hx, hy, hz);
+            active++;
+          }
+        }
+        item.mesh.visible = item.head.visible = show;
+      });
+      current.activeMeteors = active;
+      renderer.render(scene, camera);
+      // HTML labels.
+      beginLabels();
+      var res = model.resolved, t = model.text || {};
+      if (res.layers.compass) [[0, t.n || 'N'], [90, t.e || 'E'], [180, t.s || 'S'], [270, t.w || 'W']].forEach(function(c) { placeLabel(meteorDirection(c[0], 1.5, 500), c[1], '#fca5a5', 'compass'); });
+      if (res.layers.sunMoon) {
+        if (current.sun.alt > -1.5) placeLabel(sunSprite.position, t.sun || 'Sun', '#fde68a', 'body');
+        if (current.moon.alt > -1) placeLabel(moonSprite.position, (t.moon || 'Moon') + ' · ' + Math.round(current.moon.phase.illum * 100) + '%', '#e2e8f0', 'body');
+      }
+      if (res.layers.planets) current.planets.forEach(function(p) { var s = planetSprites[p.id]; if (s.visible && s.material.opacity > 0.15) placeLabel(s.position, (t.planets && t.planets[p.id]) || p.name, '#fcd34d', 'planet'); });
+      if (res.layers.labels) {
+        Object.keys(current.centroids).forEach(function(id) { var c = current.centroids[id]; if (c.up && lineGroup.visible) placeLabel(c, (t.constellations && t.constellations[id]) || id, id === res.highlight ? '#fef3c7' : '#a5f3fc', 'constellation'); });
+        current.named.slice(0, 14).forEach(function(s) { placeLabel(s, s.name, '#dbeafe', 'star'); });
+      }
+      if (radiantRing.visible) placeLabel(radiantRing.position, (t.radiant || 'Radiant') + ' · ' + Math.round(current.radiant.alt) + '° · ' + (t.simulated || 'simulated'), '#fde68a', 'radiant');
+      if (auroraGroup.visible) placeLabel(meteorDirection(current.aurora.bearingDeg, Math.min(80, (current.aurora.overhead ? 60 : current.aurora.topElevationDeg) + 3), 500), (t.aurora || 'Aurora') + ' · ' + (t.simulated || 'simulated'), '#86efac', 'aurora');
+      endLabels();
+    }
+    function tick(now) {
+      raf = 0;
+      if (stopped || lost || document.hidden || !onScreen || !model || model.reduced) { lastTime = 0; return; }
+      if (lastTime && now - lastTime < 28) { raf = requestAnimationFrame(tick); return; } // ~30 fps is plenty for a sky
+      var dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 0;
+      lastTime = now; elapsed += dt;
+      if (playing()) {
+        var rate = OBSERVATORY_RATES.find(function(r) { return r.id === model.resolved.rate; }) || OBSERVATORY_RATES[1];
+        playMs += dt * rate.msPerSecond;
+        updateSky(baseUtc + playMs);
+      } else if (model.resolved.live && now - (model._liveStamp || 0) > 30000) {
+        model._liveStamp = now; updateSky(Date.now());
+      }
+      draw();
+      raf = requestAnimationFrame(tick);
+    }
+    function wake() { if (!raf && !stopped && !lost && !document.hidden && onScreen && model && !model.reduced) raf = requestAnimationFrame(tick); }
+    function resize() {
+      width = Math.max(1, host.clientWidth); height = Math.max(1, host.clientHeight); camera.aspect = width / height;
+      camera.fov = Math.min(110, Math.max(80, 80 / camera.aspect)) / zoom; camera.updateProjectionMatrix(); renderer.setSize(width, height, false); draw();
+    }
+    function nudge(dx, dy) { yaw = rev(yaw + dx); pitch = Math.max(-5, Math.min(89, pitch + dy)); draw(); }
+    function lookAt(az, alt) { yaw = rev(az); pitch = Math.max(-5, Math.min(89, alt)); draw(); }
+    var drag = null;
+    listen(canvas, 'pointerdown', function(e) { if (e.button !== 0 || !e.isPrimary) return; drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing'; host.focus({ preventScroll: true }); });
+    listen(canvas, 'pointermove', function(e) { if (!drag || e.pointerId !== drag.id) return; nudge((drag.x - e.clientX) * 0.15, (e.clientY - drag.y) * 0.15); drag.x = e.clientX; drag.y = e.clientY; });
+    function endDrag() { drag = null; canvas.style.cursor = 'grab'; }
+    listen(canvas, 'pointerup', endDrag); listen(canvas, 'pointercancel', endDrag); listen(canvas, 'lostpointercapture', endDrag);
+    listen(host, 'keydown', function(e) { var moves = { ArrowLeft: [-5, 0], ArrowRight: [5, 0], ArrowUp: [0, 5], ArrowDown: [0, -5] }; if (e.target !== host || e.altKey || e.ctrlKey || e.metaKey) return; if (moves[e.key]) { e.preventDefault(); nudge(moves[e.key][0], moves[e.key][1]); } else if (e.key === 'Home') { e.preventDefault(); reset(); } });
+    listen(document, 'visibilitychange', function() { lastTime = 0; if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; } else wake(); });
+    listen(canvas, 'webglcontextlost', function(e) { e.preventDefault(); lost = true; if (raf) cancelAnimationFrame(raf); raf = 0; if (hooks && hooks.onFailure) hooks.onFailure(); });
+    var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
+    if (observer) observer.observe(host); else listen(window, 'resize', resize);
+    var visibility = typeof IntersectionObserver === 'function' ? new IntersectionObserver(function(entries) { onScreen = entries[0].isIntersecting; lastTime = 0; if (!onScreen && raf) { cancelAnimationFrame(raf); raf = 0; } else wake(); }) : null;
+    if (visibility) visibility.observe(host);
+    function reset() { yaw = model && model.resolved.lat < 0 ? 0 : 180; pitch = 30; zoom = 1; resize(); }
+    function commitClock() { if (hooks && hooks.onClockCommit && playMs) hooks.onClockCommit(baseUtc + playMs); playMs = 0; }
+    function dispose() {
+      if (stopped) return; stopped = true;
+      if (raf) cancelAnimationFrame(raf);
+      events.forEach(function(fn) { fn(); });
+      if (observer) observer.disconnect(); if (visibility) visibility.disconnect();
+      resources.forEach(function(r) { r.dispose(); }); resources.clear();
+      renderer.dispose(); renderer.forceContextLoss(); canvas.remove(); clock.remove();
+      labelPool.forEach(function(el) { el.remove(); });
+      delete host.__observatoryDebug;
+    }
+    host.__observatoryDebug = function() {
+      var c = current || {};
+      return { ready: !stopped && !lost, catalog: model ? model.catalog.count : 0, catalogSource: model ? model.catalog.source : '', fallback: !!(model && model.catalog.fallback), starsUp: c.starsUp || 0, linesDrawn: c.linesDrawn || 0, linesVisible: lineGroup.visible,
+        utc: c.utcMs ? new Date(c.utcMs).toISOString() : null, lst: c.lst, limit: c.limit, dark: c.dark,
+        sun: c.sun ? { alt: c.sun.alt, az: c.sun.az } : null, moon: c.moon ? { alt: c.moon.alt, az: c.moon.az, illum: c.moon.phase.illum } : null,
+        planets: c.planets ? c.planets.map(function(p) { return { id: p.id, alt: p.alt, az: p.az, visible: planetSprites[p.id].visible }; }) : [],
+        radiant: c.radiant ? { alt: c.radiant.alt, az: c.radiant.az } : null, rate: c.rate || 0, meteors: c.activeMeteors || 0,
+        aurora: c.aurora || null, auroraVisible: auroraGroup.visible, camera: { yaw: yaw, pitch: pitch, zoom: zoom }, env: envSignature, playing: playing(), playMs: playMs,
+        labels: labelPool.filter(function(el) { return el.style.display !== 'none'; }).map(function(el) { return el.textContent; }),
+        calls: renderer.info.render.calls, geometries: renderer.info.memory.geometries, raf: !!raf };
+    };
+    return {
+      sync: function(next) {
+        var wasPlaying = playing(), prev = model;
+        model = next;
+        if (!prev || prev.catalog !== next.catalog) { loadCatalogGeometry(next.catalog); lastSkyKey = ''; }
+        var res = next.resolved, equatorAz = res.lat < 0 ? 0 : 180, signature = res.env + ':' + equatorAz;
+        if (signature !== envSignature) { envSignature = signature; buildEnvironment(res.env, equatorAz); }
+        var movedSite = !!prev && (prev.resolved.lat !== res.lat || prev.resolved.lon !== res.lon || prev.resolved.site.id !== res.site.id);
+        if (!prev || movedSite) { lastSkyKey = ''; }
+        if (wasPlaying && !playing()) commitClock();
+        var skyKey = [res.utcMs, res.lat, res.lon, res.bortle, res.aurora, res.shower, res.highlight, JSON.stringify(res.layers), next.catalog.count, next.auroraOverride ? JSON.stringify(next.auroraOverride) : ''].join('|');
+        if (!playing()) { playMs = 0; baseUtc = res.utcMs; if (skyKey !== lastSkyKey) { lastSkyKey = skyKey; updateSky(res.utcMs); } }
+        else if (!wasPlaying) { baseUtc = res.utcMs; playMs = 0; lastSkyKey = ''; updateSky(res.utcMs); }
+        else if (skyKey !== lastSkyKey) { lastSkyKey = skyKey; updateSky(baseUtc + playMs); }
+        if (!prev || movedSite) reset(); else draw();
+        if (next.reduced && raf) { cancelAnimationFrame(raf); raf = 0; lastTime = 0; }
+        wake();
+      },
+      nudge: nudge, lookAt: lookAt, reset: reset,
+      zoom: function(amount) { zoom = Math.max(0.8, Math.min(2.2, zoom + amount)); resize(); },
+      target: function(kind, id) {
+        if (!current) return false;
+        var body = kind === 'constellation' ? current.centroids[id] : kind === 'moon' ? current.moon : kind === 'sun' ? current.sun : kind === 'radiant' ? current.radiant : kind === 'planet' ? current.planets.find(function(p) { return p.id === id; }) : kind === 'aurora' ? { az: current.aurora.bearingDeg, alt: current.aurora.overhead ? 70 : current.aurora.topElevationDeg } : null;
+        if (!body || !(body.alt > -2)) return false;
+        lookAt(body.az, Math.max(8, Math.min(70, body.alt - 5)));
+        return true;
+      },
+      dispose: dispose
+    };
+    } catch (error) { if (disposeOnError) disposeOnError(); throw error; }
+  }
+
+  // Stable component: owns the WebGL lifecycle and catalog loading for the observatory.
+  function ObservatoryView(props) {
+    var React = props.React, h = React.createElement, host = React.useRef(null), viewer = React.useRef(null), latest = React.useRef(props);
+    latest.current = props;
+    var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
+    var retryState = React.useState(0), retry = retryState[0], setRetry = retryState[1];
+    var catalogState = React.useState(null), catalog = catalogState[0], setCatalog = catalogState[1];
+    React.useEffect(function() {
+      var cancelled = false;
+      loadObservatoryCatalog().then(function(cat) { if (!cancelled) setCatalog(cat); });
+      return function() { cancelled = true; };
+    }, [retry]);
+    React.useEffect(function() {
+      if (typeof window.matchMedia !== 'function') return;
+      var query = window.matchMedia('(prefers-reduced-motion: reduce)');
+      function change() { if (latest.current.onReducedMotion) latest.current.onReducedMotion(); }
+      if (query.addEventListener) query.addEventListener('change', change);
+      return function() { if (query.removeEventListener) query.removeEventListener('change', change); };
+    }, []);
+    React.useEffect(function() {
+      var cancelled = false, instance = null;
+      setStatus('loading');
+      Promise.resolve().then(function() { return window.StemLab.ensureThree({ orbit: false, failMessage: '3D observatory unavailable.' }); }).then(function(THREE) {
+        if (cancelled) return;
+        instance = createObservatorySky(THREE, host.current, {
+          onFailure: function() { if (!cancelled) setStatus('failed'); },
+          onClockCommit: function(utcMs) { if (!cancelled) latest.current.onClockCommit(utcMs); }
+        });
+        viewer.current = instance;
+        instance.sync(latest.current.model(catalog || fallbackCatalog()));
+        setStatus('ready');
+      }).catch(function() { if (cancelled) return; if (instance) instance.dispose(); viewer.current = null; setStatus('failed'); });
+      return function() { cancelled = true; if (instance) instance.dispose(); viewer.current = null; };
+    }, [retry]);
+    React.useEffect(function() { if (viewer.current && status === 'ready') viewer.current.sync(props.model(catalog || fallbackCatalog())); });
+    function button(label, fn, extra) {
+      return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: function() { if (viewer.current) fn(viewer.current); }, style: { padding: '9px 12px', minHeight: 40, border: '1px solid #475569', borderRadius: 8, background: '#0b1628', color: '#e2e8f0', cursor: 'pointer' }, disabled: status !== 'ready' }, extra || {}), label);
+    }
+    var t = props.t;
+    return h('div', null,
+      h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid #334155', background: '#030714' } },
+        h('div', { ref: host, id: 'astronomy-observatory-3d', className: 'astr-focus', tabIndex: 0, role: 'group', 'aria-label': props.sceneLabel, 'aria-describedby': 'astronomy-observatory-camera-help astronomy-observatory-summary', style: { position: 'relative', height: 'clamp(380px, 56vw, 620px)', width: '100%', outlineOffset: -4 } }),
+        h('div', { style: { position: 'absolute', top: 12, right: 12, pointerEvents: 'none', padding: '6px 9px', borderRadius: 8, background: 'rgba(3,7,18,.8)', color: '#cbd5e1', fontSize: 11, letterSpacing: 0.6, maxWidth: '45%', textAlign: 'right' } },
+          catalog && !catalog.fallback ? t('stem.astronomy.obs_catalog_badge', 'HYG v4.1 stars · CC BY-SA 4.0') : t('stem.astronomy.obs_catalog_fallback_badge', 'Built-in bright stars only')),
+        status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center', background: '#0b1224', color: '#e2e8f0' } },
+          h('p', null, status === 'failed' ? t('stem.astronomy.obs_failed', 'The 3D observatory could not start. The Sky Map tab shows the same computed sky in 2D.') : t('stem.astronomy.obs_loading', 'Computing your sky…')),
+          status === 'failed' ? h('button', { type: 'button', className: 'astr-focus', onClick: function() { setRetry(retry + 1); }, style: { padding: 10, borderRadius: 8, background: '#fbbf24', color: '#0f172a', border: 0 } }, t('stem.astronomy.obs_retry', 'Retry 3D observatory')) : null) : null),
+      h('div', { role: 'group', 'aria-label': t('stem.astronomy.meteor_camera', 'Sky camera controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+        button(t('stem.astronomy.obs_look_north', 'Face north'), function(v) { v.lookAt(0, 30); }), button(t('stem.astronomy.obs_look_east', 'Face east'), function(v) { v.lookAt(90, 30); }),
+        button(t('stem.astronomy.obs_look_south', 'Face south'), function(v) { v.lookAt(180, 30); }), button(t('stem.astronomy.obs_look_west', 'Face west'), function(v) { v.lookAt(270, 30); }),
+        button(t('stem.astronomy.meteor_up', 'Look up'), function(v) { v.nudge(0, 10); }), button(t('stem.astronomy.meteor_down', 'Look down'), function(v) { v.nudge(0, -10); }),
+        button(t('stem.astronomy.meteor_zoom_in', 'Zoom in'), function(v) { v.zoom(0.2); }), button(t('stem.astronomy.meteor_zoom_out', 'Zoom out'), function(v) { v.zoom(-0.2); }),
+        button(t('stem.astronomy.obs_reset_view', 'Reset view'), function(v) { v.reset(); })),
+      props.finders && props.finders.length ? h('div', { role: 'group', 'aria-label': t('stem.astronomy.obs_find_group', 'Find in the sky'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+        props.finders.map(function(f) { return button('🔎 ' + f.label, function(v) { if (!v.target(f.kind, f.id) && props.onFindMiss) props.onFindMiss(f.label); }, { key: f.kind + ':' + f.id }); })) : null,
+      h('p', { id: 'astronomy-observatory-camera-help', style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, margin: '9px 0' } }, t('stem.astronomy.obs_camera_help', 'Drag to look around, or focus the sky and use arrow keys. Home resets the view. Find buttons turn the camera toward objects that are above the horizon.'))
+    );
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // DATA: Exoplanets
   // ──────────────────────────────────────────────────────────────────
@@ -1775,6 +2915,8 @@
         { id: 'tonight',      icon: '🌙', label: __alloT('stem.astronomy.tonight', 'Tonight') },
         { id: 'skymap',       icon: '🧭', label: __alloT('stem.astronomy.sky_map', 'Sky Map') },
         { id: 'constellations', icon: '⭐', label: __alloT('stem.astronomy.constellations', 'Constellations') },
+        { id: 'meteors', icon: '🌠', label: __alloT('stem.astronomy.meteors_tab', 'Meteors') },
+        { id: 'observatory', icon: '🔭', label: __alloT('stem.astronomy.observatory_tab', 'Observatory') },
         { id: 'moon',         icon: '🌖', label: __alloT('stem.astronomy.moon', 'Moon') },
         { id: 'planets',      icon: '🪐', label: __alloT('stem.astronomy.planets', 'Planets') },
         { id: 'exoplanets',   icon: '🌎', label: __alloT('stem.astronomy.exoplanets', 'Exoplanets') },
@@ -4423,7 +5565,7 @@
           // Notable planets
           sectionCard('🪐 Six notable exoplanets',
             h('div', null,
-              h('div', { role: 'group', 'aria-label': 'Notable exoplanets', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+              h('div', { role: 'group', 'aria-label': 'Notable exoplanets', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 100%), 1fr))', gap: 8, marginBottom: 14 } },
                 EXOPLANETS.map(function(p) {
                   var active = selected.id === p.id;
                   return h('button', { key: p.id,
@@ -7659,9 +8801,187 @@
       }
 
       // ──────────────────────────────────────────────────────────────
+      // 3D OBSERVATORY — real place + time sky with labelled simulations
+      // ──────────────────────────────────────────────────────────────
+      function renderObservatory() {
+        var resolved = observatoryResolve(d, Date.now());
+        var bodies = observatoryBodies(resolved.utcMs, resolved.lat, resolved.lon);
+        var SHOWER_META = {
+          quadrantids: { name: __alloT('stem.astronomy.quadrantids', 'Quadrantids'), zhr: 110, speed: 41 }, lyrids: { name: __alloT('stem.astronomy.lyrids', 'Lyrids'), zhr: 18, speed: 49 },
+          etaaqu: { name: __alloT('stem.astronomy.eta_aquariids', 'Eta Aquariids'), zhr: 50, speed: 66 }, perseids: { name: __alloT('stem.astronomy.perseids', 'Perseids'), zhr: 100, speed: 59 },
+          orionids: { name: __alloT('stem.astronomy.orionids', 'Orionids'), zhr: 25, speed: 66 }, leonids: { name: __alloT('stem.astronomy.leonids', 'Leonids'), zhr: 15, speed: 71 },
+          geminids: { name: __alloT('stem.astronomy.geminids', 'Geminids'), zhr: 150, speed: 35 }, ursids: { name: __alloT('stem.astronomy.ursids', 'Ursids'), zhr: 10, speed: 33 }
+        };
+        var ENV_NAMES = {
+          lake: __alloT('stem.astronomy.obs_env_lake', 'Maine lake and forest'), forest: __alloT('stem.astronomy.obs_env_forest', 'Forest clearing'),
+          coast: __alloT('stem.astronomy.obs_env_coast', 'Rocky coast'), desert: __alloT('stem.astronomy.obs_env_desert', 'High desert'), arctic: __alloT('stem.astronomy.obs_env_arctic', 'Arctic snowfield')
+        };
+        var sunAlt = bodies.sun.alt, moon = bodies.moon;
+        var limit = limitingMagnitude(resolved.bortle, sunAlt, moon.alt, moon.phase.illum);
+        var noaa = d.obsNoaa && typeof d.obsNoaa === 'object' ? d.obsNoaa : null;
+        var noaaFresh = !!(noaa && !noaa.error && !noaa.loading && Number.isFinite(Number(noaa.fetchedAt)) && Date.now() - Number(noaa.fetchedAt) < 2 * 3600000);
+        var noaaApplied = noaaFresh && resolved.live && d.obsNoaaApply === true;
+        var aurora = noaaApplied ? auroraFromForecast(resolved.lat, resolved.lon, noaa) : auroraGeometry(resolved.lat, resolved.lon, resolved.aurora);
+        var showerMeta = resolved.shower ? SHOWER_META[resolved.shower] : null;
+        var radiant = resolved.shower ? horizonPoint(METEOR_RADIANTS[resolved.shower].ra, METEOR_RADIANTS[resolved.shower].dec, bodies.lst, resolved.lat, bodies.d, 1) : null;
+        var rate = radiant ? observatoryShowerRate(showerMeta.zhr, radiant.alt, limit) : 0;
+        var zoneOptions = [];
+        [resolved.timeZone].concat(OBSERVATORY_SITES.map(function(s) { return s.timeZone; }), [browserTimeZone(), 'UTC']).forEach(function(z) { if (z && zoneOptions.indexOf(z) === -1 && validTimeZone(z)) zoneOptions.push(z); });
+        var reduced = _prefersReducedMotion;
+        var inputStyle = { width: '100%', minWidth: 0, padding: 9, borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 13 };
+        var fieldStyle = { display: 'grid', gap: 5, fontSize: 12, color: '#cbd5e1', minWidth: 0 };
+        function setLayers(patch) { upd({ obsLayers: Object.assign({}, resolved.layers, patch) }); }
+        function setInstant(utcMs) { var w = utcMsToWallTime(utcMs, resolved.timeZone); upd({ obsLive: false, obsDate: w.dateText, obsTime: w.timeText, obsPlaying: false }); }
+        function shiftTime(ms) { setInstant(resolved.utcMs + ms); }
+        function toggleButton(label, on, onClick, color, key) {
+          return a11yButton({ key: key, type: 'button', 'aria-pressed': on, onClick: onClick, style: { padding: '8px 11px', borderRadius: 8, border: '1px solid ' + (on ? (color || '#67e8f9') : '#475569'), background: on ? '#0f2a3a' : '#0f172a', color: color || '#a5f3fc', cursor: 'pointer', fontSize: 12 } }, label);
+        }
+        function compass(az) { return azCompass(az); }
+        var daylightText = sunAlt > 0 ? __alloT('stem.astronomy.obs_daylight', 'Daylight. Stars are hidden by the bright sky.')
+          : sunAlt > -6 ? __alloT('stem.astronomy.obs_civil', 'Civil twilight. Only the Moon and brightest planets show.')
+          : sunAlt > -12 ? __alloT('stem.astronomy.obs_nautical', 'Nautical twilight. Bright stars are appearing.')
+          : sunAlt > -18 ? __alloT('stem.astronomy.obs_astronomical', 'Astronomical twilight. Faint stars are still washed out.')
+          : __alloT('stem.astronomy.obs_dark', 'Fully dark sky.');
+        var planetsUp = bodies.planets.filter(function(p) { return p.alt > 0; });
+        var starsUp = bodies.stars.filter(function(s) { return s.alt > 8; }).sort(function(a, b) { return a.mag - b.mag; }).slice(0, 6);
+        var auroraText = noaaApplied
+          ? (aurora.visible ? __alloT('stem.astronomy.obs_aurora_forecast_visible', 'NOAA forecast: the strongest aurora probability lies toward') + ' ' + compass(aurora.bearingDeg) + ', ' + Math.round(aurora.topElevationDeg) + '° ' + __alloT('stem.astronomy.obs_up_from_horizon', 'above the horizon') + ' (' + Math.round(noaa.ovalProb) + '%).' : __alloT('stem.astronomy.obs_aurora_forecast_none', 'NOAA forecast: no meaningful aurora probability near this site right now.'))
+          : resolved.aurora === 0 ? __alloT('stem.astronomy.obs_aurora_off_text', 'Aurora simulation is off. Raise the activity level to see where a display would sit for this site.')
+          : aurora.overhead ? __alloT('stem.astronomy.obs_aurora_overhead', 'Simulated activity level') + ' ' + resolved.aurora + ': ' + __alloT('stem.astronomy.obs_aurora_overhead_text', 'the auroral oval passes overhead here.')
+          : aurora.visible ? __alloT('stem.astronomy.obs_aurora_overhead', 'Simulated activity level') + ' ' + resolved.aurora + ': ' + __alloT('stem.astronomy.obs_aurora_low', 'curtains would sit low toward') + ' ' + compass(aurora.bearingDeg) + ' (' + __alloT('stem.astronomy.obs_top_about', 'top about') + ' ' + Math.round(aurora.topElevationDeg) + '°).'
+          : __alloT('stem.astronomy.obs_aurora_overhead', 'Simulated activity level') + ' ' + resolved.aurora + ': ' + __alloT('stem.astronomy.obs_aurora_hidden', 'the oval stays below this horizon (about') + ' ' + Math.round(aurora.distanceDeg * 111) + ' km ' + __alloT('stem.astronomy.obs_away', 'away).');
+        var wallText = resolved.wall.dateText + ' ' + resolved.wall.timeText + ' (' + resolved.wall.offsetText + ')';
+        var textPack = {
+          n: __alloT('stem.astronomy.compass_n', 'N'), e: __alloT('stem.astronomy.compass_e', 'E'), s: __alloT('stem.astronomy.compass_s', 'S'), w: __alloT('stem.astronomy.compass_w', 'W'),
+          sun: __alloT('stem.astronomy.sun', 'Sun'), moon: __alloT('stem.astronomy.moon', 'Moon'), radiant: __alloT('stem.astronomy.radiant', 'Radiant'),
+          simulated: noaaApplied ? __alloT('stem.astronomy.obs_noaa_label', 'NOAA forecast') : __alloT('stem.astronomy.obs_simulated', 'simulated'), aurora: __alloT('stem.astronomy.obs_aurora', 'Aurora'),
+          planets: bodies.planets.reduce(function(map, p) { map[p.id] = __alloT('stem.astronomy.planet_' + p.id, p.name); return map; }, {}),
+          constellations: CONSTELLATIONS.reduce(function(map, c) { map[c.id] = c.name; return map; }, {})
+        };
+        var modelFactory = function(catalog) {
+          return { resolved: resolved, catalog: catalog, reduced: reduced, showerZhr: showerMeta ? showerMeta.zhr : 0, showerSpeed: showerMeta ? showerMeta.speed : 50, text: textPack, auroraOverride: noaaApplied ? aurora : null,
+            formatClock: function(utcMs, playingNow) { var w = utcMsToWallTime(utcMs, resolved.timeZone); return w.dateText + ' ' + w.timeText + ' ' + w.offsetText + ' · ' + (playingNow ? __alloT('stem.astronomy.obs_timelapse_badge', 'TIME-LAPSE') : resolved.live ? __alloT('stem.astronomy.obs_live_badge', 'LIVE') : __alloT('stem.astronomy.obs_set_badge', 'SET TIME')); } };
+        };
+        var finders = [];
+        if (moon.alt > 0) finders.push({ kind: 'moon', id: 'moon', label: textPack.moon });
+        planetsUp.forEach(function(p) { finders.push({ kind: 'planet', id: p.id, label: textPack.planets[p.id] }); });
+        if (resolved.highlight) finders.push({ kind: 'constellation', id: resolved.highlight, label: textPack.constellations[resolved.highlight] });
+        if (radiant && radiant.alt > 0) finders.push({ kind: 'radiant', id: 'radiant', label: textPack.radiant });
+        if (aurora.visible) finders.push({ kind: 'aurora', id: 'aurora', label: textPack.aurora });
+        var sceneLabel = __alloT('stem.astronomy.obs_scene', '3D observatory sky') + '. ' + resolved.site.name + ', ' + wallText + '. ' + daylightText + ' ' + textPack.moon + ' ' + moon.phase.name + ', ' + (moon.alt > 0 ? compass(moon.az) + ' ' + Math.round(moon.alt) + '°' : __alloT('stem.astronomy.below_horizon', 'below horizon')) + '.';
+        function checkNoaa() {
+          upd({ obsNoaa: { loading: true, fetchedAt: Date.now() } });
+          var controller = typeof AbortController === 'function' ? new AbortController() : null;
+          var timer = setTimeout(function() { if (controller) controller.abort(); }, 20000);
+          Promise.resolve().then(function() { return fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: controller ? controller.signal : undefined, cache: 'no-store' }); })
+            .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+            .then(function(json) { upd({ obsNoaa: Object.assign({ fetchedAt: Date.now() }, summarizeOvation(json, resolved.lat, resolved.lon)) }); })
+            .catch(function(error) { upd({ obsNoaa: { fetchedAt: Date.now(), error: String(error && error.message || error) } }); })
+            .then(function() { clearTimeout(timer); });
+        }
+        var noaaStatus = !noaa ? null
+          : noaa.loading ? __alloT('stem.astronomy.obs_noaa_loading', 'Fetching the NOAA OVATION aurora forecast…')
+          : noaa.error ? __alloT('stem.astronomy.obs_noaa_error', 'NOAA forecast unavailable') + ': ' + noaa.error
+          : (__alloT('stem.astronomy.obs_noaa_result', 'NOAA OVATION forecast for') + ' ' + (noaa.forecastTime || '?') + ' UTC · ' + __alloT('stem.astronomy.obs_noaa_site', 'site probability') + ' ' + Math.round(noaa.siteProb) + '% · ' + __alloT('stem.astronomy.obs_noaa_oval', 'strongest poleward probability') + ' ' + Math.round(noaa.ovalProb) + '% ' + __alloT('stem.astronomy.obs_noaa_at_lat', 'at latitude') + ' ' + Math.round(noaa.ovalLat) + '°' + (noaaFresh ? '' : ' · ' + __alloT('stem.astronomy.obs_noaa_stale', 'STALE, fetch again')));
+        return h('div', { style: { padding: 16 } },
+          sectionCard('🔭 ' + __alloT('stem.astronomy.obs_title', '3D Observatory: the real sky for a place and time'),
+            h('div', null,
+              h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.obs_intro', 'Choose a place and moment. Stars come from the HYG catalog at their computed positions; the Sun, Moon and planets use the same positional engine as the Sky Map. Landscapes, the Milky Way texture, meteors and aurora are labelled simulations layered on that computed sky.')),
+              // Place and time
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 10, marginBottom: 10 } },
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_site', 'Observing site'),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_site', 'Observing site'), value: resolved.site.id, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsSite: e.target.value, obsTz: null, obsEnv: null, obsPlaying: false }); } },
+                    OBSERVATORY_SITES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.id === 'custom' ? __alloT('stem.astronomy.obs_custom_site', 'Custom coordinates') : s.name); }))),
+                resolved.custom ? h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_latitude', 'Latitude (°, north positive)'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_latitude', 'Latitude (°, north positive)'), type: 'number', min: -89.9, max: 89.9, step: 0.01, value: resolved.lat, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsLat: e.target.value }); } })) : null,
+                resolved.custom ? h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_longitude', 'Longitude (°, east positive)'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_longitude', 'Longitude (°, east positive)'), type: 'number', min: -180, max: 180, step: 0.01, value: resolved.lon, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsLon: e.target.value }); } })) : null,
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_time_zone', 'Clock time zone'),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_time_zone', 'Clock time zone'), value: resolved.timeZone, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsTz: e.target.value }); } },
+                    zoneOptions.map(function(z) { return h('option', { key: z, value: z }, z); }))),
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_environment', 'Landscape (representative)'),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_environment', 'Landscape (representative)'), value: resolved.env, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsEnv: e.target.value }); } },
+                    OBSERVATORY_ENVIRONMENTS.map(function(id) { return h('option', { key: id, value: id }, ENV_NAMES[id]); }))),
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_bortle', 'Sky darkness (Bortle 1 dark to 9 city)'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_bortle', 'Sky darkness (Bortle 1 dark to 9 city)'), type: 'range', min: 1, max: 9, step: 1, value: resolved.bortle, className: 'astr-focus', 'aria-valuetext': 'Bortle ' + resolved.bortle, onChange: function(e) { upd({ obsBortle: e.target.value }); } }))
+              ),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.obs_time_group', 'Date and time'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end', marginBottom: 10 } },
+                toggleButton('⏱ ' + __alloT('stem.astronomy.obs_live_now', 'Live now'), resolved.live, function() { if (resolved.live) setInstant(resolved.utcMs); else upd({ obsLive: true, obsPlaying: false }); }, '#fde68a', 'live'),
+                h('label', { style: Object.assign({}, fieldStyle, { flex: '1 1 150px' }) }, __alloT('stem.astronomy.obs_date', 'Date'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_date', 'Date'), type: 'date', value: resolved.wall.dateText, min: '1900-01-01', max: '2099-12-31', className: 'astr-focus', style: inputStyle, onChange: function(e) { if (e.target.value) upd({ obsLive: false, obsDate: e.target.value, obsTime: resolved.wall.timeText, obsPlaying: false }); } })),
+                h('label', { style: Object.assign({}, fieldStyle, { flex: '1 1 120px' }) }, __alloT('stem.astronomy.obs_time', 'Local time'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_time', 'Local time'), type: 'time', value: resolved.wall.timeText, className: 'astr-focus', style: inputStyle, onChange: function(e) { if (e.target.value) upd({ obsLive: false, obsDate: resolved.wall.dateText, obsTime: e.target.value.slice(0, 5), obsPlaying: false }); } })),
+                h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                  [[-86400000, '−1 d'], [-3600000, '−1 h'], [-600000, '−10 m'], [600000, '+10 m'], [3600000, '+1 h'], [86400000, '+1 d']].map(function(step) {
+                    return a11yButton({ key: step[1], type: 'button', 'aria-label': __alloT('stem.astronomy.obs_shift', 'Shift time') + ' ' + step[1], onClick: function() { shiftTime(step[0]); }, style: { padding: '8px 9px', borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, step[1]);
+                  })),
+                h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+                  a11yButton({ type: 'button', disabled: reduced, 'aria-pressed': resolved.playing, 'aria-label': resolved.playing ? __alloT('stem.astronomy.obs_pause', 'Pause time-lapse') : __alloT('stem.astronomy.obs_play', 'Play time-lapse'), onClick: function() { upd({ obsPlaying: !resolved.playing }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: resolved.playing ? '#fbbf24' : '#0f172a', color: resolved.playing ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 } }, resolved.playing ? '⏸ ' + __alloT('stem.astronomy.obs_pause_short', 'Pause') : '▶ ' + __alloT('stem.astronomy.obs_play_short', 'Time-lapse')),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_rate', 'Time-lapse speed'), value: resolved.rate, className: 'astr-focus', style: Object.assign({}, inputStyle, { width: 'auto' }), onChange: function(e) { upd({ obsRate: e.target.value }); } },
+                    OBSERVATORY_RATES.map(function(r) { return h('option', { key: r.id, value: r.id }, { '1m': __alloT('stem.astronomy.obs_rate_1m', '1 min per second'), '10m': __alloT('stem.astronomy.obs_rate_10m', '10 min per second'), '1h': __alloT('stem.astronomy.obs_rate_1h', '1 hour per second'), '1d': __alloT('stem.astronomy.obs_rate_1d', '1 day per second') }[r.id]); })))
+              ),
+              reduced ? h('p', { role: 'status', style: { color: '#cbd5e1', fontSize: 12, margin: '0 0 8px' } }, __alloT('stem.astronomy.obs_reduced', 'Reduced motion is on. Time-lapse and shimmer are off; use the time buttons to step the sky.')) : null,
+              // Layers and simulations
+              h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.obs_layers', 'Sky layers'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+                toggleButton(__alloT('stem.astronomy.obs_layer_stars', 'Stars'), resolved.layers.stars, function() { setLayers({ stars: !resolved.layers.stars }); }, null, 'stars'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_lines', 'Constellation lines'), resolved.layers.lines, function() { setLayers({ lines: !resolved.layers.lines }); }, null, 'lines'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_labels', 'Labels'), resolved.layers.labels, function() { setLayers({ labels: !resolved.layers.labels }); }, null, 'labels'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_planets', 'Planets'), resolved.layers.planets, function() { setLayers({ planets: !resolved.layers.planets }); }, null, 'planets'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_sunmoon', 'Sun and Moon'), resolved.layers.sunMoon, function() { setLayers({ sunMoon: !resolved.layers.sunMoon }); }, null, 'sunMoon'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_milky', 'Milky Way band'), resolved.layers.milkyWay, function() { setLayers({ milkyWay: !resolved.layers.milkyWay }); }, null, 'milkyWay'),
+                toggleButton(__alloT('stem.astronomy.obs_layer_compass', 'Compass points'), resolved.layers.compass, function() { setLayers({ compass: !resolved.layers.compass }); }, null, 'compass')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(210px, 100%), 1fr))', gap: 10, marginBottom: 12 } },
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_highlight', 'Highlight a constellation'),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_highlight', 'Highlight a constellation'), value: resolved.highlight, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsHighlight: e.target.value }); } },
+                    [h('option', { key: '', value: '' }, __alloT('stem.astronomy.obs_none', 'None'))].concat(CONSTELLATIONS.filter(function(c) { return CONSTELLATION_PATTERNS[c.id]; }).map(function(c) { return h('option', { key: c.id, value: c.id }, c.name); })))),
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_shower', 'Meteor shower layer (simulated timing)'),
+                  h('select', { 'aria-label': __alloT('stem.astronomy.obs_shower', 'Meteor shower layer (simulated timing)'), value: resolved.shower, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsShower: e.target.value }); } },
+                    [h('option', { key: '', value: '' }, __alloT('stem.astronomy.obs_none', 'None'))].concat(Object.keys(SHOWER_META).map(function(id) { return h('option', { key: id, value: id }, SHOWER_META[id].name); })))),
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_aurora_level', 'Simulated aurora activity (0 off to 9 extreme)'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_aurora_level', 'Simulated aurora activity (0 off to 9 extreme)'), type: 'range', min: 0, max: 9, step: 1, value: resolved.aurora, className: 'astr-focus', 'aria-valuetext': String(resolved.aurora), disabled: noaaApplied, onChange: function(e) { upd({ obsAurora: e.target.value }); } }))
+              ),
+              h(ObservatoryView, { React: React, t: __alloT, model: modelFactory, sceneLabel: sceneLabel, finders: finders,
+                onClockCommit: function(utcMs) { setInstant(utcMs); },
+                onReducedMotion: function() { upd({ obsPlaying: false }); },
+                onFindMiss: function(label) { if (typeof addToast === 'function') addToast(label + ' ' + __alloT('stem.astronomy.obs_below_now', 'is below the horizon right now.')); } }),
+              // What is up: the accessible text twin of the scene.
+              h('div', { id: 'astronomy-observatory-summary', style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } },
+                h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, __alloT('stem.astronomy.obs_summary_title', 'What this sky contains')),
+                h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  h('li', null, h('strong', null, resolved.site.name + ' · ' + wallText + ' · '), resolved.lat.toFixed(2) + '°, ' + resolved.lon.toFixed(2) + '°'),
+                  h('li', null, h('strong', null, textPack.sun + ': '), Math.round(sunAlt) + '° ' + compass(bodies.sun.az) + '. ' + daylightText),
+                  h('li', null, h('strong', null, textPack.moon + ': '), moon.phase.name + ', ' + Math.round(moon.phase.illum * 100) + '% ' + __alloT('stem.astronomy.illuminated', 'illuminated') + (moon.alt > 0 ? ', ' + Math.round(moon.alt) + '° ' + compass(moon.az) : ', ' + __alloT('stem.astronomy.below_horizon', 'below horizon'))),
+                  h('li', null, h('strong', null, __alloT('stem.astronomy.obs_planets_up', 'Planets above the horizon') + ': '), planetsUp.length ? planetsUp.map(function(p) { return textPack.planets[p.id] + ' (' + Math.round(p.alt) + '° ' + compass(p.az) + ')'; }).join(', ') : __alloT('stem.astronomy.obs_none', 'None')),
+                  h('li', null, h('strong', null, __alloT('stem.astronomy.obs_bright_stars_up', 'Bright stars well up') + ': '), starsUp.length ? starsUp.map(function(s) { return s.name + ' (' + Math.round(s.alt) + '° ' + compass(s.az) + ')'; }).join(', ') : __alloT('stem.astronomy.obs_none', 'None')),
+                  h('li', null, h('strong', null, __alloT('stem.astronomy.obs_limit', 'Estimated faintest star') + ': '), limit <= 0 ? __alloT('stem.astronomy.obs_limit_none', 'stars hidden') : __alloT('stem.astronomy.magnitude_short', 'Magnitude ') + limit.toFixed(1)),
+                  radiant ? h('li', null, h('strong', null, showerMeta.name + ' ' + textPack.radiant + ': '), radiant.alt > 0 ? Math.round(radiant.alt) + '° ' + compass(radiant.az) + ', ' + __alloT('stem.astronomy.obs_est_rate', 'estimated') + ' ' + rate + ' /hr' : __alloT('stem.astronomy.obs_radiant_down', 'below the horizon, so no shower meteors are shown')) : null,
+                  h('li', null, h('strong', null, textPack.aurora + ': '), auroraText)
+                )
+              ),
+              // Optional NOAA integration, kept separate from the simulation.
+              h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: '#111a2e', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
+                  a11yButton({ type: 'button', onClick: checkNoaa, disabled: !!(noaa && noaa.loading), style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #86efac', background: '#0f172a', color: '#86efac', cursor: 'pointer', fontSize: 12 } }, '🛰 ' + __alloT('stem.astronomy.obs_noaa_check', 'Check NOAA aurora forecast (now)')),
+                  toggleButton(__alloT('stem.astronomy.obs_noaa_apply', 'Drive the aurora layer from the forecast'), noaaApplied, function() { upd({ obsNoaaApply: !(d.obsNoaaApply === true) }); }, '#86efac', 'apply'),
+                  !resolved.live ? h('span', null, __alloT('stem.astronomy.obs_noaa_live_only', 'Forecast data applies to the live sky only. Switch to Live now to use it.')) : null),
+                noaaStatus ? h('p', { role: 'status', style: { margin: '8px 0 0' } }, noaaStatus) : null,
+                h('p', { style: { margin: '8px 0 0', color: '#94a3b8' } }, __alloT('stem.astronomy.obs_noaa_note', 'Source: NOAA SWPC OVATION 30 to 90 minute aurora forecast. It gives a probability grid, not a picture: curtain shapes and colours here stay illustrative.'))
+              ),
+              h('p', { style: { margin: '10px 0 0', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.6 } },
+                __alloT('stem.astronomy.obs_notes', 'Accuracy notes: star positions are HYG v4.1 J2000 coordinates precessed to the chosen date; the Sun, Moon and planets use low-precision ephemerides (about arcminutes); no refraction is applied; landscapes are representative silhouettes, not surveys of the site; the Milky Way texture follows the true galactic plane but its detail is artistic; meteors and aurora are labelled simulations.'),
+                ' ', __alloT('stem.astronomy.obs_attribution', 'Star data: HYG Database v4.1 by David Nash (astronexus), CC BY-SA 4.0, adapted to a naked-eye subset.'))
+            ),
+            '#67e8f9'
+          )
+        );
+      }
+
+      // ──────────────────────────────────────────────────────────────
       // ECLIPSES & EVENTS
       // ──────────────────────────────────────────────────────────────
-      function renderEvents() {
+      function renderEvents(meteorsOnly) {
+        if (meteorsOnly) return h('div', { style: { padding: 16 } }, meteorShowerSimulatorSection());
         return h('div', { style: { padding: 16 } },
           safetyBanner('NEVER look at the Sun without certified solar-eclipse glasses (ISO 12312-2). Even brief exposure can cause permanent eye damage. Regular sunglasses, smoked glass, exposed film, and most welding goggles are NOT safe. The only safe direct view is during TOTALITY (the brief moment when the Moon completely covers the Sun in a TOTAL solar eclipse — and only at that exact moment).'),
           eclipseSimulatorSection(),
@@ -8208,8 +9528,8 @@
               maine: 'Orion rises in late evening + dominates the sky by midnight. October offers cool clear nights with low humidity — among the best observation months. Combine with Halley\'s Comet science discussion for student trips.'
             },
             { id: 'leonids', name: __alloT('stem.astronomy.leonids', 'Leonids'), peak: 'Nov 17-18', zhr: 15, radiantConst: 'Leo', parent: 'Comet 55P/Tempel-Tuttle', speed: 71, bestHr: 'After midnight',
-              about: 'Famous for periodic STORMS — when Earth passes through a dense debris trail freshly laid by Comet Tempel-Tuttle (33-year orbit). The 1833 Leonid storm produced ~ 100,000 meteors per hour + terrified observers in the US who thought the world was ending. The 1966 + 2001 storms produced thousands per hour. Most years see only ~ 15 ZHR, but storm years happen every 33 years (next predicted 2034-2036).',
-              maine: 'November Maine = often cold + cloudy, but clear nights are crystal-clear. Leo rises late evening. Storm years (next ~ 2034) are once-in-a-generation events worth planning extensive trips for.'
+              about: 'Famous for periodic STORMS — when Earth passes through a dense debris trail freshly laid by Comet Tempel-Tuttle (33-year orbit). The 1833 Leonid storm produced ~ 100,000 meteors per hour + terrified observers in the US who thought the world was ending. The 1966 + 2001 storms produced thousands per hour. Most years see only ~ 15 ZHR. Enhanced displays depend on encounters with particular dust trails; a storm is not guaranteed every 33 years. Consult a current forecast for the observing year.',
+              maine: 'November Maine = often cold + cloudy, but clear nights are crystal-clear. Leo rises late evening. Rare storm displays depend on specific dust-trail encounters. Check current forecasts before planning a trip.'
             },
             { id: 'geminids', name: __alloT('stem.astronomy.geminids', 'Geminids'), peak: 'Dec 13-14', zhr: 150, radiantConst: 'Gemini', parent: 'Asteroid 3200 Phaethon', speed: 35, bestHr: '10 PM to dawn',
               about: 'STRONGEST annual shower with ZHR of 150 (vs Perseids\' 100). Unusual: the parent body is an ASTEROID (3200 Phaethon, a B-type asteroid that gets very close to the Sun), not a comet. Phaethon\'s exact mechanism for producing the dust trail is debated — possibly thermal cracking from solar heating, possibly cometary outgassing on a body now classified as an asteroid. Meteors are slower than most showers + often multi-colored.',
@@ -8226,8 +9546,7 @@
 
           // Normalize all restored simulator controls before they affect rate math or SVG geometry.
           function boundedMeteorValue(value, min, max, fallback) {
-            var numeric = Number(value);
-            return Number.isFinite(numeric) ? Math.min(max, Math.max(min, numeric)) : fallback;
+            return meteorBound(value, min, max, fallback);
           }
           var simRate = Math.round(boundedMeteorValue(d.simZhr, 5, 300, selected.zhr));
           var simBortle = Math.round(boundedMeteorValue(d.simBortleSim, 1, 9, 4));
@@ -8236,6 +9555,12 @@
           var restoredMeteorFrame = Number(d.simMeteorFrame);
           var animFrame = Number.isFinite(restoredMeteorFrame) ? ((Math.floor(restoredMeteorFrame) % 1000) + 1000) % 1000 : 0;
           var animPlaying = d.simMeteorPlaying === true;
+          var simView = d.simMeteorView === '3d' || (meteorsOnly && d.simMeteorView !== '2d') ? '3d' : '2d';
+          var guideId = Object.prototype.hasOwnProperty.call(CONSTELLATION_PATTERNS, d.simMeteorPattern) ? d.simMeteorPattern : ({orionids:'orion',leonids:'leo',lyrids:'lyra',ursids:'ursa_minor',quadrantids:'bootes'}[selectedId] || 'cassiopeia');
+          var guideName = CONSTELLATIONS.find(function(c) { return c.id === guideId; }).name;
+          var guideData = meteorGuide(guideId, simAlt);
+          var showGuides = d.simMeteorConstellations !== false;
+          var showRadiant = d.simMeteorRadiant !== false;
 
           // Calculate effective rate (visible meteors per hour at observer's location)
           // ZHR is at radiant in zenith + Bortle 1; corrections apply:
@@ -8267,29 +9592,14 @@
           var meteorCount = Math.min(15, Math.max(0, Math.round(effectiveRate / 6)));
           var meteors = [];
           for (var mi = 0; mi < meteorCount; mi++) {
-            // Each meteor starts near the selected shower's radiant and streaks outward.
-            var angle = (mi * 0.7 + animFrame * 0.05) % (Math.PI * 2);
-            var distFromRadiant = ((mi * 47 + animFrame * 8) % 280) + 20;
-            var startX = radiantX + Math.cos(angle) * (distFromRadiant * 0.3);
-            var startY = radiantY + Math.sin(angle) * (distFromRadiant * 0.3);
-            var endX = radiantX + Math.cos(angle) * distFromRadiant;
-            var endY = radiantY + Math.sin(angle) * distFromRadiant;
-            var brightness = 0.4 + ((mi * 23) % 100) / 200;
-            meteors.push({ x1: startX, y1: startY, x2: endX, y2: endY, brightness: brightness });
+            var track = meteorTrack(mi, animFrame, simAlt, .25 + meteorSeed(mi + 2) * .45, selected.speed);
+            var tail = meteorProject(track.tail), head = meteorProject(track.head);
+            meteors.push({ x1: tail.x, y1: tail.y, x2: head.x, y2: head.y, brightness: track.brightness });
           }
-
-          // Animation tick handler (manual frame advance via setTimeout if playing)
-          // Note: using upd() to advance each illustrative sample; React.useEffect would be cleaner but this tool uses a class-free approach
-          if (animPlaying && typeof window !== 'undefined' && !window.__alloAstronomyMeteorTimer) {
-            window.__alloAstronomyMeteorTimer = setTimeout(function() {
-              window.__alloAstronomyMeteorTimer = null;
-              upd({ simMeteorFrame: (animFrame + 1) % 1000 });
-            }, _prefersReducedMotion ? 2000 : 800);
-          }
-          if (!animPlaying && typeof window !== 'undefined' && window.__alloAstronomyMeteorTimer) {
-            clearTimeout(window.__alloAstronomyMeteorTimer);
-            window.__alloAstronomyMeteorTimer = null;
-          }
+          var meteorModel = { shower: selectedId, frame: animFrame, playing: animPlaying, reduced: _prefersReducedMotion,
+            altitude: simAlt, bortle: simBortle, count: meteorCount, speed: selected.speed,
+            patternId: guideId, patternName: guideName, constellations: showGuides, radiant: showRadiant, paths: d.simMeteorPaths === true,
+            radiantName: __alloT('stem.astronomy.radiant', 'Radiant') + ' · ' + selected.radiantConst };
 
           return sectionCard('🌠 Meteor shower simulator + observation guide',
             h('div', null,
@@ -8300,7 +9610,7 @@
                   return a11yButton({
                     key: s.id, type: 'button',
                     'aria-pressed': on,
-                    onClick: function() { upd({ selectedShower: s.id, simZhr: s.zhr, simMeteorFrame: 0, simMeteorPlaying: false }); },
+                    onClick: function() { upd({ selectedShower: s.id, simZhr: s.zhr, simMeteorFrame: 0, simMeteorPlaying: false, simMeteorPattern: null }); },
                     style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                   }, '🌠 ' + s.name);
                 })
@@ -8342,7 +9652,7 @@
               // Interactive simulator panel
               h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.astronomy.live_meteor_sky_simulator', '🎬 Live meteor sky simulator')),
-                h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55 } }, 'Each frame is an illustrative 10-minute sample, compressed so the radiant pattern stays visible. Meteor streaks point away from the radiant. Adjust sky conditions and radiant altitude to compare realistic hourly estimates.'),
+                h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55 } }, __alloT('stem.astronomy.meteor_intro', 'Explore a shower from beneath the stars. Switch between the 2D diagram and an immersive 3D sky, keeping the same conditions and constellation guide. Each sample represents about 10 minutes, capped at 15 trails; Step shows a complete sample; Play reveals individual meteors over 8 seconds. This is a teaching visualization, not a live forecast.')),
 
                 // Sliders
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 10 } },
@@ -8378,16 +9688,28 @@
                     h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.astronomy.effective_rate_at_your_site', 'Effective rate at your site')),
                     h('div', { style: { fontSize: 20, color: '#fbbf24', fontWeight: 900, lineHeight: 1, marginTop: 2 } }, effectiveRate + ' /hr')
                   ),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flex: 1, minWidth: 200 } },
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flex: 1, minWidth: 'min(200px, 100%)' } },
                     h('strong', null, 'Why: '),
-                    __alloT('stem.astronomy.zhr_is_the_rate_one_observer_would_see', 'ZHR is the rate ONE observer would see if the radiant were AT THE ZENITH under PRISTINE skies (Bortle 1, limiting magnitude 6.5). Most observers see far fewer. Lower altitude = sin(alt) reduction. Higher Bortle = more dim meteors lost.')
+                    __alloT('stem.astronomy.zhr_is_the_rate_one_observer_would_see', 'ZHR is standardized to a zenith radiant and limiting magnitude 6.5. This approximate estimate assumes clear, moonless skies and population index 2.2. Bortle classes only roughly indicate limiting magnitude; darker-than-standard skies can exceed ZHR. Lower radiant altitude and brighter skies reduce the estimate.')
                   )
                 ),
 
+                h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.meteor_view', 'Meteor sky view'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' } },
+                  [{id:'2d',label:__alloT('stem.astronomy.meteor_2d','2D diagram')},{id:'3d',label:__alloT('stem.astronomy.meteor_3d','3D immersive sky')}].map(function(view) {
+                    return a11yButton({key:view.id,type:'button','aria-pressed':simView===view.id,onClick:function(){upd({simMeteorView:view.id});},style:{padding:'11px 16px',borderRadius:10,border:'1px solid '+(simView===view.id?'#67e8f9':'#475569'),background:simView===view.id?'#164e63':'#0f172a',color:simView===view.id?'#ecfeff':'#cbd5e1',fontWeight:700,cursor:'pointer'}},view.label);
+                  })
+                ),
+                h('div', { style: { display:'flex',flexWrap:'wrap',gap:12,alignItems:'end',marginBottom:12 } },
+                  h('label',{style:{display:'grid',gap:5,fontSize:12,color:'#cbd5e1',flex:'1 1 190px',minWidth:0}},__alloT('stem.astronomy.meteor_formation','Constellation guide'),
+                    h('select',{'aria-label':__alloT('stem.astronomy.meteor_formation','Constellation guide'),value:guideId,onChange:function(e){upd({simMeteorPattern:e.target.value});},className:'astr-focus',style:{width:'100%',minWidth:0,padding:10,borderRadius:8,border:'1px solid #475569',background:'#0f172a',color:'#e2e8f0'}},CONSTELLATIONS.filter(function(c){return CONSTELLATION_PATTERNS[c.id];}).map(function(c){return h('option',{key:c.id,value:c.id},c.name);}))),
+                  a11yButton({type:'button','aria-pressed':showGuides,onClick:function(){upd({simMeteorConstellations:!showGuides});},style:{padding:10,borderRadius:8,border:'1px solid #475569',background:'#0f172a',color:'#a5f3fc',cursor:'pointer'}},__alloT('stem.astronomy.meteor_guides','Constellation lines')),
+                  a11yButton({type:'button','aria-pressed':showRadiant,onClick:function(){upd({simMeteorRadiant:!showRadiant});},style:{padding:10,borderRadius:8,border:'1px solid #475569',background:'#0f172a',color:'#fde68a',cursor:'pointer'}},__alloT('stem.astronomy.meteor_radiant_guide','Radiant guide')),
+                  a11yButton({type:'button','aria-pressed':d.simMeteorPaths===true,onClick:function(){upd({simMeteorPaths:d.simMeteorPaths!==true});},style:{padding:10,borderRadius:8,border:'1px solid #475569',background:'#0f172a',color:'#fde68a',cursor:'pointer'}},__alloT('stem.astronomy.meteor_trace','Trace meteor paths'))
+                ),
                 // Play/pause button
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                   a11yButton({
-                    type: 'button', onClick: function() { upd({ simMeteorPlaying: !animPlaying }); },
+                    type: 'button', disabled: _prefersReducedMotion, onClick: function() { upd({ simMeteorPlaying: !animPlaying }); },
                     'aria-label': animPlaying ? 'Pause meteor simulation' : 'Play meteor simulation', 'aria-pressed': animPlaying,
                     style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: animPlaying ? '#fbbf24' : '#0f172a', color: animPlaying ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
                   }, animPlaying ? '⏸ Pause' : '▶ Play sim'),
@@ -8404,8 +9726,13 @@
                   }, '↺ Reset conditions')
                 ),
 
-                // SVG sky view — animated when playing
-                h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', position: 'relative' } },
+                _prefersReducedMotion ? h('p',{role:'status',style:{color:'#cbd5e1',fontSize:12}},__alloT('stem.astronomy.meteor_reduced','Reduced motion is on. Use Step to explore still samples.')) : null,
+                h('p',{style:{margin:'0 0 10px',fontSize:12,lineHeight:1.6,color:'#cbd5e1'}},__alloT('stem.astronomy.meteor_guide_note','The constellation guide uses the same star connections as the Constellations tab. Its placement and the Milky Way background are illustrative. Stars are projected onto a sky dome, not placed at their true distances. Use Sky Map for date and location positions.')),
+                h(MeteorSkyView, { React: React, t: __alloT, mode: simView, model: meteorModel,
+                  step: function() { setLabToolData(function(prev) { var current=prev.astronomy||{}, raw=Number(current.simMeteorFrame), frame=Number.isFinite(raw)?((Math.floor(raw)%1000)+1000)%1000:0; return Object.assign({},prev,{astronomy:Object.assign({},current,{simMeteorFrame:(frame+1)%1000})}); }); },
+                  sceneLabel: selected.name + ' 3D meteor sky. Radiant in ' + selected.radiantConst + ' at ' + simAlt + ' degrees. ' + guideName + ' recognition guide. ' + meteorCount + ' illustrative trails; estimated ' + effectiveRate + ' meteors per hour.',
+                  pause: function() { upd({simMeteorPlaying:false}); },
+                  diagram: h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', position: 'relative' } },
                   h('svg', {
                     viewBox: '0 0 600 400',
                     style: { width: '100%', height: 'auto', display: 'block' },
@@ -8439,14 +9766,21 @@
                     stars.map(function(s, i) {
                       return h('circle', { key: 'star-' + i, cx: s.x, cy: s.y, r: s.size, fill: '#ffffff', opacity: s.op });
                     }),
+                    h('g',{'data-meteor-constellation':guideId,clipPath:'url(#meteor-sky-clip)'},
+                      showGuides ? guideData.segments.map(function(pair,i){var a=meteorProject(pair[0]),b=meteorProject(pair[1]);return h('line',{key:'guide-'+i,x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#67e8f9',strokeWidth:1,opacity:.6});}) : null,
+                      guideData.stars.map(function(star){var p=meteorProject(star.position);return h('circle',{key:star.id,'data-guide-star':star.id,cx:p.x,cy:p.y,r:Math.max(1,2.8-star.magnitude*.3),fill:'#e0f2fe'});}),
+                      showGuides ? h('text',{x:Math.max(10,meteorProject(guideData.stars[0].position).x-20),y:Math.max(16,meteorProject(guideData.stars[0].position).y-20),fill:'#a5f3fc',fontSize:10},guideName) : null
+                    ),
                     h('rect', { x: 0, y: horizonY, width: 600, height: 400 - horizonY, fill: '#05070d' }),
                     // Fixed horizon + radiant marker positioned by the altitude control.
                     h('line', { x1: 0, y1: horizonY, x2: 600, y2: horizonY, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 6', opacity: 0.8 }),
                     h('text', { x: 10, y: horizonY - 6, fill: '#94a3b8', fontSize: 9 }, __alloT('stem.astronomy.horizon', 'Horizon')),
+                    h('g', {style:{display:showRadiant?'inline':'none'}},
                     h('circle', { cx: radiantX, cy: radiantY, r: 18, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
                     h('circle', { cx: radiantX, cy: radiantY, r: 3, fill: '#fbbf24' }),
                     h('text', { x: radiantX + 20, y: radiantY - 3, fill: '#fbbf24', fontSize: 11, fontWeight: 600 }, __alloT('stem.astronomy.radiant', 'Radiant')),
-                    h('text', { x: radiantX + 20, y: radiantY + 11, fill: '#fbbf24', fontSize: 9, opacity: 0.7 }, '(' + selected.radiantConst + ', ' + simAlt + '°)'),
+                    h('text', { x: radiantX + 20, y: radiantY + 11, fill: '#fbbf24', fontSize: 9, opacity: 0.7 }, '(' + selected.radiantConst + ', ' + simAlt + '°)')), 
+                    d.simMeteorPaths === true ? h('g',{clipPath:'url(#meteor-sky-clip)'},meteors.map(function(m,i){return h('line',{key:'trace-'+i,x1:radiantX,y1:radiantY,x2:m.x1,y2:m.y1,stroke:'#fbbf24',strokeDasharray:'3 5',opacity:.3});})) : null,
                     // Meteor streaks — translucent gradient lines from radiant outward
                     h('g', { clipPath: 'url(#meteor-sky-clip)' }, meteors.map(function(m, i) {
                       return h('g', { key: 'meteor-' + i },
@@ -8461,7 +9795,7 @@
                     // Frame counter
                     h('text', { x: 595, y: 395, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'frame ' + animFrame)
                   )
-                ),
+                ) }),
                 h('p', { id: 'astronomy-meteor-diagram-help', style: { margin: '8px 0 0', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
                   h('strong', null, __alloT('stem.astronomy.how_to_read_this_view', 'How to read this view: ')),
                   __alloT('stem.astronomy.the_yellow_dot_at_center_is_the_radian', 'The yellow dot marks the radiant — the perspective point where meteors APPEAR to come from. Each yellow-white streak is a meteor entering the atmosphere. Earth\'s motion through the comet/asteroid debris stream gives all meteors the same parallel motion through space, but viewed from Earth they appear to RADIATE outward from a single point (the same way parallel railroad tracks appear to converge in the distance).')
@@ -10459,6 +11793,8 @@
         case 'stars':          body = renderStars(); break;
         case 'galaxies':       body = renderGalaxies(); break;
         case 'eclipses':       body = renderEvents(); break;
+        case 'meteors':        body = renderEvents(true); break;
+        case 'observatory':    body = renderObservatory(); break;
         case 'indigenous':     body = renderIndigenous(); break;
         case 'history':        body = renderHistory(); break;
         case 'observe':        body = renderObserve(); break;

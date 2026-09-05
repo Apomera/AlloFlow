@@ -74,8 +74,9 @@ describe('GuidedModeConfig extraction contract', () => {
       expect(preset.stepIds === null || preset.stepIds.every(id => ids.has(id))).toBe(true);
     }
     expect(Object.keys(api.GUIDED_TOUR_MAP)).toEqual(api.GUIDED_STEP_IDS);
+    const renderedShell = host + read('view_full_pack_run_source.jsx');
     for (const domId of Object.values(api.GUIDED_TOUR_MAP)) {
-      expect(host.includes(`id="${domId}"`) || host.includes(`id='${domId}'`)).toBe(true);
+      expect(renderedShell.includes(`id="${domId}"`) || renderedShell.includes(`id='${domId}'`), domId).toBe(true);
     }
   });
 
@@ -119,5 +120,31 @@ describe('GuidedModeConfig extraction contract', () => {
     expect(read('build.js')).toContain("require('./_build_guided_mode_config_module.js').buildGuidedModeConfigModule(src)");
     expect(read('desktop/web-app/public/guided_mode_config_module.js')).toBe(moduleCode);
     expect(source).toContain('window.AlloModules.GuidedModeConfig = {');
+  });
+});
+
+
+describe('Focused reading path and saved-progress compatibility', () => {
+  it('keeps reading essentials and delivery while leaving extra tools available', () => {
+    const api = moduleApi();
+    const preset = api.GUIDED_PRESETS.find(item => item.id === 'reading-access');
+    const progress = api.normalizeGuidedProgress({ selectedIds: preset.stepIds });
+    const active = api.GUIDED_STEP_IDS.filter(id => progress.selectedIds.includes(id));
+    expect(active).toEqual(['source-input', 'analysis', 'glossary', 'simplified', 'directions', 'package-deliver', '_final']);
+    expect(api.GUIDED_STEP_IDS).toEqual(expect.arrayContaining(['image', 'outline', 'sentence-frames', 'quiz', 'lesson-plan']));
+  });
+
+  it('resumes an existing longer reading path without resetting or removing work', () => {
+    const api = moduleApi();
+    const oldSteps = ['analysis', 'glossary', 'simplified', 'outline', 'image', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'];
+    const progress = api.normalizeGuidedProgress({ selectedIds: oldSteps, stepId: 'image',
+      completedSteps: ['analysis', 'glossary', 'simplified', 'outline'], createdHistoryIds: ['saved-reading'],
+      deliveryEvidence: { exportCreated: true } });
+    const active = api.GUIDED_STEP_IDS.filter(id => progress.selectedIds.includes(id));
+    expect(active).toHaveLength(12);
+    expect(active[progress.guidedStep]).toBe('image');
+    expect(progress.completedSteps).toEqual(['analysis', 'glossary', 'simplified', 'outline']);
+    expect(progress.createdHistoryIds).toEqual(['saved-reading']);
+    expect(progress.deliveryEvidence.exportCreated).toBe(true);
   });
 });

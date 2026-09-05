@@ -257,8 +257,8 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('function positionMeasurePanel(s, mission)');
     expect(source).toContain('var currentHeight = (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale');
     expect(source).toContain('var targetHeight = (showTarget && mission && mission.d >= 3 ? mission.H : THIN) * presentationScale');
-    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
-    expect(source).toContain('var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance)');
+    expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
+    expect(source).toContain('lift: Math.max(1.4, Math.max(currentHeight, targetHeight) + clearance)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
   it('restores only validated local session state', () => {
@@ -335,7 +335,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('function measureCardHeight(boundaryLines, comparing)');
     expect(source).toContain('return 0.98 + boundaryLines * 0.22 + (comparing ? 0.32 : 0)');
     expect(source).toContain("labelBack.setAttribute('height', r1(cardHeight))");
-    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
+    expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
     expect(source).toContain("showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null");
   });
   it('tracks current and completed guided missions accessibly', () => {
@@ -569,13 +569,13 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('Menu centers.');
   });
   it('keeps geometry and measures aligned with the recentered workspace', () => {
-    expect(source).toContain('var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 }');
+    expect(source).toContain('var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0, viewX: 0, viewZ: -1 }');
     expect(source).toContain('workspacePose.centerX = eye.x + view.x * centerDistance');
     expect(source).toContain('workspacePose.x = workspacePose.centerX - right.x * length / 2 + view.x * depth / 2');
     expect(source).toContain('workspacePose.baseY = Math.max(0.35, eye.y - 0.5)');
     expect(source).toContain('figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z)');
     expect(source).toContain('figure.object3D.rotation.set(0, yaw, 0)');
-    expect(source).toContain('var y = workspacePose.baseY + defaultY - 1.1');
+    expect(source).toContain('var y = workspacePose.baseY + panel.lift');
     expect(source).toContain('workspacePose.centerX == null ? workspacePose.x : workspacePose.centerX');
     expect(source).toContain('labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
@@ -621,7 +621,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('return 0.98 + boundaryLines * 0.22 + (comparing ? 0.32 : 0)');
     expect(source).toContain("labelBack.setAttribute('height', r1(cardHeight))");
     expect(source).toContain('var boundaryLines = showBoundary ? (s.boundary ? 1 : 0) + (mission && mission.d >= 2 ? 1 : 0) : 0');
-    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
+    expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
     const toggle = source.match(/function toggleBoundaryMeasures\(value, announce\) \{[\s\S]*?\n  \}/);
     expect(toggle).not.toBeNull();
     expect(toggle[0]).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
@@ -769,12 +769,28 @@ describe('Immersive Geometry stretch mechanics', () => {
   });
 
   it('keeps desktop solids centered at a stable oblique viewing distance', () => {
-    expect(source).toContain('function positionDesktopWorkspace(s)');
-    expect(source).toContain('var centerX = 0.65, centerZ = -3.2');
-    expect(source).toContain('THREE.MathUtils.degToRad(-18)');
+    expect(source).toContain('function positionDesktopWorkspace(s, viewDir)');
+    expect(source).toContain('var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -18 }');
+    expect(source).toContain('THREE.MathUtils.degToRad(FLAT_DESKTOP_POSE.yawDeg)');
     expect(source).toContain('workspacePose.x = centerX - offsetX; workspacePose.z = centerZ - offsetZ');
     expect(source).toContain('else positionDesktopWorkspace(lastMissionState)');
     expect(source).toContain('else positionDesktopWorkspace(s)');
+  });
+
+  it('frames compact and portrait viewports from the camera FOV and the band above the HUD', () => {
+    expect(source).toContain('function compactViewport()');
+    expect(source).toContain('return w > 0 && h > 0 && (w <= 760 || w < h)');
+    expect(source).toContain('function flatFramingMetrics()');
+    expect(source).toContain('var tanV = Math.tan(THREE.MathUtils.degToRad(fov) / 2), tanH = tanV * (w / h)');
+    expect(source).toContain('if (rect.height > 0 && rect.width > w * 0.6 && rect.top > h * 0.4)');
+    expect(source).toContain('var distance = Math.max(forward, halfWidth / (m.tanH * fill) + depth / 2, contentHeight / (m.tanV * band * fill))');
+    expect(source).toContain('var midNdc = (1 + m.bottomNdc) / 2');
+    expect(source).toContain('contentMid = Math.min(contentMid, m.eyeY + forward * Math.tan(THREE.MathUtils.degToRad(20)))');
+    expect(source).toContain("window.addEventListener('resize', scheduleFlatReframe)");
+    expect(source).toContain("window.addEventListener('orientationchange', scheduleFlatReframe)");
+    expect(source).toContain('hudBody.hidden = !open; scheduleFlatReframe(); });');
+    expect(source).toContain('if (!immersiveActive && lastMissionState) positionDesktopWorkspace(lastMissionState);');
+    expect(source).toContain('if (lastMissionState) positionDesktopWorkspace(lastMissionState, view);');
   });
 
   it('keeps duplicate spatial controls immersive-only', () => {

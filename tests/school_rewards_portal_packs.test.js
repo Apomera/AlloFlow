@@ -133,8 +133,9 @@ describe('text that only appears after an action (2026-09-03)', () => {
 
   it('has a catalogue entry for every status notice and dialog the portal can show', () => {
     const notices = literals(SCRIPT, /notice\('((?:[^'\\]|\\.)*)'/g);
+    const savedResults = literals(SCRIPT, /(?:reload|reloadAfterConfirmedSave)\('((?:[^'\\]|\\.)*)'/g);
     const dialogs = literals(SCRIPT, /(?:confirmT|promptT)\('((?:[^'\\]|\\.)*)'/g);
-    const missing = [...notices, ...dialogs].filter((t) => !covered(t) && !fragment(t));
+    const missing = [...notices, ...savedResults, ...dialogs].filter((t) => !covered(t) && !fragment(t));
     expect(missing).toEqual([]);
     expect(notices.length).toBeGreaterThan(80);
   });

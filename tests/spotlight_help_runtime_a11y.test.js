@@ -126,3 +126,29 @@ describe('Spotlight Help accessibility contract', () => {
     expect(document.activeElement).toBe(opener);
   });
 });
+
+describe('Help popup viewport changes', () => {
+  it('reflows an open popup after resizing and removes its resize listener on close', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1200 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+    const remove = vi.spyOn(window, 'removeEventListener');
+    host = document.createElement('div'); document.body.appendChild(host); root = ReactDOMClient.createRoot(host);
+    await act(async () => root.render(React.createElement(SpotlightTourView, {
+      t: key => key === 'common.close' ? 'Close help' : '', debugLog: () => {},
+      tourRect: { left: 900, right: 1000, top: 100, bottom: 140, width: 100, height: 40 },
+      spotlightMessage: { title: 'Review before saving', text: 'Read the directions before adding them to the pack.' },
+      spotlightOpenTimeRef: { current: 0 }, setIsSpotlightMode: () => {},
+    })));
+    const panel = host.querySelector('#spotlight-message-panel'), wrapper = panel.parentElement;
+    expect(wrapper.style.width).toBe('380px');
+    const close = panel.querySelector('button[aria-label="Close help"]');
+    expect(document.activeElement).toBe(close);
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });
+    act(() => window.dispatchEvent(new Event('resize')));
+    expect(wrapper.style.width).toBe('288px');
+    expect(Number.parseFloat(wrapper.style.left) + Number.parseFloat(wrapper.style.width)).toBeLessThanOrEqual(320);
+    expect(document.activeElement).toBe(close);
+    act(() => root.unmount()); root = null;
+    expect(remove).toHaveBeenCalledWith('resize', expect.any(Function));
+  });
+});

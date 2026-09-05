@@ -11,7 +11,7 @@
 // did not. That is the wrong way round: the surface with the most controls had the least
 // independent checking.
 //
-// SCOPE, stated honestly. This renders into jsdom with no Tailwind loaded, so every rule that needs
+// SCOPE, stated honestly. This renders with SSR and audits in Chromium without Tailwind, so rules needing
 // computed style — colour-contrast above all — would be judging default black-on-transparent rather
 // than what a student sees. Those are DISABLED here rather than left to report a meaningless pass.
 // Contrast on this tool is covered where it can actually be measured: watercycle_stage_label_ground
@@ -25,16 +25,22 @@
 // asserts a marker of its own before axe sees it.
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
+import { chromium } from 'playwright';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const require = createRequire(import.meta.url);
 let axe;
 let host;
+let browser;
+let page;
 
-beforeAll(() => {
+beforeAll(async () => {
   axe = require(resolve(process.cwd(), 'desktop/web-app/node_modules', 'axe-core'));
-});
+  browser = await chromium.launch({ headless: true });
+  page = await browser.newPage();
+}, 60000);
+afterAll(async () => { if (browser) await browser.close(); }, 60000);
 
 beforeEach(() => {
   resetStemLab();
@@ -67,13 +73,26 @@ async function auditState(state, must, mustNot) {
   host.innerHTML = renderTool('waterCycle', { waterCycle: state });
   expect(host.innerHTML, 'surface did not render its own marker: ' + must).toContain(must);
   if (mustNot) expect(host.innerHTML, 'surface rendered a different view: ' + mustNot).not.toContain(mustNot);
-  const results = await axe.run(host, { rules: DISABLED, resultTypes: ['violations'] });
-  return results.violations.map((v) => ({
-    id: v.id,
-    impact: v.impact,
-    help: v.help,
-    nodes: v.nodes.slice(0, 3).map((n) => n.html.slice(0, 160)),
-  }));
+  return (await auditMarkup(host.innerHTML)).violations;
+}
+
+// Keep the same SSR surface assertions and rule set, but run axe in Chromium.
+// jsdom's style traversal timed out on the expanded water UI, leaving axe running
+// and causing every subsequent surface to fail without being audited at all.
+async function auditMarkup(markup) {
+  const styles = [...document.head.querySelectorAll('style')].map(node => node.outerHTML).join('');
+  await page.setContent('<!doctype html><html lang="en"><head><title>Water accessibility audit</title>' + styles + '</head><body><main id="audit">' + markup + '</main></body></html>');
+  await page.addScriptTag({ content: axe.source });
+  return page.evaluate(async (rules) => {
+    const results = await window.axe.run(document.getElementById('audit'), { rules });
+    return {
+      passes: results.passes.length,
+      violations: results.violations.map(v => ({
+        id: v.id, impact: v.impact, help: v.help,
+        nodes: v.nodes.slice(0, 3).map(n => n.html.slice(0, 160)),
+      })),
+    };
+  }, DISABLED);
 }
 
 function report(violations) {
@@ -124,7 +143,7 @@ describe('waterCycle — axe audit of every reachable surface', () => {
     // has controls, and axe must have had a populated tree to judge.
     host.innerHTML = renderTool('waterCycle', { waterCycle: {} });
     expect(host.querySelectorAll('button').length).toBeGreaterThan(5);
-    const results = await axe.run(host, { rules: DISABLED });
-    expect(results.passes.length, 'axe returned no passing rules, so it judged nothing').toBeGreaterThan(3);
+    const results = await auditMarkup(host.innerHTML);
+    expect(results.passes, 'axe returned no passing rules, so it judged nothing').toBeGreaterThan(3);
   }, 30000);
 });

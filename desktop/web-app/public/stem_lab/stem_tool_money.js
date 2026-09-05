@@ -2089,12 +2089,13 @@ window.StemLab = window.StemLab || {
                 }
               ];
 
-              return React.createElement('section', {
+              return React.createElement('details', {
                 className: 'rounded-2xl border border-emerald-200 bg-white shadow-sm overflow-hidden',
                 'data-moneymath-focus': 'true',
                 role: 'region',
                 'aria-label': __alloT('stem.money.money_studio', 'Money Math studio')
               },
+                React.createElement('summary', { className: 'cursor-pointer p-3 text-sm font-bold text-emerald-800' }, __alloT('stem.money.activity_overview', 'Explore money activities and your current setup')),
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4 p-4' },
                   React.createElement('div', { className: 'space-y-3' },
                     React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3' },
@@ -2376,6 +2377,50 @@ window.StemLab = window.StemLab || {
                     ),
                     d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
                   ),
+                  !challengeMode && placed.length > 0 && React.createElement('details',{className:'mt-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3'},
+                    React.createElement('summary',{className:'cursor-pointer text-sm font-bold text-emerald-900'},__alloT('stem.money.count_on_trail','Count on, one coin or bill at a time')),
+                    React.createElement('ol',{className:'flex flex-wrap gap-2 mt-2'},(function(){var sum=0;return placed.slice(0,30).map(function(piece,i){var before=sum;sum+=piece.value;return React.createElement('li',{key:i,className:'rounded border border-emerald-300 bg-white p-2 text-xs text-emerald-950'},fmt(before)+' + '+fmt(piece.value)+' = '+fmt(sum));});})()),
+                    placed.length>30 && React.createElement('p',{className:'text-sm text-emerald-900'},__alloT('stem.money.trail_limit','The first 30 pieces are shown. The cash breakdown includes every piece.')),
+                    React.createElement('p',{className:'mt-2 text-sm font-bold text-emerald-900'},__alloT('stem.money.equivalent_cash_prompt','Can you make the same total with a different set of coins? Explain why the value stays the same.'))
+                  ),
+                  // Compare two learner-built sets, using integer currency units for equality.
+                  !challengeMode && (placed.length > 0 || (d.equivalentSet && d.equivalentSet.currency === currency)) && (function() {
+                    var saved = d.equivalentSet && d.equivalentSet.currency === currency ? d.equivalentSet.pieces : null;
+                    function groupsFor(items) {
+                      var groups = {};
+                      (items || []).forEach(function(piece) {
+                        var key = currencyUnits(piece.value, currency) + ':' + (isPlacedBill(piece) ? 'bill' : 'coin');
+                        if (!groups[key]) groups[key] = { key: key, piece: piece, count: 0 };
+                        groups[key].count++;
+                      });
+                      return Object.keys(groups).sort().map(function(key) { return groups[key]; });
+                    }
+                    function unitsFor(items) { return (items || []).reduce(function(sum, piece) { return sum + currencyUnits(piece.value, currency); }, 0); }
+                    function fingerprint(items) { return groupsFor(items).map(function(group) { return group.key + ':' + group.count; }).join('|'); }
+                    var savedUnits = unitsFor(saved), currentUnits = unitsFor(placed);
+                    var equal = !!saved && savedUnits === currentUnits;
+                    var different = !!saved && fingerprint(saved) !== fingerprint(placed);
+                    function setCard(items, title) {
+                      return React.createElement('section', { className: 'rounded-lg border border-emerald-300 bg-white p-3 min-w-0' },
+                        React.createElement('h4', { className: 'text-sm font-bold text-emerald-900' }, title),
+                        React.createElement('p', { className: 'font-bold text-slate-900 my-2' }, fmt(unitsFor(items) / Math.pow(10, currencyFractionDigits(currency)))),
+                        React.createElement('ul', { className: 'space-y-2' }, groupsFor(items).map(function(group) {
+                          var piece = group.piece, bill = isPlacedBill(piece);
+                          var definition = (bill ? cur.bills : cur.coins).find(function(item) { return item.value === piece.value && item.name === piece.name; }) || piece;
+                          return React.createElement('li', { key: group.key, className: 'flex items-center gap-2 text-xs text-slate-800' },
+                            React.createElement('span', { 'aria-hidden': true }, bill ? renderBillVisual(definition, true) : renderCoinVisual(definition, true)),
+                            React.createElement('span', null, group.count + ' × ' + piece.name + ' = ' + fmt(group.count * piece.value)));
+                        })));
+                    }
+                    return React.createElement('section', { className: 'mt-3 rounded-xl border border-emerald-400 bg-emerald-50 p-3', 'data-equivalent-money': true },
+                      React.createElement('h3', { className: 'text-sm font-bold text-emerald-900' }, __alloT('stem.money.same_value_another_way', 'Make the same value another way')),
+                      React.createElement('p', { className: 'text-sm text-slate-700 mt-2' }, __alloT('stem.money.keep_then_rebuild', 'Save one set, then clear or change the counting board to build the same total with different coins or bills.')),
+                      React.createElement('div', { className: 'flex flex-wrap gap-2 my-3' },
+                        React.createElement('button', { type: 'button', disabled: !placed.length, onClick: function() { upd('equivalentSet', { currency: currency, pieces: placed.map(function(piece) { return Object.assign({}, piece); }) }); }, className: 'rounded-lg border border-emerald-800 bg-emerald-800 text-white px-3 py-2 text-sm font-bold disabled:opacity-50' }, __alloT('stem.money.save_current_set', 'Save current set')),
+                        saved && React.createElement('button', { type: 'button', onClick: function() { upd('equivalentSet', null); }, className: 'rounded-lg border border-emerald-800 bg-white text-emerald-900 px-3 py-2 text-sm font-bold' }, __alloT('stem.money.remove_saved_set', 'Remove saved set'))),
+                      saved && React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, setCard(saved, __alloT('stem.money.saved_set', 'Saved set')), setCard(placed, __alloT('stem.money.current_set', 'Current set'))),
+                      saved && React.createElement('p', { role: 'status', className: 'mt-3 text-sm font-bold text-emerald-900', 'data-equal-value': equal, 'data-different-set': different }, !placed.length ? __alloT('stem.money.build_matching_set', 'Add coins or bills to match the saved total.') : equal && different ? __alloT('stem.money.equivalent_sets_success', 'Same value, different pieces! Explain how both sets make the same total.') : equal ? __alloT('stem.money.same_set_prompt', 'The values match. Try using different denominations.') : __alloT('stem.money.compare_sets_prompt', 'The totals differ. Compare both sets and adjust the counting board.')));
+                  })(),
                   // Normal mode: grouped denomination breakdown and equation.
                   !challengeMode && placed.length > 0 && React.createElement('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
                     React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
@@ -3750,7 +3795,7 @@ window.StemLab = window.StemLab || {
 
               // ═══ CHALLENGES TAB ═══
               tab === 'cents' && React.createElement("div", moneyPanelProps("space-y-4"),
-                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" }, __alloT('stem.money.common_cents_3', "\uD83E\uDE99 Common Cents")),
+                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" + (ctx.isContrast ? " text-white" : "") }, __alloT('stem.money.common_cents_3', "\uD83E\uDE99 Common Cents")),
                 // Fewest Coins challenge
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },

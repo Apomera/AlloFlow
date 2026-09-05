@@ -156,3 +156,47 @@ test.describe('Anatomy on real WebGL', () => {
     expect(await pageErrors(page)).toEqual([]);
   });
 });
+
+test('failed Clinical Atlas load retries on the same canvas and preserves its selected concept', async ({ page }) => {
+  let requests = 0;
+  await page.route('**/hra-kidney-female-left-v1.3.glb', async (route) => {
+    requests++;
+    if (requests === 1) await route.abort('failed');
+    else await route.continue();
+  });
+  await harness.mount(page, anatomyState({
+    system: 'organs', view: 'posterior', selectedStructure: 'kidneys',
+    _body3dStyle: 'clinical', _clinicalAtlasPackId: 'hra-kidney-female-left-v1.3',
+    _clinicalAtlasConceptId: 'UBERON:0001225',
+  }), `document.querySelector('[data-anatomy-3d-state="fallback-model"]')`);
+  const canvas = page.locator('[data-anatomy-3d-canvas="true"]');
+  const recovery = page.getByRole('group', { name: '3D model recovery' });
+  await expect(recovery).toBeVisible();
+  await expect(page.locator('#anatomy-3d-status')).toContainText('could not be read');
+  await page.evaluate(() => { (window as any).__retryCanvas = document.querySelector('[data-anatomy-3d-canvas="true"]'); });
+  await page.getByRole('button', { name: 'Retry 3D model', exact: true }).click();
+  await expect(canvas).toHaveAttribute('data-anatomy-3d-state', 'ready-model', { timeout: 30_000 });
+  expect(requests).toBe(2);
+  await expect(recovery).toBeHidden();
+  await expect(page.locator('#anatomy-3d-status')).toBeFocused();
+  await expect(page.locator('[data-anatomy-clinical-selected-concept]')).toHaveAttribute('data-anatomy-clinical-selected-concept', 'UBERON:0001225');
+  expect(await page.evaluate(() => (window as any).__retryCanvas === document.querySelector('[data-anatomy-3d-canvas="true"]'))).toBe(true);
+  expect((await page.evaluate(() => (window as any).__anatomyProbe())).live?.lost).toBe(false);
+  expect((await canvas.screenshot()).length).toBeGreaterThan(8000);
+});
+
+test('failed Clinical Atlas load offers a direct 2D escape with selection intact', async ({ page }) => {
+  await page.route('**/hra-kidney-female-left-v1.3.glb', (route) => route.abort('failed'));
+  await harness.mount(page, anatomyState({
+    system: 'organs', view: 'posterior', selectedStructure: 'kidneys',
+    _body3dStyle: 'clinical', _clinicalAtlasPackId: 'hra-kidney-female-left-v1.3',
+    _clinicalAtlasConceptId: 'UBERON:0001225',
+  }), `document.querySelector('[data-anatomy-3d-state="fallback-model"]')`);
+  await page.getByRole('button', { name: 'Open 2D Atlas', exact: true }).click();
+  await expect(page.locator('[data-anatomy-tool="true"]')).toHaveAttribute('data-anatomy-active-mode', '2d');
+  await expect(page.locator('#anatomy-workspace')).toBeFocused();
+  await expect(page.locator('[data-anatomy-panel="explore"]')).toContainText('Kidneys');
+  await expect(page.locator('[data-anatomy-3d-canvas="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-anatomy-model-recovery]')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as any).__ctx.toolData.anatomy._clinicalAtlasConceptId)).toBe('UBERON:0001225');
+});

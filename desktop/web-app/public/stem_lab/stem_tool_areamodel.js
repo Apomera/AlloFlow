@@ -598,12 +598,31 @@ window.StemLab = window.StemLab || {
           { label: aOnes + '\u00d7' + bOnes, value: aOnes * bOnes, color: 'bg-amber-300', text: 'text-amber-700' }
         ];
         var total = a * b;
+        var hidden = !!(challenge && !feedback);
+        var selectionKey = a + ':' + b;
+        var selected = _a.partialSelectionKey === selectionKey ? _a.partialSelection : null;
+        var fills = ['#93c5fd', '#bae6fd', '#a7f3d0', '#fde68a'];
+        var parts = [[0, 0, bTens, aTens], [bTens, 0, bOnes, aTens], [0, aTens, bTens, aOnes], [bTens, aTens, bOnes, aOnes]];
+        var unit = Math.min(440 / b, 260 / a);
+        function selectPartial(index) { upd({ partialSelectionKey: selectionKey, partialSelection: index }); }
+        function partialButton(index, equation) {
+          var p = pp[index];
+          return h('button', { type: 'button', 'data-partial-button': index,
+            'aria-pressed': selected === index,
+            'aria-label': t('stem.areamodel.select_partial', 'Select partial product: ') + p.label + (hidden ? '' : ' = ' + p.value),
+            onClick: function() { selectPartial(index); },
+            style: { minHeight: 44, padding: '6px 10px', borderRadius: 8, color: '#0f172a', background: fills[index], border: selected === index ? '3px solid #0f172a' : '1px solid #64748b', fontWeight: 800 } },
+            !equation && h('span', { style: { display: 'block', fontSize: 13 } }, p.label),
+            h('span', { style: { fontSize: 20 } }, hidden ? '?' : p.value),
+            selected === index && h('span', { 'aria-hidden': true }, ' ✓'));
+        }
 
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'grid grid-cols-2 gap-3' },
             h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-100' },
               h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_a', 'Factor A')),
               h('input', {
+                style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
                 type: 'number', min: '10', max: '99', value: a,
                 'aria-label': t('stem.areamodel.factor_a', 'Factor A'),
                 onChange: function(e) { upd({ multiDims: { a: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)), b: b } }); },
@@ -613,6 +632,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-100' },
               h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_b', 'Factor B')),
               h('input', {
+                style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
                 type: 'number', min: '10', max: '99', value: b,
                 'aria-label': t('stem.areamodel.factor_b', 'Factor B'),
                 onChange: function(e) { upd({ multiDims: { a: a, b: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)) } }); },
@@ -620,36 +640,46 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
+          h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-3', style: { color: '#0f172a' } },
+            h('p', { className: 'text-sm font-bold mb-2' }, t('stem.areamodel.linked_parts', 'Select a partial product below to locate its rectangle. Each region is drawn to scale.')),
+            h('svg', { viewBox: '0 0 ' + (b * unit + 100) + ' ' + (a * unit + 65), role: 'img', 'aria-labelledby': 'am-partial-title am-partial-desc', style: { width: '100%', maxHeight: 340, background: '#fff' }, 'data-partial-model': true },
+              h('title', { id: 'am-partial-title' }, t('stem.areamodel.partial_rectangles', 'Tens-and-ones area model')),
+              h('desc', { id: 'am-partial-desc' }, a + ' × ' + b + '. ' + (selected == null ? t('stem.areamodel.select_to_connect', 'Select a product to connect the equation to its region.') : pp[selected].label + (hidden ? '' : ' = ' + pp[selected].value))),
+              parts.map(function(part, i) { return part[2] && part[3] ? h('rect', { key: i, x: 65 + part[0] * unit, y: 40 + part[1] * unit, width: part[2] * unit, height: part[3] * unit,
+                fill: fills[i], stroke: '#0f172a', strokeWidth: selected === i ? 4 : 1, 'data-partial-region': i, 'data-selected': selected === i,
+                onClick: function() { selectPartial(i); }, style: { cursor: 'pointer' } }) : null; }),
+              h('text', { x: 65 + bTens * unit / 2, y: 26, textAnchor: 'middle', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, bTens),
+              bOnes > 0 && h('text', { x: 65 + (bTens + bOnes / 2) * unit, y: 26, textAnchor: 'middle', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, bOnes),
+              h('text', { x: 48, y: 45 + aTens * unit / 2, textAnchor: 'end', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, aTens),
+              aOnes > 0 && h('text', { x: 48, y: 45 + (aTens + aOnes / 2) * unit, textAnchor: 'end', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, aOnes)),
+            h('p', { role: 'status', 'data-partial-explanation': true, className: 'text-sm mt-2', style: { minHeight: 40 } }, selected == null ? t('stem.areamodel.four_products', 'The four products cover the whole rectangle without overlap.') :
+              pp[selected].label + (hidden ? ' = ?' : ' = ' + pp[selected].value) + '. ' + (pp[selected].value === 0 ? t('stem.areamodel.zero_region', 'A side length is zero, so this product adds no area.') : t('stem.areamodel.highlighted_region', 'This product measures the outlined region in square units.')))),
           h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 overflow-x-auto' },
             h('table', { className: 'mx-auto border-collapse' },
               h('caption', { className: 'sr-only' }, t('stem.areamodel.areamodel_data_table', 'areamodel data table')), h('thead', null,
                 h('tr', null,
                   h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-slate-600' }, '\u00d7'),
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px' } }, bTens),
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px' } }, bOnes)
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px', color: isContrast ? '#ffffff' : '#4338ca' } }, bTens),
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px', color: isContrast ? '#ffffff' : '#4338ca' } }, bOnes)
                 )
               ),
               h('tbody', null,
                 h('tr', null,
-                  h('td', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aTens),
+                  h('th', { scope: 'row', style: { color: isContrast ? '#ffffff' : '#4338ca' }, className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aTens),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[0].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[0].label),
-                    h('div', { className: 'text-xl font-bold ' + pp[0].text }, (challenge && !feedback) ? '?' : pp[0].value)
+                    partialButton(0, false)
                   ),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[1].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[1].label),
-                    h('div', { className: 'text-xl font-bold ' + pp[1].text }, (challenge && !feedback) ? '?' : pp[1].value)
+                    partialButton(1, false)
                   )
                 ),
                 h('tr', null,
-                  h('td', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aOnes),
+                  h('th', { scope: 'row', style: { color: isContrast ? '#ffffff' : '#4338ca' }, className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aOnes),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[2].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[2].label),
-                    h('div', { className: 'text-xl font-bold ' + pp[2].text }, (challenge && !feedback) ? '?' : pp[2].value)
+                    partialButton(2, false)
                   ),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[3].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[3].label),
-                    h('div', { className: 'text-xl font-bold ' + pp[3].text }, (challenge && !feedback) ? '?' : pp[3].value)
+                    partialButton(3, false)
                   )
                 )
               )
@@ -661,7 +691,7 @@ window.StemLab = window.StemLab || {
               pp.map(function(p, i) {
                 return h(React.Fragment, { key: i },
                   i > 0 && h('span', { className: 'text-slate-600' }, '+'),
-                  h('span', { className: p.text + ' bg-white px-2 py-0.5 rounded-lg border shadow-sm' }, p.value)
+                  partialButton(i, true)
                 );
               }),
               h('span', { className: 'text-slate-600' }, '='),
@@ -946,61 +976,13 @@ window.StemLab = window.StemLab || {
           'data-areamodel-focus': 'true',
           className: 'rounded-2xl border border-amber-200 bg-white p-4 shadow-sm',
           style: { background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 48%, #f8fafc 100%)' }
-        },
-          h('div', { className: 'grid lg:grid-cols-[1.15fr_0.85fr] gap-4 items-stretch' },
-            h('div', null,
-              h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-700 mb-1' }, t('stem.areamodel.multiplication_workshop', 'Multiplication workshop')),
-              h('h3', { className: 'text-xl font-black text-slate-900 leading-tight mb-2' }, activeFactorA + ' \u00d7 ' + activeFactorB + ' = ' + activeProduct),
-              h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-3' },
-                t('stem.areamodel.focus_intro', 'Build the rectangle first, then connect the picture to facts, place value, and real-world word problems.')
-              ),
-              h('div', { className: 'grid grid-cols-3 gap-2' },
-                [
-                  { label: t('stem.areamodel.mode', 'Mode'), value: viewMode === 'multidigit' ? 'partials' : viewMode },
-                  { label: t('stem.areamodel.cells', 'Cells'), value: activeProduct },
-                  { label: t('stem.areamodel.streak', 'Streak'), value: streak || 0 }
-                ].map(function(stat) {
-                  return h('div', { key: stat.label, className: 'rounded-xl bg-white/85 border border-white p-2 shadow-sm' },
-                    h('div', { className: 'text-lg font-black text-slate-900 leading-none' }, stat.value),
-                    h('div', { className: 'text-xs font-bold text-slate-600 mt-1' }, stat.label)
-                  );
-                })
-              )
-            ),
-            h('div', {
-              role: 'img',
-              'aria-label': t('stem.areamodel.focus_visual_label', 'Area model rectangle showing rows times columns as total cells'),
-              className: 'rounded-2xl border border-amber-200 bg-slate-950 p-3 overflow-hidden'
-            },
-              h('div', { className: 'grid gap-1 h-full min-h-[130px]', style: { gridTemplateColumns: 'repeat(' + Math.min(activeFactorB, 8) + ', minmax(0, 1fr))' } },
-                Array.from({ length: Math.min(activeFactorA, 5) * Math.min(activeFactorB, 8) }, function(_, idx) {
-                  var rr = Math.floor(idx / Math.min(activeFactorB, 8));
-                  var cc = idx % Math.min(activeFactorB, 8);
-                  var inHighlight = highlight.rows > 0 && rr < Math.min(highlight.rows, 5) && cc < Math.min(highlight.cols, 8);
-                  return h('span', {
-                    key: 'focus-cell-' + idx,
-                    'aria-hidden': 'true',
-                    className: 'rounded-md border',
-                    style: {
-                      minHeight: 18,
-                      background: inHighlight ? '#f59e0b' : 'rgba(251, 191, 36, 0.22)',
-                      borderColor: inHighlight ? '#fde68a' : 'rgba(251, 191, 36, 0.34)'
-                    }
-                  });
-                })
-              ),
-              h('div', { className: 'mt-2 text-xs font-bold text-amber-100 text-center' },
-                activeFactorA + ' rows by ' + activeFactorB + ' columns'
-              )
-            )
-          )
-        ),
+        }, h('p', { className: 'text-sm font-bold text-slate-800' }, activeFactorA + ' × ' + activeFactorB + (challenge && !(feedback && feedback.correct) ? ' = ?' : ' = ' + activeProduct))),
 
         (function() {
           var MODE_META = {
             basic:        { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid \u2014 multiplication as area'),                hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
             distributive: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: t('stem.areamodel.distributive_split_the_rectangle_keep_', 'Distributive \u2014 split the rectangle, keep the area'), hint: t('stem.areamodel.a_b_c_ab_ac_cut_a_4_7_grid_into_a_4_5_', 'a(b+c) = ab + ac. Cut a 4\u00d77 grid into a 4\u00d75 + 4\u00d72; same total. The distributive property is the algebraic backbone of every later expansion. Common Core 3.OA.5.') },
-            multidigit:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: t('stem.areamodel.partial_products_23_47_made_visible', 'Partial Products \u2014 23 \u00d7 47 made visible'),       hint: t('stem.areamodel.break_factors_by_place_value_23_47_20_', 'Break factors by place value: 23\u00d747 = (20+3)(40+7) = 800 + 140 + 120 + 21 = 1081. Bridge to the lattice method, then standard algorithm. Common Core 4.NBT.5.') },
+            multidigit:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: t('stem.areamodel.partial_products_live', 'Partial products — split each factor by place value'),       hint: t('stem.areamodel.partial_products_guidance', 'Split both factors into tens and ones. Multiply each pair of parts, then add the partial products. The total matches the whole rectangle.') },
             word:         { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems \u2014 multiplication in the world'),   hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
           };
           var meta = MODE_META[viewMode] || MODE_META.basic;
@@ -1027,23 +1009,31 @@ window.StemLab = window.StemLab || {
         (viewMode === 'basic' || viewMode === 'distributive') && h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
             h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.rows_factor_1', 'Rows (Factor 1)')),
-            h('input', {
+            h(React.Fragment, null, h('input', {
               type: 'range', min: '1', max: '12', value: dims.rows,
               onChange: function(e) { upd({ dims: { rows: parseInt(e.target.value), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
               'aria-label': t('stem.areamodel.number_of_rows', 'Number of rows'),
-              className: 'w-full accent-amber-600'
-            }),
-            h('div', { className: 'text-center text-lg font-bold text-amber-700' }, dims.rows)
+              className: 'w-full accent-amber-600', style: { minHeight: 32 }
+            }), h('input', {
+              type: 'number', min: '1', max: '12', value: dims.rows,
+              onChange: function(e) { upd({ dims: { rows: Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1)), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
+              'aria-label': t('stem.areamodel.number_of_rows', 'Number of rows') + ' (exact value)',
+              className: 'w-full rounded-lg border border-amber-600 bg-white p-2 text-base text-slate-900'
+            }))
           ),
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
             h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.columns_factor_2', 'Columns (Factor 2)')),
-            h('input', {
+            h(React.Fragment, null, h('input', {
               type: 'range', min: '1', max: '12', value: dims.cols,
               onChange: function(e) { upd({ dims: { rows: dims.rows, cols: parseInt(e.target.value) }, highlight: { rows: 0, cols: 0 } }); },
               'aria-label': t('stem.areamodel.number_of_columns', 'Number of columns'),
-              className: 'w-full accent-amber-600'
-            }),
-            h('div', { className: 'text-center text-lg font-bold text-amber-700' }, dims.cols)
+              className: 'w-full accent-amber-600', style: { minHeight: 32 }
+            }), h('input', {
+              type: 'number', min: '1', max: '12', value: dims.cols,
+              onChange: function(e) { upd({ dims: { rows: dims.rows, cols: Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1)) }, highlight: { rows: 0, cols: 0 } }); },
+              'aria-label': t('stem.areamodel.number_of_columns', 'Number of columns') + ' (exact value)',
+              className: 'w-full rounded-lg border border-amber-600 bg-white p-2 text-base text-slate-900'
+            }))
           )
         ),
 
