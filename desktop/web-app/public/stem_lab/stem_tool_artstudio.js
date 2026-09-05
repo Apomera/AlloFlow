@@ -5698,7 +5698,7 @@ const d = labToolData.artStudio || {};
               allArtStudioStudies.length > 0 && React.createElement("div", { className: "mt-4 rounded-2xl border border-amber-200 bg-white/90 p-2" },
                 isCompactStudio ? React.createElement("label", { htmlFor: "artstudio-study-scope", className: "flex items-center gap-2 px-1 text-xs font-bold text-amber-950" },
                   React.createElement("span", null, __alloT('stem.artstudio.process_scope_picker', 'View')),
-                  React.createElement("select", { id: "artstudio-study-scope", value: studioProcessScope, onChange: function (event) { selectStudioProcessScope(event.target.value); }, 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show"), className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-amber-300 bg-white px-2 text-xs text-amber-950" },
+                  React.createElement("select", { id: "artstudio-study-scope", value: studioProcessScope, onChange: function (event) { selectStudioProcessScope(event.target.value); }, 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show"), className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-amber-700 bg-white px-2 text-xs text-amber-950" },
                     processScopes.map(function (scope) { return React.createElement("option", { key: scope.id, value: scope.id }, formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_count", "{label} ({count})"), { label: scope.label, count: studioProcessScopeCounts[scope.id] })); })
                   )
                 ) : React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-3 xl:grid-cols-2", role: "group", 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show") },
@@ -5715,14 +5715,14 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", null,
                   React.createElement("label", { htmlFor: "artstudio-study-search", className: "block text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_search_label', 'Search saved studies')),
                   React.createElement("div", { className: "mt-1 flex gap-2" },
-                    React.createElement("input", { id: "artstudio-study-search", type: "search", maxLength: 200, value: studioProcessQuery, 'aria-describedby': "artstudio-study-search-help artstudio-study-results", onChange: function (event) { setStudioProcessQuery(event.target.value.slice(0, 200)); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-900" }),
+                    React.createElement("input", { id: "artstudio-study-search", type: "search", maxLength: 200, value: studioProcessQuery, 'aria-describedby': "artstudio-study-search-help artstudio-study-results", onChange: function (event) { setStudioProcessQuery(event.target.value.slice(0, 200)); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-500 bg-white px-3 text-sm text-slate-900" }),
                     studioProcessQuery && React.createElement("button", { type: "button", onClick: function () { setStudioProcessQuery(''); focusArtStudioTarget('artstudio-study-search'); }, 'aria-label': __alloT('stem.artstudio.process_search_clear', 'Clear study search'), className: "min-h-[44px] rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_search_clear_button', 'Clear'))
                   ),
                   React.createElement("p", { id: "artstudio-study-search-help", className: "mt-1 text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.process_search_help', 'Find titles, notes, intentions, or labs in this view.'))
                 ),
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
                   React.createElement("label", { htmlFor: "artstudio-study-sort", className: "text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_sort_label', 'Sort studies')),
-                  React.createElement("select", { id: "artstudio-study-sort", value: studioProcessSort, onChange: function (event) { setStudioProcessSort(event.target.value); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-900" },
+                  React.createElement("select", { id: "artstudio-study-sort", value: studioProcessSort, onChange: function (event) { setStudioProcessSort(event.target.value); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-500 bg-white px-2 text-xs text-slate-900" },
                     React.createElement("option", { value: "project" }, __alloT('stem.artstudio.process_sort_project', 'Project order')),
                     React.createElement("option", { value: "newest" }, __alloT('stem.artstudio.process_sort_newest', 'Newest first')),
                     React.createElement("option", { value: "oldest" }, __alloT('stem.artstudio.process_sort_oldest', 'Oldest first')),
@@ -5871,7 +5871,7 @@ const d = labToolData.artStudio || {};
                     })
                   ),
                   React.createElement("label", { htmlFor: "artstudio-thread-reflection-note", className: "mt-2 block text-[0.625rem] font-black text-indigo-900" }, __alloT("stem.artstudio.learning_short_note_optional_095d2cf", "Short note (optional)")),
-                  React.createElement("input", { id: "artstudio-thread-reflection-note", type: "text", maxLength: 160, value: studioReflectionNote, onChange: function (event) { setStudioReflectionNote(event.target.value.slice(0, 160)); }, placeholder: studioReflectionKind === 'keep' ? __alloT("stem.artstudio.learning_what_should_carry_forward_d6820ac", "What should carry forward?") : studioReflectionKind === 'change' ? __alloT("stem.artstudio.learning_what_will_you_revise_3896390", "What will you revise?") : __alloT("stem.artstudio.learning_what_question_appeared_53d10f7", "What question appeared?"), className: "mt-1 min-h-[44px] w-full rounded-lg border border-indigo-300 bg-white px-3 text-xs text-slate-900" })
+                  React.createElement("input", { id: "artstudio-thread-reflection-note", type: "text", maxLength: 160, value: studioReflectionNote, onChange: function (event) { setStudioReflectionNote(event.target.value.slice(0, 160)); }, placeholder: studioReflectionKind === 'keep' ? __alloT("stem.artstudio.learning_what_should_carry_forward_d6820ac", "What should carry forward?") : studioReflectionKind === 'change' ? __alloT("stem.artstudio.learning_what_will_you_revise_3896390", "What will you revise?") : __alloT("stem.artstudio.learning_what_question_appeared_53d10f7", "What question appeared?"), className: "mt-1 min-h-[44px] w-full rounded-lg border border-indigo-500 bg-white px-3 text-xs text-slate-900" })
                 ),
                 onCurrentStep && studioVariationForkPending && React.createElement("p", { className: "mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-[0.625rem] font-bold text-violet-900" }, __alloT("stem.artstudio.learning_fork_ready_saving_creates_a_new_branch_and_prese_16292e1", "Fork ready: saving creates a new branch and preserves the original study.")),
                 onCurrentStep && canReplaceCurrentThreadStudy && React.createElement("p", { className: "mt-2 text-[0.625rem] font-bold text-indigo-800" }, __alloT("stem.artstudio.learning_this_step_already_has_a_study_saving_again_updat_7abf721", "This step already has a study. Saving again updates that checkpoint.")),
@@ -6019,7 +6019,7 @@ const d = labToolData.artStudio || {};
           };
 
           const renderStudioStudyNotes = function () {
-            var fieldClass = 'mt-1 block min-h-[44px] w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-normal text-slate-950';
+            var fieldClass = 'mt-1 block min-h-[44px] w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm font-normal text-slate-950';
             return React.createElement('details', { className: 'rounded-2xl border border-slate-300 bg-white p-3', 'data-artstudio-study-notes': 'true' },
               React.createElement('summary', { className: 'min-h-[40px] cursor-pointer content-center text-sm font-bold text-slate-900' }, __alloT('stem.artstudio.study_notes_optional', 'Study notes (optional)')),
               React.createElement('p', { className: 'my-2 text-xs leading-relaxed text-slate-600' }, __alloT('stem.artstudio.study_notes_help', 'Capture your intention and discoveries. These notes travel with your next saved study.')),
@@ -8282,7 +8282,7 @@ const d = labToolData.artStudio || {};
                         );
                       })) : null,
                       React.createElement("div", { className: "mt-2 flex gap-1" },
-                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": "Name for reusable form profile", placeholder: 'My vase form', onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-200 bg-white px-2 py-1 text-[0.625rem]" }),
+                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": "Name for reusable form profile", placeholder: 'My vase form', onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-600 bg-white px-2 py-1 text-[0.625rem]" }),
                         React.createElement("button", { type: "button", className: "rounded bg-fuchsia-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-fuchsia-700", "aria-label": "Save selected form as reusable profile", onClick: saveSelectedMorphProfile }, 'Save form')
                       )
                     ),
@@ -8313,7 +8313,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("summary", { className: "cursor-pointer text-xs font-black text-slate-700" }, 'Fine-tune selected part'),
                       React.createElement("div", { className: "mt-2 space-y-2" },
                         React.createElement("label", { className: "block text-[0.6875rem] font-bold text-slate-600" }, 'Part name',
-                          React.createElement("input", { type: "text", maxLength: 40, value: selectedPart.label, "aria-label": "Selected part name", placeholder: selectedPart.shape + ' part', className: "mt-1 w-full rounded border border-slate-300 bg-white p-1", onFocus: beginSculptRangeEdit, onBlur: commitSculptRangeEdit, onChange: function(event) { var nextName = event.target.value; rangePartOp(function(P, r) { return P.updatePart(r, sel, { label: nextName }); }); } })
+                          React.createElement("input", { type: "text", maxLength: 40, value: selectedPart.label, "aria-label": "Selected part name", placeholder: selectedPart.shape + ' part', className: "mt-1 w-full rounded border border-slate-500 bg-white p-1", onFocus: beginSculptRangeEdit, onBlur: commitSculptRangeEdit, onChange: function(event) { var nextName = event.target.value; rangePartOp(function(P, r) { return P.updatePart(r, sel, { label: nextName }); }); } })
                         ),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                           React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'Shape',
