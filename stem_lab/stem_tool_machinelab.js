@@ -3937,6 +3937,12 @@ window.StemLab = window.StemLab || {
         S.dusts = dusts;
       }
     }
+    // A ring of water where a stone lands in the moat.
+    if (!contrast) {
+      var splash = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.09, 8, 28), new THREE.MeshLambertMaterial({ color: 0xdff3ff, emissive: 0x9fd6ff, emissiveIntensity: 0.5, transparent: true, opacity: 0.9 }));
+      splash.rotation.x = -Math.PI / 2; splash.visible = false;
+      S.model.add(splash); S.splash = splash; S.splashT0 = null;
+    }
 
     // ── Framing ──
     var torsion = (m.kind === 'ballista' || m.kind === 'onager');
@@ -4145,6 +4151,10 @@ window.StemLab = window.StemLab || {
             S.scorch.rotation.z = hash01(Math.round(S.impactPos.x * 10), Math.round(S.impactPos.z * 10), 95) * 6.28;
             S.scorch.visible = true;
           }
+          if (S.splash && S.water && data.outcomeKind !== 'hit' && S.impactPos.z > 2 && S.impactPos.z < 6.2 && Math.abs(S.impactPos.x) < span / 2 + 3.5) {
+            S.splash.position.set(S.impactPos.x, 0.12, S.impactPos.z); S.splash.scale.setScalar(1); S.splash.visible = true; S.splashT0 = now;
+            if (S.scorch) S.scorch.visible = false;   // no scorch on water
+          }
           if (S.dusts && !red) {
             S.dusts.forEach(function (dsp, di) {
               dsp.visible = true;
@@ -4165,10 +4175,14 @@ window.StemLab = window.StemLab || {
           }
         }
       }
+      // The trail runs hotter with speed: a slow lob leaves a pale one, a
+      // flat fast shot an orange one, so speed is readable without the HUD.
+      var hot = Math.max(0, Math.min(1, (speed - 10) / 35));
       for (var tt = 0; tt < S.trail.length; tt++) {
         var hp = S.trailHist[tt];
         S.trail[tt].visible = !!(hp && stonePos);
         if (hp) S.trail[tt].position.copy(hp);
+        if (!contrast && stonePos) S.trail[tt].material.emissive.setRGB(0.85, 0.72 - hot * 0.42, 0.42 - hot * 0.35);
       }
       // Reduced motion: a strobe of the arc instead of a moving stone. Motion
       // photography of a projectile is the classic textbook figure, so the
@@ -4289,6 +4303,11 @@ window.StemLab = window.StemLab || {
             pf.material.opacity = Math.max(0, 0.3 * (1 - ph / 4.5));
           });
         });
+      }
+      if (S.splash && S.splashT0 != null) {
+        var sAge = (now - S.splashT0) / 1000;
+        if (sAge > 1.2 || red) { S.splash.visible = false; S.splashT0 = null; }
+        else { S.splash.scale.setScalar(1 + sAge * 4); S.splash.material.opacity = Math.max(0, 0.9 * (1 - sAge / 1.2)); }
       }
       if (S.dusts) {
         S.dusts.forEach(function (dsp) {
@@ -4527,6 +4546,9 @@ window.StemLab = window.StemLab || {
       sceneTraces: [], siegeBests: {},
       // Sound is opt-in: a classroom default.
       sceneSound: false,
+      // Predict, then loose: the student's call on the next shot, and the run
+      // of right calls. Reset after every shot.
+      fieldGuess: null, fieldStreak: 0,
       // auto = follow the OS reduce-motion setting; on/off override it. A
       // student whose laptop has animations off otherwise sees no shot at all.
       motionPref: 'auto',
@@ -7195,6 +7217,27 @@ window.StemLab = window.StemLab || {
         announceToSR(__alloT('stem.machinelab.sr_replay', 'Replaying the last shot in slow motion.'));
       }
 
+      // The student's prediction against what happened. Returns the sentence
+      // to append and the state to write; a shot with no guess writes nothing.
+      var GUESS_LABELS = {
+        short: __alloT('stem.machinelab.guess_short', 'fall short'),
+        hit: __alloT('stem.machinelab.guess_hit', 'hit the wall'),
+        over: __alloT('stem.machinelab.guess_over', 'go over'),
+        wide: __alloT('stem.machinelab.guess_wide', 'go wide')
+      };
+      function judgeGuess(actual) {
+        var g = d.fieldGuess;
+        if (!g) return { line: '', patch: {} };
+        var right = g === actual;
+        if (right) awardStemXP(10);
+        return {
+          line: right
+            ? ' ✔ ' + __alloT('stem.machinelab.guess_right', 'You called it.')
+            : ' ✘ ' + __alloT('stem.machinelab.guess_wrong', 'You guessed it would ') + (GUESS_LABELS[g] || g) + __alloT('stem.machinelab.guess_wrong2', '; it did ') + (GUESS_LABELS[actual] || actual) + '.',
+          patch: { fieldGuess: null, fieldStreak: right ? (d.fieldStreak || 0) + 1 : 0 }
+        };
+      }
+
       function loose() {
         if (d.siegeFlight) return;
         if (!preview) {
@@ -7234,13 +7277,14 @@ window.StemLab = window.StemLab || {
           var shortSecs = shortPath.length ? (Number(shortPath[shortPath.length - 1].t) || 1.4) : 1.4;
           var shortPlay = Math.max(0.9, Math.min(4.5, shortSecs));
           var shortId = (d.siegeFlightId || 0) + 1;
-          updMulti({
+          var shortGuess = judgeGuess('short');
+          updMulti(Object.assign({
             shotsFired: shots, totalCrankWork: work, lastImpact: null,
             siegeFeedback: {
               ok: false,
               message: __alloT('stem.machinelab.fell_short', 'Short by ') +
                 fmt(impact ? impact.shortBy : d.standoff, 1) +
-                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.') + coachLine
+                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.') + coachLine + shortGuess.line
             },
             siegeFlightId: shortId,
             siegeFlight: shortPath.length > 1
@@ -7248,9 +7292,10 @@ window.StemLab = window.StemLab || {
               : null,
             lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null,
             sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])
-          });
+          }, shortGuess.patch));
           if (shortPath.length > 1) clearFlightLater(shortId, shortPlay + WINDUP_SECS);
-          announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.'));
+          // The coach is for everyone, so it is spoken as well as shown.
+          announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line);
           return;
         }
 
@@ -7266,6 +7311,12 @@ window.StemLab = window.StemLab || {
         if (!res) {
           upd('siegeFeedback', { ok: false, message: __alloT('stem.machinelab.no_target', 'Nothing to hit there.') });
           return;
+        }
+        // A stone that clears the wall or passes beside it flies ON to where it
+        // lands. Cut at the wall plane, it vanished in mid-air over the castle.
+        if (res.outcome === 'over' || res.outcome === 'miss') {
+          flightPath = (preview.path || []).slice();
+          if (flightPath.length > 1) flightSecs = Number(flightPath[flightPath.length - 1].t) || flightSecs;
         }
         var flightId = (d.siegeFlightId || 0) + 1;
         // Played at real time where that is watchable. A very fast or very slow
@@ -7291,7 +7342,9 @@ window.StemLab = window.StemLab || {
             (res.newlyBreached > 0
               ? __alloT('stem.machinelab.blocks_down', ' Blocks came down.') : '');
         }
-        updMulti({
+        var hitGuess = judgeGuess(res.outcome === 'hit' ? 'hit' : (res.outcome === 'over' ? 'over' : 'wide'));
+        msg += hitGuess.line;
+        updMulti(Object.assign({
           wallBlocks: res.blocks, shotsFired: shots, totalCrankWork: work,
           breached: nowBreached, lastImpact: res,
           siegeFeedback: { ok: res.outcome === 'hit', message: msg },
@@ -7303,7 +7356,7 @@ window.StemLab = window.StemLab || {
           },
           lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
           sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])
-        });
+        }, hitGuess.patch));
         clearFlightLater(flightId, playSecs + WINDUP_SECS);
         if (nowBreached && !d.breached) {
           awardStemXP(40);
@@ -8199,7 +8252,13 @@ window.StemLab = window.StemLab || {
           flight: __alloT('stem.machinelab.scene_ph_flight', 'In flight: only gravity and air act now'),
           impact: __alloT('stem.machinelab.scene_ph_impact', 'Impact'),
           outcome: outcomeText,
-          outcomeEnergy: d.lastImpact ? (__alloT('stem.machinelab.scene_delivered', 'Delivered ') + fmt(d.lastImpact.ke / 1000, 1) + ' kJ ' + __alloT('stem.machinelab.scene_to_wall', 'to the wall')) : '',
+          // Energy at the wall plane, worded by what happened there: delivered
+          // on a hit, carried past on an over or a wide.
+          outcomeEnergy: d.lastImpact
+            ? (d.lastImpact.outcome === 'hit'
+              ? (__alloT('stem.machinelab.scene_delivered', 'Delivered ') + fmt(d.lastImpact.ke / 1000, 1) + ' kJ ' + __alloT('stem.machinelab.scene_to_wall', 'to the wall'))
+              : (__alloT('stem.machinelab.scene_carried', 'Passed the wall still carrying ') + fmt((d.lastImpact.ke || 0) / 1000, 1) + ' kJ'))
+            : '',
           idleEnergy: preview
             ? (__alloT('stem.machinelab.scene_stored', 'Stored ') + fmt(preview.stored / 1000, 1) + ' kJ  →  ' +
                __alloT('stem.machinelab.scene_stone_gets', 'stone gets ') + fmt(preview.muzzleKE / 1000, 1) + ' kJ (' + fmt(100 * preview.eta, 0) + '%)')
@@ -8450,6 +8509,28 @@ window.StemLab = window.StemLab || {
               }, (d.sceneSound ? '🔊 ' : '🔇 ') + __alloT('stem.machinelab.sound_toggle', 'Sound'))
             ]),
             camControls(sCam, __alloT('stem.machinelab.scene_label', 'siege field'), 'scene'),
+            !d.siegeFlight && !wallBreached ? h('div', {
+              key: 'guess', role: 'group', 'aria-label': __alloT('stem.machinelab.guess_group', 'Your prediction for this shot'),
+              style: { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', marginTop: 8, background: T.card, borderRadius: 8, padding: '4px 6px' }
+            }, [
+              h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } }, __alloT('stem.machinelab.guess_label', 'My guess: it will'))
+            ].concat([
+              { id: 'short', label: __alloT('stem.machinelab.guess_short', 'fall short') },
+              { id: 'hit', label: __alloT('stem.machinelab.guess_hit', 'hit the wall') },
+              { id: 'over', label: __alloT('stem.machinelab.guess_over', 'go over') },
+              { id: 'wide', label: __alloT('stem.machinelab.guess_wide', 'go wide') }
+            ].map(function (gopt) {
+              var on = d.fieldGuess === gopt.id;
+              return h('button', {
+                key: gopt.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                onClick: function () { upd('fieldGuess', on ? null : gopt.id); },
+                style: {
+                  padding: '3px 9px', borderRadius: 7, cursor: 'pointer',
+                  border: '1px solid ' + (on ? T.accent : T.border),
+                  background: on ? T.accent : T.card, color: on ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
+                }
+              }, gopt.label);
+            }))) : null,
             h('div', { key: 'fire', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
               h('button', {
                 key: 'loose', type: 'button', onClick: loose,
@@ -8474,6 +8555,7 @@ window.StemLab = window.StemLab || {
                 __alloT('stem.machinelab.legend_intact', 'intact ') + summary.intact + ' · ' +
                 __alloT('stem.machinelab.legend_cracked', 'cracked ') + summary.cracked + ' · ' +
                 __alloT('stem.machinelab.legend_gone', 'gone ') + summary.breached +
+                ((d.fieldStreak || 0) > 0 ? ' · 🎯 ' + __alloT('stem.machinelab.guess_streak', 'guess streak ') + d.fieldStreak : '') +
                 ((d.siegeBests || {})[d.wallPreset || 'curtain']
                   ? ' · 🏆 ' + __alloT('stem.machinelab.best_here', 'Best here: ') + (d.siegeBests[d.wallPreset || 'curtain'].shots) + __alloT('stem.machinelab.best_shots', ' shots, ') + fmt(d.siegeBests[d.wallPreset || 'curtain'].work / 1000, 0) + ' kJ'
                   : ''))

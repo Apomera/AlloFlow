@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 8 (2026-09-05)
+
+- ★**Over and wide shots vanished in mid-air.** `loose()` cut every flight path at
+  `x <= standoff + 1`, which is right for a hit and wrong for a stone that clears the wall or
+  passes beside it: the animation ended at the wall plane with the stone still airborne.
+  Those two outcomes now fly the full path to the ground (into the moat, with a splash ring,
+  when they land there). The hit path is still cut at the wall.
+- **Predict, then loose.** Four chips (fall short / hit the wall / go over / go wide),
+  judged on both branches of `loose()`, +10 XP when right, a streak a wrong call ends, the
+  verdict appended to the feedback and spoken. No guess = nothing written.
+- The coach line is now **spoken** (announceToSR), not only shown.
+- **Trail tinted by speed** (emissive lerps pale → orange from 10 to 45 m/s), off in contrast.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

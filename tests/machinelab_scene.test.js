@@ -536,3 +536,50 @@ describe('Siege Field wave 7: the coach, the map, the sock, the cracks', () => {
     expect(src).toContain('S.sock.rotation.y = wind < 0 ? Math.PI : 0;');
   });
 });
+
+describe('Siege Field wave 8: over-shots fly on, predict-then-loose, splash, hot trail', () => {
+  it('a stone that clears or passes the wall flies to its real landing, not to the wall plane', () => {
+    const src = source();
+    expect(src).toContain("if (res.outcome === 'over' || res.outcome === 'miss') {\n          flightPath = (preview.path || []).slice();");
+    // And a hit is still cut at the wall: the cut comes first, the extension only for over/miss.
+    expect(src.indexOf('pt.x <= d.standoff + 1')).toBeLessThan(src.indexOf("if (res.outcome === 'over' || res.outcome === 'miss') {"));
+  });
+
+  it('offers four predictions as pressed chips before a shot, hidden in flight and after a breach', () => {
+    const html = renderTool('machineLab', state());
+    for (const label of ['fall short', 'hit the wall', 'go over', 'go wide']) {
+      expect(html, label).toMatch(new RegExp('<button[^>]*aria-pressed="false"[^>]*>' + label));
+    }
+    const chosen = renderTool('machineLab', state({ fieldGuess: 'over' }));
+    expect(chosen).toMatch(/aria-pressed="true"[^>]*>go over/);
+    const flying = renderTool('machineLab', state({ siegeFlight: { id: 1, path: [{ x: 0, y: 2, z: 0, t: 0 }, { x: 10, y: 1, z: 0, t: 1 }], seconds: 1, before: [] } }));
+    expect(flying).not.toContain('My guess');
+  });
+
+  it('judges the guess on both branches, resets it, and keeps a streak that a wrong call ends', () => {
+    const src = source();
+    expect(src).toContain("var shortGuess = judgeGuess('short');");
+    expect(src).toContain("var hitGuess = judgeGuess(res.outcome === 'hit' ? 'hit' : (res.outcome === 'over' ? 'over' : 'wide'));");
+    expect(src).toContain("patch: { fieldGuess: null, fieldStreak: right ? (d.fieldStreak || 0) + 1 : 0 }");
+    expect(src).toContain("if (!g) return { line: '', patch: {} };");
+    const html = renderTool('machineLab', state({ fieldStreak: 3 }));
+    expect(html).toContain('guess streak 3');
+  });
+
+  it('speaks the coach line and the verdict to screen readers', () => {
+    const src = source();
+    expect(src).toContain("announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line);");
+  });
+
+  it('splashes only in the moat, never on a wall hit, and cancels the scorch there', () => {
+    const src = source();
+    expect(src).toContain("if (S.splash && S.water && data.outcomeKind !== 'hit' && S.impactPos.z > 2 && S.impactPos.z < 6.2 && Math.abs(S.impactPos.x) < span / 2 + 3.5) {");
+    expect(src).toContain('if (S.scorch) S.scorch.visible = false;   // no scorch on water');
+  });
+
+  it('tints the trail by speed, except in high contrast', () => {
+    const src = source();
+    expect(src).toContain('var hot = Math.max(0, Math.min(1, (speed - 10) / 35));');
+    expect(src).toContain('if (!contrast && stonePos) S.trail[tt].material.emissive.setRGB(0.85, 0.72 - hot * 0.42, 0.42 - hot * 0.35);');
+  });
+});
