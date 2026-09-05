@@ -127,6 +127,37 @@ describe('PrintableModel recipe preflight', () => {
     expect(report.status).toBe('FAIL');
     expect(report.issues.map(item => item.code)).toContain('BED_FIT');
   });
+
+  it('measures a lathe part by revolving its profile', () => {
+    // A straight profile at radius 1 is a cylinder: r = 0.5, h = 2.
+    const report = P.inspectRecipe({ parts: [
+      { shape: 'lathe', size: [0.5, 2, 0.5], position: [0, 1, 0], rotation: [0, 0, 0], profile: [[1, 0], [1, 0.5], [1, 1]] },
+    ] }, 10, { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250 });
+    expect(report.dimensionsMm).toEqual({ width: 10, depth: 10, height: 20 });
+    expect(report.volumeMm3UpperBound).toBeCloseTo(Math.PI * 0.25 * 2 * 1000, 0);
+    expect(report.triangleCount).toBe(112);
+    expect(report.meshCount).toBe(1);
+  });
+
+  it('measures an extrude part by its outline area and depth', () => {
+    // Full-square outline scaled to 2 x 2, extruded 3 deep.
+    const report = P.inspectRecipe({ parts: [
+      { shape: 'extrude', size: [2, 2, 3], position: [0, 1, 0], rotation: [0, 0, 0], profile: [[-1, -1], [1, -1], [1, 1], [-1, 1]] },
+    ] }, 10, { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250 });
+    expect(report.dimensionsMm).toEqual({ width: 20, depth: 30, height: 20 });
+    expect(report.volumeMm3UpperBound).toBeCloseTo(12 * 1000, 0);
+    expect(report.triangleCount).toBe(12);
+  });
+
+  it('falls back to the default profile when a drawn part has none', () => {
+    const report = P.inspectRecipe({ parts: [
+      { shape: 'lathe', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0] },
+      { shape: 'extrude', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0] },
+    ] }, 10, { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250 });
+    expect(report.meshCount).toBe(2);
+    expect(report.volumeMm3UpperBound).toBeGreaterThan(0);
+    expect(report.triangleCount).toBeGreaterThan(0);
+  });
 });
 
 describe('PrintableModel file inspection', () => {

@@ -12,7 +12,28 @@
   var GEOMETRY_EDGE_CLEARANCE_MM = 5;
   var DEFAULT_PRINTER_PROFILE = { name: 'School printer', bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: GEOMETRY_EDGE_CLEARANCE_MM, nozzleMm: 0.4, maxTriangles: 250000, maxBytes: MAX_FILE_BYTES };
   var TABS = ['Design', 'Preflight', 'Materials', 'Submit'];
-  var SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus'];
+  var SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'lathe', 'extrude'];
+  // Drawn shapes carry a profile. These mirror Prim3D's DEFAULT_PROFILES and
+  // normalizeProfile so the cold path (Prim3D not loaded yet) normalizes a
+  // persisted recipe identically to the warm path; a test pins that parity.
+  var PROFILE_SHAPES = { lathe: 1, extrude: 1 };
+  var DEFAULT_PROFILES = {
+    lathe: [[0.42, 0], [0.7, 0.08], [0.82, 0.24], [0.62, 0.48], [0.5, 0.66], [0.66, 0.84], [0.56, 1]],
+    extrude: [[0, 1], [0.28, 0.32], [0.95, 0.31], [0.45, -0.12], [0.59, -0.81], [0, -0.4], [-0.59, -0.81], [-0.45, -0.12], [-0.95, 0.31], [-0.28, 0.32]]
+  };
+  function normalizeProfileLocal(shape, raw) {
+    if (!PROFILE_SHAPES[shape]) return null;
+    var lathe = shape === 'lathe', out = [];
+    if (Array.isArray(raw)) {
+      for (var i = 0; i < raw.length && out.length < 24; i++) {
+        var pt = raw[i];
+        if (!Array.isArray(pt) || typeof pt[0] !== 'number' || isNaN(pt[0]) || typeof pt[1] !== 'number' || isNaN(pt[1])) continue;
+        out.push(lathe ? [clamp(pt[0], 0.02, 1, 0.5), clamp(pt[1], 0, 1, 0.5)] : [clamp(pt[0], -1, 1, 0), clamp(pt[1], -1, 1, 0)]);
+      }
+    }
+    if (out.length < 3) return DEFAULT_PROFILES[shape].map(function (p) { return p.slice(); });
+    return out;
+  }
   var MATERIALS = [
     {
       id: 'PLA', name: 'PLA', density: 1.24,
@@ -69,8 +90,10 @@
           var stretch = Array.isArray(part.stretch) ? part.stretch : [1, 1, 1];
           var deform = part.deform && typeof part.deform === 'object' ? part.deform : {};
           var requestedFinish = typeof part.finish === 'string' ? part.finish.toLowerCase().trim() : '';
-          return {
-            shape: String(part.shape).toLowerCase(),
+          var shapeKey = String(part.shape).toLowerCase();
+          var profile = normalizeProfileLocal(shapeKey, part.profile);
+          var normalizedPart = {
+            shape: shapeKey,
             label: safeText(part.label, 40),
             size: [clamp(part.size[0], 0.02, 4, 0.4), clamp(part.size[1], 0.02, 4, 0.4), clamp(part.size[2], 0.02, 4, 0.4)],
             stretch: [clamp(stretch[0], 0.1, 4, 1), clamp(stretch[1], 0.1, 4, 1), clamp(stretch[2], 0.1, 4, 1)],
@@ -83,6 +106,9 @@
             hidden: part.hidden === true,
             locked: part.locked === true
           };
+          // Only drawn shapes carry a profile; other parts keep their exact key set.
+          if (profile) normalizedPart.profile = profile;
+          return normalizedPart;
         }),
         scale: clamp(candidate.scale, 0.25, 5, 1),
         rotY: ((Number(candidate.rotY) || 0) % 360 + 360) % 360,

@@ -22,7 +22,16 @@
   var REPAIR_LIMITS = { maxBytes: 8 * 1024 * 1024, maxTriangles: 150000 };
   var GCODE_LIMITS = { maxBytes: 25 * 1024 * 1024, maxCommentLines: 20000, maxCommentLength: 512 };
   var FORMATS = { RECIPE: 1, STL: 1, GLB: 1 };
-  var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1 };
+  var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1, lathe: 1, extrude: 1 };
+  // Prim3D's default profiles, used when a drawn part arrives without one.
+  var DEFAULT_PROFILES = {
+    lathe: [[0.42, 0], [0.7, 0.08], [0.82, 0.24], [0.62, 0.48], [0.5, 0.66], [0.66, 0.84], [0.56, 1]],
+    extrude: [[0, 1], [0.28, 0.32], [0.95, 0.31], [0.45, -0.12], [0.59, -0.81], [0, -0.4], [-0.59, -0.81], [-0.45, -0.12], [-0.95, 0.31], [-0.28, 0.32]]
+  };
+  function usableProfile(shape, raw) {
+    var pts = Array.isArray(raw) ? raw.filter(function (pt) { return Array.isArray(pt) && typeof pt[0] === 'number' && typeof pt[1] === 'number' && !isNaN(pt[0]) && !isNaN(pt[1]); }) : [];
+    return pts.length >= 3 ? pts : DEFAULT_PROFILES[shape];
+  }
   var REAL_PRINTER_ADAPTERS = ['OCTOPRINT', 'MOONRAKER', 'PRUSALINK', 'BAMBU_CONNECT'];
   var EXTERNAL_SLICER_ADAPTERS = ['CURAENGINE', 'PRUSASLICER', 'ORCASLICER'];
   var EXTERNAL_GEOMETRY_ADAPTERS = ['BOOLEAN_UNION', 'REMESH', 'WALL_THICKNESS', 'TEXT_TO_MESH'];
@@ -103,6 +112,27 @@
     else if (shape === 'cylinder') { hx = hz = number(s[0], .4); hy = number(s[1], .4) / 2; volume = Math.PI * hx * hx * hy * 2; triangles = 80; }
     else if (shape === 'cone') { hx = hz = number(s[0], .4); hy = number(s[1], .4) / 2; volume = Math.PI * hx * hx * hy * 2 / 3; triangles = 40; }
     else if (shape === 'torus') { var r = number(s[0], .4), tube = number(s[1], .1); hx = hz = r + tube; hy = tube; volume = 2 * Math.PI * Math.PI * r * tube * tube; triangles = 672; }
+    else if (shape === 'lathe') {
+      // Prim3D: profile [radius 0..1, height 0..1] scaled by size[0]/size[1],
+      // revolved in 28 segments, translated -size[1]/2. Bounds are conservative
+      // (full height); volume sums the frustum between consecutive points.
+      var prof = usableProfile('lathe', part.profile), R = number(s[0], .4), H = number(s[1], .4), maxR = 0;
+      for (var li = 0; li < prof.length; li++) maxR = Math.max(maxR, Math.abs(prof[li][0]));
+      hx = hz = maxR * R; hy = H / 2; volume = 0;
+      for (var lj = 1; lj < prof.length; lj++) { var r1 = Math.abs(prof[lj - 1][0]) * R, r2 = Math.abs(prof[lj][0]) * R, lh = Math.abs(prof[lj][1] - prof[lj - 1][1]) * H; volume += Math.PI * lh * (r1 * r1 + r1 * r2 + r2 * r2) / 3; }
+      triangles = 28 * (prof.length - 1) * 2;
+    }
+    else if (shape === 'extrude') {
+      // Prim3D: outline [x, y] in -1..1 scaled by size[0]/2 and size[1]/2,
+      // extruded size[2] deep and translated -size[2]/2. Bounds are conservative
+      // about the part position; volume is shoelace area times depth.
+      var outline = usableProfile('extrude', part.profile), W = number(s[0], .4) / 2, Hh = number(s[1], .4) / 2, D = number(s[2], .4), maxX = 0, maxY = 0, area = 0;
+      for (var ei = 0; ei < outline.length; ei++) {
+        var ex = outline[ei][0] * W, ey = outline[ei][1] * Hh, nx = outline[(ei + 1) % outline.length][0] * W, ny = outline[(ei + 1) % outline.length][1] * Hh;
+        maxX = Math.max(maxX, Math.abs(ex)); maxY = Math.max(maxY, Math.abs(ey)); area += ex * ny - nx * ey;
+      }
+      hx = maxX; hy = maxY; hz = D / 2; volume = Math.abs(area) / 2 * D; triangles = (outline.length - 2) * 2 + outline.length * 2;
+    }
     else return null;
     var rot = part.rotation || [], rx = number(rot[0]) * Math.PI / 180, ry = number(rot[1]) * Math.PI / 180, rz = number(rot[2]) * Math.PI / 180;
     var cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry), cz = Math.cos(rz), sz = Math.sin(rz);

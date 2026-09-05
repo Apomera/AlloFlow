@@ -114,6 +114,37 @@ describe('Print Lab workflow surface', () => {
     }
   });
 
+  it('accepts drawn lathe and extrude parts and normalizes their profiles identically cold and warm', () => {
+    const candidate = {
+      name: 'Vase and star',
+      parts: [
+        { shape: 'lathe', label: 'Vase', size: [0.5, 1.2, 0.5], position: [0, 0.6, 0], rotation: [0, 0, 0], color: '#22c55e',
+          profile: [[0.4, 0], [1.4, 0.5], [-0.2, 1.3], ['x', 0], [0.6, 1]] },
+        { shape: 'extrude', label: 'Star', size: [1, 1, 0.3], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#f59e0b' },
+        { shape: 'box', label: 'Base', size: [1, 0.1, 1], position: [0, 0.05, 0], rotation: [0, 0, 0], color: '#64748b' },
+      ],
+    };
+    const cold = window.StemLab.printLabPure.normalizePersistedRecipe(candidate, {});
+    expect(cold).not.toBeNull();
+    expect(cold.parts.map(part => part.shape)).toEqual(['lathe', 'extrude', 'box']);
+    // Clamped to Prim3D's lathe ranges, invalid point dropped.
+    expect(cold.parts[0].profile).toEqual([[0.4, 0], [1, 0.5], [0.02, 1], [0.6, 1]]);
+    // Missing outline falls back to the default star.
+    expect(cold.parts[1].profile.length).toBe(10);
+    expect(cold.parts[2]).not.toHaveProperty('profile');
+    const previousModules = window.AlloModules;
+    try {
+      window.AlloModules = { ...(window.AlloModules || {}) };
+      delete window.AlloModules.Prim3D;
+      // eslint-disable-next-line no-new-func
+      new Function(readFileSync(resolve(process.cwd(), 'prim3d_module.js'), 'utf8'))();
+      const warm = window.StemLab.printLabPure.normalizePersistedRecipe(candidate, window.AlloModules.Prim3D);
+      expect(cold).toEqual(warm);
+    } finally {
+      window.AlloModules = previousModules;
+    }
+  });
+
   it('keeps preflight advisory and requires the slicer and trained staff review', () => {
     const html = renderTool('printLab', { printLab: { activeTab: 'Preflight', recipe: RECIPE, unitMm: 20, preflight: PREFLIGHT } });
 
