@@ -45,7 +45,7 @@ describe('Art Studio learning content and translation boundaries', () => {
     const t = (_key, fallback) => translated.get(fallback) || fallback;
     const home = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: true } }, { t });
     expect(home).toContain('PAINT_START_TRANSLATED');
-    const lab = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: false, showTour: true } }, { t });
+    const lab = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: false, showTour: true, studioGuideWording: 'detailed' } }, { t });
     expect(lab).toContain('PAINT_GROUP_TRANSLATED');
     expect(lab).toContain('COACH_TITLE_TRANSLATED');
     expect(lab).toContain('COACH_PROMPT_TRANSLATED');

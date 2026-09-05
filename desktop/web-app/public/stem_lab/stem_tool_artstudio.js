@@ -498,6 +498,21 @@ window.StemLab = window.StemLab || {
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
       var gradeLevel = ctx.gradeLevel;
+      var studioGradeBand = (function () {
+        if (typeof ctx.gradeBand === 'string' && ctx.gradeBand) return ctx.gradeBand.toLowerCase();
+        var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+        if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+        if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+        if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+        if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+        return 'g68';
+      })();
+      // Younger learners (K-5) start with the simple guide wording until they
+      // choose otherwise; an explicit choice always wins and is what persists.
+      var studioGuideWordingDefault = (studioGradeBand === 'k2' || studioGradeBand === 'g35') ? 'simple' : 'detailed';
+      function resolveStudioGuideWording(value) {
+        return (value === 'simple' || value === 'detailed') ? value : studioGuideWordingDefault;
+      }
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
@@ -866,7 +881,7 @@ const d = labToolData.artStudio || {};
                   })) !== workflowNavigationAtStart;
                   if (artState.studioGuideWording === workflowAtHydrationStart.studioGuideWording &&
                       (replacingScopedWorkflow || ['simple', 'detailed'].indexOf(artState.studioGuideWording) === -1)) {
-                    workflowPatch.studioGuideWording = persistedWorkflow.studioGuideWording === 'simple' ? 'simple' : 'detailed';
+                    workflowPatch.studioGuideWording = persistedWorkflow.studioGuideWording === 'simple' ? 'simple' : (persistedWorkflow.studioGuideWording === 'detailed' ? 'detailed' : undefined);
                   }
                   if (!workflowNavigationChanged) {
                   if (replacingScopedWorkflow) {
@@ -935,7 +950,7 @@ const d = labToolData.artStudio || {};
                 (studioPersistenceStatus !== 'ready' && studioPersistenceStatus !== 'saved')) return;
             var workflow = {
               schemaVersion: 3,
-              studioGuideWording: d.studioGuideWording === 'simple' ? 'simple' : 'detailed',
+              studioGuideWording: d.studioGuideWording === 'simple' ? 'simple' : (d.studioGuideWording === 'detailed' ? 'detailed' : ''),
               studioFreeProjectId: String(d.studioFreeProjectId || ''),
               studioCurrentProjectRunId: String(d.studioCurrentProjectRunId || ''),
               studioThreadId: String(d.studioThreadId || ''),
@@ -1191,7 +1206,7 @@ const d = labToolData.artStudio || {};
             contrast: { try: __alloT("stem.artstudio.guide_simple_contrast_try", "Choose a text color and a background color."), notice: __alloT("stem.artstudio.guide_simple_contrast_notice", "Check the result. Change just the text color."), stretch: __alloT("stem.artstudio.guide_simple_contrast_stretch", "Keep a pair that meets the target and suits your artwork."), term: __alloT("stem.artstudio.guide_simple_contrast_term", "Contrast ratio"), definition: __alloT("stem.artstudio.guide_simple_contrast_definition", "A number comparing how light or dark two colors are.") },
             harmonyHunt: { try: __alloT("stem.artstudio.guide_simple_harmonyHunt_try", "Compare two sound or color combinations."), notice: __alloT("stem.artstudio.guide_simple_harmonyHunt_notice", "Which parts seem to fit together?"), stretch: __alloT("stem.artstudio.guide_simple_harmonyHunt_stretch", "Use one combination to inspire a visual pattern."), term: __alloT("stem.artstudio.guide_simple_harmonyHunt_term", "Frequency"), definition: __alloT("stem.artstudio.guide_simple_harmonyHunt_definition", "How many times something repeats in one second.") }
           };
-          const simpleStudioGuide = d.studioGuideWording === 'simple';
+          const simpleStudioGuide = resolveStudioGuideWording(d.studioGuideWording) === 'simple';
           const simpleStudioCoach = STUDIO_SIMPLE_COACH[tab];
           const artStudioGroupForTab = function (tabId) {
             return ART_STUDIO_GROUPS.filter(function (group) { return group.tabs.indexOf(tabId) !== -1; })[0] || ART_STUDIO_GROUPS[0];
@@ -5651,7 +5666,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-2xl", 'aria-hidden': "true" }, "\uD83C\uDF9E"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-800" }, __alloT("stem.artstudio.process_shelf_title", "Process Shelf")),
-                  React.createElement("h3", { id: "artstudio-process-title", tabIndex: -1, className: "text-lg font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_recover_title", "Recover archived studies") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_title", "See how the idea changed") : __alloT("stem.artstudio.process_empty_title", "Save the work between decisions")),
+                  React.createElement("h3", { id: "artstudio-process-title", tabIndex: -1, className: "text-lg font-black " + (isContrast ? "text-white" : "text-slate-950") + " focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_recover_title", "Recover archived studies") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_title", "See how the idea changed") : __alloT("stem.artstudio.process_empty_title", "Save the work between decisions")),
                   React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_archive_help", "Archived work stays intact until you choose to restore it.") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_help", "Compare checkpoints, fork a setup, and notice what you carried forward.") : __alloT("stem.artstudio.process_empty_help", "Save a study from any lab. A small preview and the editable setup will appear here.")),
                   React.createElement("p", {
                     role: "status",
@@ -5819,7 +5834,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, activeCreativeThread.icon),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_creative_thread_41cdd22", "Creative Thread")),
-                  React.createElement("h3", { id: "artstudio-thread-title", className: "text-sm font-black text-slate-950" }, activeCreativeThread.title),
+                  React.createElement("h3", { id: "artstudio-thread-title", className: "text-sm font-black " + (isContrast ? "text-white" : "text-slate-950") }, activeCreativeThread.title),
                   React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (activeCreativeThread.constraint) }))
                 ),
                 React.createElement("p", { className: "rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black text-indigo-800" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_of_value2_196d3db", "Step {value1} of {value2}"), { value1: (activeCreativeThreadStep + 1), value2: (activeCreativeThread.steps.length) }))
@@ -5966,7 +5981,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_studio_coach_value1_398fe5d", "Studio coach · {value1}"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Creative lab') })),
-                  React.createElement("h3", { id: "artstudio-coach-title", tabIndex: -1, className: "mt-1 text-sm font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2" }, __alloT("stem.artstudio.learning_one_useful_next_move_6200585", "One useful next move")),
+                  React.createElement("h3", { id: "artstudio-coach-title", tabIndex: -1, className: "mt-1 text-sm font-black " + (isContrast ? "text-white" : "text-slate-950") + " focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2" }, __alloT("stem.artstudio.learning_one_useful_next_move_6200585", "One useful next move")),
                   React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_use_one_prompt_or_ignore_the_guide_and_follow_wh_935d388", "Use one prompt, or ignore the guide and follow what the work needs."))
                 ),
                 React.createElement("button", { type: "button", onClick: function () { toggleStudioCoach(false); }, className: "min-h-[40px] rounded-lg border border-pink-200 bg-white px-3 text-xs font-black text-pink-800 hover:bg-pink-50", 'aria-label': __alloT("stem.artstudio.learning_close_studio_coach_7d7fe8e", "Close Studio coach") }, __alloT("stem.artstudio.learning_close_7d9eb7a", "Close"))
@@ -6106,7 +6121,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-500 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
-                  React.createElement("p", { className: "truncate text-lg font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
+                  React.createElement("p", { className: "truncate text-lg font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
                 ),
                 React.createElement("button", { type: "button", onClick: function () { var picked = surpriseTabs[Math.floor(Math.random() * surpriseTabs.length)]; beginStudioPath(picked, 'a surprise creative lab'); }, className: "ml-auto min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800" }, __alloT("stem.artstudio.learning_surprise_me_70c269b", "✦ Surprise me"))
               ),
@@ -6173,7 +6188,7 @@ const d = labToolData.artStudio || {};
               React.createElement("section", { className: "mt-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-rose-50 p-4 sm:p-5", 'aria-labelledby': "artstudio-threads-title" },
                 React.createElement("div", { className: "max-w-2xl" },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_guided_projects_5e5932a", "Guided projects")),
-                  React.createElement("h2", { id: "artstudio-threads-title", className: "mt-1 text-xl font-black text-slate-950" }, __alloT("stem.artstudio.learning_follow_one_idea_through_three_labs_89a0e96", "Follow one idea through three labs")),
+                  React.createElement("h2", { id: "artstudio-threads-title", className: "mt-1 text-xl font-black " + (isContrast ? "text-white" : "text-slate-950") }, __alloT("stem.artstudio.learning_follow_one_idea_through_three_labs_89a0e96", "Follow one idea through three labs")),
                   React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_a_creative_thread_gives_you_a_flexible_brief_and_ff9c8be", "A Creative Thread gives you a flexible brief and keeps your next step nearby. Explore freely; your place will wait."))
                 ),
                 React.createElement("div", { className: "mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3" },
@@ -6201,7 +6216,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "flex items-end justify-between gap-3 mb-3" },
                   React.createElement("div", null,
                     React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, __alloT("stem.artstudio.learning_starting_points_c018c0c", "Starting points")),
-                    React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT("stem.artstudio.learning_choose_a_creative_path_96f880f", "Choose a creative path"))
+                    React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT("stem.artstudio.learning_choose_a_creative_path_96f880f", "Choose a creative path"))
                   ),
                   React.createElement("button", { type: "button", onClick: function () { beginStudioPath('colorWheel', 'the full lab navigator'); }, className: "text-xs font-black text-pink-700 hover:text-pink-900" }, __alloT("stem.artstudio.learning_open_full_lab_navigator_bce593b", "Open full lab navigator →"))
                 ),
@@ -6230,7 +6245,7 @@ const d = labToolData.artStudio || {};
               React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
               React.createElement("div", { className: "min-w-0" },
                 React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
-                React.createElement("h2", { className: "truncate text-sm sm:text-base font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
+                React.createElement("h2", { className: "truncate text-sm sm:text-base font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
               ),
               React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || __alloT("stem.artstudio.learning_creative_24674ae", "CREATIVE")),
               React.createElement("div", { className: "ml-auto flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto" },
@@ -8227,7 +8242,7 @@ const d = labToolData.artStudio || {};
                 ),
                 // editor column
                 React.createElement("div", { className: "space-y-2" },
-                  React.createElement("h3", { className: "font-black text-slate-700 text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
+                  React.createElement("h3", { className: "font-black " + (isContrast ? "text-white" : "text-slate-700") + " text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
                   React.createElement("div", null,
                     React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {

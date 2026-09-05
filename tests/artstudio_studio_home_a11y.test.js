@@ -427,7 +427,7 @@ describe('Art Studio home and workspace accessibility', () => {
 
     function Harness() {
       const [toolData, setToolData] = React.useState({
-        artStudio: { tab: 'watercolor', studioHome: false },
+        artStudio: { tab: 'watercolor', studioHome: false, studioGuideWording: 'detailed' },
       });
       latest = toolData;
       return config.render(makeCtx({ toolData, setToolData }));
