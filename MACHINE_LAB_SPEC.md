@@ -190,7 +190,7 @@ sits them over the hills.
   scene fog: the tint IS the haze, which keeps them readable at every hour instead of
   dissolving into one flat band at dusk.
 - **Grass and wildflowers** on the near field: 520 tufts and 140 flowers, placed on the same
-   the physics uses, scattered from  and not . Nothing
+  `terrainHeight` the physics uses, scattered from `hash01` and not `Math.random`. Nothing
   grows on the beaten lane except a few dry stalks, strawed off toward the dirt colour.
 - Both are off in high contrast, and neither is animated, so the render-on-demand path is
   unaffected.
