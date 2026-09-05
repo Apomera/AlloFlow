@@ -61,10 +61,35 @@ That surfaced one genuine gap. The Constitution pack offered only a crossword, a
 ### Test debt
 
 `tests/allopack_illustrated.test.js` intermittently failed on the 5-second default budget: one case Babel-transforms three JSX tags and server-renders each. It now carries an explicit 30-second timeout, and both suites pass at the default budget (155 checks).
+## Third pass (same day): the primary grades, and a crash the pack suite cannot see
+
+Every pack in the catalog was grade 3 or above, so the youngest readers had nothing. Two packs now cover the gap.
+
+| Pack | Grade | Standards | Resources |
+| --- | --- | --- | --- |
+| Day Sky, Night Sky | 1 | NGSS 1-ESS1-1, 1-ESS1-2; RI.1.1; SL.1.1 | directions, reading, glossary, anchor chart, memory aid, sort, quiz, FAQ, investigation |
+| Tell It Back (beginning, middle, end) | 2 | RL.2.5, RL.2.2, SL.2.4 | directions, reading, glossary, anchor chart, memory aid, sort, quiz, frames, FAQ, design challenge |
+
+Both are text-only with an `.IMAGES.md` shot list, like the three from the first pass. Both carry the two newest studio types from the start rather than being retrofitted.
+
+**The audit had to learn what a primary reading is.** Its word-count rule wanted 350-550 words for every pack, which is a fine target for grade 5 and nonsense for grade 1: held to it, an author would have to write text no six-year-old finishes. The target is now 180-230 words when the stated grade band tops out at 2, and unchanged above that. The grade-1 reading lands at 235 words and reads at Flesch-Kincaid 0.6; the grade-2 reading at 224 words and FK 2.0. All 26 packs report zero flags.
+
+Two content notes. Day and night is a topic where the ordinary way of speaking is the misconception — "the sun goes down" — so the reading says plainly that the Sun does not move across the sky and that the reader is the one turning, and the concept sort makes four of its eight cards the guesses children actually make. The grade-2 pack teaches retelling on a story it tells you first (Ada and the puppy) and then makes you sort a different story (Sam and the bike), so the sort tests the structure rather than memory of the reading.
+
+### The bug: one early failure blanked every resource after it
+
+Loading the grade-1 pack into the deployed app and opening its resources in order produced "Component Error" on the anchor chart, the Memory Aid Studio and the Applied Challenge Studio. The pack passed all 152 shape checks and the grade-3 pack loaded in the same session was fine, so the natural conclusion was bad data in the new pack. It was not.
+
+Expanding the app's own error disclosure gave the real cause: the *reading*, opened first, threw `[formatInteractiveText] PhaseNHelpers module not loaded` because the deferred module queue had not drained yet. Everything after that was collateral. `<ErrorBoundary>` around the content viewer had no `key`, so React kept one instance and `hasError` never cleared — every subsequent resource rendered the fallback instead of its content. Worse, the fallback advises the user to try "switching views", which without a key does nothing at all.
+
+The boundary is now keyed by resource id and active view, so switching either remounts it and clears a stale error. A transient module race costs one view instead of the session. Covered by `tests/content_viewer_boundary_key.test.js` across all three shell copies, with the assertion checked against the pre-fix tag to confirm it actually fails there.
+
+This is a host change, so it cannot be seen until the bundle is rebuilt and deployed; the route-inject harness only swaps view modules, not the shell. What *was* verified live: both new packs load into the deployed app with every resource rendering and no page errors, including the crossword-eligible glossary, the sentence frames, and both studios showing "Ready to share, 0 items to review".
 ## Files
 
-- Packs: `allopacks/*.allopack.json` (21 edited, 3 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4}.IMAGES.md`
+- Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
 - Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`
-- Tests: `tests/allopack_catalog.test.js`
+- Tests: `tests/allopack_catalog.test.js`, `tests/content_viewer_boundary_key.test.js`
+- Host fix: `AlloFlowANTI.txt` and its two paired copies (content-viewer boundary key)
 - Docs: `docs/ALLOPACK_FORMAT_SPEC.md`, `docs/ALLOPACK_AUTHORING_PROMPT.md`, `docs/COMMUNITY_CATALOG_SEED_PLAN.md`
 - Working files (not for the repo): `scratch/allopack-audit-2026-09-05/`
