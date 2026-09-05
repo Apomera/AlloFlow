@@ -51,6 +51,8 @@ async function geometry(page, fullscreen = false) {
       // stretched to the sidebar's height (a 3900px stage with 3400px of empty dark space below the
       // controls). Measure the gap between the last stage child and the stage's bottom edge.
       stageTail: rect(stage).bottom - Math.max(...Array.from(stage.children).filter(el => el.getClientRects().length).map(el => rect(el).bottom)),
+      // The scoped <style> is the root's first child; space-y-4 must skip it or the hero card gains a stray 1rem top margin.
+      heroMarginTop: parseFloat(getComputedStyle(document.querySelector('#particle-lab-root').querySelector(':scope > div')).marginTop),
       dockOverflow: dock && !dock.hidden ? dock.scrollWidth > dock.clientWidth + 1 : false,
       workspaceWidth: stage.clientWidth, viewportHeight: innerHeight };
   });
@@ -61,6 +63,7 @@ async function geometry(page, fullscreen = false) {
   expect(result.canvas.width).toBeGreaterThan(100);
   expect(result.canvas.height).toBeGreaterThanOrEqual(fullscreen ? 99 : 300);
   if (!fullscreen) expect(result.stageTail).toBeLessThanOrEqual(8);
+  expect(result.heroMarginTop).toBe(0);
   if (fullscreen) {
     expect(result.stageOverflow).toBe(false);
     expect(result.essential.bottom).toBeLessThanOrEqual(result.viewportHeight + 1);
@@ -84,11 +87,35 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
         await page.getByLabel('Chamber readouts position').selectOption(position);
         const result = await geometry(page);
         expect(await page.evaluate(() => savedParticleData.readoutsPosition)).toBe(position);
-        if (result.workspaceWidth <= 760 || position === 'bottom') expect(result.dock.y).toBeGreaterThanOrEqual(result.canvas.bottom - 1);
-        else if (position === 'left') expect(result.dock.right).toBeLessThanOrEqual(result.canvas.x + 1);
-        else expect(result.dock.x).toBeGreaterThanOrEqual(result.canvas.right - 1);
+        // DOM order must match the visual order: dock first only when it is really shown on the left.
+        const domOrder = await page.evaluate(() => Array.from(document.querySelector('#particle-workspace').children).map(el => el.id));
+        const narrowNote = await page.locator('#particle-essential-controls').textContent();
+        if (result.workspaceWidth <= 760 || position === 'bottom') {
+          expect(result.dock.y).toBeGreaterThanOrEqual(result.canvas.bottom - 1);
+          expect(domOrder).toEqual(['particle-viewport', 'particle-readouts']);
+          expect(narrowNote.includes('shown below on this screen')).toBe(result.workspaceWidth <= 760 && position !== 'bottom');
+        } else if (position === 'left') {
+          expect(result.dock.right).toBeLessThanOrEqual(result.canvas.x + 1);
+          expect(domOrder).toEqual(['particle-readouts', 'particle-viewport']);
+        } else {
+          expect(result.dock.x).toBeGreaterThanOrEqual(result.canvas.right - 1);
+          expect(domOrder).toEqual(['particle-viewport', 'particle-readouts']);
+        }
+      }
+      // Dock width choice: only offered for side placements; measured on a side placement wide enough to keep it.
+      await page.getByLabel('Chamber readouts position').selectOption('right');
+      if ((await geometry(page)).workspaceWidth > 760) {
+        const widths = {};
+        for (const width of ['compact', 'wide']) {
+          await page.getByLabel('Chamber readouts width').selectOption(width);
+          widths[width] = (await geometry(page)).dock.width;
+          expect(await page.evaluate(() => savedParticleData.readoutsWidth)).toBe(width);
+        }
+        expect(widths.wide).toBeGreaterThan(widths.compact + 100);
+        await page.getByLabel('Chamber readouts width').selectOption('standard');
       }
       await page.getByRole('button', { name: 'Collapse readouts', exact: true }).click();
+      expect(await page.locator('#particle-essential-controls').textContent()).toMatch(/\d+ K · 64 particles · paused/);
       expect(await page.getByRole('button', { name: 'Show readouts', exact: true }).evaluate(el => el === document.activeElement)).toBe(true);
       expect(await page.locator('#particle-readouts').isVisible()).toBe(false);
       await geometry(page);

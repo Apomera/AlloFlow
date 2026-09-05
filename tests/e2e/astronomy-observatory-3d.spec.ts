@@ -300,6 +300,105 @@ test('falls back to built-in bright stars when the catalog asset is unavailable,
   expect(errors.filter(e => !/status of 500/.test(e))).toEqual([]);
 });
 
+test('click-to-identify names a real star, guides and pole appear, deep-sky glows and the Moon surface load', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  await expect.poll(async () => (await debug(sky)).moonFace).toBe(true);
+  const info = await debug(sky);
+  expect(info.deepSky).toEqual(expect.arrayContaining(['m45', 'm42']));
+  await expect(page.getByRole('button', { name: '🔎 Pleiades (M45)', exact: true })).toBeVisible();
+  // Turn toward the brightest named star on screen and click exactly on it.
+  expect(info.brightStar).toBeTruthy();
+  await sky.evaluate((el: any, s: any) => el.__observatoryLookAt(s.az, s.alt), info.brightStar);
+  await sky.scrollIntoViewIfNeeded();
+  const spot = (await debug(sky)).spots.star;
+  expect(spot).toBeTruthy();
+  const box = (await sky.boundingBox())!;
+  await page.mouse.click(box.x + spot.x, box.y + spot.y);
+  await expect.poll(async () => (await debug(sky)).picked?.name).toBe(info.brightStar.name);
+  await expect(page.locator('#astronomy-observatory-picked')).toContainText(info.brightStar.name);
+  await expect(page.locator('#astronomy-observatory-picked')).toContainText(/HIP \d+/);
+  await page.getByRole('button', { name: 'Clear', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).picked).toBeNull();
+  // Guides: ecliptic, equator and the celestial pole at the site latitude.
+  await page.getByRole('button', { name: 'Ecliptic and equator', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).guides).toBe(true);
+  await page.getByRole('button', { name: '🔎 Celestial pole', exact: true }).click();
+  const north = await debug(sky);
+  expect(north.poleVisible).toBe(true);
+  expect(Math.abs(north.camera.yaw)).toBeLessThan(1);
+  expect(north.labels).toContain('Celestial pole');
+  await page.screenshot({ path: 'scratch/observatory-guides-pole.png', clip: (await sky.boundingBox())! });
+  // Enter identifies what sits at the centre of the view (pole marker is not an object, so aim at the Moon if up).
+  if (north.moon.alt > 5) {
+    await sky.evaluate((el: any, m: any) => el.__observatoryLookAt(m.az, m.alt), north.moon);
+    await sky.focus();
+    await sky.press('Enter');
+    await expect.poll(async () => (await debug(sky)).picked?.kind).toBe('moon');
+  }
+  expect(errors).toEqual([]);
+});
+
+test('jump buttons land on the computed sunset, and the Sky Map hands its place and time to the observatory', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, EVENING);
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  const sunsetButton = page.getByRole('button', { name: /^Jump to Sunset \d\d:\d\d$/ });
+  const label = (await sunsetButton.getAttribute('aria-label'))!;
+  const time = label.match(/(\d\d:\d\d)$/)![1];
+  await sunsetButton.click();
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsTime)).toBe(time);
+  const atSunset = await debug(sky);
+  expect(atSunset.sun.alt).toBeGreaterThan(-1.5);
+  expect(atSunset.sun.alt).toBeLessThan(0.3);
+  await page.screenshot({ path: 'scratch/observatory-sunset.png', clip: (await sky.boundingBox())! });
+  // Sky Map → Observatory hand-off.
+  await page.evaluate(() => (window as any).__destroy());
+  await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'sydney', skyHourOffset: 3 }));
+  await page.getByRole('button', { name: 'Open this place and time in the 3D Observatory', exact: true }).click();
+  const state = await page.evaluate(() => (window as any).__toolData.astronomy);
+  expect(state.tab).toBe('observatory');
+  expect(state.obsSite).toBe('sydney');
+  expect(state.obsTz).toBe('Australia/Sydney');
+  expect(state.obsLive).toBe(false);
+  await expect(page.locator('#astronomy-observatory-summary')).toContainText('Sydney, Australia');
+  expect(errors).toEqual([]);
+});
+
+test('tour steps aim the camera, describe-view names what is in front of it, and picking a pattern star highlights its figure', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 1500 });
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  // Tour appears once the catalog is cached, with a ★ Find button for the current step.
+  await expect(page.locator('#astronomy-observatory-tour')).toContainText(/Tonight's tour · 1 \/ \d/);
+  const before = (await debug(sky)).camera;
+  await page.getByRole('button', { name: /^🔎 ★ / }).first().click();
+  const after = (await debug(sky)).camera;
+  expect(after.yaw !== before.yaw || after.pitch !== before.pitch).toBe(true);
+  await page.getByRole('button', { name: 'Next ›', exact: true }).click();
+  await expect(page.locator('#astronomy-observatory-tour')).toContainText(/· 2 \/ \d/);
+  // Describe the view from the tour target.
+  await page.getByRole('button', { name: /Describe this view/ }).click();
+  const described = page.locator('#astronomy-observatory-described');
+  await expect(described).toContainText(/^Facing [NESW]+, \d+° up/);
+  await expect(described).toContainText('In view');
+  // Identify Betelgeuse by clicking on it: the Orion figure gets highlighted.
+  await page.getByLabel('Highlight a constellation', { exact: true }).selectOption('orion');
+  await page.getByRole('button', { name: '🔎 Orion', exact: true }).click();
+  await page.getByLabel('Highlight a constellation', { exact: true }).selectOption('');
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsHighlight)).toBe('');
+  await sky.scrollIntoViewIfNeeded();
+  const spots = (await debug(sky)).spots.byName;
+  const target = ['Betelgeuse', 'Rigel'].find(n => spots[n]);
+  expect(target, 'an Orion star on screen').toBeTruthy();
+  const box = (await sky.boundingBox())!;
+  await page.mouse.click(box.x + spots[target!].x, box.y + spots[target!].y);
+  await expect.poll(async () => (await debug(sky)).picked?.name).toBe(target);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsHighlight)).toBe('orion');
+  await expect(page.locator('#astronomy-observatory-picked')).toContainText('Part of Orion');
+  await page.screenshot({ path: 'scratch/observatory-identify-orion.png', clip: (await sky.boundingBox())! });
+  expect(errors).toEqual([]);
+});
+
 test('reduced motion keeps the scene still and disables time-lapse', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsShower: 'perseids', obsDate: '2026-08-12' });

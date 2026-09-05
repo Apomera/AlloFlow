@@ -229,3 +229,146 @@ describe('Grove Journey forecast risk preview and reflection notes', () => {
     expect(mount({ groveRun: config([choice()]) }).querySelector('#grove-note')).toBeNull();
   });
 });
+
+describe('Grove Journey K-2 wording layer', () => {
+  it('swaps to shorter words for K-2 without changing the facts, and leaves other bands alone', () => {
+    const found = firstRunWithLoss();
+    const run = config(found.raw.choices.slice(0, found.year), found.raw.mode, found.raw.seed);
+    const k2 = mount({ groveRun: run, bandOverride: 'k2', grovePredictions: [{ year: found.year, arrivals: 'none', food: 'surplus' }] });
+    const full = mount({ groveRun: run, grovePredictions: [{ year: found.year, arrivals: 'none', food: 'surplus' }] });
+    const t = el => el.textContent;
+    expect(t(k2.querySelector('.grove-stats'))).toContain('trees alive');
+    expect(t(full.querySelector('.grove-stats'))).toContain('living trees');
+    expect(t(k2.querySelector('.grove-priorities'))).toContain('Pick a card for this year');
+    expect(t(k2.querySelector('.grove-priorities'))).toContain('Make new trees');
+    expect(t(full.querySelector('.grove-priorities'))).toContain('Invest in offspring');
+    expect(t(k2.querySelector('.grove-receipt'))).toMatch(/Card used: (Grow roots|Save food|Make new trees)\./);
+    expect(t(k2.querySelector('.grove-receipt'))).toContain('Saved food: ');
+    expect(t(k2.querySelector('.grove-where'))).toMatch(/too dry|too shady|just bad luck|no room|grew/);
+    expect(t(k2.querySelector('.grove-where'))).toContain('The soil was too dry for a small tree.');
+    expect(t(full.querySelector('.grove-where'))).toContain('died in dry soil while still small.');
+    expect(t(k2.querySelector('[data-grove-prediction]'))).toMatch(/You were right: you said|Not this time: you said/);
+    expect(t(full.querySelector('[data-grove-prediction]'))).toMatch(/Matched: you predicted|Missed: you predicted/);
+    expect(t(k2.querySelector('.grove-inspect'))).toMatch(/Sunny spot|Wet spot|Shady spot/);
+    expect(t(full.querySelector('.grove-inspect'))).toMatch(/(Exposed|Damp|Sheltered) habitat/);
+    // The numbers are the same in both bands: same living count, same arrivals line.
+    expect(k2.querySelector('[data-grove-living]').textContent).toBe(full.querySelector('[data-grove-living]').textContent);
+    expect(k2.querySelectorAll('.grove-where li')).toHaveLength(full.querySelectorAll('.grove-where li').length);
+    const k2Start = mount({ groveSeed: 'GROVE-01', bandOverride: 'k2' });
+    expect(t(k2Start)).toContain('Same code = same weather.');
+    const k2Forecast = mount({ groveRun: config([]), bandOverride: 'k2' });
+    expect(t(k2Forecast.querySelector('.grove-forecast'))).toContain('A good year. Plenty of water for growing.');
+    expect(t(k2Forecast.querySelector('.grove-forecast'))).toMatch(/soil \d+% wet/);
+    const g35 = mount({ groveRun: config([]), bandOverride: 'g35' });
+    expect(t(g35.querySelector('.grove-forecast'))).toContain('Steady moisture gives the grove a chance');
+  });
+});
+
+describe('Grove Journey visual cues', () => {
+  it('shows event icons on completed year tiles, moisture bars, gap light and growth-scaled symbols', () => {
+    let state = E.groveStart(config([], 'deck', 'storm-test'));
+    for (let i = 0; i < 8; i++) state = E.groveAdvance(state, choice('roots'));
+    const run = config(Array(8).fill(choice('roots')), 'deck', 'storm-test');
+    const host = mount({ groveRun: run });
+    const tiles = [...host.querySelectorAll('.grove-progress span')];
+    expect(tiles).toHaveLength(8);
+    tiles.forEach((tile, i) => {
+      expect(tile.textContent).toBe(state.receipts[i].event.icon + ' ' + (i + 1));
+      expect(tile.getAttribute('title')).toContain(state.receipts[i].event.title);
+    });
+    expect(host.querySelectorAll('.grove-patch-water i')).toHaveLength(9);
+    const widths = [...host.querySelectorAll('.grove-patch-water i')].map(el => parseInt(el.getAttribute('style').match(/width:\s*(\d+)%/)[1], 10));
+    const lastEvent = state.receipts.at(-1).event;
+    widths.forEach((w, i) => expect(w).toBe(Math.round(E.groveEnvironment(state, i, lastEvent).soilWater * 100)));
+    expect([...host.querySelectorAll('.grove-map button')].every(b => /soil \d+% wet/.test(b.getAttribute('aria-label')))).toBe(true);
+    expect(state.gaps.length).toBeGreaterThan(0);
+    expect(host.querySelectorAll('.grove-map path[d^="M70 2 L30 86"]')).toHaveLength(state.gaps.length);
+    // Symbol scale follows modelled height: the 40-year oak is drawn larger than the young aspen.
+    const transforms = [...host.querySelectorAll('.grove-glyph > g')].map(g => parseFloat(g.getAttribute('transform').match(/scale\(([\d.]+)\)/)[1]));
+    expect(Math.max(...transforms)).toBeGreaterThan(Math.min(...transforms));
+    expect(transforms.every(s => s >= 0.42 && s <= 1)).toBe(true);
+    const fresh = mount({ groveRun: config([]) });
+    expect([...fresh.querySelectorAll('.grove-progress span')].map(t => t.textContent)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
+  });
+
+  it('marks newly arrived trees for the pop-in only when motion is allowed, and announces new discoveries', () => {
+    let hit = null;
+    for (let s = 0; s < 30 && !hit; s++) {
+      const raw = config(Array(8).fill(choice('offspring', 'seed')), 'deck', 'A' + s);
+      const st = E.groveRestore(raw);
+      const r = st.receipts.find(r => r.arrivals > 0);
+      if (r) hit = { raw, year: r.year, arrivals: r.arrivals };
+    }
+    expect(hit).not.toBeNull();
+    const run = config(hit.raw.choices.slice(0, hit.year), 'deck', hit.raw.seed);
+    const host = mount({ groveRun: run });
+    expect(host.querySelectorAll('.grove-glyph.is-new')).toHaveLength(hit.arrivals);
+    const still = document.createElement('div');
+    still.innerHTML = renderTool('treeLab', { treeLab: { view: 'grove', groveRun: run } }, { reduceMotion: true });
+    expect(still.querySelectorAll('.grove-glyph.is-new')).toHaveLength(0);
+    expect(still.querySelectorAll('.grove-glyph')).toHaveLength(host.querySelectorAll('.grove-glyph').length);
+    const first = mount({ groveRun: config([choice()]) });
+    expect(first.querySelector('.grove-discovery').textContent).toContain('New discovery: Read a year in the grove');
+    const second = mount({ groveRun: config([choice(), choice()]) });
+    const banner = second.querySelector('.grove-discovery');
+    const earned = E.groveDiscoveries(E.groveRestore(config([choice(), choice()]))).filter(id => !E.groveDiscoveries(E.groveRestore(config([choice()]))).includes(id));
+    expect(!!banner).toBe(earned.length > 0);
+  });
+});
+
+describe('Grove Journey keyboard flow, goal tracker and sharing', () => {
+  it('offers a skip link to the decision column, focusable headings and a two-dot goal tracker', () => {
+    const host = mount({ groveRun: config([choice(), choice()]) });
+    const skip = host.querySelector('.grove-skip');
+    expect(skip.getAttribute('href')).toBe('#grove-decisions');
+    expect(host.querySelector('#grove-decisions').getAttribute('tabindex')).toBe('-1');
+    expect(host.querySelector('.grove-forecast h3').getAttribute('tabindex')).toBe('-1');
+    expect(host.querySelectorAll('.grove-goal-dots i')).toHaveLength(2);
+    const state = E.groveRestore(config([choice(), choice()]));
+    expect(host.querySelectorAll('.grove-goal-dots i.is-filled')).toHaveLength(Math.min(2, E.groveSummary(state).descendantPatches));
+    const ended = mount({ groveRun: config(Array(8).fill(choice())) });
+    expect(ended.querySelector('[data-grove-ending] h3').getAttribute('tabindex')).toBe('-1');
+    expect(mount({ groveSeed: 'GROVE-01' }).querySelector('.grove-setup h3').getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('renders copy buttons, reports the copy outcome, and falls back to selectable text', () => {
+    const fresh = mount({ groveRun: config([]) });
+    expect([...fresh.querySelectorAll('.grove-share-buttons button')].map(b => b.textContent)).toEqual(['Copy grove code']);
+    const played = mount({ groveRun: config([choice()]) });
+    expect([...played.querySelectorAll('.grove-share-buttons button')].map(b => b.textContent)).toEqual(['Copy grove code', 'Copy run summary']);
+    expect(played.querySelector('.grove-share [role="status"]')).toBeNull();
+    const copied = mount({ groveRun: config([choice()]), groveShare: { kind: 'code', status: 'copied', text: 'GROVE-01' } });
+    expect(copied.querySelector('.grove-share [role="status"]').textContent).toContain('Grove code copied');
+    expect(copied.querySelector('.grove-share-text')).toBeNull();
+    const failed = mount({ groveRun: config([choice()]), groveShare: { kind: 'summary', status: 'failed', text: 'Year 1: test' } });
+    expect(failed.querySelector('.grove-share [role="status"]').textContent).toContain('Ctrl+C');
+    const area = failed.querySelector('.grove-share-text');
+    expect(area.getAttribute('readonly')).not.toBeNull();
+    expect(area.textContent || area.value).toContain('Year 1: test');
+    const k2 = mount({ groveRun: config([choice()]), bandOverride: 'k2' });
+    expect([...k2.querySelectorAll('.grove-share-buttons button')].map(b => b.textContent)).toEqual(['Copy grove code', 'Copy my grove story']);
+  });
+});
+
+describe('Grove Journey habitat detail, evidence link and announcements', () => {
+  it('draws habitat-specific ground detail, tooltips on patches, and links the decision column to the evidence', () => {
+    const fresh = mount({ groveRun: config([]) });
+    expect(fresh.querySelectorAll('.grove-habitat.is-exposed')).toHaveLength(E.GROVE_PATCHES.filter(p => p.habitat === 'exposed').length);
+    expect(fresh.querySelectorAll('.grove-habitat.is-damp')).toHaveLength(E.GROVE_PATCHES.filter(p => p.habitat === 'damp').length);
+    expect(fresh.querySelectorAll('.grove-habitat.is-sheltered')).toHaveLength(E.GROVE_PATCHES.filter(p => p.habitat === 'sheltered').length);
+    const buttons = [...fresh.querySelectorAll('.grove-map button')];
+    expect(buttons.every(b => /soil \d+% wet/.test(b.getAttribute('title')))).toBe(true);
+    expect(buttons[0].getAttribute('title')).toContain('Sunny ridge');
+    expect(fresh.querySelector('.grove-evidence-link')).toBeNull();
+    const played = mount({ groveRun: config([choice()]) });
+    const link = played.querySelector('.grove-evidence-link');
+    expect(link.getAttribute('href')).toBe('#grove-receipt');
+    expect(link.textContent).toContain('year 1');
+    const receipt = played.querySelector('#grove-receipt');
+    expect(receipt.classList.contains('grove-receipt')).toBe(true);
+    expect(receipt.getAttribute('tabindex')).toBe('-1');
+    expect(receipt.getAttribute('aria-live')).toBeNull();
+    expect(receipt.getAttribute('aria-label')).toBe('Latest year evidence');
+    expect(mount({ groveRun: config([choice()]), bandOverride: 'k2' }).querySelector('.grove-evidence-link').textContent).toContain('See what happened');
+  });
+});

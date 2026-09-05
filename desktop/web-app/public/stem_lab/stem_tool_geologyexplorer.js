@@ -2600,7 +2600,8 @@
     scene.background = bgTex;
     scene.fog = new THREE.Fog(0x0a1322, 30, 70);
     var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
-    camera.position.set(WORLD.w * 1.15, WORLD.h * 1.05, WORLD.d * 1.4);
+    var isoSideX3d = SCENE.id === 'collision' ? -1 : 1;   // face the steep side of the mountain belt
+    camera.position.set(WORLD.w * 1.15 * isoSideX3d, WORLD.h * 1.05, WORLD.d * 1.4);
     var TARGET = new THREE.Vector3(0, -WORLD.h * 0.05, 0);
     camera.lookAt(TARGET); // aim at the block immediately — keeps it CENTRED even if OrbitControls never loads
     var controls = null, orbitTried = false;
@@ -4399,6 +4400,56 @@
       addRuggedGeologyCone3d(foothillX3d, -3.9, 1.25, 1.1, 0x7a6b5e, 8.3, 'alpine', foothillY3d - 0.1);
       addRuggedGeologyCone3d(foothillX3d + 0.2, 0.6, 1.4, 1.3, 0x76685c, 9.1, 'alpine', foothillY3d - 0.1);
       addRuggedGeologyCone3d(foothillX3d - 0.1, 4.2, 1.2, 1.0, 0x7d6d5f, 10.4, 'alpine', foothillY3d - 0.1);
+      // Glacier tongues: flattened tubes that follow the voxel staircase from the snow
+      // line down the steep face. Rivers of ice are how the range sheds its summit.
+      var addGeologyGlacierTongue3d = function (z3d, seed3d, length3d) {
+        var glacierPoints3d = [];
+        var glacierSteps3d = Math.max(8, Math.round(length3d * (NX - 1) * 2));
+        for (var glacierStep3d = 0; glacierStep3d <= glacierSteps3d; glacierStep3d++) {
+          var glacierFx3d = 0.55 - (glacierStep3d / glacierSteps3d) * length3d;
+          glacierPoints3d.push(new THREE.Vector3(
+            (glacierFx3d - 0.5) * WORLD.w + Math.sin(glacierStep3d * 0.7 + seed3d) * 0.06,
+            collisionSurfaceY3d(glacierFx3d) + 0.16,
+            z3d + Math.sin(glacierStep3d * 0.5 + seed3d) * 0.2
+          ));
+        }
+        var glacierCurve3d = new THREE.CatmullRomCurve3(glacierPoints3d);
+        var glacierGeometry3d = new THREE.TubeGeometry(glacierCurve3d, geologyHighDetail3d ? 36 : 20, 0.36, geologyHighDetail3d ? 10 : 7, false);
+        var glacierMaterial3d = new THREE.MeshStandardMaterial({
+          color: 0x8fd0f4, emissive: 0x2f9fe0, emissiveIntensity: 0.55, roughness: 0.22, metalness: 0.05,
+          transparent: true, opacity: 0.9
+        });
+        var glacierMesh3d = new THREE.Mesh(glacierGeometry3d, glacierMaterial3d);
+        glacierMesh3d.renderOrder = 3;
+        geologyLandformGeometries3d.push(glacierGeometry3d);
+        geologyLandformMaterials3d.push(glacierMaterial3d);
+        registerGeologyLandform3d(glacierMesh3d, z3d, 0.5, false);
+      };
+      addGeologyGlacierTongue3d(-2.1, 1.7, 0.24);
+      addGeologyGlacierTongue3d(2.7, 4.1, 0.2);
+      addGeologyGlacierTongue3d(0.4, 6.3, 0.17);
+      // Foreland river: the range's meltwater and gravel collect along its foot and
+      // flow parallel to the front, the way the Ganges runs beside the Himalaya.
+      var riverPoints3d = [];
+      for (var riverStep3d = 0; riverStep3d <= 10; riverStep3d++) {
+        var riverT3d = riverStep3d / 10;
+        riverPoints3d.push(new THREE.Vector3(
+          (0.11 - 0.5) * WORLD.w + Math.sin(riverT3d * Math.PI * 2.6 + 0.4) * 0.7,
+          collisionSurfaceY3d(0.11) + 0.05,
+          -WORLD.d * 0.5 + riverT3d * WORLD.d
+        ));
+      }
+      var riverGeometry3d = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPoints3d), geologyHighDetail3d ? 48 : 28, 0.11, 6, false);
+      var riverMaterial3d = new THREE.MeshStandardMaterial({
+        color: 0x2f7fc1, emissive: 0x1d4ed8, emissiveIntensity: 0.22, roughness: 0.2, metalness: 0.1,
+        transparent: true, opacity: 0.92
+      });
+      var riverMesh3d = new THREE.Mesh(riverGeometry3d, riverMaterial3d);
+      riverMesh3d.renderOrder = 3;
+      geologyLandformGeometries3d.push(riverGeometry3d);
+      geologyLandformMaterials3d.push(riverMaterial3d);
+      // Spans the whole depth, so it can only stay honest while the block is uncut.
+      registerGeologyLandform3d(riverMesh3d, WORLD.d * 0.5 - 0.01, 0, false);
       cnv.dataset.geologyLandformRendering = 'snow-capped-alpine-ridge-relief';
     } else {
       cnv.dataset.geologyLandformRendering = 'voxel-native-relief';
@@ -6413,7 +6464,7 @@ function updateCoreRig3d(dt3d) {
 
     eng.setView = function (name) {
       if (fp.active) return;   // camera is owned by first-person mode
-      var V = { iso: [[NX * 1.15, NY * 1.05, NZ * 1.4], [0, -NY * 0.18, 0]], front: [[0, -NY * 0.1, NZ * 1.75], [0, -NY * 0.18, 0]], top: [[0.01, NY * 2.4, 0.02], [0, 0, 0]] }[name];
+      var V = { iso: [[NX * 1.15 * isoSideX3d, NY * 1.05, NZ * 1.4], [0, -NY * 0.18, 0]], front: [[0, -NY * 0.1, NZ * 1.75], [0, -NY * 0.18, 0]], top: [[0.01, NY * 2.4, 0.02], [0, 0, 0]] }[name];
       if (!V) return;
       camera.position.set(V[0][0], V[0][1], V[0][2]);
       TARGET.set(V[1][0], V[1][1], V[1][2]);
@@ -8593,17 +8644,17 @@ function updateCoreRig3d(dt3d) {
           v.mark('polygon', 'summitLimestone', { key: 'summit-limestone', points: '186,34 200,22 214,34 210,42 190,42', fill: v.color('summitLimestone') }),
           v.mark('polygon', 'suture', { key: 'suture', points: '300,58 318,58 324,78 306,82', fill: v.color('suture') }),
           v.mark('path', 'thrustZone', { key: 'thrust', d: 'M 95 92 L 360 130', fill: 'none', stroke: v.color('thrustZone'), strokeWidth: 6, strokeLinecap: 'round' }),
-          v.h('line', { key: 'converge-left', x1: 18, y1: 142, x2: 84, y2: 142, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
-          v.h('line', { key: 'converge-right', x1: 342, y1: 142, x2: 286, y2: 142, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
-          v.text('Plates converge', 185, 146, 'middle'),
-          v.h('line', { key: 'uplift', x1: 300, y1: 50, x2: 300, y2: 20, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
-          v.text('Uplift', 308, 30, 'start'),
-          v.text('Foreland basin', 6, 86, 'start'),
-          v.line('summit-leader', 214, 30, 262, 24),
-          v.text('Sea-floor limestone on top', 266, 26, 'start'),
-          v.line('thrust-leader', 250, 114, 250, 100),
-          v.text('Thrust fault', 250, 98, 'middle'),
-          v.text('Deep crustal root', 150, 132, 'middle')
+          v.h('line', { key: 'converge-left', x1: 18, y1: 160, x2: 84, y2: 160, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.h('line', { key: 'converge-right', x1: 342, y1: 160, x2: 286, y2: 160, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Plates converge', 185, 182, 'middle'),
+          v.h('line', { key: 'uplift', x1: 340, y1: 54, x2: 340, y2: 26, stroke: v.arrow, strokeWidth: 2, markerEnd: 'url(#' + v.arrowId + ')' }),
+          v.text('Uplift', 340, 68, 'middle'),
+          v.text('Foreland basin', 6, 84, 'start'),
+          v.line('summit-leader', 212, 28, 236, 18),
+          v.text('Sea-floor limestone on top', 238, 16, 'start'),
+          v.line('thrust-leader', 300, 124, 300, 136),
+          v.text('Thrust fault', 300, 148, 'middle'),
+          v.text('Deep crustal root', 150, 130, 'middle')
         ];
       }
       function sceneSchematicSVG(info) {

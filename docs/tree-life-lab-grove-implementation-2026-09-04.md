@@ -97,3 +97,19 @@ Eighth-pass verification: 26 focused units across the three grove files (22 in o
 ## Forecast risk preview and reflection notes
 
 The interface derives `dryNext` (patches whose next-year prescribed moisture is below 0.35) and `youngAtRisk` (living trees that will be three or younger next year standing in those patches) from the same `groveEnvironment` call the engine uses, so the preview cannot disagree with the mortality rule. Ledger entries may carry a `note` (240 characters) typed on the ending card; it is shown in later comparisons of the same code and mode. Simulation and save format are unchanged. Verification: 24 units in the campaign and evidence files and the extended browser test passed; see the ninth-pass section of `tree-life-lab-improvements-2026-09-04.md`.
+
+## K-2 wording layer
+
+`viewGrove` derives `simple = band === 'k2'` and routes banded strings through `say(short, full)`, `priorityName` and `priorityCopy`; forecast descriptions for K-2 come from `eventCopySimple`. The layer touches only presentation text: the simulation, the save format, the disclosure and the accessibility structure are unchanged. Verification: 29 units and two browser tests passed, with zero axe violations in the K-2 view. Grove Journey strings still bypass the tool's translation helper; wiring them through the language-pack pipeline remains the largest open item.
+
+## Visual cues
+
+Progress tiles show each completed year's event icon; map symbols scale with modelled height; storm gaps draw a light wedge; each patch carries a soil-moisture bar and its label states the percentage; new arrivals animate only when motion is allowed, on a wrapper without a transform attribute; the evidence card announces newly earned discoveries in a status region. Simulation and save format unchanged. Verification: 31 units and two browser tests passed, zero axe violations.
+
+## Keyboard flow and sharing
+
+`focusLater(selector)` moves focus after start, ending and setup transitions; the target headings carry `tabIndex: -1`. A `.grove-skip` link targets the decisions section. `copyText(kind, text)` prefers `window.alloCopyText`, then the clipboard API, then `execCommand`, and records the outcome in `groveShare` so the view can show a status line or a read-only fallback box. `runSummaryText()` produces the plain-text account. Simulation and save format unchanged. Verification: 33 units and two browser tests passed.
+
+## Habitat detail and evidence link
+
+`habitatDetail(habitat)` draws decorative ground marks per habitat inside the patch symbol; patch buttons carry a `title` mirroring the accessible label; `.grove-evidence-link` scrolls to and focuses `#grove-receipt`, which is a labelled region without a live-region attribute since `srSay` announces the year once. Simulation and save format unchanged. Verification: 34 units and two browser tests passed.

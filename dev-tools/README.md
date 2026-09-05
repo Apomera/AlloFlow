@@ -140,10 +140,47 @@ node dev-tools/check_stem_layout_defects.cjs --all --deep --dark --json         
 node dev-tools/check_stem_layout_defects.cjs --all --deep --contrast --json      # the third theme
 ```
 
-Five detectors, each reporting a measured number: `collapsed-percent-height` (a `height: N%`
+Six detectors, each reporting a measured number: `collapsed-percent-height` (a `height: N%`
 bar inside an auto-height parent renders as a hairline — this shipped as a chart that drew
-nothing), `light-ink-on-host-card` (the own-ground family), `overlay-collision`,
-`svg-text-outside-viewbox`, and a static `nonuniform-rx` lint.
+nothing), `light-ink-on-host-card` / `dark-ink-on-contrast-surface` (the own-ground family),
+`overlay-collision`, `svg-text-outside-viewbox`, `clipped-text` (its HTML analogue — a label
+cut by an `overflow:hidden` box with no ellipsis and no scrollbar), and a static
+`nonuniform-rx` lint, plus `overflows-tool-column` (content past the right edge of the tool
+column — the narrow-viewport defect).
+
+**★★★ For `overflows-tool-column`, clipped is not the same as contained.** Three-way rule,
+and getting it wrong in either direction is expensive:
+a **scrollable** ancestor makes the spill reachable (the correct pattern, silent);
+a **clipping** ancestor plus a **decorative** element is a deliberate bleed (silent — e.g.
+sourcebook's `aria-hidden` ring at `-right-12` inside a `relative overflow-hidden` header);
+a **clipping** ancestor plus real **content** is *reported*, because the part past the edge
+cannot be scrolled to at all. Treating every `overflow: hidden` as harmless blinds the
+detector across a whole tool, since tool cards are routinely rounded `overflow-hidden`
+containers.
+
+**★★★ Redirect stderr somewhere ELSE, and watch for a positive liveness signal.**
+A full sweep takes tens of minutes and writes its JSON only at exit, so `0 bytes` looks
+exactly the same whether it is working hard or died at `chromium.launch()` — one run sat
+32 minutes that way. Run it as:
+
+```
+node dev-tools/check_stem_layout_defects.cjs --all --deep --json \
+  > dev-tools/.cache/sweep_light.json 2> dev-tools/.cache/sweep_light.log
+```
+
+Never `2>&1` into the JSON file: that both corrupts the JSON and throws away the progress
+lines. The gate prints `[n/total] <file>` per file on stderr; if that log stops growing, or
+no chromium process is alive while node still runs, the sweep is hung, not busy.
+
+**★ Run it narrow.** `--narrow` (768x1024) or `--viewport=WxH` is a fourth axis alongside the
+three themes: every sweep before Sep 5 ran at 1280x1000, which is a teacher's laptop, not the
+Chromebook a student is on.
+
+**★★★ A closed `<details>` still has layout boxes.** Chromium gives the collapsed subtree
+`content-visibility: hidden`, so painting is skipped but geometry is not — `getBoundingClientRect()`
+returns real rects for content nobody can see. universe reported **72** dark-theme findings that
+way and reports **0** now that closed disclosures are skipped. If a finding looks impossible,
+check whether it lives inside a shut `<details>`.
 
 **★ Run it in `--dark` too.** stem_lab renders every tool on a WHITE card in *both* themes, so
 dark is where the own-ground family lives: the first light sweep found 154 findings, the first
@@ -194,7 +231,7 @@ Flags: `--dark` | `--contrast` (default light), `--click=<button label prefix>`,
 
 ### Galaxy Explorer harnesses (`galaxy_*.cjs`)
 
-Fifteen scripts, all headless chromium against the real
+Sixteen scripts, all headless chromium against the real
 `stem_lab/stem_tool_galaxy.js`. The tool is a 3-D scene plus six modes plus thirteen
 hand-drawn canvas branches, and almost none of that is reachable from Vitest: the smoke
 harness resolves `ensureThree()` with a promise that never settles, and the scene builder
@@ -215,6 +252,7 @@ node dev-tools/galaxy_keyboard_contract.cjs  OUT        # the keys the alt text 
 node dev-tools/galaxy_mode_churn.cjs         OUT [cycles]    # WebGL context leaks
 node dev-tools/galaxy_interaction_sweep.cjs OUT        # click EVERY control, watch for throws
 node dev-tools/galaxy_panel_shot.cjs         OUT '<state-json>' '<selector>' NAME WIDTH [--open]
+node dev-tools/galaxy_tour_sheet.cjs         OUT        # every Grand Tour stage, all 4 types, frozen clock
 ```
 
 **Read this before trusting a result.** Every one of these has produced a confident
@@ -235,13 +273,18 @@ wrong answer at least once, and the traps are recorded in each file's header:
 - Pair each Star Life stage with a mass that can reach it (`blue_supergiant` needs
   >25 M☉, otherwise it correctly resolves to main sequence and looks like dead code).
 - Aladin's offline mirror errors arrive **late** and get blamed on the next case.
+- To capture a timed sequence, **freeze `Date.now`, don't offset it.** Each SwiftShader
+  screenshot burns 2-4 real seconds, and with `real + offset` those land on top of the
+  offset: "stage k" came back as stage 2k. `galaxy_tour_sheet` pins the clock to the
+  exact moment and uses a *pausable* rAF (a stub that returns 0 kills the loop).
 
 Baseline as of 2026-09-04: clipping/chroma steady across four morphologies, 0 sub-24px
 targets, 0 responsive overflow, 2-D fallback clean, reduced motion completely still,
 23/23 over-canvas labels above AA, 26/26 saved states render, 10/10 keyboard controls
 work, fullscreen OK on all four surfaces, and mode churn releases every WebGL context
 (made == lost). The interaction sweep drives all 316 controls: the tool's own 255 run
-clean; the 8 findings are inside Aladin Lite's injected panels.
+clean; the 8 findings are inside Aladin Lite's injected panels. The tour sheet shows every
+type ending exactly at its fitted home radius with type-specific captions.
 
 ## Architecture notes
 

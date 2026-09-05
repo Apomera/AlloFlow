@@ -174,7 +174,7 @@ describe('Chemistry and particle tools WCAG regression in a real browser', () =>
 
   beforeAll(async () => {
     browser = await chromium.launch({ headless: true });
-  });
+  }, 60000); // a cold Chromium launch has exceeded vitest's 10 s hook default on this machine
 
   afterAll(async () => {
     if (browser) await browser.close();

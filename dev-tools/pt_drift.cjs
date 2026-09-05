@@ -4,7 +4,7 @@ const ROOT = process.cwd(); const OUT = process.argv[2];
 (async () => {
   const { chromium } = require(path.join(ROOT, 'node_modules', 'playwright'));
   const b = await chromium.launch();
-  const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
+  const pg = await b.newPage({ viewport: { width: parseInt(process.env.PT_W || '1100', 10), height: 900 } });
   pg.on('pageerror', (e) => console.log('[page error] ' + e.message));
   const page = path.join(OUT, 'pt-shots.html');
   await pg.goto('file:///' + page.split('\\').join('/'));
@@ -20,6 +20,6 @@ const ROOT = process.cwd(); const OUT = process.argv[2];
     const readout = await pg.evaluate(() => { const el = Array.from(document.querySelectorAll('*')).find((x) => /^\d+ quakes?$/.test(x.textContent.trim())); return el ? el.textContent.trim() : null; });
     console.log(name, '| live:', live, '| events:', readout);
   };
-  for (const t of [8, 20, 40]) { await pg.waitForTimeout((t === 8 ? 8 : t === 20 ? 12 : 20) * 1000); await shot('pt-drift-' + t + 's.png'); }
+  for (const t of [3, 12, 24, 40]) { await pg.waitForTimeout((t === 3 ? 3 : t === 12 ? 9 : t === 24 ? 12 : 16) * 1000); await shot('pt-drift-' + t + 's.png'); }
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

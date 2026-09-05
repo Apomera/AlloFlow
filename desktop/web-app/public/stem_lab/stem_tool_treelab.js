@@ -1322,7 +1322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return out;
   }
 
-  var GROVE_CSS = ".allo-tree-grove{color:var(--grove-ink);font-size:14px;line-height:1.55;min-width:0}\n.allo-tree-grove *{box-sizing:border-box}\n.allo-tree-grove h2,.allo-tree-grove h3,.allo-tree-grove p{margin:0}\n.allo-tree-grove p+p{margin-top:9px}\n.grove-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}\n.grove-header h2{font-size:clamp(28px,3.8vw,42px);line-height:1.12;letter-spacing:-.035em;margin:6px 0 10px}\n.grove-header p{max-width:650px;color:var(--grove-muted)}\n.grove-eyebrow{font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--grove-muted)}\n.grove-year{display:grid;min-width:110px;text-align:center;border-left:1px solid var(--grove-line);padding-left:24px}\n.grove-year strong{font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.grove-year span{font-size:11px;color:var(--grove-muted)}\n.grove-progress{display:flex;gap:7px;margin-bottom:20px}.grove-progress span{flex:1;border-radius:5px;border:1px solid var(--grove-line);text-align:center;font-size:11px;background:var(--grove-card)}\n.grove-progress .is-complete{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n.grove-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,1fr);gap:22px;align-items:start}\n.grove-landscape{min-width:0;padding:15px;border:1px solid var(--grove-line);border-radius:22px;background:var(--grove-wash)}\n.grove-stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 4px 14px;font-size:11px;color:var(--grove-muted)}\n.grove-stats strong{font-size:19px;color:var(--grove-ink);font-variant-numeric:tabular-nums;margin-right:3px}\n.grove-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;isolation:isolate}\n.grove-patch{position:relative;border:1px solid var(--grove-line);background:var(--grove-patch);border-radius:15px;padding:9px 4px 7px;cursor:pointer;min-width:0;color:var(--grove-ink);font:inherit;text-align:center;transition:box-shadow .15s ease}\n.grove-patch.is-damp{background:var(--grove-damp)}.grove-patch.is-exposed{background:var(--grove-exposed)}\n.grove-patch:hover{box-shadow:inset 0 0 0 2px var(--grove-accent)}.grove-patch.is-selected{outline:3px solid var(--grove-accent);outline-offset:1px;z-index:1}\n.grove-patch-name{display:block;font-size:10px;font-weight:750;line-height:1.25;min-height:25px}.grove-patch-count{display:block;font-size:10px;font-weight:650;line-height:1.2}\n.grove-patch svg{display:block;width:100%;height:auto;max-height:116px;overflow:visible}\n.grove-caption{font-size:12px;line-height:1.5;color:var(--grove-muted);margin-top:9px!important}\n.grove-inspect{padding:15px 3px 0;margin-top:12px;border-top:1px solid var(--grove-line)}.grove-inspect h3{font-size:16px}\n.grove-inspect p,.grove-inspect li{font-size:12px}.grove-inspect ul{padding-left:18px;margin:9px 0}\n.grove-inspect details{margin-top:10px}.allo-tree-grove summary{cursor:pointer;font-weight:750;padding:8px 0;font-size:13px;min-height:36px}\n.grove-decisions{min-width:0}.grove-decisions h3{font-size:21px;line-height:1.25;margin:5px 0 10px;letter-spacing:-.02em}\n.grove-setup,.grove-forecast,.grove-ending{padding:18px;background:var(--grove-card);border:1px solid var(--grove-line);border-radius:17px}\n.grove-setup>label,.grove-turn>div>label{display:block;font-size:12px;font-weight:750;margin:16px 0 5px}\n.allo-tree-grove select,.allo-tree-grove input:not([type=radio]){width:100%;min-width:0;min-height:42px;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;padding:7px 9px}\n.grove-priorities{border:0;margin:17px 0 10px;padding:0;min-width:0}.grove-priorities legend{font-size:13px;font-weight:800;margin-bottom:8px}\n.grove-priority{display:flex;align-items:start;gap:10px;padding:12px;margin-bottom:8px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card);cursor:pointer}\n.grove-priority.is-selected{border-color:var(--grove-accent);box-shadow:inset 3px 0 var(--grove-accent);background:var(--grove-wash)}\n.grove-priority input{margin-top:4px;accent-color:var(--grove-accent);flex-shrink:0;width:16px;height:16px}.grove-priority strong{display:block;font-size:14px}.grove-priority span span{display:block;font-size:12px;color:var(--grove-muted);margin-top:2px}\n.grove-action{display:block;width:100%;border:1px solid var(--grove-accent);border-radius:10px;background:var(--grove-accent);color:var(--grove-on-accent);font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:10px 12px;margin-top:14px;cursor:pointer}\n.grove-action:disabled{opacity:.5;cursor:not-allowed}.grove-replay{border-top:1px solid var(--grove-line);margin-top:16px;padding-top:3px}.grove-replay .grove-action{background:var(--grove-card);color:var(--grove-ink);border-color:var(--grove-line);font-weight:650;font-size:12px;margin-top:9px}\n.grove-receipt{margin-top:22px;padding:20px;border:1px solid var(--grove-line);border-left:4px solid var(--grove-accent);border-radius:14px;background:var(--grove-card)}.grove-receipt h3{font-size:20px;margin:4px 0 10px}\n.grove-notebook{margin-top:12px;border-top:1px solid var(--grove-line);padding:8px 2px}.grove-notebook p,.grove-notebook li{font-size:13px}.grove-notebook li+li{margin-top:5px}.grove-notebook a{color:var(--grove-ink);text-decoration:underline}\n.allo-tree-grove button:focus-visible,.allo-tree-grove summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}\n.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-stats,.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-field:has(#treelab-species),.allo-tree-lab:has(.allo-tree-grove) .allo-tree-setup-label{display:none!important}\n@media(max-width:960px){.grove-layout{grid-template-columns:1fr}.grove-map{max-width:680px;margin:auto}.grove-patch svg{max-height:130px}.grove-decisions{display:block}.grove-header{gap:12px}.grove-year{padding-left:12px;min-width:85px}}\n@media(max-width:480px){.grove-landscape{padding:10px;border-radius:16px}.grove-map{gap:6px}.grove-patch{border-radius:10px;padding:8px 2px}.grove-patch-name{font-size:9px}.grove-patch-count{font-size:9px}.grove-stats{gap:6px}.grove-stats strong{font-size:16px}.grove-stats span{flex:1;min-width:65px}.grove-header h2{font-size:28px}.grove-year strong{font-size:23px}.grove-progress{gap:4px}}\n.grove-patch-badge{position:absolute;top:5px;right:5px;font-size:10px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;background:var(--grove-accent);color:var(--grove-on-accent)}.grove-patch-badge.is-loss{background:var(--grove-ink);color:var(--grove-card)}\n.grove-predict{margin-top:14px;padding:12px 14px 14px;border:1px dashed var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-predict .grove-eyebrow{display:block}\n.grove-receipt h4,.grove-ending h4{font-size:13px;margin:14px 0 4px}.grove-where,.grove-ledger{padding-left:18px;margin:6px 0}.grove-where li,.grove-ledger li{font-size:13px}.grove-where li+li,.grove-ledger li+li{margin-top:4px}\n.grove-prediction{margin-top:12px;padding:10px 12px;border-left:3px solid var(--grove-accent);background:var(--grove-wash);border-radius:6px}.grove-prediction h4{margin-top:0}\n.grove-chart{margin:12px 0;padding:10px 12px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-chart svg{display:block;width:100%;max-width:520px;height:auto}.grove-chart figcaption{font-size:12px;font-weight:750;margin-bottom:6px}\n.grove-chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grove-muted);margin-top:6px}.grove-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}\n.grove-patch-dry{position:absolute;top:5px;left:5px;font-size:9px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;border:1px solid var(--grove-ink);color:var(--grove-ink);background:var(--grove-card)}.grove-patch.is-dry-next{border-style:dashed;border-color:var(--grove-ink)}\n.grove-risk{margin-top:10px!important;padding:8px 10px;border-radius:8px;border:1px dashed var(--grove-line);font-size:12px;line-height:1.5;color:var(--grove-ink)}\n.grove-notebook ul{list-style:disc;padding-left:20px;margin:8px 0}.grove-notebook ol{list-style:decimal;padding-left:24px;margin:8px 0}\n.allo-tree-grove textarea{width:100%;min-width:0;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:13px;padding:8px 9px;resize:vertical}.grove-ending label{display:block;font-size:12px;font-weight:750;margin:14px 0 5px}\n@media(prefers-reduced-motion:reduce){.grove-patch{transition:none}}\n";
+  var GROVE_CSS = ".allo-tree-grove{color:var(--grove-ink);font-size:14px;line-height:1.55;min-width:0;position:relative}\n.allo-tree-grove *{box-sizing:border-box}\n.allo-tree-grove h2,.allo-tree-grove h3,.allo-tree-grove p{margin:0}\n.allo-tree-grove p+p{margin-top:9px}\n.grove-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}\n.grove-header h2{font-size:clamp(28px,3.8vw,42px);line-height:1.12;letter-spacing:-.035em;margin:6px 0 10px}\n.grove-header p{max-width:650px;color:var(--grove-muted)}\n.grove-eyebrow{font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--grove-muted)}\n.grove-year{display:grid;min-width:110px;text-align:center;border-left:1px solid var(--grove-line);padding-left:24px}\n.grove-year strong{font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.grove-year span{font-size:11px;color:var(--grove-muted)}\n.grove-progress{display:flex;gap:7px;margin-bottom:20px}.grove-progress span{flex:1;border-radius:5px;border:1px solid var(--grove-line);text-align:center;font-size:12px;padding:2px 0;font-variant-numeric:tabular-nums;background:var(--grove-card)}\n.grove-progress .is-complete{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n.grove-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,1fr);gap:22px;align-items:start}\n.grove-landscape{min-width:0;padding:15px;border:1px solid var(--grove-line);border-radius:22px;background:var(--grove-wash)}\n.grove-stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 4px 14px;font-size:11px;color:var(--grove-muted)}\n.grove-stats strong{font-size:19px;color:var(--grove-ink);font-variant-numeric:tabular-nums;margin-right:3px}\n.grove-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;isolation:isolate}\n.grove-patch{position:relative;border:1px solid var(--grove-line);background:var(--grove-patch);border-radius:15px;padding:9px 4px 7px;cursor:pointer;min-width:0;color:var(--grove-ink);font:inherit;text-align:center;transition:box-shadow .15s ease}\n.grove-patch.is-damp{background:var(--grove-damp)}.grove-patch.is-exposed{background:var(--grove-exposed)}\n.grove-patch:hover{box-shadow:inset 0 0 0 2px var(--grove-accent)}.grove-patch.is-selected{outline:3px solid var(--grove-accent);outline-offset:1px;z-index:1}\n.grove-patch-name{display:block;font-size:10px;font-weight:750;line-height:1.25;min-height:25px}.grove-patch-count{display:block;font-size:10px;font-weight:650;line-height:1.2}\n.grove-patch svg{display:block;width:100%;height:auto;max-height:116px;overflow:visible}\n.grove-caption{font-size:12px;line-height:1.5;color:var(--grove-muted);margin-top:9px!important}\n.grove-inspect{padding:15px 3px 0;margin-top:12px;border-top:1px solid var(--grove-line)}.grove-inspect h3{font-size:16px}\n.grove-inspect p,.grove-inspect li{font-size:12px}.grove-inspect ul{padding-left:18px;margin:9px 0}\n.grove-inspect details{margin-top:10px}.allo-tree-grove summary{cursor:pointer;font-weight:750;padding:8px 0;font-size:13px;min-height:36px}\n.grove-decisions{min-width:0}.grove-decisions h3{font-size:21px;line-height:1.25;margin:5px 0 10px;letter-spacing:-.02em}\n.grove-setup,.grove-forecast,.grove-ending{padding:18px;background:var(--grove-card);border:1px solid var(--grove-line);border-radius:17px}\n.grove-setup>label,.grove-turn>div>label{display:block;font-size:12px;font-weight:750;margin:16px 0 5px}\n.allo-tree-grove select,.allo-tree-grove input:not([type=radio]){width:100%;min-width:0;min-height:42px;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;padding:7px 9px}\n.grove-priorities{border:0;margin:17px 0 10px;padding:0;min-width:0}.grove-priorities legend{font-size:13px;font-weight:800;margin-bottom:8px}\n.grove-priority{display:flex;align-items:start;gap:10px;padding:12px;margin-bottom:8px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card);cursor:pointer}\n.grove-priority.is-selected{border-color:var(--grove-accent);box-shadow:inset 3px 0 var(--grove-accent);background:var(--grove-wash)}\n.grove-priority input{margin-top:4px;accent-color:var(--grove-accent);flex-shrink:0;width:16px;height:16px}.grove-priority strong{display:block;font-size:14px}.grove-priority span span{display:block;font-size:12px;color:var(--grove-muted);margin-top:2px}\n.grove-action{display:block;width:100%;border:1px solid var(--grove-accent);border-radius:10px;background:var(--grove-accent);color:var(--grove-on-accent);font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:10px 12px;margin-top:14px;cursor:pointer}\n.grove-action:disabled{opacity:.5;cursor:not-allowed}.grove-replay{border-top:1px solid var(--grove-line);margin-top:16px;padding-top:3px}.grove-replay .grove-action{background:var(--grove-card);color:var(--grove-ink);border-color:var(--grove-line);font-weight:650;font-size:12px;margin-top:9px}\n.grove-receipt{margin-top:22px;padding:20px;border:1px solid var(--grove-line);border-left:4px solid var(--grove-accent);border-radius:14px;background:var(--grove-card)}.grove-receipt h3{font-size:20px;margin:4px 0 10px}\n.grove-notebook{margin-top:12px;border-top:1px solid var(--grove-line);padding:8px 2px}.grove-notebook p,.grove-notebook li{font-size:13px}.grove-notebook li+li{margin-top:5px}.grove-notebook a{color:var(--grove-ink);text-decoration:underline}\n.allo-tree-grove button:focus-visible,.allo-tree-grove summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}\n.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-stats,.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-field:has(#treelab-species),.allo-tree-lab:has(.allo-tree-grove) .allo-tree-setup-label{display:none!important}\n@media(max-width:960px){.grove-layout{grid-template-columns:1fr}.grove-map{max-width:680px;margin:auto}.grove-patch svg{max-height:130px}.grove-decisions{display:block}.grove-header{gap:12px}.grove-year{padding-left:12px;min-width:85px}}\n@media(max-width:480px){.grove-landscape{padding:10px;border-radius:16px}.grove-map{gap:6px}.grove-patch{border-radius:10px;padding:8px 2px}.grove-patch-name{font-size:9px}.grove-patch-count{font-size:9px}.grove-stats{gap:6px}.grove-stats strong{font-size:16px}.grove-stats span{flex:1;min-width:65px}.grove-header h2{font-size:28px}.grove-year strong{font-size:23px}.grove-progress{gap:4px}}\n.grove-patch-badge{position:absolute;top:5px;right:5px;font-size:10px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;background:var(--grove-accent);color:var(--grove-on-accent)}.grove-patch-badge.is-loss{background:var(--grove-ink);color:var(--grove-card)}\n.grove-predict{margin-top:14px;padding:12px 14px 14px;border:1px dashed var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-predict .grove-eyebrow{display:block}\n.grove-receipt h4,.grove-ending h4{font-size:13px;margin:14px 0 4px}.grove-where,.grove-ledger{padding-left:18px;margin:6px 0}.grove-where li,.grove-ledger li{font-size:13px}.grove-where li+li,.grove-ledger li+li{margin-top:4px}\n.grove-prediction{margin-top:12px;padding:10px 12px;border-left:3px solid var(--grove-accent);background:var(--grove-wash);border-radius:6px}.grove-prediction h4{margin-top:0}\n.grove-chart{margin:12px 0;padding:10px 12px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-chart svg{display:block;width:100%;max-width:520px;height:auto}.grove-chart figcaption{font-size:12px;font-weight:750;margin-bottom:6px}\n.grove-chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grove-muted);margin-top:6px}.grove-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}\n.grove-patch-dry{position:absolute;top:5px;left:5px;font-size:9px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;border:1px solid var(--grove-ink);color:var(--grove-ink);background:var(--grove-card)}.grove-patch.is-dry-next{border-style:dashed;border-color:var(--grove-ink)}\n.grove-risk{margin-top:10px!important;padding:8px 10px;border-radius:8px;border:1px dashed var(--grove-line);font-size:12px;line-height:1.5;color:var(--grove-ink)}\n.grove-notebook ul{list-style:disc;padding-left:20px;margin:8px 0}.grove-notebook ol{list-style:decimal;padding-left:24px;margin:8px 0}\n.allo-tree-grove textarea{width:100%;min-width:0;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:13px;padding:8px 9px;resize:vertical}.grove-ending label{display:block;font-size:12px;font-weight:750;margin:14px 0 5px}\n.grove-glyph.is-new{animation:grove-pop .7s cubic-bezier(.2,.9,.3,1.2) both;transform-box:fill-box;transform-origin:50% 100%}@keyframes grove-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}\n.grove-patch-water{display:block;height:4px;border-radius:2px;background:var(--grove-line);margin:6px 12px 0;overflow:hidden}.grove-patch-water i{display:block;height:100%;background:var(--grove-accent);border-radius:2px}\n.grove-discovery{margin:6px 0 10px;padding:8px 11px;border-radius:9px;background:var(--grove-wash);border:1px solid var(--grove-accent);font-weight:750;font-size:13px}\n.grove-progress span{white-space:nowrap;overflow:hidden;text-overflow:clip}\n.grove-skip{position:absolute;left:-9999px;top:0;padding:8px 12px;border-radius:8px;background:var(--grove-accent);color:var(--grove-on-accent);font-weight:750;font-size:13px;z-index:5}.grove-skip:focus{left:0;outline:3px solid var(--tree-focus);outline-offset:3px}\n.grove-decisions:focus{outline:none}.allo-tree-grove h3:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:4px}\n.grove-goal-dots{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}.grove-goal-dots i{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--grove-accent);background:transparent}.grove-goal-dots i.is-filled{background:var(--grove-accent)}\n.grove-share{margin-top:10px}.grove-share-buttons{display:flex;gap:8px;flex-wrap:wrap}.grove-share-buttons .grove-action{flex:1 1 140px;margin-top:0}.grove-share-text{margin-top:8px;font-size:12px}\n.grove-evidence-link{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--grove-ink);text-decoration:underline;text-underline-offset:3px;min-height:24px}.grove-evidence-link:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px;border-radius:4px}\n.grove-receipt:focus{outline:3px solid var(--tree-focus);outline-offset:2px}\n@media(prefers-reduced-motion:reduce){.grove-patch{transition:none}.grove-glyph.is-new{animation:none}}\n";
   GROVE_CSS += "\n.grove-view-switch{display:flex;flex-wrap:wrap;margin:0 0 10px}.grove-closeup-selectors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.grove-closeup label{display:block;font-size:12px;font-weight:750;margin-bottom:4px}.grove-closeup-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px;margin:12px 0 8px}.grove-closeup-heading span{font-size:12px;color:var(--grove-muted)}.grove-closeup-canvas{height:clamp(350px,48vh,540px);width:100%;border:1px solid var(--grove-line);border-radius:13px;overflow:hidden;background:var(--grove-card)}.grove-camera-controls{display:flex;flex-wrap:wrap;gap:2px;margin-top:10px}.grove-closeup-empty{padding:60px 20px;text-align:center;border:1px dashed var(--grove-line);border-radius:14px;min-height:240px;display:grid;align-content:center;gap:12px}.grove-closeup-empty p{color:var(--grove-muted)}@media(max-width:480px){.grove-closeup-selectors{grid-template-columns:1fr}.grove-closeup-canvas{height:360px}}\n";
   var QUIZ_RAW = [
     { q: 'A young tree grows in deep shade. Then sunlight reaches it, and it grows faster. What did it need more of?', a: ['Sunlight', 'Wind', 'Cold air', 'Darkness'], correct: 0, band: 'k2',
@@ -4334,6 +4334,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-setup-label{flex:1 0 100%;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-workbench{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-areas:"scene mission" "scene controls";grid-template-rows:auto minmax(0,1fr);gap:20px;align-items:start;}',
         '.allo-tree-workbench-mission{grid-area:mission;min-width:0;}',
+        '.allo-tree-grow-section:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:18px;}',
+        '.allo-tree-grow-nav{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;border-radius:14px;}',
+        '.allo-tree-grow-nav-label{font-size:10px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;}',
+        '.allo-tree-grow-nav ul{display:flex;flex-wrap:wrap;gap:6px 8px;list-style:none;margin:0;padding:0;}',
+        '.allo-tree-grow-nav a{display:inline-block;font-size:12px;font-weight:700;text-decoration:none;padding:5px 10px;min-height:24px;border-radius:999px;}',
+        '.allo-tree-grow-nav a:hover{border-color:var(--tree-accent);}',
+        '.allo-tree-grow-nav a:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
         '.allo-tree-workbench-mission>.allo-tree-mission>.allo-tree-card{margin-bottom:0!important;}',
         '.allo-tree-workbench-scene{grid-area:scene;min-width:0;align-self:stretch;}',
         '.allo-tree-workbench-controls{grid-area:controls;min-width:0;}',
@@ -9079,6 +9086,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ], { '--memory-selected': selectedTone }, 'allo-tree-memory');
       }
 
+      // The Grow mission column is by far the longest view in the tool (measured at 4500px on a
+      // 1365px desktop and 7015px on a 390px phone). Each major step becomes a labelled,
+      // focusable landmark so the navigator below - and screen reader region navigation - can
+      // reach it directly instead of scrolling past everything in between.
+      var GROW_SECTIONS = [
+        { id: 'grow-sec-clock', key: 'stem.treelab.playback', label: 'Run the clock' },
+        { id: 'grow-sec-budget', key: 'stem.treelab.nav_budget', label: 'Carbon budget' },
+        { id: 'grow-sec-memory', key: 'stem.treelab.nav_memory', label: 'Tree memory' },
+        { id: 'grow-sec-conditions', key: 'stem.treelab.conditions', label: 'Conditions' },
+        { id: 'grow-sec-surplus', key: 'stem.treelab.nav_surplus', label: 'Where the surplus goes' }
+      ];
+      function growSection(node, id, label) {
+        if (node == null) return null;
+        return h('section', { id: id, tabIndex: -1, className: 'allo-tree-grow-section', 'aria-label': label }, node);
+      }
+      function growNav() {
+        var title = __alloT('stem.treelab.jump_to', 'Jump to a step');
+        // Colours come from the same theme tokens the cards use, so high contrast is covered;
+        // only hover and focus need real CSS rules.
+        return h('nav', { className: 'allo-tree-grow-nav', 'aria-label': title,
+          style: { background: T.card, border: '1px solid ' + T.border } }, [
+          h('span', { key: 'label', className: 'allo-tree-grow-nav-label', style: { color: T.dim } }, title),
+          h('ul', { key: 'list' }, GROW_SECTIONS.map(function (section) {
+            return h('li', { key: section.id }, h('a', {
+              href: '#' + section.id,
+              style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border },
+              onClick: function (e) {
+                e.preventDefault();
+                var el = document.getElementById(section.id);
+                if (!el) return;
+                if (el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+                el.focus({ preventScroll: true });
+              }
+            }, __alloT(section.key, section.label)));
+          }))
+        ]);
+      }
       function viewGrow() {
         var lim = live.limiting;
         var limId = lim.viaStomata ? 'water' : lim.id;
@@ -9086,11 +9130,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var kids = [];
         var scene = viewerPanel();
         var mission = missionPanel();
+        pushKeyed(kids, growNav(), 'grow-nav');
         pushKeyed(kids, flowMarker('1',
           __alloT('stem.treelab.flow_observe', 'Observe and grow'),
           __alloT('stem.treelab.flow_observe_note', 'Read the living tree, move time forward, and see what its carbon budget can afford.')), 'grow-flow-observe');
         pushKeyed(kids, foldPanel('timescales', __alloT('stem.treelab.explore_timescales', 'How tree time works'), timeScaleRibbon()), 'grow-timescales');
-        pushKeyed(kids, playbackPanel(), 'grow-playback');
+        pushKeyed(kids, growSection(playbackPanel(), 'grow-sec-clock', __alloT('stem.treelab.playback', 'Run the clock')), 'grow-playback');
         pushKeyed(kids, yearOutcomePanel(), 'grow-outcome');
         pushKeyed(kids, reflectionPanel(), 'grow-reflection');
 
@@ -9188,9 +9233,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
         ], undefined, 'allo-tree-budget-card');
-        pushKeyed(kids, band === 'k2' ? simpleFoodPanel() : budgetCard, 'grow-budget');
+        pushKeyed(kids, growSection(band === 'k2' ? simpleFoodPanel() : budgetCard, 'grow-sec-budget', __alloT('stem.treelab.nav_budget', 'Carbon budget')), 'grow-budget');
         if (band === 'k2') pushKeyed(kids, foldPanel('budget', __alloT('stem.treelab.explore_numbers', 'See the carbon numbers'), budgetCard), 'grow-budget-details');
-        pushKeyed(kids, treeMemoryPanel(), 'grow-memory');
+        pushKeyed(kids, growSection(treeMemoryPanel(), 'grow-sec-memory', __alloT('stem.treelab.nav_memory', 'Tree memory')), 'grow-memory');
 
         // ── The objective ───────────────────────────────────────────────────
         //
@@ -9305,7 +9350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, flowMarker('2',
           __alloT('stem.treelab.flow_shape', 'Shape the next year'),
           __alloT('stem.treelab.flow_shape_note', 'Change the environment and choose where the tree invests whatever carbon remains.')), 'grow-flow-shape');
-        pushKeyed(kids, card([
+        pushKeyed(kids, growSection(card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           // Each condition wears the same hue its factor carries everywhere else —
@@ -9339,7 +9384,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               aperture < 0.9
                 ? __alloT('stem.treelab.stomata_closing', 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.')
                 : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
-        ], undefined, 'allo-tree-conditions-card'), 'grow-conditions');
+        ], undefined, 'allo-tree-conditions-card'), 'grow-sec-conditions', __alloT('stem.treelab.conditions', 'Conditions')), 'grow-conditions');
 
         var allocationCard = card([
           heading(__alloT('stem.treelab.spend_it', 'Where does the surplus go?'),
@@ -9417,7 +9462,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           }, yearOutcomeAnnouncement()),
           !tree.alive ? postMortem() : null
         ]);
-        pushKeyed(kids, band === 'k2' ? foldPanel('allocation', __alloT('stem.treelab.explore_allocation', 'Explore where food goes'), allocationCard) : allocationCard, 'grow-spend');
+        pushKeyed(kids, growSection(band === 'k2' ? foldPanel('allocation', __alloT('stem.treelab.explore_allocation', 'Explore where food goes'), allocationCard) : allocationCard, 'grow-sec-surplus', __alloT('stem.treelab.nav_surplus', 'Where the surplus goes')), 'grow-spend');
 
         pushKeyed(kids, advancedGateway(), 'grow-advanced-gateway');
         var advancedKids = [];
@@ -11177,6 +11222,55 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         var predictions = (Array.isArray(d.grovePredictions) ? d.grovePredictions : []).filter(function (p) { return p && typeof p === 'object' && Number.isFinite(p.year); });
         var ledger = (Array.isArray(d.groveLedger) ? d.groveLedger : []).filter(function (e) { return e && typeof e === 'object' && typeof e.key === 'string' && Array.isArray(e.priorities); });
         var pending = d.grovePending && typeof d.grovePending === 'object' ? d.grovePending : {};
+        // K-2 wording layer: same facts, shorter words. Everything else keeps the full text.
+        var simple = band === 'k2';
+        function say(short, full) { return simple ? short : full; }
+        var cardNames = { roots: 'Grow roots', reserve: 'Save food', offspring: 'Make new trees' };
+        var cardCopy = { roots: 'Roots help the tree find water later.', reserve: 'Keep food for hard years.', offspring: 'Use saved food to make seeds and shoots.' };
+        function priorityName(p) { return simple ? cardNames[p.id] : p.name; }
+        function priorityCopy(p) { return simple ? cardCopy[p.id] : p.copy; }
+        var eventCopySimple = { calm: 'A good year. Plenty of water for growing.', wet: 'A rainy year. Wet soil helps the trees drink.', dry: 'A dry year. Little water. Leaves close their pores and make less food.', storm: 'A storm tears leaves off one patch. More sun reaches it after.' };
+        // Focus follows the action when the control that was activated disappears (start, ending, setup).
+        function focusLater(selector) {
+          if (typeof document === 'undefined') return;
+          setTimeout(function () { var el = document.querySelector('.allo-tree-grove ' + selector); if (el && typeof el.focus === 'function') el.focus(); }, 80);
+        }
+        // Copy goes through the shell's alloCopyText (clipboard, then execCommand) because some hosts
+        // block navigator.clipboard; when every path fails the text is shown pre-selected for Ctrl+C.
+        function copyText(kind, text) {
+          var attempt = typeof window !== 'undefined' && typeof window.alloCopyText === 'function' ? window.alloCopyText(text)
+            : (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; }) : false);
+          Promise.resolve(attempt).then(function (ok) {
+            if (!ok && typeof document !== 'undefined' && document.execCommand) {
+              try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (e) { ok = false; }
+            }
+            upd('groveShare', { kind: kind, status: ok ? 'copied' : 'failed', text: text });
+            srSay(ok ? (kind === 'code' ? 'Grove code copied.' : 'Run summary copied.') : 'Copy did not work here. The text is shown below; select it and press Ctrl+C.');
+          }, function () { upd('groveShare', { kind: kind, status: 'failed', text: text }); });
+        }
+        function runSummaryText() {
+          var out = ['Grove Journey \u00b7 code ' + config.seed + ' \u00b7 ' + (config.mode === 'deck' ? 'event deck' : 'generated weather')];
+          grove.receipts.forEach(function (r) {
+            out.push('Year ' + r.year + ': ' + r.event.title + ' \u00b7 ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' \u00b7 ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses, ' + r.established + ' established');
+          });
+          out.push('After ' + grove.year + (grove.year === 1 ? ' year: ' : ' years: ') + summary.living + ' living, ' + summary.established + ' established in ' + summary.descendantPatches + (summary.descendantPatches === 1 ? ' patch' : ' patches') + (summary.ended ? (summary.success ? ' \u00b7 goal reached' : ' \u00b7 goal not reached') : ''));
+          var entry = ledger.filter(function (e) { return e.key === config.seed + '|' + config.mode + '|' + JSON.stringify(config.choices); })[0];
+          if (entry && entry.note) out.push('Reflection: ' + entry.note);
+          return out.join('\n');
+        }
+        function shareBlock() {
+          var share = d.groveShare && typeof d.groveShare === 'object' ? d.groveShare : null;
+          return h('div', { key: 'share', className: 'grove-share' }, [
+            h('div', { key: 'buttons', className: 'grove-share-buttons' }, [
+              action('copy-code', say('Copy grove code', 'Copy grove code'), function () { copyText('code', config.seed); }),
+              grove.receipts.length ? action('copy-summary', say('Copy my grove story', 'Copy run summary'), function () { copyText('summary', runSummaryText()); }) : null
+            ]),
+            share ? h('p', { key: 'status', className: 'grove-caption', role: 'status' }, share.status === 'copied'
+              ? (share.kind === 'code' ? say('Code copied. A friend can type it to get the same weather.', 'Grove code copied. Anyone who enters it with the same event mode plays the same weather.') : say('Story copied.', 'Run summary copied.'))
+              : say('Copy did not work here. Select the text below and press Ctrl+C.', 'Copy did not work in this host. Select the text below and press Ctrl+C.')) : null,
+            share && share.status === 'failed' ? h('textarea', { key: 'text', className: 'grove-share-text', readOnly: true, rows: 4, value: share.text, 'aria-label': share.kind === 'code' ? 'Grove code' : 'Run summary', onFocus: function (e) { e.target.select(); } }) : null
+          ]);
+        }
         function saveRun(nextConfig, message, prediction) {
           var nextState = groveRestore(nextConfig), found = journal.slice();
           groveDiscoveries(nextState).forEach(function (id) { if (found.indexOf(id) < 0) found.push(id); });
@@ -11196,7 +11290,9 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             if ((outcome.arrivals === true || outcome.food === true) && found.indexOf('prediction-hit') < 0) found.push('prediction-hit');
           }
           if (ledgerNext.filter(function (e) { return e.seed === nextConfig.seed && e.mode === nextConfig.mode; }).length >= 2 && found.indexOf('fair-replay') < 0) found.push('fair-replay');
-          updMulti({ groveRun: nextConfig, groveJournal: found, grovePredictions: kept, groveLedger: ledgerNext, grovePending: null, playing: false });
+          updMulti({ groveRun: nextConfig, groveJournal: found, grovePredictions: kept, groveLedger: ledgerNext, grovePending: null, playing: false, groveShare: null });
+          if (nextSummary.ended && nextConfig.choices.length) focusLater('[data-grove-ending] h3');
+          else if (!nextConfig.choices.length) focusLater('.grove-forecast h3');
           srSay(message);
         }
         function advance() {
@@ -11208,9 +11304,10 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         }
         function glyph(node, index, count) {
           var x = count === 1 ? 70 : count === 2 ? 48 + index * 43 : 33 + index * 37;
-          var adult = node.tree.age >= 10, scale = adult ? 1 : 0.48;
+          // Symbol size follows the modelled height (not to scale), so growth is visible year to year.
+          var scale = clamp(0.4 + Math.sqrt(Math.max(0, node.tree.heightM)) / 5, 0.42, 1);
           var leaf = isContrast ? '#ffffff' : node.tree.speciesId === 'oak' ? '#276347' : '#61915d';
-          return h('g', { key: node.id, transform: 'translate(' + x + ' 87) scale(' + scale + ')' }, [
+          var inner = h('g', { key: 'inner', transform: 'translate(' + x + ' 87) scale(' + scale + ')' }, [
             h('ellipse', { key: 'shadow', cx: 0, cy: 1, rx: 20, ry: 5, fill: isContrast ? '#666' : '#244d3833' }),
             h('path', { key: 'trunk', d: 'M-3 0 L-2-48 L2-48 L4 0Z M0-16 L-14-31 L-12-33 L2-23Z M0-27 L12-40 L14-38 L2-20Z', fill: isContrast ? '#fff' : node.tree.speciesId === 'aspen' ? '#e1dcca' : '#74563a' }),
             node.tree.speciesId === 'oak'
@@ -11218,6 +11315,20 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               : h('path', { key: 'crown', d: 'M0-83 C-17-72-24-47-18-32 C-12-20 13-21 20-37 C24-54 13-75 0-83Z', fill: leaf }),
             h('path', { key: 'light', d: node.tree.speciesId === 'oak' ? 'M-23-49 Q-27-64-9-64 M-8-68 Q2-76 13-66' : 'M-12-43 Q-17-59-2-74', fill: 'none', stroke: isContrast ? '#000' : '#bad795', strokeWidth: 4, strokeLinecap: 'round', opacity: 0.6 })
           ]);
+          // The wrapper carries the pop-in class; it has no transform attribute, so a CSS keyframe transform cannot wipe one.
+          return h('g', { key: node.id, className: 'grove-glyph' + (node.parent && node.born === grove.year && !reduceMotion ? ' is-new' : '') }, [inner]);
+        }
+        function habitatDetail(habitat) {
+          var ink = isContrast ? '#bbbbbb' : null;
+          if (habitat === 'damp') return h('g', { key: 'habitat', className: 'grove-habitat is-damp' }, [
+            h('path', { key: 'w1', d: 'M18 93 q6-4 12 0 t12 0 t12 0', fill: 'none', stroke: ink || '#7fb3c4', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.8 }),
+            h('path', { key: 'w2', d: 'M84 95 q6-4 12 0 t12 0 t12 0', fill: 'none', stroke: ink || '#7fb3c4', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.8 })]);
+          if (habitat === 'exposed') return h('g', { key: 'habitat', className: 'grove-habitat is-exposed' }, [
+            h('ellipse', { key: 's1', cx: 22, cy: 92, rx: 5, ry: 2.6, fill: ink || '#c9b48a' }), h('ellipse', { key: 's2', cx: 31, cy: 94, rx: 3.2, ry: 1.8, fill: ink || '#b9a274' }),
+            h('ellipse', { key: 's3', cx: 116, cy: 93, rx: 4.4, ry: 2.2, fill: ink || '#c9b48a' })]);
+          return h('g', { key: 'habitat', className: 'grove-habitat is-sheltered' }, [
+            h('path', { key: 'f1', d: 'M14 92 l3-9 l3 9 M20 93 l2-6 l2 6', fill: 'none', stroke: ink || '#5f8a5a', strokeWidth: 1.4, strokeLinecap: 'round' }),
+            h('path', { key: 'f2', d: 'M112 93 l3-9 l3 9 M119 94 l2-6 l2 6', fill: 'none', stroke: ink || '#5f8a5a', strokeWidth: 1.4, strokeLinecap: 'round' })]);
         }
         function snag(node, index) {
           // A dead tree stays on the map as a bare trunk: it is part of the record, not a
@@ -11336,26 +11447,26 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         function whereList(r) {
           var lines = [];
           if (r.damaged && r.event.damage) lines.push({ key: 'storm', text: GROVE_PATCHES[r.event.patch].name + ': the storm removed leaf tissue from ' + r.damaged + (r.damaged === 1 ? ' tree.' : ' trees.') });
-          var limits = { moisture: 'dry soil lowered the odds', light: 'shade lowered the odds', chance: 'chance alone', space: 'no space left' };
+          var limits = simple ? { moisture: 'too dry', light: 'too shady', chance: 'just bad luck', space: 'no room' } : { moisture: 'dry soil lowered the odds', light: 'shade lowered the odds', chance: 'chance alone', space: 'no space left' };
           var groups = {}, order = [];
           GROVE_PATCHES.forEach(function (site, i) {
             var here = (r.landings || []).filter(function (l) { return l.patch === i; });
             if (!here.length) return;
             var arrived = here.filter(function (l) { return l.outcome === 'arrived'; }).length, parts = [];
-            if (arrived) parts.push(arrived + ' took root');
+            if (arrived) parts.push(arrived + say(' grew', ' took root'));
             ['moisture', 'light', 'chance', 'space'].forEach(function (limit) {
               var n = here.filter(function (l) { return l.outcome !== 'arrived' && l.limit === limit; }).length;
-              if (n) parts.push(n + ' failed, ' + limits[limit]);
+              if (n) parts.push(n + (simple ? ' did not grow (' + limits[limit] + ')' : ' failed, ' + limits[limit]));
             });
             var signature = parts.join(' \u00b7 '); if (!groups[signature]) { groups[signature] = []; order.push(signature); } groups[signature].push(site.name);
           });
           // Patches with identical outcomes share one line, so a dry year reads as one fact.
           order.forEach(function (signature) {
-            var names = groups[signature], each = names.length > 1 ? signature.replace(/(\d+) (took root|failed)/g, '$1 $2 each') : signature;
+            var names = groups[signature], each = names.length > 1 ? signature.replace(/(\d+) (took root|failed|grew|did not grow)/g, '$1 $2 each') : signature;
             lines.push({ key: 'land-' + signature, text: names.join(', ') + ': ' + each + '.' });
           });
           (r.losses || []).forEach(function (loss) {
-            lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + ', age ' + loss.age + (loss.cause === 'dry_seedling' ? ', died in dry soil while still small.' : loss.cause === 'senescence' ? ', died of old age.' : ', ran out of stored food and died.') + ' Its trunk stays on the map as a snag.' });
+            lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + ', age ' + loss.age + (loss.cause === 'dry_seedling' ? say(', died. The soil was too dry for a small tree.', ', died in dry soil while still small.') : loss.cause === 'senescence' ? ', died of old age.' : say(', ran out of food and died.', ', ran out of stored food and died.')) + say(' Its trunk stays on the map.', ' Its trunk stays on the map as a snag.') });
           });
           if (!lines.length) return null;
           return h('div', { key: 'where' }, [h('h4', { key: 'h' }, 'Where it happened'),
@@ -11371,16 +11482,16 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           var guess = predictions.filter(function (p) { return p.year === r.year; })[0];
           if (!guess || !(guess.arrivals || guess.food)) return null;
           var outcome = predictionOutcome(guess, r), bucket = outcome.bucket;
-          var names = { none: 'no arrivals', some: '1 or 2 arrivals', many: '3 or more arrivals' }, lines = [];
+          var names = simple ? { none: 'no new trees', some: '1 or 2 new trees', many: '3 or more new trees' } : { none: 'no arrivals', some: '1 or 2 arrivals', many: '3 or more arrivals' }, lines = [];
           if (names[guess.arrivals]) {
             var hit = guess.arrivals === bucket;
-            lines.push((hit ? 'Matched: ' : 'Missed: ') + 'you predicted ' + names[guess.arrivals] + '; ' + r.arrivals + ' arrived.' + (hit ? '' : ' Each landing depends on patch conditions, space and a chance draw, so the same choice can turn out differently.'));
+            lines.push((hit ? say('You were right: ', 'Matched: ') : say('Not this time: ', 'Missed: ')) + say('you said ', 'you predicted ') + names[guess.arrivals] + '; ' + r.arrivals + say(' came.', ' arrived.') + (hit ? '' : say(' New trees need water, light, room and luck.', ' Each landing depends on patch conditions, space and a chance draw, so the same choice can turn out differently.')));
           }
           if (guess.food === 'surplus' || guess.food === 'shortfall') {
             var actual = outcome.actual, match = outcome.food === true;
-            lines.push((match ? 'Matched: ' : 'Missed: ') + 'you predicted a ' + guess.food + '; the grove had a ' + actual + '.' + (match ? '' : actual === 'shortfall'
-              ? (r.event.water < 0.42 ? ' Dry soil closed stomata, which also limits carbon uptake.' : r.damaged ? ' Lost leaf tissue meant less photosynthesis while maintenance costs continued.' : ' Living wood and roots cost food every year, even in a calm one.')
-              : ' Moisture and light let photosynthesis outpace maintenance this year.'));
+            lines.push((match ? say('You were right: ', 'Matched: ') : say('Not this time: ', 'Missed: ')) + say('you said ' + (guess.food === 'surplus' ? 'more food' : 'less food') + '; the grove made ' + (actual === 'surplus' ? 'more' : 'less') + ' food than it used.', 'you predicted a ' + guess.food + '; the grove had a ' + actual + '.') + (match ? '' : actual === 'shortfall'
+              ? (r.event.water < 0.42 ? say(' Dry soil made the leaves close their pores, so they made less food.', ' Dry soil closed stomata, which also limits carbon uptake.') : r.damaged ? say(' Fewer leaves made less food.', ' Lost leaf tissue meant less photosynthesis while maintenance costs continued.') : say(' Wood and roots eat food every year.', ' Living wood and roots cost food every year, even in a calm one.'))
+              : say(' Water and light helped the leaves make lots of food.', ' Moisture and light let photosynthesis outpace maintenance this year.')));
           }
           return h('div', { key: 'prediction', className: 'grove-prediction', 'data-grove-prediction': true }, [h('h4', { key: 'h' }, 'Your prediction'),
             lines.map(function (t, i) { return h('p', { key: i }, t); })]);
@@ -11390,8 +11501,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           var mine = ledger.filter(function (e) { return e.key === currentKey; })[0];
           function noteField() {
             if (!mine) return null;
-            return h('div', { key: 'note' }, [h('label', { key: 'l', htmlFor: 'grove-note' }, 'Your reflection'),
-              h('textarea', { key: 't', id: 'grove-note', rows: 3, maxLength: 240, value: mine.note || '', placeholder: 'What would you try differently next time, and why?',
+            return h('div', { key: 'note' }, [h('label', { key: 'l', htmlFor: 'grove-note' }, say('Your notes', 'Your reflection')),
+              h('textarea', { key: 't', id: 'grove-note', rows: 3, maxLength: 240, value: mine.note || '', placeholder: say('What would you do differently next time?', 'What would you try differently next time, and why?'),
                 onChange: function (e) { var text = e.target.value; upd('groveLedger', function (prev) { return (Array.isArray(prev) ? prev : []).map(function (entry) { return entry && entry.key === currentKey ? Object.assign({}, entry, { note: text }) : entry; }); }); } }),
               h('p', { key: 'c', className: 'grove-caption' }, 'Saved with this run. It appears when you compare later runs of the same grove.')]);
           }
@@ -11417,6 +11528,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           '--grove-exposed': isContrast ? '#0a0a0a' : isDark ? '#3b3c2b' : '#eee5c9'
         } }, [
           h('style', { key: 'style' }, GROVE_CSS),
+          h('a', { key: 'skip', className: 'grove-skip', href: '#grove-decisions', onClick: function (e) { e.preventDefault(); focusLater('#grove-decisions'); } }, say('Skip to this year' + '\u2019' + 's choice', 'Skip to this year' + '\u2019' + 's decision')),
           h('header', { key: 'head', className: 'grove-header' }, [
             h('div', { key: 'intro' }, [h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'A SMALL FOREST · A LASTING STORY'),
               h('h2', { key: 'title' }, 'Leave a living legacy.'),
@@ -11424,14 +11536,15 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             h('div', { key: 'year', className: 'grove-year' }, [h('strong', { key: 'n' }, grove.year + ' / 8'), h('span', { key: 'l' }, 'years completed')])
           ]),
           h('div', { key: 'progress', className: 'grove-progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': grove.year, 'aria-label': 'Years completed' }, Array.from({ length: 8 }, function (_, i) {
-            return h('span', { key: i, className: i < grove.year ? 'is-complete' : '', 'aria-hidden': true }, i + 1);
+            var ev = i < grove.year ? grove.receipts[i].event : null;
+            return h('span', { key: i, className: i < grove.year ? 'is-complete' : '', 'aria-hidden': true, title: ev ? 'Year ' + (i + 1) + ': ' + ev.title : undefined }, ev ? ev.icon + ' ' + (i + 1) : i + 1);
           })),
           h('div', { key: 'layout', className: 'grove-layout' }, [
             h('div', { key: 'landscape', className: 'grove-landscape' }, [
               h('div', { key: 'stats', className: 'grove-stats' }, [
-                h('span', { key: 'live' }, [h('strong', { key: 'v', 'data-grove-living': true }, summary.living), ' living trees']),
-                h('span', { key: 'offspring' }, [h('strong', { key: 'v', 'data-grove-established': true }, summary.established), ' established descendants']),
-                h('span', { key: 'patches' }, [h('strong', { key: 'v' }, summary.descendantPatches + ' / 2'), ' descendant patches'])
+                h('span', { key: 'live' }, [h('strong', { key: 'v', 'data-grove-living': true }, summary.living), say(' trees alive', ' living trees')]),
+                h('span', { key: 'offspring' }, [h('strong', { key: 'v', 'data-grove-established': true }, summary.established), say(' new trees that made it', ' established descendants')]),
+                h('span', { key: 'patches', className: 'grove-goal' }, [h('strong', { key: 'v' }, summary.descendantPatches + ' / 2'), say(' places with new trees', ' descendant patches'), h('span', { key: 'dots', className: 'grove-goal-dots', 'aria-hidden': true }, [0, 1].map(function (i) { return h('i', { key: i, className: i < summary.descendantPatches ? 'is-filled' : '' }); }))])
               ]),
               h('div', { key: 'views', className: 'grove-view-switch', role: 'group', 'aria-label': 'Grove view' }, [
                 btn('map', 'Habitat map', function () { upd('groveView', 'map'); }, { pressed: !inspect3d }),
@@ -11442,28 +11555,32 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 var dead = grove.trees.filter(function (n) { return n.patch === i && !n.tree.alive; });
                 var gained = last ? last.landings.filter(function (l) { return l.patch === i && l.outcome === 'arrived'; }).length : 0;
                 var lost = last ? last.losses.filter(function (l) { return l.patch === i; }).length : 0;
+                var wet = Math.round(groveEnvironment(grove, i, last ? last.event : groveEvent(config, 1)).soilWater * 100);
                 var gap = grove.gaps.indexOf(i) >= 0;
                 return h('button', { key: i, type: 'button', className: 'grove-patch is-' + patch.habitat + (i === selection ? ' is-selected' : '') + (dryNext.indexOf(i) >= 0 ? ' is-dry-next' : ''),
-                  'aria-pressed': i === selection, 'aria-label': patch.name + ': ' + living.length + ' living trees' + (gap ? ', canopy opening' : '') + (dead.length ? ', ' + dead.length + ' dead' : '') + (gained ? ', ' + gained + ' arrived this year' : '') + (lost ? ', ' + lost + ' lost this year' : '') + (dryNext.indexOf(i) >= 0 ? ', dry next year' : ''),
+                  'aria-pressed': i === selection, title: patch.name + ' \u00b7 ' + say({ exposed: 'sunny', damp: 'wet', sheltered: 'shady' }[patch.habitat], patch.habitat) + ' \u00b7 soil ' + wet + '% wet' + (gap ? ' \u00b7 storm opening' : ''), 'aria-label': patch.name + ': ' + living.length + ' living trees' + (gap ? ', canopy opening' : '') + (dead.length ? ', ' + dead.length + ' dead' : '') + (gained ? ', ' + gained + ' arrived this year' : '') + (lost ? ', ' + lost + ' lost this year' : '') + (dryNext.indexOf(i) >= 0 ? ', dry next year' : '') + ', soil ' + wet + '% wet',
                   onClick: function () { upd('grovePatch', i); } }, [
                   h('span', { key: 'name', className: 'grove-patch-name' }, patch.name),
                   gained || lost ? h('span', { key: 'badge', className: 'grove-patch-badge' + (gained ? '' : ' is-loss'), 'aria-hidden': true }, (gained ? '+' + gained : '') + (gained && lost ? ' ' : '') + (lost ? '\u2212' + lost : '')) : null,
                   dryNext.indexOf(i) >= 0 ? h('span', { key: 'dry', className: 'grove-patch-dry', 'aria-hidden': true }, 'dry next') : null,
                   h('svg', { key: 'trees', viewBox: '0 0 140 100', 'aria-hidden': true, focusable: 'false' }, [
                     h('ellipse', { key: 'ground', cx: 70, cy: 85, rx: 64, ry: 12, fill: isContrast ? '#444' : '#91b18b44' }),
+                    gap ? h('path', { key: 'gap', d: 'M70 2 L30 86 L110 86Z', fill: isContrast ? '#ffff00' : '#ffe58a', opacity: isContrast ? 0.22 : 0.5 }) : null,
+                    habitatDetail(patch.habitat),
                     dead.slice(0, 3).map(function (node, idx) { return snag(node, idx); }),
                     living.length ? living.map(function (node, idx) { return glyph(node, idx, living.length); }) : h('path', { key: 'empty', d: 'M65 84 Q68 74 64 71 M69 86 Q69 76 74 72 M73 86 Q77 82 79 77', fill: 'none', stroke: isContrast ? '#fff' : '#6c8b61', strokeWidth: 2 })
                   ]),
-                  h('span', { key: 'label', className: 'grove-patch-count' }, (living.length ? living.length + (living.length === 1 ? ' tree' : ' trees') : 'Open ground') + (dead.length ? ' \u00b7 ' + dead.length + (dead.length === 1 ? ' snag' : ' snags') : '') + (gap ? ' \u00b7 gap' : ''))
+                  h('span', { key: 'label', className: 'grove-patch-count' }, (living.length ? living.length + (living.length === 1 ? ' tree' : ' trees') : 'Open ground') + (dead.length ? ' \u00b7 ' + dead.length + (dead.length === 1 ? ' snag' : ' snags') : '') + (gap ? ' \u00b7 gap' : '')),
+                  h('span', { key: 'water', className: 'grove-patch-water', 'aria-hidden': true, title: 'Soil ' + wet + '% wet' }, h('i', { key: 'f', style: { width: wet + '%' } }))
                 ]);
               })),
-              inspect3d ? null : h('p', { key: 'legend', className: 'grove-caption' }, 'Rounded crown: oak \u00b7 Narrow crown: aspen \u00b7 Small tree: young individual \u00b7 Bare grey trunk: a dead tree left standing (a snag). Badges mark this year\u2019s arrivals (+) and losses (\u2212). Map symbols are not to scale.'),
+              inspect3d ? null : h('p', { key: 'legend', className: 'grove-caption' }, simple ? 'Round top: oak. Pointy top: aspen. Small tree: young. Grey trunk: a dead tree. A + badge means new trees this year; a \u2212 badge means trees lost. The bar shows how wet the soil is. A yellow glow means a storm let in more light.' : 'Rounded crown: oak \u00b7 Narrow crown: aspen \u00b7 Small tree: young individual \u00b7 Bare grey trunk: a dead tree left standing (a snag). Badges mark this year\u2019s arrivals (+) and losses (\u2212). The bar under each patch shows this year\u2019s soil moisture; a pale wedge marks a storm opening. Symbol size follows tree height but is not to scale.'),
               h('section', { key: 'inspect', className: 'grove-inspect', 'aria-label': 'Selected patch' }, [
                 h('h3', { key: 'title' }, site.name),
-                h('p', { key: 'habitat' }, site.habitat.charAt(0).toUpperCase() + site.habitat.slice(1) + ' habitat · ' + Math.round(groveEnvironment(grove, selection, forecast).light * 100) + '% light setting' + (summary.ended ? '' : ' \u00b7 next year ' + Math.round(groveEnvironment(grove, selection, forecast).soilWater * 100) + '% soil moisture' + (dryNext.indexOf(selection) >= 0 ? ' (dry)' : '')) + (grove.gaps.indexOf(selection) >= 0 ? ' · a storm opened the canopy' : '')),
+                h('p', { key: 'habitat' }, say({ exposed: 'Sunny spot', damp: 'Wet spot', sheltered: 'Shady spot' }[site.habitat], site.habitat.charAt(0).toUpperCase() + site.habitat.slice(1) + ' habitat') + ' · ' + Math.round(groveEnvironment(grove, selection, forecast).light * 100) + '% light setting' + (summary.ended ? '' : ' \u00b7 next year ' + Math.round(groveEnvironment(grove, selection, forecast).soilWater * 100) + '% soil moisture' + (dryNext.indexOf(selection) >= 0 ? ' (dry)' : '')) + (grove.gaps.indexOf(selection) >= 0 ? ' · a storm opened the canopy' : '')),
                 selectedNodes.length ? h('ul', { key: 'trees' }, selectedNodes.map(function (node) {
-                  return h('li', { key: node.id }, speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + ' · ' + (!node.tree.alive ? 'died; lineage record retained' : node.parent ? node.born === grove.year ? 'new arrival; survival not yet established' : 'established descendant' : 'founding tree') + (node.parent ? ' · ' + (node.route === 'root_sucker' ? 'clonal shoot' : 'seed offspring') : ''));
-                })) : h('p', { key: 'empty' }, 'No trees here yet. A seed may arrive from farther away; root suckers stay in the parent’s patch or an adjacent one.'),
+                  return h('li', { key: node.id }, speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + ' · ' + (!node.tree.alive ? say('died', 'died; lineage record retained') : node.parent ? node.born === grove.year ? say('just arrived', 'new arrival; survival not yet established') : say('new tree, growing', 'established descendant') : say('first tree', 'founding tree')) + (node.parent ? ' · ' + (node.route === 'root_sucker' ? say('shoot', 'clonal shoot') : say('from a seed', 'seed offspring')) : ''));
+                })) : h('p', { key: 'empty' }, say('No trees here yet. A seed could land here, or a shoot could grow from next door.', 'No trees here yet. A seed may arrive from farther away; root suckers stay in the parent’s patch or an adjacent one.')),
                 !inspect3d && portrait ? action('inspect-tree', 'Explore this patch’s trees in 3D', function () { upd('groveView', '3d'); }) : null,
                 h('details', { key: 'traits' }, [h('summary', { key: 's' }, 'Species traits and stored food'),
                   h('p', { key: 'p' }, 'These traits are already present. Choosing a resource priority does not change genes.'),
@@ -11473,72 +11590,83 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                   })])
               ])
             ]),
-            h('section', { key: 'choices', className: 'grove-decisions', 'aria-label': 'Journey decisions' }, [
+            h('section', { key: 'choices', className: 'grove-decisions', id: 'grove-decisions', tabIndex: -1, 'aria-label': 'Journey decisions' }, [
               !started ? h('div', { key: 'setup', className: 'grove-setup' }, [
                 h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YOUR FIRST GROVE'),
-                h('h3', { key: 'title' }, 'Three trees. Eight years. What will take root?'),
-                h('p', { key: 'copy' }, 'Two adults bring reproductive savings from their earlier lives. A young aspen is already growing nearby. Your single-tree lab stays separate.'),
+                h('h3', { key: 'title', tabIndex: -1 }, 'Three trees. Eight years. What will take root?'),
+                h('p', { key: 'copy' }, say('Two big trees have saved food for making new trees. A small aspen is growing nearby. Your lab tree is safe on its own page.', 'Two adults bring reproductive savings from their earlier lives. A young aspen is already growing nearby. Your single-tree lab stays separate.')),
                 h('label', { key: 'ml', htmlFor: 'grove-mode' }, 'Events'),
                 h('select', { key: 'mode', id: 'grove-mode', value: config.mode, onChange: function (e) { upd('groveMode', e.target.value); } }, [h('option', { key: 'deck', value: 'deck' }, 'Event deck · authored scenarios'), h('option', { key: 'generated', value: 'generated' }, 'Generated weather · bounded combinations')]),
                 h('p', { key: 'modehelp', className: 'grove-caption' }, config.mode === 'deck' ? 'A repeatable draw of gentle years, rain, drought and storms.' : 'Temperature, moisture and storm strength are combined by rules. This is procedural weather, not AI-generated biology.'),
                 h('label', { key: 'sl', htmlFor: 'grove-seed' }, 'Grove code'),
                 h('input', { key: 'seed', id: 'grove-seed', maxLength: 32, value: d.groveSeed == null ? 'GROVE-01' : d.groveSeed, onChange: function (e) { upd('groveSeed', e.target.value); } }),
-                h('p', { key: 'seedhelp', className: 'grove-caption' }, 'The same code and event mode give the same weather. Try another strategy fairly.'),
+                h('p', { key: 'seedhelp', className: 'grove-caption' }, say('Same code = same weather. So you can try a new plan and compare.', 'The same code and event mode give the same weather. Try another strategy fairly.')),
                 (function () { var runs = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode; }).length; return runs ? h('p', { key: 'runs', className: 'grove-caption' }, runs === 1 ? '1 completed run on this code is remembered for comparison.' : runs + ' completed runs on this code are remembered for comparison.') : null; })(),
                 action('start', 'Begin Grove Journey', function () { saveRun(config, 'Grove Journey started. Read the forecast and choose a resource priority.'); })
               ]) : summary.ended ? h('div', { key: 'ending', className: 'grove-ending', 'data-grove-ending': true }, [
                 h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'THE GROVE’S STORY'),
-                h('h3', { key: 'title' }, summary.success ? 'A living legacy.' : summary.living ? 'The story can grow further.' : 'This grove’s run has ended.'),
-                h('p', { key: 'copy' }, summary.established + ' descendants survived beyond their arrival year, across ' + summary.descendantPatches + ' patches. ' + (summary.success ? 'You reached the two-patch goal.' : 'Try changing an earlier priority and compare the same weather.')),
-                h('p', { key: 'new' }, summary.newArrivals ? summary.newArrivals + ' arrivals in the last year are too new to count as established.' : 'Your field journal stays with you across runs.'),
+                h('h3', { key: 'title', tabIndex: -1 }, summary.success ? 'A living legacy.' : summary.living ? 'The story can grow further.' : 'This grove’s run has ended.'),
+                h('p', { key: 'copy' }, summary.established + say(' new trees made it, in ', ' descendants survived beyond their arrival year, across ') + summary.descendantPatches + say(' places. ', ' patches. ') + (summary.success ? say('You did it: new trees in two places!', 'You reached the two-patch goal.') : say('Try a different card and play the same weather again.', 'Try changing an earlier priority and compare the same weather.'))),
+                h('p', { key: 'new' }, summary.newArrivals ? summary.newArrivals + say(' trees came this year. They need one more year to count.', ' arrivals in the last year are too new to count as established.') : say('Your journal keeps your discoveries.', 'Your field journal stays with you across runs.')),
                 ledgerBlock()
               ]) : h('div', { key: 'turn', className: 'grove-turn' }, [
                 h('div', { key: 'forecast', className: 'grove-forecast' }, [
                   h('span', { key: 'year', className: 'grove-eyebrow' }, 'YEAR ' + (grove.year + 1) + ' · FORECAST'),
-                  h('h3', { key: 'title' }, forecast.icon + ' ' + forecast.title), h('p', { key: 'copy' }, forecast.copy),
-                  h('p', { key: 'numbers', className: 'grove-caption' }, forecast.temp + ' °C · ' + Math.round(forecast.water * 100) + '% baseline soil moisture' + (forecast.damage ? ' · ' + GROVE_PATCHES[forecast.patch].name + ' loses ' + Math.round(forecast.damage * 100) + '% of leaf tissue' : '') + '. Patch moisture varies.' + (forecast.water < 0.42 ? ' Trees three years old or younger face extra risk in dry patches.' : '')),
-                  dryNext.length ? h('p', { key: 'risk', className: 'grove-risk' }, 'Dry next year: ' + dryNext.map(function (i) { return GROVE_PATCHES[i].name; }).join(', ') + '. ' + (youngAtRisk ? youngAtRisk + (youngAtRisk === 1 ? ' young tree stands there and faces extra risk. ' : ' young trees stand there and face extra risk. ') : '') + 'New arrivals in dry patches rarely take root.') : null,
+                  h('h3', { key: 'title', tabIndex: -1 }, forecast.icon + ' ' + forecast.title), h('p', { key: 'copy' }, simple ? eventCopySimple[forecast.id] || forecast.copy : forecast.copy),
+                  h('p', { key: 'numbers', className: 'grove-caption' }, simple ? forecast.temp + ' \u00b0C \u00b7 soil ' + Math.round(forecast.water * 100) + '% wet' + (forecast.damage ? ' \u00b7 the storm hits ' + GROVE_PATCHES[forecast.patch].name : '') + (forecast.water < 0.42 ? '. Small trees may not make it in dry spots.' : '.') : forecast.temp + ' °C · ' + Math.round(forecast.water * 100) + '% baseline soil moisture' + (forecast.damage ? ' · ' + GROVE_PATCHES[forecast.patch].name + ' loses ' + Math.round(forecast.damage * 100) + '% of leaf tissue' : '') + '. Patch moisture varies.' + (forecast.water < 0.42 ? ' Trees three years old or younger face extra risk in dry patches.' : '')),
+                  dryNext.length ? h('p', { key: 'risk', className: 'grove-risk' }, say('Next year these spots will be dry: ', 'Dry next year: ') + dryNext.map(function (i) { return GROVE_PATCHES[i].name; }).join(', ') + '. ' + (youngAtRisk ? youngAtRisk + (youngAtRisk === 1 ? say(' small tree is there. It may not make it. ', ' young tree stands there and faces extra risk. ') : say(' small trees are there. They may not make it. ', ' young trees stand there and face extra risk. ')) : '') + say('New trees do not grow well in dry spots.', 'New arrivals in dry patches rarely take root.')) : null,
                 ]),
-                h('fieldset', { key: 'priorities', className: 'grove-priorities' }, [h('legend', { key: 'legend' }, 'Choose this year’s priority'), GROVE_PRIORITIES.map(function (priority) {
+                h('fieldset', { key: 'priorities', className: 'grove-priorities' }, [h('legend', { key: 'legend' }, say('Pick a card for this year', 'Choose this year’s priority')), GROVE_PRIORITIES.map(function (priority) {
                   return h('label', { key: priority.id, className: 'grove-priority' + (priorityId === priority.id ? ' is-selected' : '') }, [
                     h('input', { key: 'radio', type: 'radio', name: 'grove-priority', value: priority.id, checked: priorityId === priority.id, onChange: function () { upd('grovePriority', priority.id); } }),
-                    h('span', { key: 'content' }, [h('strong', { key: 'title' }, priority.icon + ' ' + priority.name), h('span', { key: 'copy' }, priority.copy)])
+                    h('span', { key: 'content' }, [h('strong', { key: 'title' }, priority.icon + ' ' + priorityName(priority)), h('span', { key: 'copy' }, priorityCopy(priority))])
                   ]);
                 })]),
-                priorityId === 'offspring' ? h('div', { key: 'route' }, [h('label', { key: 'label', htmlFor: 'grove-route' }, 'Reproduction route'),
-                  h('select', { key: 'select', id: 'grove-route', value: route, onChange: function (e) { upd('groveRoute', e.target.value); } }, [h('option', { key: 'mixed', value: 'mixed' }, 'Oak seeds + local aspen shoots'), h('option', { key: 'seed', value: 'seed' }, 'Seeds from both species')]),
-                  h('p', { key: 'help', className: 'grove-caption' }, 'Shoots establish more often nearby. Seeds can reach all patches but often fail. Neither route guarantees survival.')]) : null,
+                priorityId === 'offspring' ? h('div', { key: 'route' }, [h('label', { key: 'label', htmlFor: 'grove-route' }, say('How to make new trees', 'Reproduction route')),
+                  h('select', { key: 'select', id: 'grove-route', value: route, onChange: function (e) { upd('groveRoute', e.target.value); } }, [h('option', { key: 'mixed', value: 'mixed' }, say('Oak seeds + aspen shoots nearby', 'Oak seeds + local aspen shoots')), h('option', { key: 'seed', value: 'seed' }, say('Seeds from both kinds of tree', 'Seeds from both species'))]),
+                  h('p', { key: 'help', className: 'grove-caption' }, say('Shoots grow close by and often make it. Seeds can go far but often fail.', 'Shoots establish more often nearby. Seeds can reach all patches but often fail. Neither route guarantees survival.'))]) : null,
                 h('div', { key: 'predict', className: 'grove-predict' }, [
                   h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'PREDICT, THEN CHECK \u00b7 OPTIONAL'),
                   h('label', { key: 'al', htmlFor: 'grove-predict-arrivals' }, band === 'k2' ? 'How many new trees will arrive this year?' : 'How many new arrivals do you expect this year?'),
                   h('select', { key: 'as', id: 'grove-predict-arrivals', value: pending.arrivals || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { arrivals: e.target.value })); } }, [
-                    h('option', { key: 'skip', value: '' }, 'Skip this prediction'), h('option', { key: 'none', value: 'none' }, 'None'), h('option', { key: 'some', value: 'some' }, '1 or 2'), h('option', { key: 'many', value: 'many' }, '3 or more')]),
+                    h('option', { key: 'skip', value: '' }, say('Skip', 'Skip this prediction')), h('option', { key: 'none', value: 'none' }, 'None'), h('option', { key: 'some', value: 'some' }, '1 or 2'), h('option', { key: 'many', value: 'many' }, '3 or more')]),
                   h('label', { key: 'fl', htmlFor: 'grove-predict-food' }, band === 'k2' ? 'Will the grove make more food than it uses?' : 'Will the grove make more food than it uses overall?'),
                   h('select', { key: 'fs', id: 'grove-predict-food', value: pending.food || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { food: e.target.value })); } }, [
-                    h('option', { key: 'skip', value: '' }, 'Skip this prediction'), h('option', { key: 'surplus', value: 'surplus' }, 'Yes, a surplus'), h('option', { key: 'shortfall', value: 'shortfall' }, 'No, a shortfall')]),
-                  h('p', { key: 'help', className: 'grove-caption' }, 'The evidence after the year checks your prediction. A miss is useful: it shows where the model surprised you.')
+                    h('option', { key: 'skip', value: '' }, say('Skip', 'Skip this prediction')), h('option', { key: 'surplus', value: 'surplus' }, say('Yes, more food', 'Yes, a surplus')), h('option', { key: 'shortfall', value: 'shortfall' }, say('No, less food', 'No, a shortfall'))]),
+                  h('p', { key: 'help', className: 'grove-caption' }, say('After the year, see if you were right. Being wrong is OK!', 'The evidence after the year checks your prediction. A miss is useful: it shows where the model surprised you.'))
                 ]),
                 action('advance', 'Live through year ' + (grove.year + 1) + ' →', advance),
-                h('p', { key: 'time', className: 'grove-caption' }, 'One click advances one whole year. Each tree uses its own food budget; these cards do not alter inherited traits.')
+                h('p', { key: 'time', className: 'grove-caption' }, say('One click = one year. The cards do not change what kind of tree it is.', 'One click advances one whole year. Each tree uses its own food budget; these cards do not alter inherited traits.')),
+                last ? h('a', { key: 'evidence-link', className: 'grove-evidence-link', href: '#grove-receipt', onClick: function (e) { e.preventDefault(); var el = document.querySelector('.allo-tree-grove #grove-receipt'); if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }); el.focus({ preventScroll: true }); } } }, say('See what happened in year ' + last.year + ' \u2193', 'Read the year ' + last.year + ' evidence \u2193')) : null
               ]),
               started ? h('div', { key: 'replay', className: 'grove-replay' }, [
                 action('undo', 'Try the previous year again', function () { saveRun(Object.assign({}, config, { choices: config.choices.slice(0, -1) }), 'Returned to the previous year with the same forecast.'); }, !grove.year),
                 h('details', { key: 'restart' }, [h('summary', { key: 's' }, 'Replay or choose a new grove'),
                   h('p', { key: 'p', className: 'grove-caption' }, 'Replaying resets this grove’s timeline. Your journal and lab tree stay saved.'),
                   action('same', 'Replay this grove from the start', function () { saveRun(Object.assign({}, config, { choices: [] }), 'Same grove restarted; the weather sequence is unchanged.'); }),
-                  action('new', 'Return to grove setup', function () { updMulti({ groveRun: null, groveSeed: config.seed, groveMode: config.mode, groveJournal: journal, grovePredictions: [], grovePending: null }); srSay('Grove setup opened. Change the code or event mode to begin another run.'); })]),
+                  action('new', 'Return to grove setup', function () { updMulti({ groveRun: null, groveSeed: config.seed, groveMode: config.mode, groveJournal: journal, grovePredictions: [], grovePending: null, groveShare: null }); focusLater('.grove-setup h3'); srSay('Grove setup opened. Change the code or event mode to begin another run.'); })]),
+                shareBlock(),
                 h('p', { key: 'seed', className: 'grove-caption' }, config.seed + ' · ' + (config.mode === 'deck' ? 'Event deck' : 'Generated weather') + ' · saved with this lab')
               ]) : null
             ])
           ]),
-          h('section', { key: 'receipt', className: 'grove-receipt', 'aria-label': 'Latest year evidence', 'aria-live': 'polite', 'aria-atomic': true }, last ? [
+          h('section', { key: 'receipt', className: 'grove-receipt', id: 'grove-receipt', tabIndex: -1, 'aria-label': 'Latest year evidence' }, last ? [
             h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YEAR ' + last.year + ' · WHAT HAPPENED'),
             h('h3', { key: 'title' }, last.event.title),
-            h('p', { key: 'priority' }, 'Priority used: ' + GROVE_PRIORITIES.filter(function (p) { return p.id === last.choice.priority; })[0].name + '.'),
-            h('p', { key: 'result' }, last.arrivals + (last.arrivals === 1 ? ' new arrival · ' : ' new arrivals · ') + last.established + ' established descendants · ' + last.deaths + (last.deaths === 1 ? ' tree lost.' : ' trees lost.')),
-            h('p', { key: 'why' }, (last.net < 0 ? 'The grove used more food than it made overall. Trees with a shortfall drew on their own reserves.' : 'The grove made more food than it used overall; each tree allocated its own surplus to your chosen priority.') + (last.damaged ? ' The storm removed leaf tissue from ' + last.damaged + ' trees.' : '')),
-            h('p', { key: 'stored' }, 'Stored food across living trees: ' + formatCarbon(last.reserves) + (prev ? ' (' + (last.reserves >= prev.reserves ? 'up ' : 'down ') + formatCarbon(Math.abs(round(last.reserves - prev.reserves, 2))) + ' from last year)' : '') + '. Reproductive savings: ' + formatCarbon(last.banked) + '.'),
-            last.attempts ? h('p', { key: 'chance' }, last.attempts + ' reproductive attempts used ' + formatCarbon(last.spent) + '. Landings, moisture, light, chance and available space determined which arrived. Arrivals must survive another year to count toward the goal.') : h('p', { key: 'no-attempt' }, 'No reproductive attempts this year. Mature trees spend their reproductive savings when you choose Invest in offspring.'),
+            (function () {
+              var before = groveDiscoveries(groveRestore(Object.assign({}, config, { choices: config.choices.slice(0, -1) })));
+              var earned = groveDiscoveries(grove).filter(function (id) { return before.indexOf(id) < 0; });
+              if (predictions.some(function (p) { return p.year === last.year; }) && journal.indexOf('prediction-hit') >= 0) {
+                var outcome = predictionOutcome(predictions.filter(function (p) { return p.year === last.year; })[0], last);
+                if ((outcome.arrivals === true || outcome.food === true) && grove.receipts.slice(0, -1).every(function (r) { var g = predictions.filter(function (p) { return p.year === r.year; })[0]; if (!g) return true; var o = predictionOutcome(g, r); return o.arrivals !== true && o.food !== true; })) earned.push('prediction-hit');
+              }
+              return earned.length ? h('p', { key: 'discovery', className: 'grove-discovery', role: 'status' }, '\u2726 New discovery: ' + earned.map(function (id) { return journalNames[id]; }).join(' \u00b7 ')) : null;
+            })(),
+            h('p', { key: 'priority' }, say('Card used: ', 'Priority used: ') + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === last.choice.priority; })[0]) + '.'),
+            h('p', { key: 'result' }, last.arrivals + (last.arrivals === 1 ? say(' new tree came · ', ' new arrival · ') : say(' new trees came · ', ' new arrivals · ')) + last.established + say(' new trees that made it · ', ' established descendants · ') + last.deaths + (last.deaths === 1 ? say(' tree died.', ' tree lost.') : say(' trees died.', ' trees lost.'))),
+            h('p', { key: 'why' }, (last.net < 0 ? say('The grove used more food than it made. Trees ate their saved food.', 'The grove used more food than it made overall. Trees with a shortfall drew on their own reserves.') : say('The grove made more food than it used. Each tree used the extra for your card.', 'The grove made more food than it used overall; each tree allocated its own surplus to your chosen priority.')) + (last.damaged ? say(' The storm tore leaves off ', ' The storm removed leaf tissue from ') + last.damaged + ' trees.' : '')),
+            h('p', { key: 'stored' }, say('Saved food: ', 'Stored food across living trees: ') + formatCarbon(last.reserves) + (prev ? ' (' + (last.reserves >= prev.reserves ? 'up ' : 'down ') + formatCarbon(Math.abs(round(last.reserves - prev.reserves, 2))) + ' from last year)' : '') + say('. Food for new trees: ', '. Reproductive savings: ') + formatCarbon(last.banked) + '.'),
+            last.attempts ? h('p', { key: 'chance' }, last.attempts + say(' tries to make new trees used ', ' reproductive attempts used ') + formatCarbon(last.spent) + say('. Where they landed, water, light, luck and room decided which grew. New trees must live one more year to count.', '. Landings, moisture, light, chance and available space determined which arrived. Arrivals must survive another year to count toward the goal.')) : h('p', { key: 'no-attempt' }, say('No new trees this year. Pick the Make new trees card to try.', 'No reproductive attempts this year. Mature trees spend their reproductive savings when you choose Invest in offspring.')),
             whereList(last),
             predictionCheck(last),
             h('p', { key: 'history-note', className: 'grove-caption' }, summary.ended ? 'This is the final year’s evidence. Your journal retains the whole run.' : 'This is evidence from the completed year. The forecast above describes the next year.')
@@ -11547,7 +11675,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             h('p', { key: 'intro' }, 'Discoveries carry between runs. They recognise observations, not permanent strength bonuses.'),
             journal.length ? h('ul', { key: 'discoveries' }, journal.map(function (id) { return h('li', { key: id }, journalNames[id]); })) : h('p', { key: 'empty' }, 'Complete a year to begin your journal.'),
             journeyChart(),
-            h('ol', { key: 'timeline', 'aria-label': 'Journey timeline' }, grove.receipts.map(function (r) { return h('li', { key: r.year }, 'Year ' + r.year + ': ' + r.event.title + ' · ' + GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0].name + ' · ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses.'); }))]),
+            h('ol', { key: 'timeline', 'aria-label': 'Journey timeline' }, grove.receipts.map(function (r) { return h('li', { key: r.year }, 'Year ' + r.year + ': ' + r.event.title + ' · ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' · ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses.'); }))]),
           h('details', { key: 'science', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'How this model works · evolution, genes and old growth'),
             h('p', { key: 'model' }, 'This is a small ecological teaching model. Weather ranges, reproductive maturity (oak 20 years; aspen 10), establishment chances and the three-living-trees-per-patch limit are scenario assumptions. Moisture and light are prescribed patch settings, not a shared soil-water simulation. Storm gaps persist for this eight-year run. Trees three years old or younger face an extra chance of dying when their patch is dry; older trees die here only if their stored food runs out.'),
             h('p', { key: 'evolution' }, 'Natural selection acts on existing heritable variation through differences in survival and reproduction across generations. Trees do not choose useful mutations. This first journey models species differences and reproduction, not within-species genetic evolution. Its allocation cards are resource decisions in a game abstraction.'),

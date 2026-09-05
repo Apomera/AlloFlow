@@ -30,8 +30,8 @@ the school name, and store window names. Those belong to the school.
 
 | Language | Coverage | Entries |
 | --- | --- | --- |
-| English (en) | 100% | 918/918 |
-| Español (es) | 100% | 918/918 |
+| English (en) | 100% | 922/922 |
+| Español (es) | 100% | 922/922 |
 
 A language is treated as complete at 95% or above; below that the menu
 shows the percentage so nobody chooses a language expecting a translated portal.
@@ -42,7 +42,7 @@ Balance statement emails are rendered by `Code.gs`, not the portal, and exist on
 English and Spanish. A student whose portal is set to another language still receives
 English email. That is a separate piece of work in `statementCopy_`.
 
-## Untranslated entries (0 of 918)
+## Untranslated entries (0 of 922)
 
 | Key | English | Have |
 | --- | --- | --- |

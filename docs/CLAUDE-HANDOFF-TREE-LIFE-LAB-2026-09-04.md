@@ -185,3 +185,25 @@ Receipts gained `reserves` and `banked` (whole-grove stored food and reproductiv
 ## Ninth pass (Claude, September 4, 2026)
 
 Forecast risk preview: `dryNext` / `youngAtRisk` computed in `viewGrove`; map buttons get `is-dry-next` + a `grove-patch-dry` chip and ", dry next year" in the label; the forecast card shows a `.grove-risk` paragraph; the selected patch shows next year's moisture. Reflection: `noteField()` inside `ledgerBlock` writes `note` onto the current run's ledger entry via `upd('groveLedger', fn)`; notes appear in the "Other runs" list. Journal `ul`/`ol` list styles restored. Two unit tests and browser assertions added; 24 units + browser green; captures `grove-forecast-risk.png`, `grove-map-dry-next.png`. Local, uncommitted, undeployed.
+
+## Tenth pass (Claude, September 5, 2026)
+
+K-2 wording layer in `viewGrove`: `simple`, `say()`, `priorityName()`, `priorityCopy()`, `eventCopySimple`; 31 `say(` call sites. Facts and structure unchanged. Unit test in `tests/tree_lab_grove_evidence.test.js` (K-2 vs default band on the same loss year) and a second browser test in `tests/e2e/treelab-grove-evidence.spec.ts`; 29 units + 2 browser tests green; captures `grove-k2-decisions.png`, `grove-k2-receipt.png`. Local, uncommitted, undeployed. Largest open item: Grove Journey strings do not go through `__alloT` / the language packs.
+
+## Eleventh pass (Claude, September 5, 2026)
+
+Visuals/engagement/a11y: event icons + titles on `.grove-progress` tiles; glyph scale from `heightM`; `.grove-glyph.is-new` wrapper pop-in (class only when `!reduceMotion`, keyframe also disabled by media query; wrapper has no transform attribute on purpose); `gap` light wedge path `M70 2 L30 86 L110 86Z`; `.grove-patch-water` bar + ", soil N% wet" in labels; `.grove-discovery` status banner in the receipt (engine discoveries earned this year plus a first prediction hit). Two unit tests + browser assertions; 31 units and 2 browser tests green. Local, uncommitted, undeployed.
+
+## Twelfth pass (Claude, September 5, 2026)
+
+Keyboard flow and sharing: `focusLater`, `tabIndex: -1` on setup/forecast/ending h3, `.grove-skip` link to `#grove-decisions`, `.grove-goal-dots`, `copyText` (alloCopyText, clipboard, execCommand, then `.grove-share-text` fallback), `runSummaryText`, `shareBlock` in the replay column; `groveShare` UI state cleared on save/setup. 33 units + 2 browser tests green. Local, uncommitted, undeployed.
+
+## Thirteenth pass (Claude, September 5, 2026)
+
+`habitatDetail()` ground marks (`.grove-habitat.is-damp/is-exposed/is-sheltered`), patch `title` tooltips, `.grove-evidence-link` -> `#grove-receipt` (tabIndex -1, `aria-live` removed to avoid double announcement with `srSay`). 34 units + 2 browser tests green. Local, uncommitted, undeployed.
+
+## Fourteenth pass (Claude, September 5, 2026) - single-tree views
+
+Moved off the campaign to the lab views. Measured first: Grow/Chemistry/Spread/Check are all axe-clean with no phone overflow, the scene sticky works (canvas moved 293px over a 1400px scroll), and the Grow layout measures 667x578 canvas in a 695/620 workbench split. Two "defects" seen in the first capture were downscaling artifacts - do not trust a 4500px screenshot rendered at 607px wide. Real finding: view heights are grow 4500, transport 3236, chem 2174, spread 1928, quiz 1124 desktop; grow is 7015 on a 390px phone.
+
+Added a Grow section navigator: `GROW_SECTIONS`, `growSection(node, id, label)` wrapping five `pushKeyed` panels in labelled focusable `<section>`s, and `growNav()` rendering the pill links (inline theme tokens plus CSS for hover/focus only - the tool defines `--tree-ink`/`--tree-muted`/`--tree-accent`/`--tree-focus`, NOT `--tree-border`/`--tree-card`). New files `tests/tree_lab_grow_nav.test.js` (3) and `tests/e2e/treelab-grow-nav.spec.ts` (2); main suite reran green at 180. Local, uncommitted, undeployed.

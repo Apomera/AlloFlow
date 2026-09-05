@@ -972,3 +972,95 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
     expect(body.slice(legend, legend + 700)).toMatch(/tail\.map\(function \(sp\)[\s\S]*ERAS\[sp\.i\]\.name/);
   });
 });
+
+describe('The 3D volcano view owns its own screen furniture', () => {
+  it('changes the canvas header and drops the currents chip when the cutaway is up', () => {
+    const text = src();
+    const i = text.indexOf('"Live tectonic model"');
+    const body = text.slice(i, i + 1600);
+    expect(body).toMatch(/ptVent3D\s*\?\s*"Volcano cutaway[^"]*"\s*:\s*"Drag the crust plates and compare the boundary response"/);
+    expect(body).toMatch(/!ptVent3D && React\.createElement\("span", \{[^}]*\}, showConvection \? "Currents visible" : "Currents hidden"\)/);
+  });
+  it('keeps the depth ticks readable and the resting glow off', () => {
+    const text = src();
+    const scale = text.slice(text.indexOf("[-25,   '10 km',   '#cbd5e1']"), text.indexOf("[-25,   '10 km',   '#cbd5e1']") + 2200);
+    const m = scale.match(/tl\.scale\.multiplyScalar\(([\d.]+)\)/);
+    expect(m).not.toBeNull();
+    expect(parseFloat(m[1])).toBeGreaterThanOrEqual(0.85);
+    const hot = text.match(/var hot = ph === 'blast' \? 1 : [^;]*: ([\d.]+);/);
+    expect(hot).not.toBeNull();
+    expect(parseFloat(hot[1])).toBe(0);
+  });
+});
+
+describe('Sim canvas on a phone: the contact state', () => {
+  it('drops the quake reason line below 720 px and shrinks the box with it', () => {
+    const text = src();
+    const i = text.indexOf("var lqTxt = 'M ' + lq.mag.toFixed(1);");
+    const body = text.slice(i, i + 1400);
+    expect(body).toMatch(/var lqWhy = cW < 720 \? '' : \(KIND_WHY\[lq\.kind\] \|\| ''\)/);
+    expect(body).toMatch(/var lqH = lqWhy \? 32 : 22/);
+  });
+  it('lets the boundary caption cross to the arc side when the clamp would push it back over the cone', () => {
+    const text = src();
+    const i = text.indexOf('var chxWant = arcSide === 0 ? C.mid');
+    const body = text.slice(i, i + 900);
+    expect(body).toMatch(/if \(arcSide !== 0 && Math\.abs\(chx - chxWant\) > 8\) \{[\s\S]*if \(Math\.abs\(chxAlt - C\._arcX\) > Math\.abs\(chx - C\._arcX\)\) chx = chxAlt;/);
+  });
+  it('keeps the crustal root label on the canvas', () => {
+    const text = src();
+    expect(text).toMatch(/ctx\.fillText\('crustal root', Math\.max\(rootLblW \/ 2 \+ 6, Math\.min\(cW - rootLblW \/ 2 - 6, B\.mid\)\)/);
+  });
+});
+
+describe('Catalogue searches say when nothing matches', () => {
+  it('routes the plate, volcano and glossary lists through one empty-state wrapper', () => {
+    const text = src();
+    expect(text).toMatch(/var ptEmptyOr = function \(term, list\) \{\s*if \(list\.length \|\| !term\) return list;/);
+    expect(text).toMatch(/'data-pt-no-matches': 'true', role: 'status'/);
+    expect(text).toMatch(/ptEmptyOr\(d\._plateSearch, PLATE_DB\.filter\(/);
+    expect(text).toMatch(/ptEmptyOr\(d\._volcanoSearch, VOLCANO_DB\.filter\(/);
+    expect(text).toMatch(/ptEmptyOr\(d\._glossarySearch, G\.filter\(/);
+  });
+});
+
+describe('Quick-Review cards are flash cards, not an answer sheet', () => {
+  // The panel told the student to answer in their head and then check, while
+  // printing the answer in the same card. Same defect class as the reference
+  // shelf that used to sit open under the quiz.
+  it('hides every answer behind its own reveal, with one control for all sixty', () => {
+    const text = src();
+    const i = text.indexOf('simTab === "review"');
+    const j = text.indexOf('simTab === "faq"', i);
+    const blk = text.slice(i, j);
+    expect((blk.match(/ptReviewAnswer\(\d+, __alloT\(/g) || []).length).toBe(60);
+    // no answer is rendered as a bare labelled div any more
+    expect(blk).not.toMatch(/React\.createElement\('span', \{ className: 'font-bold text-indigo-700' \}, "Answer: "\)/);
+    expect(blk).toMatch(/'data-pt-review-reveal-all': String\(!!d\._ptRevealAll\)/);
+    const helper = text.slice(text.indexOf('var ptReviewAnswer = function (n, text)'), text.indexOf('var ptReviewAnswer = function (n, text)') + 1200);
+    expect(helper).toMatch(/var open = !!\(d\._ptRevealAll \|\| \(d\._ptRevealed \|\| \{\}\)\[n\]\)/);
+    expect(helper).toMatch(/'data-pt-review-reveal': String\(n\)/);
+  });
+
+  it('renders each field label once, by stripping the value that repeats it', () => {
+    const text = src();
+    const i = text.indexOf('simTab === "review"');
+    const blk = text.slice(i, text.indexOf('simTab === "faq"', i));
+    expect((blk.match(/ptReviewField\("(Concept|Question): ", __alloT\(/g) || []).length).toBe(120);
+    const strip = text.slice(text.indexOf('var ptStripLabel = function (label, text)'), text.indexOf('var ptStripLabel = function (label, text)') + 700);
+    // The label can never carry regex punctuation into new RegExp: everything
+    // but letters, digits and spaces is stripped before the pattern is built.
+    expect(strip).toMatch(/replace\(\/\[\^A-Za-z0-9 \]\+\/g, ' '\)/);
+    // Built from the label, anchored, and case-insensitive — so it removes a
+    // repeated PREFIX and can never eat a match from the middle of an answer.
+    expect(strip).toMatch(/new RegExp\([^)]*\+ lab \+[^)]*'i'\)/);
+    expect(strip).toMatch(/new RegExp\('\^/);
+  });
+
+  it('keeps the review card ink light, because the card is white in both themes', () => {
+    const text = src();
+    const field = text.slice(text.indexOf('var ptReviewField = function (label, text)'), text.indexOf('var ptReviewField = function (label, text)') + 600);
+    expect(field).toMatch(/className: 'text-\[11px\] text-slate-700 mb-1'/);
+    expect(field).not.toMatch(/isDark/);
+  });
+});

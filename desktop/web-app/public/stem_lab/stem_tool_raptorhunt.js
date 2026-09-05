@@ -342,6 +342,7 @@
     '.rh-stoop-impact-panel{display:grid;gap:9px;padding:11px 12px;border:1px solid rgba(248,113,113,.44);border-radius:11px;background:linear-gradient(110deg,rgba(127,29,29,.28),rgba(15,23,42,.8));}.rh-stoop-impact-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}.rh-stoop-impact-kicker{color:#fca5a5;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-stoop-impact-title{display:block;margin-top:3px;color:#fff1f2;font:900 12px/1.15 ui-sans-serif,system-ui;}.rh-stoop-impact-value{color:#fef3c7;font:900 15px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-stoop-impact-track{position:relative;height:78px;border:1px solid rgba(148,163,184,.62);border-radius:9px;background:linear-gradient(180deg,rgba(2,6,23,.86),rgba(15,23,42,.62));overflow:visible;}.rh-stoop-impact-track::before{content:"";position:absolute;inset:8px 0 22px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.2) 0,rgba(148,163,184,.2) 1px,transparent 1px,transparent 10%);pointer-events:none;}.rh-stoop-impact-current{position:absolute;top:5px;bottom:20px;width:2px;transform:translateX(-50%);background:#fef3c7;box-shadow:0 0 0 1px rgba(127,29,29,.8),0 0 10px rgba(254,243,199,.85);z-index:3;}.rh-stoop-impact-current-dot{position:absolute;left:50%;top:21px;width:10px;height:10px;transform:translate(-50%,-50%);border:2px solid #fff7ed;border-radius:50%;background:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.24),0 0 12px rgba(249,115,22,.85);}.rh-stoop-impact-current-label{position:absolute;top:0;left:50%;transform:translateX(-50%);color:#fff7ed;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}.rh-stoop-impact-marker{position:absolute;bottom:0;width:1px;height:25px;transform:translateX(-50%);background:#94a3b8;z-index:2;}.rh-stoop-impact-marker-label{position:absolute;bottom:27px;left:50%;transform:translateX(-50%);color:#cbd5e1;font:800 8px/1.1 ui-sans-serif,system-ui;text-align:center;white-space:nowrap;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(-84%);}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{bottom:42px;transform:translateX(-16%);color:#fed7aa;}.rh-stoop-impact-marker[data-impact-marker="peregrine"]{background:#fbbf24;}.rh-stoop-impact-marker[data-impact-marker="peregrine"] .rh-stoop-impact-marker-label{color:#fde68a;}.rh-stoop-impact-marker[data-impact-marker="harpy"]{background:#f87171;}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{color:#fecaca;}.rh-stoop-impact-axis{display:flex;justify-content:space-between;color:#94a3b8;font:700 8px/1 ui-monospace,Menlo,monospace;}.rh-stoop-impact-note{color:#cbd5e1;font:700 9px/1.3 ui-sans-serif,system-ui;}.rh-stoop-impact-note strong{color:#fecaca;}',
     '.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{font-size:7px;}@media(max-width:520px){.rh-stoop-impact-panel{padding:10px;}.rh-stoop-impact-track{height:72px;}.rh-stoop-impact-marker-label{font-size:7px;}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{bottom:39px;}}@media(max-width:430px){.rh-stoop-impact-head{gap:5px;}.rh-stoop-impact-title{font-size:11px;}.rh-stoop-impact-value{font-size:13px;}.rh-stoop-impact-marker-label{font-size:6px;}.rh-stoop-impact-axis{font-size:7px;}}@media(forced-colors:active){.rh-stoop-impact-panel,.rh-stoop-impact-track{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-stoop-impact-kicker,.rh-stoop-impact-title,.rh-stoop-impact-value,.rh-stoop-impact-marker-label,.rh-stoop-impact-axis,.rh-stoop-impact-note,.rh-stoop-impact-note strong{color:CanvasText}.rh-stoop-impact-track::before{background:repeating-linear-gradient(90deg,CanvasText 0,CanvasText 1px,transparent 1px,transparent 10%);opacity:.5}.rh-stoop-impact-current,.rh-stoop-impact-marker{background:Highlight;box-shadow:none}.rh-stoop-impact-current-dot{border-color:CanvasText;background:Highlight;box-shadow:none;}}',
     '.rh-flight-metric{min-width:84px;padding:7px 10px;text-align:center;border-right:1px solid rgba(100,116,139,.55);}',
+    '.rh-flight-key-guide{position:absolute;left:50%;bottom:40px;z-index:12;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:calc(100% - 24px);pointer-events:none;}.rh-flight-key-guide[hidden]{display:none;}.rh-flight-key{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid rgba(103,232,249,.5);border-radius:8px;background:rgba(2,6,23,.84);color:#e2e8f0;font:700 11px/1.1 ui-sans-serif,system-ui;white-space:nowrap;}.rh-flight-key kbd{display:inline-block;min-width:16px;padding:3px 6px;border:1px solid rgba(226,232,240,.7);border-bottom-width:2px;border-radius:4px;background:#0f172a;color:#fff;font:800 10px/1 ui-monospace,Menlo,monospace;text-align:center;}.rh-flight-key[data-primary="true"]{border-color:#fbbf24;color:#fef3c7;}.rh-flight-key[data-primary="true"] kbd{border-color:#fbbf24;}.rh-flight-keymap{list-style:none;margin:6px 0 0;padding:0;flex:1 1 100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;font:600 11px/1.3 ui-sans-serif,system-ui;color:#cbd5e1;}.rh-flight-keymap kbd{font:800 10px/1 ui-monospace,Menlo,monospace;color:#fff;background:#0f172a;border:1px solid rgba(226,232,240,.6);border-radius:4px;padding:2px 5px;}@media(max-width:760px){.rh-flight-key-guide{display:none;}.rh-flight-keymap{grid-template-columns:1fr;}}@media(forced-colors:active){.rh-flight-key,.rh-flight-key kbd,.rh-flight-keymap kbd{border-color:CanvasText;background:Canvas;color:CanvasText;}.rh-flight-key[data-primary="true"]{border-color:Highlight;}}',
     '.rh-silent-stack-node[data-silent-tone="violet"]{border-color:rgba(167,139,250,.62);background:rgba(76,29,149,.22);}.rh-silent-stack-node[data-silent-tone="indigo"]{border-color:rgba(129,140,248,.62);background:rgba(49,46,129,.24);}.rh-silent-stack-node[data-silent-tone="purple"]{border-color:rgba(192,132,252,.62);background:rgba(88,28,135,.22);}.rh-silent-stack-node[data-silent-tone="emerald"]{border-color:rgba(52,211,153,.62);background:rgba(6,78,59,.24);}.rh-silent-stack-node[data-silent-tone="emerald"] .rh-silent-stack-node-step,.rh-silent-stack-node[data-silent-tone="emerald"] .rh-silent-stack-node-label{color:#a7f3d0;}',
     '.rh-silent-stack-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 14px;color:#a78bfa;font:900 16px/1 ui-sans-serif,system-ui;}.rh-silent-stack-foot{color:#cbd5e1;font:700 9px/1.3 ui-sans-serif,system-ui;}.rh-silent-stack-foot strong{color:#ddd6fe;}',
     '@media(max-width:720px){.rh-silent-stack-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.rh-silent-stack-arrow{display:none;}}@media(max-width:430px){.rh-silent-stack-flow{grid-template-columns:1fr;}.rh-silent-stack-node{padding:7px;}}',
@@ -417,6 +418,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
     }
     return a;
+  }
+
+  // Control presets. Physical key (event.key, lower-cased) -> action. The sim keeps
+  // using its canonical key tokens internally (RAPTOR_ACTION_KEYS), so on-screen hold
+  // buttons and tests are unaffected by which preset is active.
+  var RAPTOR_ACTION_KEYS = {
+    turnLeft: 'a', turnRight: 'd', pitchUp: 'w', pitchDown: 's',
+    altDown: 'q', altUp: 'e', dive: 'shift', pullUp: ' ', strike: 'f'
+  };
+  var RAPTOR_ACTION_LABELS = {
+    turnLeft: 'Turn left', turnRight: 'Turn right', pitchUp: 'Nose up', pitchDown: 'Nose down',
+    altDown: 'Trim down', altUp: 'Trim up', dive: 'Dive (hold)', pullUp: 'Pull up / take off',
+    strike: 'Strike', pause: 'Pause', view: 'Camera', zoom: 'Zoom', assist: 'Target assist', sound: 'Sound'
+  };
+  var RAPTOR_CONTROL_SCHEMES = {
+    classic: { id: 'classic', label: 'Classic (WASD + Shift)', keys: {
+      a: 'turnLeft', d: 'turnRight', w: 'pitchUp', s: 'pitchDown', q: 'altDown', e: 'altUp',
+      shift: 'dive', ' ': 'pullUp', f: 'strike', p: 'pause', escape: 'pause',
+      v: 'view', z: 'zoom', t: 'assist', m: 'sound',
+      arrowleft: 'turnLeft', arrowright: 'turnRight', arrowup: 'pitchUp', arrowdown: 'pitchDown'
+    } },
+    arrows: { id: 'arrows', label: 'Arrow keys + Enter', keys: {
+      arrowleft: 'turnLeft', arrowright: 'turnRight', arrowup: 'pitchUp', arrowdown: 'pitchDown',
+      pageup: 'altUp', pagedown: 'altDown', shift: 'dive', ' ': 'pullUp', enter: 'strike',
+      p: 'pause', escape: 'pause', v: 'view', z: 'zoom', t: 'assist', m: 'sound'
+    } },
+    lefthand: { id: 'lefthand', label: 'Left-hand mouse (IJKL)', keys: {
+      j: 'turnLeft', l: 'turnRight', i: 'pitchUp', k: 'pitchDown', u: 'altDown', o: 'altUp',
+      shift: 'dive', ' ': 'pullUp', enter: 'strike', h: 'strike',
+      p: 'pause', escape: 'pause', v: 'view', z: 'zoom', t: 'assist', m: 'sound'
+    } },
+    simple: { id: 'simple', label: 'Simple (arrows + Space)', keys: {
+      arrowleft: 'turnLeft', arrowright: 'turnRight', a: 'turnLeft', d: 'turnRight',
+      arrowdown: 'dive', arrowup: 'pullUp', ' ': 'strike', enter: 'strike',
+      p: 'pause', escape: 'pause', v: 'view', z: 'zoom', t: 'assist', m: 'sound'
+    } }
+  };
+  var RAPTOR_KEY_NAMES = {
+    ' ': 'Space', shift: 'Shift', enter: 'Enter', escape: 'Esc',
+    arrowleft: '\u2190', arrowright: '\u2192', arrowup: '\u2191', arrowdown: '\u2193',
+    pageup: 'PgUp', pagedown: 'PgDn'
+  };
+  function raptorControlScheme(id) {
+    return RAPTOR_CONTROL_SCHEMES[id] || RAPTOR_CONTROL_SCHEMES.classic;
+  }
+  function raptorKeysForAction(schemeId, action) {
+    var keys = raptorControlScheme(schemeId).keys;
+    return Object.keys(keys).filter(function(key) { return keys[key] === action; });
+  }
+  function raptorKeyName(key) {
+    return RAPTOR_KEY_NAMES[key] || String(key || '').toUpperCase();
+  }
+  // First key bound to an action, formatted for display ('Shift', 'Space', 'A', arrow glyphs).
+  function raptorKeyLabel(schemeId, action) {
+    var keys = raptorKeysForAction(schemeId, action);
+    return keys.length ? raptorKeyName(keys[0]) : '';
+  }
+  // 'A/D' style pair for opposing actions; empty when the preset binds neither.
+  function raptorKeyPair(schemeId, actionA, actionB) {
+    var a = raptorKeyLabel(schemeId, actionA), b = raptorKeyLabel(schemeId, actionB);
+    return a && b ? a + '/' + b : a || b;
+  }
+  function raptorSchemeShortcuts(schemeId) {
+    var seen = {};
+    return Object.keys(raptorControlScheme(schemeId).keys).map(raptorKeyName).filter(function(name) {
+      if (seen[name]) return false; seen[name] = true; return true;
+    }).join(' ');
+  }
+  // Rows for the binding list in Settings, in teaching order.
+  function raptorSchemeBindings(schemeId) {
+    return ['turnLeft', 'turnRight', 'pitchUp', 'pitchDown', 'altUp', 'altDown', 'dive', 'pullUp', 'strike', 'pause', 'view', 'zoom', 'assist', 'sound']
+      .map(function(action) {
+        var keys = raptorKeysForAction(schemeId, action).map(raptorKeyName);
+        return keys.length ? { action: action, label: RAPTOR_ACTION_LABELS[action], keys: keys } : null;
+      }).filter(Boolean);
   }
 
   // ─── Three.js loader (shared bootstrap) ───
@@ -8295,6 +8371,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var tutorialStep = tutorialStepState[0];
       var setTutorialStep = tutorialStepState[1];
       var flightSession = rh.flightSession || null;
+      var controlScheme = RAPTOR_CONTROL_SCHEMES[rh.controlScheme] ? rh.controlScheme : 'classic';
+      var keyGuideEnabled = rh.keyGuideEnabled !== false;
+      function controlLabel(action) { return raptorKeyLabel(controlScheme, action); }
+      function controlPair(actionA, actionB) { return raptorKeyPair(controlScheme, actionA, actionB); }
       function setRH(patch) {
         ctx.setToolData(function(prev) {
           var cur = (prev && prev.raptorHunt) || {};
@@ -8329,10 +8409,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return function() { window.clearTimeout(resultFocusTimer); };
       }, [simUI.missionState]);
       var HUNT_TUTORIAL = [
-        { signal: 'steer', title: 'Steer the bird', copy: 'Drag across the sky, or use A and D, to turn toward open terrain.' },
-        { signal: 'altitude', title: 'Manage altitude', copy: 'Use Dive or Pull up. Q and E provide precise altitude trim.' },
+        { signal: 'steer', title: 'Steer the bird', copy: 'Drag across the sky, or use ' + (controlPair('turnLeft', 'turnRight') || 'the turn keys') + ', to turn toward open terrain.' },
+        { signal: 'altitude', title: 'Manage altitude', copy: 'Hold ' + controlLabel('dive') + ' to dive or ' + controlLabel('pullUp') + ' to pull up.' + (controlPair('altUp', 'altDown') ? ' ' + controlPair('altUp', 'altDown') + ' trims altitude precisely.' : '') },
         { signal: 'target', title: 'Acquire prey', copy: 'Turn until the target assist brackets prey. Follow the text cue above.' },
-        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance and press Strike when the cue says Strike ready.' }
+        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance and press ' + controlLabel('strike') + ' (Strike) when the cue says Strike ready.' }
       ];
       function finishHuntTutorial(message) {
         setTutorialStep(-1);
@@ -8363,6 +8443,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           canvas._rhCommand(action, value);
         }
       }
+      useEffect(function() {
+        sendHuntCommand('controls', { scheme: controlScheme });
+      }, [controlScheme, flightSession && flightSession.speciesId]);
+      useEffect(function() {
+        sendHuntCommand('keyGuide', { enabled: keyGuideEnabled });
+      }, [keyGuideEnabled, flightSession && flightSession.speciesId]);
       function sendHuntCommandFromControl(event, action, value) {
         sendHuntCommand(action, value);
         if (event && event.detail > 0) {
@@ -9946,7 +10032,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             type: 'button',
             className: 'rh-flight-btn ' + (extraClass || ''),
             'aria-label': ariaLabel || label,
-            'aria-keyshortcuts': keyName === ' ' ? 'Space' : keyName === 'shift' ? 'Shift' : String(keyName || '').toUpperCase(),
+            'aria-keyshortcuts': (function() {
+              var action = Object.keys(RAPTOR_ACTION_KEYS).filter(function(name) { return RAPTOR_ACTION_KEYS[name] === keyName; })[0];
+              return (action && controlLabel(action)) || (keyName === ' ' ? 'Space' : keyName === 'shift' ? 'Shift' : String(keyName || '').toUpperCase());
+            })(),
             onPointerDown: function(event) {
               event.preventDefault();
               if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
@@ -10163,8 +10252,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('details', { className: 'bg-slate-950/65 border border-cyan-500/50 rounded-lg p-3 text-xs text-slate-200 lg:max-w-sm' },
                 h('summary', { className: 'font-bold text-cyan-200 cursor-pointer' }, 'Controls and science'),
                 h('div', { id: 'rh-flight-instructions', className: 'mt-2 leading-relaxed' },
-                  h('div', { className: 'font-mono text-amber-200 mb-1' }, 'W/S pitch - A/D turn - Q/E altitude trim'),
-                  h('div', { className: 'font-mono text-amber-200 mb-2' }, 'WASD fly - Shift dive - Space pull up - F STRIKE - T target assist - V camera - P pause'),
+                  h('div', { className: 'font-mono text-amber-200 mb-1' }, raptorSchemeBindings(controlScheme).slice(0, 6).map(function(row) { return row.keys.join('/') + ' ' + row.label.toLowerCase(); }).join(' - ')),
+                  h('div', { className: 'font-mono text-amber-200 mb-2' }, raptorSchemeBindings(controlScheme).slice(6).map(function(row) { return row.keys[0] + ' ' + row.label.toLowerCase(); }).join(' - ') + ' - change presets in Settings'),
                   h('div', { className: 'text-slate-300' }, mission.pedagogy)
                 )
               )
@@ -10242,9 +10331,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       ref: huntCanvasRef,
                       'data-raptor-canvas': 'true',
                       role: 'application',
-                      'aria-label': '3D raptor flight. W and S pitch, A and D turn, Q and E trim altitude, Shift dives, Space pulls up, F strikes, P pauses, V changes camera, Z zooms, and T toggles target assist.',
+                      'aria-label': '3D raptor flight. ' + raptorSchemeBindings(controlScheme).map(function(row) { return row.keys.join(' or ') + ' ' + row.label.toLowerCase(); }).join(', ') + '.',
                       'aria-describedby': 'rh-flight-instructions',
-                      'aria-keyshortcuts': 'W S A D Q E Shift Space F P V Z T',
+                      'aria-keyshortcuts': raptorSchemeShortcuts(controlScheme),
+                      'data-raptor-control-scheme': controlScheme,
+                      'data-raptor-key-guide': keyGuideEnabled ? 'true' : 'false',
                       tabIndex: 0,
                       style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' }
                     }),
@@ -10524,6 +10615,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         simToggleButton('Target assist', 'assist', simUI.assist, 'Toggle target assist'),
                         simToggleButton(simUI.sound ? 'Sound on' : 'Sound off', 'sound', simUI.sound, 'Toggle flight sound'),
                         h('button', { type: 'button', className: 'rh-flight-btn', onClick: replayHuntTutorial }, 'Replay tutorial'),
+                        h('button', {
+                          type: 'button',
+                          className: 'rh-flight-btn',
+                          'data-raptor-key-guide-toggle': 'true',
+                          'aria-pressed': keyGuideEnabled ? 'true' : 'false',
+                          onClick: function() {
+                            setRH({ keyGuideEnabled: !keyGuideEnabled });
+                            rhAnnounce(!keyGuideEnabled ? 'Key guide on. The keys for the current phase show at the bottom of the flight view.' : 'Key guide off');
+                          }
+                        }, keyGuideEnabled ? 'Key guide on' : 'Key guide off'),
+                        h('label', { className: 'rh-flight-quality' },
+                          h('span', null, 'Controls'),
+                          h('select', {
+                            value: controlScheme,
+                            'data-raptor-control-scheme-select': 'true',
+                            'aria-label': 'Keyboard control preset',
+                            onChange: function(event) {
+                              var nextScheme = RAPTOR_CONTROL_SCHEMES[event.target.value] ? event.target.value : 'classic';
+                              setRH({ controlScheme: nextScheme });
+                              rhAnnounce('Controls set to ' + RAPTOR_CONTROL_SCHEMES[nextScheme].label);
+                            }
+                          },
+                            Object.keys(RAPTOR_CONTROL_SCHEMES).map(function(id) {
+                              return h('option', { key: id, value: id }, RAPTOR_CONTROL_SCHEMES[id].label);
+                            })
+                          )
+                        ),
+                        h('ul', { className: 'rh-flight-keymap', 'data-raptor-keymap': 'true', 'aria-label': 'Key bindings for ' + RAPTOR_CONTROL_SCHEMES[controlScheme].label },
+                          raptorSchemeBindings(controlScheme).map(function(row) {
+                            return h('li', { key: row.action },
+                              row.keys.map(function(key, index) { return h(React.Fragment, { key: key }, index > 0 && ' or ', h('kbd', null, key)); }),
+                              ' ', row.label
+                            );
+                          })
+                        ),
                         h('div', {
                           className: 'rh-flight-performance',
                           'data-raptor-performance': 'true',
@@ -10574,8 +10700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       h('span', { className: 'rh-flight-control-label' }, 'Flight'),
                       holdFlightButton('\u2193 Alt', 'q', '', 'Hold to descend'),
                       holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb'),
-                      holdFlightButton('Dive (Shift)', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard Shift'),
-                      holdFlightButton('Pull up (Space)', ' ', '', 'Hold to pull up - keyboard Space'),
+                      holdFlightButton('Dive (' + (controlLabel('dive') || 'hold') + ')', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard ' + (controlLabel('dive') || 'unbound')),
+                      holdFlightButton('Pull up (' + (controlLabel('pullUp') || 'hold') + ')', ' ', '', 'Hold to pull up - keyboard ' + (controlLabel('pullUp') || 'unbound')),
                       h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-strike',
@@ -10806,10 +10932,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Zenith → middle → horizon
         // Static luminance only: biome, time, twilight, and weather color come
         // from skyDome.material.color, so this texture never needs repainting.
-        skGrad.addColorStop(0, '#94a3b8');
-        skGrad.addColorStop(0.58, '#cbd5e1');
-        skGrad.addColorStop(0.88, '#e2e8f0');
-        skGrad.addColorStop(1, '#f8fafc');
+        // A bright haze band sits just above the horizon, then the horizon itself dims a touch.
+        skGrad.addColorStop(0, '#8fa0b5');
+        skGrad.addColorStop(0.5, '#c3ced9');
+        skGrad.addColorStop(0.8, '#dbe3ea');
+        skGrad.addColorStop(0.9, '#f1f4f7');
+        skGrad.addColorStop(0.965, '#fbfcfd');
+        skGrad.addColorStop(1, '#e6ecf2');
         skCtx.fillStyle = skGrad;
         skCtx.fillRect(0, 0, 16, 512);
         var skyTex = new THREE.CanvasTexture(skyCanvas);
@@ -10915,13 +11044,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           cloudCanvas.width = 256; cloudCanvas.height = 128;
           var cc = cloudCanvas.getContext('2d');
           // Soft white puffy cloud
-          for (var ci = 0; ci < 8; ci++) {
-            var cx2 = 50 + ci * 25 + Math.random() * 30;
-            var cy2 = 64 + (Math.random() - 0.5) * 30;
-            var cr = 25 + Math.random() * 20;
+          for (var ci = 0; ci < 9; ci++) {
+            // Puffs stay inside the 256x128 canvas (centre + radius < edge) so the sprite has no hard edge.
+            var cx2 = 62 + ci * 16 + Math.random() * 18;
+            var cr = 20 + Math.random() * 16;
+            var cy2 = 70 - cr * 0.35 + (Math.random() - 0.5) * 14;
             var cGrad = cc.createRadialGradient(cx2, cy2, 0, cx2, cy2, cr);
-            cGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-            cGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.45)');
+            cGrad.addColorStop(0, 'rgba(255, 255, 255, 0.92)');
+            cGrad.addColorStop(0.55, 'rgba(255, 255, 255, 0.5)');
+            cGrad.addColorStop(0.85, 'rgba(255, 255, 255, 0.12)');
             cGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             cc.fillStyle = cGrad;
             cc.fillRect(0, 0, 256, 128);
@@ -11035,9 +11166,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var tCx = tCv.getContext('2d');
         var groundHex = '#' + new THREE.Color(bc.ground).getHexString();
         tCx.fillStyle = groundHex; tCx.fillRect(0, 0, 512, 512);
-        for (var ti = 0; ti < 3000; ti++) {
+        for (var ti = 0; ti < 4200; ti++) {
           var jit = (Math.random() - 0.5) * 60;
-          var col = new THREE.Color(bc.ground).offsetHSL(0, 0, jit / 600);
+          var col = new THREE.Color(bc.ground).offsetHSL((Math.random() - 0.5) * 0.02, 0, jit / 300);
           tCx.fillStyle = '#' + col.getHexString();
           tCx.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 4, 2 + Math.random() * 4);
         }
@@ -11191,7 +11322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           lake: [0x365314, 0x84cc16],
           rainforest: [0x14532d, 0x4ade80],
           forest: [0x166534, 0x86efac],
-          'forest-night': [0x1c1917, 0x818cf8],
+          'forest-night': [0x1c1917, 0x3f6b4f],
           'boreal-forest': [0x1f3a1d, 0xa7f3d0],
           grassland: [0x4d7c0f, 0xfacc15]
         }[species.biome] || [0x475569, 0xcbd5e1];
@@ -11273,7 +11404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             landmark.add(shorelineMarker);
           } else {
             var landmarkRock = new THREE.Mesh(
-              new THREE.ConeGeometry(6 + Math.random() * 8, landmarkHeight, landmarkMode === 'ice' ? 5 : 6),
+              // Peaks and rocks are broad (height 24-60 m on a 6-14 m radius read as needles); ice stays slimmer.
+              new THREE.ConeGeometry(landmarkHeight * (landmarkMode === 'ice' ? 0.28 : 0.42) + Math.random() * landmarkHeight * 0.22, landmarkHeight, landmarkMode === 'ice' ? 5 : 6),
               landmarkMode === 'ice' ? landmarkAccentMaterial : landmarkMaterial
             );
             landmarkRock.position.y = landmarkHeight * 0.5;
@@ -11432,7 +11564,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (species.biome === 'cliff' || species.biome === 'mountain') treeType = Math.random() < 0.6 ? 0 : 2;
           treePlacements[treeType].push({
             x: tx, y: ty, z: tz, height: treeHeight,
-            shade: 0.88 + Math.random() * 0.18
+            shade: 0.88 + Math.random() * 0.18,
+            tint: (Math.random() - 0.5) * 0.18
           });
         }
         var trunkCount = treePlacements.reduce(function(total, batch) { return total + batch.length; }, 0);
@@ -11497,7 +11630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var crownIndex = instanceIndex * crownLayers + crownLayer;
               foliageInstances.setMatrixAt(crownIndex, treeDummy.matrix);
               if (foliageInstances.setColorAt) foliageInstances.setColorAt(crownIndex,
-                new THREE.Color(0xffffff).multiplyScalar(tree.shade * (0.75 + crownLayer * 0.16)));
+                new THREE.Color(1 + tree.tint, 1 + tree.tint * 0.25, 1 - tree.tint).multiplyScalar(tree.shade * (0.75 + crownLayer * 0.16)));
             }
           });
           foliageInstances.instanceMatrix.needsUpdate = true;
@@ -11576,8 +11709,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var nearMountainMaterial = new THREE.MeshStandardMaterial({
           roughness: 1, flatShading: true,
           color: new THREE.Color(mountainColor).offsetHSL(0, -0.04, -0.08),
-          transparent: true,
-          opacity: 0.82,
           fog: true
         });
         farMountainMaterial.color.convertSRGBToLinear();
@@ -11589,6 +11720,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var mtRadius = 435 + Math.random() * 115;
           var mtHeight = 44 + Math.random() * 72;
           var mtWidth = 72 + Math.random() * 58;
+          // No needle spires: keep every peak broader than it is tall.
+          mtHeight = Math.min(mtHeight, mtWidth * 0.82);
           var mt = new THREE.Mesh(
             sculptMountainGeometry(new THREE.ConeGeometry(mtWidth, mtHeight, 20, 5), mti * 1.7),
             mti % 2 ? nearMountainMaterial : farMountainMaterial
@@ -12412,7 +12545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var preyContactMaterial = new THREE.MeshBasicMaterial({
           color: 0x07111d,
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.34,
           side: THREE.DoubleSide,
           depthWrite: false,
           polygonOffset: true,
@@ -12443,13 +12576,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var contactZ = contactPrey.mesh.position.z;
             var contactHeading = Math.atan2(contactPrey.vx, -contactPrey.vz);
             var contactY = sampleTerrainContactFrame(contactX, contactZ, contactHeading) + 0.018;
-            var visualSize = Math.max(0.6, contactPrey.data.sizeM * 8 / 12);
+            var visualSize = Math.max(0.75, contactPrey.data.sizeM * 9 / 12);
             var heightFade = 1 / (1 + Math.max(0, contactPrey.flightHeight) * 0.09);
             preyContactDummy.position.set(contactX, contactY, contactZ);
             preyContactDummy.quaternion.copy(terrainContactQuaternion);
             preyContactDummy.scale.set(
-              visualSize * 1.25 * heightFade,
-              visualSize * 0.72 * heightFade,
+              visualSize * 1.4 * heightFade,
+              visualSize * 0.82 * heightFade,
               1
             );
             preyContactDummy.updateMatrix();
@@ -12613,6 +12746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         speedLineGeo.setAttribute('position', new THREE.BufferAttribute(speedLinePos, 3));
         var speedLineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
+        var speedLineWhite = new THREE.Color(0xffffff);
         var speedLines = new THREE.LineSegments(speedLineGeo, speedLineMat);
         scene.add(speedLines);
 
@@ -12773,8 +12907,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
           }
           // Larger visual scale — minimum size + size boost for tiny insects
-          var sizeBoost = (pd.sizeM < 0.10) ? 12 : 8;  // insects/rodents get extra boost to be visible
-          var size = Math.max(0.6, pd.sizeM * sizeBoost);  // floor at 0.6m so nothing is invisible
+          var sizeBoost = (pd.sizeM < 0.10) ? 13 : 9;  // insects/rodents get extra boost to be visible
+          var size = Math.max(0.75, pd.sizeM * sizeBoost);  // floor at 0.75m so nothing is invisible at balanced quality
           // ── NEW v0.24: Group with prey mesh + beacon for visibility ──
           var preyGroup = new THREE.Group();
           var preyVisual = buildPreyVisual(pd, size);
@@ -13682,6 +13816,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── Input ───
         var keys = {};
+        var controlScheme = raptorControlScheme(canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : '');
+        var keyGuideEnabled = !(canvasEl.dataset && canvasEl.dataset.raptorKeyGuide === 'false');
+        var keyGuide = null;
+        var keyGuideState = '';
         var camMode = 'chase';
         var zoomActive = false;
         var targetLockOn = true;
@@ -13749,15 +13887,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             animId = requestAnimationFrame(loop);
           }
           publishControlState();
+          refreshKeyGuide();
           if (announcement !== false) rhAnnounce(simPaused ? 'Flight paused' : 'Flight resumed');
         }
         function normalizedKey(event) {
           var raw = String(event.key || '').toLowerCase();
-          if (raw === 'arrowleft') return 'a';
-          if (raw === 'arrowright') return 'd';
-          if (raw === 'arrowup') return 'w';
-          if (raw === 'arrowdown') return 's';
-          return raw;
+          var action = controlScheme.keys[raw];
+          return action && RAPTOR_ACTION_KEYS[action] ? RAPTOR_ACTION_KEYS[action] : raw;
+        }
+        function controlKeyLabel(action) { return raptorKeyLabel(controlScheme.id, action); }
+        function setControlScheme(schemeId) {
+          controlScheme = raptorControlScheme(schemeId);
+          clearHeldInputs();
+          refreshKeyGuide(true);
+        }
+        function setKeyGuideEnabled(enabled) {
+          keyGuideEnabled = !!enabled;
+          refreshKeyGuide(true);
+        }
+        // Contextual key prompts: which keys matter right now, from the target state and
+        // the bird's condition. Re-rendered only when the prompt set changes.
+        function keyGuideRows() {
+          var landed = raptor && (raptor.landed || raptor.crashed);
+          var state = lastTargetState || 'search';
+          var rows = [];
+          function add(action, text, primary) {
+            var label = controlKeyLabel(action);
+            if (label) rows.push({ key: label, text: text, primary: !!primary });
+          }
+          function addPair(actionA, actionB, text) {
+            var pair = raptorKeyPair(controlScheme.id, actionA, actionB);
+            if (pair) rows.push({ key: pair, text: text, primary: false });
+          }
+          if (simPaused) { add('pause', 'Resume', true); return rows; }
+          if (landed) { add('pullUp', raptor.crashed ? 'Take off once recovered' : 'Take off', true); addPair('turnLeft', 'turnRight', 'Look around'); return rows; }
+          if (state === 'ready') { add('strike', 'Strike now', true); add('pullUp', 'Abort'); }
+          else if (state === 'close') { add('strike', 'Strike when ready', true); add('pullUp', 'Pull up'); addPair('turnLeft', 'turnRight', 'Fine-turn'); }
+          else if (state === 'stoop') { add('dive', 'Hold to stoop', true); add('pullUp', 'Pull up'); addPair('turnLeft', 'turnRight', 'Turn'); }
+          else if (state === 'align' || state === 'aligned') { addPair('turnLeft', 'turnRight', 'Turn onto target'); addPair('pitchUp', 'pitchDown', 'Pitch'); add('dive', 'Dive when below', true); }
+          else { addPair('turnLeft', 'turnRight', 'Turn'); addPair('pitchUp', 'pitchDown', 'Pitch'); addPair('altUp', 'altDown', 'Trim altitude'); add('assist', 'Target assist'); }
+          if (!simPaused && !landed) add('pause', 'Pause');
+          return rows.slice(0, 5);
+        }
+        function refreshKeyGuide(force) {
+          if (!keyGuide) return;
+          if (!keyGuideEnabled) {
+            if (!keyGuide.hidden) { keyGuide.hidden = true; keyGuideState = ''; }
+            return;
+          }
+          var rows = keyGuideRows();
+          var signature = controlScheme.id + '|' + rows.map(function(row) { return row.key + ':' + row.text + (row.primary ? '!' : ''); }).join(',');
+          if (!force && signature === keyGuideState) return;
+          keyGuideState = signature;
+          keyGuide.hidden = false;
+          while (keyGuide.firstChild) keyGuide.removeChild(keyGuide.firstChild);
+          rows.forEach(function(row) {
+            var chip = document.createElement('span');
+            chip.className = 'rh-flight-key';
+            if (row.primary) chip.dataset.primary = 'true';
+            var kbd = document.createElement('kbd');
+            kbd.textContent = row.key;
+            chip.appendChild(kbd);
+            chip.appendChild(document.createTextNode(row.text));
+            keyGuide.appendChild(chip);
+          });
         }
         function toggleView() {
           camMode = camMode === 'chase' ? 'fp' : 'chase';
@@ -13794,30 +13987,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function onKeyDown(event) {
           var raw = String(event.key || '').toLowerCase();
-          var key = normalizedKey(event);
-          if ((raw === 'p' || raw === 'escape') && !event.repeat) {
+          var action = controlScheme.keys[raw];
+          if (!action) return;  // keys outside the active preset do nothing
+          if (action === 'pause') {
+            if (event.repeat) return;
             if (raw !== 'escape' || !(document.fullscreenElement || document.webkitFullscreenElement)) {
               event.preventDefault();
               setPaused(!simPaused);
             }
             return;
           }
-          if ((raw === 'v' || raw === 'z' || raw === 't' || raw === 'm') && !event.repeat) {
+          if (action === 'view' || action === 'zoom' || action === 'assist' || action === 'sound') {
+            if (event.repeat) return;
             event.preventDefault();
-            if (raw === 'v') toggleView();
-            else if (raw === 'z') toggleZoom();
-            else if (raw === 't') toggleAssist();
+            if (action === 'view') toggleView();
+            else if (action === 'zoom') toggleZoom();
+            else if (action === 'assist') toggleAssist();
             else toggleSound();
             return;
           }
           if (simPaused) return;
+          var key = RAPTOR_ACTION_KEYS[action];
           keys[key] = true;
           if (key === 'a' || key === 'd') markTutorialSignal('steer');
           if (key === 'q' || key === 'e' || key === 'shift' || key === ' ' || key === 'w' || key === 's') markTutorialSignal('altitude');
           if (key === 'f' && !event.repeat) strike();
-          if (['w','a','s','d','q','e','f',' ','shift','arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1 || key === ' ') {
-            event.preventDefault();
-          }
+          event.preventDefault();
         }
         function onKeyUp(event) {
           keys[normalizedKey(event)] = false;
@@ -14210,6 +14405,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             weather.gustPhase = 0;
             updateEnvironmentalLight(dayPhase);
+          } else if (action === 'controls' && value) {
+            setControlScheme(value.scheme);
+          } else if (action === 'keyGuide' && value) {
+            setKeyGuideEnabled(value.enabled);
           } else if (action === 'resetTutorial') {
             tutorialSignals = {};
             notifyUI({ tutorialSignals: {} });
@@ -14686,6 +14885,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var telemetryMission = addTelemetryMetric('Mission', 'mission');
         telemetryMission.parentElement.dataset.raptorMissionMetric = 'true';
         hudParent.appendChild(telemetryStrip);
+        keyGuide = document.createElement('div');
+        keyGuide.className = 'rh-flight-key-guide';
+        keyGuide.setAttribute('role', 'group');
+        keyGuide.setAttribute('aria-label', 'Keys for the current flight phase');
+        keyGuide.dataset.raptorKeyGuide = 'true';
+        keyGuide.hidden = !keyGuideEnabled;
+        hudParent.appendChild(keyGuide);
         var flightStateEl = document.createElement('div');
         flightStateEl.className = 'rh-flight-state';
         flightStateEl.dataset.raptorFlightState = 'true';
@@ -15079,7 +15285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 if (raptor.crashTimer <= 0) {
                   raptor.crashed = false;
                   raptor.landed = true;  // graduates from crash → standing perched
-                  energyEventLog.push({ msg: '✓ Stood back up — SPACE to take off', t: now, color: '#a3e635' });
+                  energyEventLog.push({ msg: '✓ Stood back up — ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: '#a3e635' });
                 }
               }
               // SPACE = take off (only after crash recovery period)
@@ -15093,7 +15299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }
             } else if (verticalSpeed > 18 || raptor.speed > 50) {
               // HARD CRASH — fast vertical impact OR very high overall speed
-              rhAnnounce('Crash! Stunned. Wait, then SPACE to take off.');
+              rhAnnounce('Crash! Stunned. Wait, then ' + controlKeyLabel('pullUp') + ' to take off.');
               energyEventLog.push({ msg: '💥 CRASH — stunned ~3s', t: now, color: '#fca5a5' });
               raptor.crashed = true;
               raptor.crashTimer = 3.0;
@@ -15107,7 +15313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var soft = verticalSpeed < 6 && raptor.speed < 18;
               var msg = soft ? 'Landed.' : 'Rough landing.';
               rhAnnounce(msg);
-              energyEventLog.push({ msg: '🪶 ' + msg + ' SPACE to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
+              energyEventLog.push({ msg: '🪶 ' + msg + ' ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
               raptor.landed = true;
               raptor.y = minY;
               raptor.speed = 0;
@@ -15118,6 +15324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           runMaxAltitude = Math.max(runMaxAltitude, Math.max(0, raptor.y - groundY));
           if (raptor.landed && !wasLanded) spawnTouchdownFx('land');
           else if (!raptor.landed && wasLanded) spawnTouchdownFx('takeoff');
+          if (raptor.landed !== wasLanded || raptor.crashed !== wasCrashed) refreshKeyGuide();
           if (raptor.crashed && !wasCrashed) spawnTouchdownFx('crash');
 
           // ── Update raptor mesh ──
@@ -15373,7 +15580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
             nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
             nextTargetState === 'ready' ? 'READY - press Strike' :
-            nextTargetState === 'stoop' ? 'STOOP - hold Shift (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
+            nextTargetState === 'stoop' ? 'STOOP - hold ' + controlKeyLabel('dive') + ' (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
             nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' m (need ' + Math.round(targetInfo.reach) + ' m)' :
             (targetInfo.verticalOffset > 0 ? 'ALIGN ' + _alignPct + '% - pull up' : 'ALIGN ' + _alignPct + '% - dive lower');
           updateFlightTrail();
@@ -15390,6 +15597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             lastTargetRange = nextTargetRange;
             var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,
               targetAlign: nextTargetAlign, targetRange: nextTargetRange };
+            if (targetStateChanged) refreshKeyGuide();
             if (targetStateChanged) {
               if (nextTargetState !== 'hit' && nextTargetState !== 'miss') {
                 recordFlightEvent('target', nextTargetState === 'ready' ? 'Target ready' : nextTargetState === 'search' ? 'Scanning for prey' : 'Target ' + nextTargetState, nextTargetHint);
@@ -15401,7 +15609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 : nextTargetState === 'off' ? 'Target assist off.'
                 : nextTargetState === 'search' ? 'Scanning. No target locked.'
                 : nextTargetState === 'close' ? 'Target close. Align the reticle and prepare to strike.'
-                : nextTargetState === 'stoop' ? 'Target below. Hold Shift to dive.'
+                : nextTargetState === 'stoop' ? 'Target below. Hold ' + controlKeyLabel('dive') + ' to dive.'
                 : 'Target alignment changed. Adjust pitch.';
             }
             notifyUI(targetPatch);
@@ -15668,6 +15876,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Fade in based on dive speed
             var speedFrac = (raptor.speed - raptor.maxLevel * 0.8) / (raptor.stoopMax - raptor.maxLevel * 0.8);
             speedLineMat.opacity = Math.min(0.7, speedFrac * 0.9);
+            // Streaks carry the sky tint instead of pure white, so they sit in the scene at dusk and night.
+            speedLineMat.color.copy(scene.fog.color).lerp(speedLineWhite, 0.55);
           } else {
             speedLineMat.opacity = Math.max(0, speedLineMat.opacity - 3 * dt);
           }

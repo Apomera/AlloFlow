@@ -1,19 +1,19 @@
 # Claude handoff: Raptor Lab visuals and motion
 
 Workspace: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
-Prepared: 2026-09-04. A second pass the same evening and a third pass early on 2026-09-05 added the fixes under "Second pass" and "Third pass" and re-verified everything (see "Verified state").
+Prepared: 2026-09-04. Second to sixth visual passes and a seventh controls pass followed through 2026-09-05 (see the sections named after them). Passes one to three were committed and deployed by another session; passes four to seven are uncommitted.
 
 ## Status at a glance
 
 | Item | State |
 |---|---|
-| Implementation | Saved locally, uncommitted. HEAD is `3a7104b66` (Brain Atlas, unrelated). |
-| Canonical vs desktop source | Byte-identical: 3,233,963 B, md5 `e0fcaf0ddf21...` on both. |
+| Implementation | Passes 1 to 3 are in commit `f238731dd` (2026-09-05 08:57, "Deploy everyone's work", made by another session from the shared tree). Passes 4 to 7 are uncommitted and mirrored; run `git diff --stat` for the current size. |
+| Canonical vs desktop source | Byte-identical: 3,249,015 B, md5 `62a3d08b7997...` on both. |
 | Syntax | `node --check stem_lab/stem_tool_raptorhunt.js` passes. |
-| Unit tests | 114/114 in `scratch/raptor-flight-review/final-unit-results.json`. |
+| Unit tests | 119/119 in `scratch/raptor-flight-review/final-unit-results.json` (five new controls tests). |
 | Browser tests | 3/3 passed in Chromium (`tests/e2e/raptor-flight-continuity.spec.ts`). |
-| Visual signoff | Done for eight captures (wide peregrine, eagle lake, owl night, tablet, narrow, phone, 8x close-up, lake from the air). See "Second pass" and "Third pass". |
-| Commit / deploy | None. Do not deploy unless the user asks. |
+| Visual signoff | Done for eleven captures (wide peregrine, eagle lake, owl night, true night, tablet, narrow, phone, 8x close-up, lake from the air, crash-landing ground view, mid-stoop). See the pass sections. |
+| Commit / deploy | Passes 1 to 3 deployed in `f238731dd`. Passes 4 to 7 not committed. Do not deploy unless the user asks. |
 
 ## Request and stopping point
 
@@ -56,22 +56,25 @@ Ignore these two files. They are build outputs from Aug 31, not sources, and the
 
 ## Git state and how to commit
 
-`git status` for the touched paths:
+Another session committed the shared tree at 08:57 on 2026-09-05 as `f238731dd` and deployed it. That swept in passes one to three of this work: both raptor sources, the experience test, the continuity spec, the package.json script line, and this handoff. So the current `git status` for our paths is only:
 
 ```
  M desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js
- M package.json
  M stem_lab/stem_tool_raptorhunt.js
  M tests/stem_raptorhunt_experience.test.js
-?? CLAUDE_RAPTOR_LAB_HANDOFF.md
-?? scratch/raptor-flight-review.cjs
-?? scratch/raptor-strip-probe.cjs
-?? tests/e2e/raptor-flight-continuity.spec.ts
+ M CLAUDE_RAPTOR_LAB_HANDOFF.md
 ```
 
-Diff size on the canonical source: 493 lines changed (386 insertions, 107 deletions).
+That diff is passes four to seven (cloud sprites, ground grain, opaque near mountains, peak and landmark proportions, sky haze band, night landmark colour, prey size floor, prey shadow pads, tree crown tint, sky-tinted speed lines, control presets and the key guide).
 
-`package.json` carries other sessions' uncommitted hunks (performance build scripts, a school-rewards verify script). Only the `test:e2e:gl` line is ours. Stage that one hunk with `git add -p package.json`, or leave package.json out of the raptor commit.
+The `scratch/` directory is gitignored (rule added in that same commit), so the harness and the probe exist only on this machine. If they should survive, move them to `dev-tools/` and commit them from there.
+
+Commit passes four to seven by pathspec:
+
+```
+git add -- stem_lab/stem_tool_raptorhunt.js desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js tests/stem_raptorhunt_experience.test.js CLAUDE_RAPTOR_LAB_HANDOFF.md
+git commit -m "Raptor Lab: control presets and key guide; softer clouds, ground grain, broad peaks, sky haze, readable prey"
+```
 
 There were hundreds of unrelated dirty and untracked files before this task, and other sessions share this tree. Do not revert, stage, or synchronize the whole repository. Commit by explicit pathspec only:
 
@@ -80,7 +83,7 @@ git add -- stem_lab/stem_tool_raptorhunt.js desktop/web-app/public/stem_lab/stem
 git commit -m "Raptor Lab: smooth chase camera, motion clock, feather atlas, terrain detail"
 ```
 
-The pre-commit hook inspects the whole tree, so it can fail on another session's drift. If it fails, unstage these files again rather than leaving them staged for someone else's commit to sweep up. Decide separately whether `scratch/raptor-flight-review.cjs` belongs in the repo or in `dev-tools/`.
+The pre-commit hook inspects the whole tree, so it can fail on another session's drift. If it fails, unstage these files again rather than leaving them staged for someone else's commit to sweep up.
 
 ## Implemented motion fixes
 
@@ -120,7 +123,14 @@ Driven by two views the earlier passes never looked at: the 8x zoom close-up of 
 6. Lake: the ripple bump was a single harmonic sine repeated 22 times and produced a visible moire grid. It is now three non-harmonic terms at 13 repeats with half the bump. Water is a deeper blue-teal, slightly rougher, and 84 percent opaque so the sandy bed shows through as shallows near shore. The sun sheen is a radial-gradient glow instead of a hard-edged flat disc; its runtime opacity formula is test-pinned and unchanged.
 7. The terrain hill noise (about 12 m amplitude) poked through the water plane all over the basin. Inside the lake radius the noise is now damped by the cube of the normalised distance and the rim drops at 0.32 m per metre, so the bed stays under the surface except for a thin shallow ring.
 
-## Implemented visuals
+1. Cloud sprite texture: puffs were drawn past the edge of the 256 by 128 canvas, so every sprite had a hard rectangular edge where the gradient was clipped. Puffs now stay inside the canvas with a flatter base and a longer fade.
+2. Ground grain: the speckle lightness spread doubled and the count rose to 4200, with a hint of hue jitter. The grey cliff-biome ground was a blank sheet when seen from 2 m after a crash landing.
+3. Near mountains are opaque. Their 82 percent opacity read as glass under the 8x zoom.
+4. Distant peaks are capped so no peak is taller than 0.82 of its width.
+5. The needle spire in the peregrine scene was not a distant mountain (capping mountain height produced a pixel-identical capture). It was a "peaks" landmark cone, up to 60 m tall on a 6 to 14 m radius. Peak and rock landmarks now use a radius of 0.42 to 0.64 of their height; ice landmarks stay slimmer at 0.28.
+6. A true-night capture (day phase 0.93 via the environment command) confirmed stars and moon render; nothing needed changing there.
+
+## Fourth pass (2026-09-05)
 
 - Reusable procedural feather atlas with vanes, barbs, and shafts on body, head, wings, and tail.
 - Additional feather geometry batched into one draw per wing; quality tier scales the feather count.
@@ -135,16 +145,54 @@ Driven by two views the earlier passes never looked at: the 8x zoom close-up of 
 
 All new visual assets are procedural and local. No remote image dependencies were introduced.
 
+## Fifth pass (2026-09-05)
+
+The four candidates left open by the fourth pass.
+
+1. Sky: the luminance gradient now carries a bright haze band just above the horizon (stops at 0.9 and 0.965) and the horizon line itself dims slightly. It is subtle by design because the same texture is tinted for every biome and time of day.
+2. Night forest landmark: the accent colour was neon indigo, which rendered as a blue cone tree. It is now a muted moonlit conifer green.
+3. Prey: the visual size floor rose from 0.6 m to 0.75 m and the size boosts from 8 and 12 to 9 and 13. This is visual only; catch logic uses the species size, not the display size.
+4. Mid-stoop review: a genuine mid-stoop frame (tucked wings, radial speed lines, field of view widened to 86 degrees, target framed) looks right and needed no change. Getting that frame took three attempts, all harness problems, described under "Commands".
+
+The experience test pinned the old zenith stop of the sky gradient and was updated to the new value.
+
+## Sixth pass (2026-09-05)
+
+1. Prey contact pads (the terrain-conforming shadow ellipse under each land prey) are darker (opacity 0.34, was 0.22) and a little wider. They were also still sized from the old 0.6 m display floor and now follow the 0.75 m floor, so the pad matches the mesh again.
+2. Tree crowns carry a per-tree warm-to-cool tint on top of the existing brightness variation. Forests no longer read as one green.
+3. Speed streaks during a stoop take the current fog colour blended 55 percent toward white each frame instead of pure white. They now sit in the scene at dusk and at night instead of glowing.
+4. Adding random draws to tree placement shifts the global random sequence, so prey spawn positions differ from earlier captures. Tests do not pin positions.
+
+## Seventh pass: configurable controls and key guide (2026-09-05)
+
+The user asked for an easy way to configure controls with a few presets, a guided mode that shows which key to press for the current action, and raised the idea of a brief tutorial. A four-step tutorial ("Flight school" coach card) already existed with a Replay button in Settings, so it was kept and its copy now follows the active preset.
+
+What was built:
+
+1. **Control presets.** A module-level table `RAPTOR_CONTROL_SCHEMES` maps physical keys (lower-cased `event.key`) to actions. Four presets: Classic (WASD, Q/E, Shift, Space, F, plus arrows as aliases), Arrow keys + Enter (arrows, PgUp/PgDn, Enter strikes), Left-hand mouse (IJKL, U/O, Enter or H strikes), Simple (arrows only: left/right turn, down dives, up pulls up, Space strikes, no pitch or trim). Every preset binds P/Esc pause, V camera, Z zoom, T assist, M sound.
+2. **The sim keeps its canonical key tokens** (`RAPTOR_ACTION_KEYS`: a, d, w, s, q, e, shift, space, f). `normalizedKey` maps through the preset, and `onKeyDown` ignores any key the preset does not bind, so presets are exclusive. On-screen hold buttons still send canonical tokens, so they work under every preset.
+3. **Preference plumbing.** `rh.controlScheme` and `rh.keyGuideEnabled` live in tool state like `graphicsQuality`. The canvas carries `data-raptor-control-scheme` and `data-raptor-key-guide` so a fresh sim starts on the saved preset, and two effects push `_rhCommand('controls', {scheme})` and `_rhCommand('keyGuide', {enabled})` into a running sim when they change.
+4. **Key guide (guided mode).** A row of key chips at the bottom centre of the flight view (`.rh-flight-key-guide`) shows the keys that matter for the current phase: scanning shows turn, pitch, trim, and assist; align shows turn, pitch, and dive; stoop shows hold-dive and pull up; close and ready show strike; landed or crashed shows take off; paused shows resume. The primary action is highlighted amber. It re-renders only when the prompt set changes and is hidden below 760 px, where touch users have the labelled hold buttons. Toggle in Settings ("Key guide on/off"), default on.
+5. **Settings additions.** A Controls select for the preset, the key guide toggle, and a two-column binding list (`.rh-flight-keymap`) for the selected preset, all inside the existing Settings disclosure.
+6. **Preset-aware copy.** The stoop cue ("STOOP - hold Shift"), the announcements, the landed and crash messages ("SPACE to take off"), the hold-button labels, the aria-label and aria-keyshortcuts of the canvas, the "Controls and science" help lines, and the tutorial steps all read their key names from the active preset.
+
+Two traps worth knowing:
+
+- The React component body and `initHuntSim` are both indented six spaces but live in different parent functions. A shared table placed next to `initHuntSim` was undefined at render time and crashed every mount test with "Cannot read properties of undefined". Shared helpers must go at module level (two-space indentation, next to `rhShuffle`).
+- The experience test pinned the literal aria-keyshortcuts string; it now pins the dynamic expression.
+
+Screenshots: `guide.png` (Classic preset, align phase: Shift hold to stoop, Space pull up, A/D turn, P pause) and `guidesimple.png` (Simple preset: arrow glyphs, stoop cue reads "hold" with the down arrow).
+
 ## Verified state
 
-Checked after the third pass:
+Checked after the seventh pass:
 
 - Both live sources are byte-identical (same size and md5) and `node --check` passes.
 - `git diff --check` is clean for the source and the test.
-- `final-unit-results.json` reports 114 total, 114 passed, across four files: `raptor_hunt_polish` (10), `stem_astronomy_nutrition_raptorhunt_quiz` (25), `stem_raptorhunt_controls_contrast` (6), `stem_raptorhunt_experience` (73).
+- `final-unit-results.json` reports 119 total, 119 passed, across four files: `raptor_hunt_polish` (10), `stem_astronomy_nutrition_raptorhunt_quiz` (25), `stem_raptorhunt_controls_contrast` (6), `stem_raptorhunt_experience` (78, five new for controls).
 - During the second pass this set showed one failure: the deployment-copies test for `stem_tool_astronomy.js`, whose two copies another session had left out of sync. That session has since resynchronised them. Nothing in this task touched astronomy.
 - One combined run dropped the experience file from the report entirely. Run alone with a 60 s budget it passed 73 of 73 (`experience-unit-results.json`). That is the OneDrive load-time flake, not a regression.
-- The Playwright suite passed 3 of 3 after the third pass (1.6 minutes). During the second pass it failed once on its first test when run immediately after vitest, and the line reporter lost the failure text; the rerun was clean. Use `--reporter=list` so failure text survives.
+- The Playwright suite passed 3 of 3 after the seventh pass (41 seconds). One earlier full run that pass failed its third test (reduced motion and view controls) with the failure text lost to output trimming; the test passed alone and the full rerun was clean, so it is filed as the same load flake seen in pass two. During the second pass it failed once on its first test when run immediately after vitest, and the line reporter lost the failure text; the rerun was clean. Use `--reporter=list` so failure text survives.
 - Screenshot timeouts in the harness were contention, not hangs: eight foreign node processes were running on the machine at the time. The harness now allows 90 s per capture.
 - The three Playwright tests are:
   1. holds chase framing steady through uneven frames and pauses without pose jumps
@@ -171,7 +219,7 @@ Browser continuity:
 npx playwright test tests/e2e/raptor-flight-continuity.spec.ts --workers=1 --retries=0 --reporter=line
 ```
 
-Screenshot harness (`label species mission [width height quality]`):
+Screenshot harness (`label species mission [width height quality stepsJson frameCount]`):
 
 ```
 node scratch/raptor-flight-review.cjs final
@@ -181,7 +229,25 @@ node scratch/raptor-flight-review.cjs narrow goldenEagle freeFlight 420 700 low
 node scratch/raptor-flight-review.cjs phone goldenEagle freeFlight 380 560 low
 node scratch/raptor-flight-review.cjs closeup peregrine freeFlight 1280 850 high '[{"cmd":"zoom"},{"fly":800}]'
 node scratch/raptor-flight-review.cjs lakeview baldEagle freeFlight 1280 850 balanced '[{"key":"e","ms":1500},{"key":"d","ms":2000},{"fly":1500}]'
+node scratch/raptor-flight-review.cjs truenight greatHorned freeFlight 1280 850 balanced '[{"cmd":"environment","value":{"dayPhase":0.93,"cloudCover":0.1}},{"fly":1200}]'
+node scratch/raptor-flight-review.cjs dive peregrine freeFlight 1280 850 balanced '[{"key":"e","ms":2500},{"key":"shift","ms":1400}]'
+node scratch/raptor-flight-review.cjs stoop peregrine freeFlight 1280 850 balanced '[{"key":"a","ms":0,"keep":true},{"key":"e","ms":9000},{"key":"a","ms":0},{"key":"shift","ms":500,"keep":true}]' 30
+RAPTOR_EXTRA='{"controlScheme":"simple"}' node scratch/raptor-flight-review.cjs guidesimple greatHorned freeFlight
 ```
+
+`RAPTOR_EXTRA` is a JSON object merged into the tool state at mount, for preferences such as `controlScheme` or `keyGuideEnabled`.
+
+The harness's `maxScreenStep` printout was null for 100-frame runs during the sixth pass because a ternary bound tighter than the following `.map`. It is fixed; treat any earlier null as a harness bug, not a scene problem.
+
+Step fields: `key` plus `ms` holds a sim key for that long and releases it; add `"keep":true` to leave it held (a later `{"key":"a","ms":0}` releases it). `cmd` with optional `value` sends a sim command. `fly` just advances. The trailing number is how many measured frames run after the steps (default 100, about 1.7 s).
+
+Three traps met while chasing the stoop frame:
+
+- A long straight climb flies the bird off the world edge, and the dive then ends in a "crash" at the boundary. Hold `a` with `keep` during the climb so it circles.
+- The measured-frame count must be a separate argument to the page, not a property on the steps array. Arrays cross `page.evaluate` without extra properties, so the count silently fell back to 100 and a 90 m/s stoop from 119 m always hit the ground.
+- The 90 m/s descent itself is correct (peregrine stoop maximum about 107 m/s at a pitch of one radian), so a crash after 100 frames is not a physics bug.
+
+The `dive` command above ends in a crash landing, which is useful as a 2 m ground close-up. Use the `stoop` command for a mid-dive frame.
 
 Turning without climbing first can put the bird into the ground during the hold, which ends the flight session and unmounts the stage. Climb with `e` before a long `d` or `a` hold.
 
@@ -210,11 +276,12 @@ Harness caveats:
 
 ## Suggested next checks (keep scope narrow)
 
-1. Commit by pathspec as above. Do not deploy unless asked; if a deploy is requested, note that `deploy.sh` skips its own push when the work is pre-committed, so push explicitly.
+1. Commit passes four to seven by pathspec as above. Do not deploy unless asked; if a deploy is requested, note that `deploy.sh` skips its own push when the work is pre-committed, so push explicitly.
 2. Eyeball the six captures once in a real browser at the same sizes. The harness disables bloom and uses SwiftShader, so glow and anti-aliasing differ from a GPU.
-3. Remaining visual candidates, none blocking: the sky is a flat gradient with soft cloud blobs and could take a subtle horizon haze band; prey are small at balanced quality; the 8x zoom view is dominated by fog-washed distant mountains because the near-mountain material is 82 percent opaque, which reads oddly when magnified.
-4. If further jerks are reported, add a dedicated continuity test for a successful catch and for forced target replacement. Current coverage: straight flight, frame timing, pause/resume, dive transitions, landing/takeoff, view controls, reduced motion.
-5. The forced-colors blocks have now been wrong five times. A cheap guard would be a unit test that counts braces per CSS string entry in the raptor source and fails on any imbalance.
+3. Controls follow-ups if wanted: a custom preset with per-action rebinding (the table shape already supports it, only UI is missing); gamepad mapping; showing the key guide on touch layouts as a single line above the hold buttons; localising the preset labels and action names through ui_strings like the rest of the tool.
+4. Remaining visual candidates, none blocking: prey at 100 m still depend on the beacon and target box for pickup; distant mountains have no snow line except in tundra, mountain, and cliff biomes; the ground texture is one tile for all biomes apart from colour.
+5. If further jerks are reported, add a dedicated continuity test for a successful catch and for forced target replacement. Current coverage: straight flight, frame timing, pause/resume, dive transitions, landing/takeoff, view controls, reduced motion.
+6. The forced-colors blocks have now been wrong five times. A cheap guard would be a unit test that counts braces per CSS string entry in the raptor source and fails on any imbalance.
 
 ## Windows save/tool issues
 

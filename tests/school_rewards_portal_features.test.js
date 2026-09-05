@@ -136,6 +136,9 @@ describe('theme and motion', () => {
       ['#ffd98a', '#3a2c08'], ['#ffe9b8', '#3a2c08'], ['#e6ebf5', '#1f2a3d'],
     ];
     for (const [fg, bg] of pairs) expect(ratio(fg, bg), fg + ' on ' + bg).toBeGreaterThanOrEqual(4.5);
+    // The built-in help links are the one place the light purple would otherwise survive into the dark theme.
+    expect(STYLE).toContain('.help-more a,.help-links a{color:#c9b8ff}');
+    expect(STYLE).toContain('.help-more a,.help-links a{color:#fbbf24}');
   });
 });
 

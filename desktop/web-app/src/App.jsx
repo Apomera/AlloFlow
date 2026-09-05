@@ -54337,7 +54337,7 @@ ${_alloActivityContext(activity)}
         }}>
           <div style={{ textAlign: 'center', animation: 'pulse 2s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, color: 'white', margin: '0 0 16px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <img src={"rainbow-book.jpg"} alt="AlloFlow" width={120} height={120} fetchPriority="high" decoding="async" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
+            <img src={"rainbow-book.jpg"} alt="AlloFlow" width={120} height={120} fetchpriority="high" decoding="async" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
             <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>{t('about.allo_acronym_def') || 'Adaptive Levels, Layers, & Outputs'}</p>
             <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.5)', margin: '0 0 32px', fontWeight: 500, fontStyle: 'italic' }}>{t('splash.udl_tagline')}</p>
           </div>

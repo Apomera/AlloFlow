@@ -61,7 +61,15 @@ test('predicts, reads where the year happened, rewinds, and compares replays in 
   await expect(page.locator('.grove-where')).toContainText('died');
   await expect(page.locator('.grove-patch-badge.is-loss').first()).toBeVisible();
   await expect(page.locator('.grove-patch-count').filter({ hasText: 'snag' }).first()).toBeVisible();
+  // Reduced motion is on for this test: arrivals must render without the pop-in class.
+  await expect(page.locator('.grove-glyph.is-new')).toHaveCount(0);
+  await expect(page.locator('.grove-patch-water i')).toHaveCount(9);
+  await expect(page.locator('.grove-progress span').nth(world!.year - 1)).toContainText(String(world!.year));
   expect(await page.evaluate(() => (window as any).__ctx.toolData.treeLab.grovePending)).toBeNull();
+  // The decision column links to the evidence; activating it focuses the receipt region.
+  await page.getByRole('link', { name: 'Read the year ' + world!.year + ' evidence ↓' }).click();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id || '')).toBe('grove-receipt');
+  await expect(page.locator('.grove-habitat')).toHaveCount(9);
   await page.locator('.grove-map').screenshot({ path: '.tmp/tree-review/grove-evidence-map.png' });
   await receipt.screenshot({ path: '.tmp/tree-review/grove-evidence-receipt.png' });
   // Rewinding drops the prediction for the undone year; replaying it gives the same evidence.
@@ -73,7 +81,23 @@ test('predicts, reads where the year happened, rewinds, and compares replays in 
   expect(await page.locator('.grove-where').innerText()).toBe(text);
   for (let year = world!.year + 1; year <= 8; year++) await page.getByRole('button', { name: 'Live through year ' + year }).click();
   await expect(page.locator('[data-grove-ending]')).toBeVisible();
+  // The advance button vanished with the ending, so focus must land on the ending heading.
+  await expect.poll(() => page.evaluate(() => (document.activeElement as HTMLElement)?.textContent || '')).toMatch(/living legacy|story can grow|run has ended/);
   await expect(page.locator('[data-grove-ending]')).toContainText('the comparison is fair');
+  // Sharing: the shell copy hook receives the run summary; a failing host falls back to selectable text.
+  await page.evaluate(() => { const w = window as any; w.__copied = null; w.alloCopyText = (t: string) => { w.__copied = t; return Promise.resolve(true); }; });
+  await page.getByRole('button', { name: 'Copy run summary' }).click();
+  await expect(page.locator('.grove-share [role="status"]')).toContainText('Run summary copied');
+  expect(await page.evaluate(() => (window as any).__copied)).toMatch(/^Grove Journey · code L\d+ · event deck\nYear 1: /);
+  await page.evaluate(() => { const w = window as any; w.alloCopyText = () => Promise.resolve(false); document.execCommand = () => false; });
+  await page.getByRole('button', { name: 'Copy grove code' }).click();
+  await expect(page.locator('.grove-share [role="status"]')).toContainText('Ctrl+C');
+  await expect(page.locator('.grove-share-text')).toHaveValue(world!.seed);
+  // Skip link: focus it from the top of the grove and activate it.
+  await page.locator('.grove-skip').focus();
+  await expect(page.locator('.grove-skip')).toBeInViewport();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id || '')).toBe('grove-decisions');
   expect(await page.evaluate(() => (window as any).__ctx.toolData.treeLab.groveLedger.length)).toBe(1);
   await page.locator('#grove-note').fill('Offspring every year, even in the dry year.');
   await page.locator('#grove-note').blur();
@@ -101,5 +125,33 @@ test('predicts, reads where the year happened, rewinds, and compares replays in 
     expect(issues, theme).toEqual([]);
     await page.locator('.allo-tree-grove').screenshot({ path: `.tmp/tree-review/grove-evidence-${theme}.png` });
   }
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('reads the campaign in K-2 wording with the same evidence and no accessibility violations', async ({ page }) => {
+  await page.goto(`${harness.url}/__harness`);
+  const world = await page.evaluate(() => {
+    const E = (window as any).__alloTreeLabEngine;
+    for (const mode of ['deck', 'generated']) for (let s = 0; s < 40; s++) {
+      const choices = Array(8).fill({ priority: 'offspring', route: 'seed' });
+      const state = E.groveRestore({ version: 1, mode, seed: 'L' + s, choices });
+      const year = state.receipts.findIndex((r: any) => r.deaths > 0) + 1;
+      if (year) return { mode, seed: 'L' + s, choices: choices.slice(0, year) };
+    }
+    return null;
+  });
+  await page.evaluate(world => {
+    const w = window as any;
+    w.__mount({ treeLab: { view: 'grove', bandOverride: 'k2', groveRun: { version: 1, seed: world.seed, mode: world.mode, choices: world.choices } } });
+    w.__ctx.reduceMotion = true;
+  }, world);
+  await expect(page.locator('.grove-stats')).toContainText('trees alive');
+  await expect(page.locator('.grove-priorities')).toContainText('Pick a card for this year');
+  await expect(page.locator('.grove-receipt')).toContainText('Card used:');
+  await expect(page.locator('.grove-where')).toContainText('The soil was too dry for a small tree.');
+  const issues = await page.evaluate(async () => (await (window as any).axe.run('.allo-tree-grove', { resultTypes: ['violations'] })).violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => n.target) })));
+  expect(issues).toEqual([]);
+  await page.locator('.grove-decisions').screenshot({ path: '.tmp/tree-review/grove-k2-decisions.png' });
+  await page.locator('.grove-receipt').screenshot({ path: '.tmp/tree-review/grove-k2-receipt.png' });
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });

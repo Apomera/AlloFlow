@@ -1,6 +1,6 @@
 # For school leaders: the Leadership Hub
 
-Principals, coaches, and student-services leaders get their own tool suite. Open **Educator Tools** and choose the **Leadership Hub** 🏛️ card. Nine tools live behind it. This chapter explains what each one is for, how a first session goes, and the boundaries each tool deliberately keeps, because in this suite the boundaries are the product.
+Principals, coaches, and student-services leaders get their own tool suite. Open **Educator Tools** and choose the **Leadership Hub** 🏛️ card. Nine tools live behind it, alongside the School Rewards & Store launcher described near the end of this chapter. This chapter explains what each one is for, how a first session goes, and the boundaries each tool deliberately keeps, because in this suite the boundaries are the product.
 
 If you have not read [Privacy and responsible AI](07-privacy-and-responsible-ai.md), read it first. Everything below assumes its ground rules.
 
@@ -99,10 +99,21 @@ One announcement, every family language: write the English master, pick your bui
 
 **Keep in mind.** Translations are machine-assisted and you certify the final text, review with bilingual staff where you can. Every export carries a machine-translation disclosure with a contact-the-office line; do not remove it. The language tagging is not cosmetic: it is what makes the packet work in screen readers and in right-to-left scripts, which is the point of the tool.
 
+## Recognition and the school store
+
+### School Rewards & Store 🎟️
+
+A school-owned points economy for positive recognition: staff award points with a written reason, students see their balance and growth, and a store opens for a fixed window each trimester. Unlike the rest of the hub, the ledger does not live on this device. It lives in a protected Google Sheet that a managed school account owns, behind a portal your school deploys as a Google Apps Script web app restricted to your Workspace domain. AlloFlow keeps only the launcher address and a setup checklist. It stays separate from AlloHaven experience points.
+
+**First session.** Before any Google setup, open **Practice with fictional data** from the card. It is the real portal running on a fictional ledger in your browser, with a role switcher, scenario presets, a five-minute demo guide, and a guided tour; nothing reaches a real ledger. Use it for a staff meeting, then work through the card's setup checklist with your IT contact and connect the deployment URL. The portal's own **Help** button opens short, role-specific answers, and the first-week checklist on its Admin tab works itself out from the ledger.
+
+**Keep in mind.** Reasons are student-facing: never write discipline, disability, or protected-category labels in one. Roles come from the roster and staff list after Google sign-in, not from the link. Awards can be undone by the same staff member for fifteen minutes; after that, corrections are recorded, never erased. Records requests, redaction, year-end close, and the Print Lab each have their own section in the [School Rewards & Store manual](https://apomera.github.io/AlloFlow/school-rewards-manual.html), which also links the [printable quick cards](https://apomera.github.io/AlloFlow/school-rewards-quick-cards.html) for staff, cashiers, and families.
+
 ## A year in the hub, roughly
 
 - **August, September:** enter classrooms in UDL Walkthrough; set up SpEd Timelines from your caseload; run the fall screening window through MTSS Triage; send your first multilingual announcement.
 - **October, February:** short walkthrough cycles with Copilot-drafted coaching; Meeting Documentation for SST/IEP season; winter screening window and progress comparison.
+- **Each trimester, if you run School Rewards:** set the store window to Preview a week before shopping day, Open with real start and end times on the day, Closed afterwards, then download the reconciliation.
 - **March, June:** spring window closes the progress picture; Disproportionality Analyzer on the year's discipline and identification counts while the data is fresh; save everything, the Trends views only pay off in year two.
 
 ## Troubleshooting and support

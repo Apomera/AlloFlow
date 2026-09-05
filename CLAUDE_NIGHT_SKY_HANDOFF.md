@@ -61,12 +61,34 @@ node dev-tools/build_hyg_naked_eye_subset.cjs path\to\hygdata_v41.csv
 - Screenshots reviewed by eye: July evening from Moosehead shows Scorpius, Sagittarius and the Milky Way low in the south; Tromsø Kp 5 puts the oval south of the observer; daylight hides stars, lines and labels except Venus.
 - Branch main. No commit, push, deployment or new branch.
 
+## Enhancement slice 2 (2026-09-05)
+- **Refraction.** Sæmundsson refraction from true altitude is applied to catalog stars, Sun, Moon, planets, guides and the shower radiant (`refractionDeg`, `applyRefraction`; bodies keep `trueAlt`). Accuracy note updated.
+- **Real Moon face.** The bundled LROC colour mosaic is orthographically projected onto the Moon disc once (near side), then phase-shaded with faint earthshine; the lit limb still turns toward the Sun in screen space. Falls back to the flat disc if the image cannot be read.
+- **Deep-sky layer** (`DEEP_SKY`, 14 showpieces: Pleiades, Orion Nebula, Andromeda, Beehive, M35, M13, M6, M7, M8, M22, Double Cluster, Omega Centauri, LMC, SMC): tinted glows sized from true angular diameter, faded by limiting magnitude and darkness, labelled, findable, identifiable. Summary lists what is up.
+- **Guides layer**: ecliptic (gold) and celestial equator (blue) of date, plus a celestial-pole marker at the site latitude; labels at each circle's high point; Find → pole.
+- **Click to identify**: a click that does not drag (or Enter/Space on the focused sky, at the view centre) picks the best object inside a 2.5° cone (stars to the limiting magnitude, planets, Moon, deep sky; brighter and bigger win ties). A pinned ◎ label follows the object; the panel below shows name (proper name or HIP id), magnitude, colour class from B-V, IAU constellation (full names for all 88 codes), altitude/compass. Clear resets both React and renderer state (`obsPicked`).
+- **Jump to a moment**: sunset, dark sky (−18°), solar midnight, dawn, sunrise for the local calendar day (`skyEvents`, 10-minute scan + interpolation); polar day/night notes instead of missing buttons.
+- **Sky Map → Observatory**: a button carries the Sky Map's place and shown time into the observatory (site match by coordinates, else custom + zone).
+- Label density grows when zoomed in; labels slide past each other instead of overlapping; test hook `host.__observatoryLookAt` and `spots` in the debug payload.
+- 35 more `ui_strings` keys (both copies); two retired keys pruned. Tests: unit suite now 22, browser suite 10 (identify on a real star, guides + pole, deep sky present in a December sky, Moon face loaded, sunset jump lands within a degree of the horizon, Sky Map hand-off).
+
+## Enhancement slice 3 (2026-09-05)
+- **Tonight's tour** (`observatoryTour`, pure): up to six prioritised steps for this exact sky: daylight note, Moon phase, best planet (Venus → Jupiter → Mars → Saturn → Mercury) with a teaching note, the highest of the 15 recognition patterns using the tool's existing `howToFind` text, a deep-sky object by type, shower radiant, aurora, and the brightest well-placed star with a colour note. Prev/Next panel (`obsTourStep`), and a ★ Find button for the current step above the camera controls. Needs the catalog cache (`observatoryCatalogCache`) for the constellation step.
+- **Identify → highlight**: identifying a star that belongs to a pattern (`HIP_TO_PATTERN`) sets `obsHighlight` and the panel says "Part of Orion (now highlighted)".
+- **Describe this view** (renderer `describe()`): lists Sun/Moon/planets/named stars/constellations/deep sky/radiant/aurora inside the current field of view, nearest the centre first, as a sentence in a live region and via `ctx.announceToSR`.
+- **Copy summary**: plain-text sky summary plus tour, via `window.alloCopyText` if the host provides it, else the Clipboard API, else a textarea fallback; toasts on success/failure.
+- 24 more `ui_strings` keys (150 `obs_*` total). Unit suite 25; browser suite 11 (tour Find moves the camera, Next advances, describe sentence starts "Facing …", clicking Betelgeuse/Rigel highlights Orion).
+- Browser-test lesson: after clicking panel controls the page scrolls, so canvas-pixel clicks must be preceded by `scrollIntoViewIfNeeded()` (and a tall viewport); otherwise the click lands below the fold and identifies nothing.
+
 ## Known gaps / next candidates
-- Refraction and proper motion are not applied (sub-arcminute to arcminute scale for naked-eye use).
+- Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
+- Star trails during time-lapse (accumulation buffer) would be a striking addition but needs a render-target pipeline.
+- Proper motion is not applied (arcminute scale for a few fast stars over decades); refraction is now applied.
 - Aurora oval boundaries are a teaching approximation (Kp-like level → boundary latitude); the NOAA route is the real-data path.
 - Landscapes are procedural; a surveyed horizon for a named site would need elevation data.
-- The Sky Map tab still uses its own 6-site list; the Observatory has its own 8 + custom. Unifying them is a small follow-up.
-- Translations for the 105 new keys have not been added to language packs.
+- The Sky Map tab still uses its own 6-site list (now linked to the Observatory); unifying the lists is a small follow-up.
+- Translations for the ~140 new `obs_*` keys have not been added to language packs.
+- Slice 1 (2026-09-04) was swept into another session's deploy commit f238731dd and is live on the CDN; the 34 leftover strings landed in 7c7990f6e (unpushed). Slice 2 is uncommitted at the time of writing.
 
 ## Local tooling notes (this session)
 - OneDrive intermittently blocks `rename` onto `ui_strings.js` (EPERM); writing the temp file then falling back to an in-place write worked. Vitest's 5 s default budget times out on first reads of the 1.3 MB source under load; the new suite sets 30 s / 45 s.

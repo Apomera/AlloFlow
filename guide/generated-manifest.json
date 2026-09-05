@@ -7,7 +7,7 @@
   "outputs": [
     {
       "path": "AlloFlow Complete User Manual.md",
-      "sha256": "d8d4b53322cb9d39459eca3a80bb9266d2341c3677ea95e230aa378464283d90"
+      "sha256": "101449105c04cf54545dadf4f5635401ae45a888afff06f0695f02beb6475d36"
     },
     {
       "path": "guide/accessibility-and-udl.html",
@@ -35,7 +35,7 @@
     },
     {
       "path": "guide/for-school-leaders.html",
-      "sha256": "ee403adb15f9da4f580d80ee3d9eee5912e7eb44c2acb9b1c804dbb9a9442fc8"
+      "sha256": "cdaf184f4255ee9764da31c4984402c18bb662f1ff25971a3cbec659e3e1695e"
     },
     {
       "path": "guide/for-your-it-department.html",
@@ -67,7 +67,7 @@
     },
     {
       "path": "guide/offline.html",
-      "sha256": "087ddfcb2c2e34acbd54ac1111888239b3530fb8ebfa226d1b6e1fa2c1195a22"
+      "sha256": "1ac04cb04ba88540e1ad10e1fae2e837b1df330425d271b7ecb1f524c4b30e6a"
     },
     {
       "path": "guide/prepare-a-lesson.html",
@@ -95,7 +95,7 @@
     },
     {
       "path": "guide/search-index.json",
-      "sha256": "876f058cc50bd3668d5ba5d150892c8496534696ed9c91e873cbafa887ec84b3"
+      "sha256": "e57c3739c465df13c6dcf52ac4343a17e8f4fbf6baa9f5ae46cf9bb022422d23"
     },
     {
       "path": "guide/settings-and-help.html",

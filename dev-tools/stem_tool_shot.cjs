@@ -42,6 +42,14 @@ const file = args.find((a) => !a.startsWith('--'));
 const clickArg = (args.find((a) => a.startsWith('--click=')) || '').slice(8);
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
 const outArg = (args.find((a) => a.startsWith('--out=')) || '').slice(6);
+// Match the gate's viewport axis, so a narrow finding can be looked at.
+const NARROW = args.includes('--narrow');
+const vpArg = (args.find((a) => a.startsWith('--viewport=')) || '').slice(11);
+const VIEWPORT = (function () {
+  const m = vpArg && /^(\d{2,5})x(\d{2,5})$/.exec(vpArg);
+  if (m) return { width: Number(m[1]), height: Number(m[2]) };
+  return NARROW ? { width: 768, height: 1024 } : { width: 1280, height: 1000 };
+})();
 if (!file) {
   console.error('usage: node dev-tools/stem_tool_shot.cjs <toolFile> [--dark|--contrast] [--click=<label>] [--state=<json>] [--out=<png>] [--full]');
   process.exit(2);
@@ -71,7 +79,7 @@ function extractStemPalette() {
   const toolId = /registerTool\(\s*['"]([^'"]+)['"]/.exec(src)[1];
 
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+  const page = await browser.newPage({ viewport: VIEWPORT });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
   await page.setContent('<!doctype html><html><head><style>' + tw + '</style><style>' + palette +

@@ -21,12 +21,15 @@ async function settle() {
 describe('Particle Lab 3D rendered WCAG interaction states', () => {
   let host;
   let root;
+  let latestToolData = {};
+  const persisted = () => latestToolData.particleLab3d || {};
 
   beforeEach(async () => {
     resetStemLab();
     const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
     const Component = () => {
       const [toolData, setToolData] = React.useState({ particleLab3d: {} });
+      latestToolData = toolData;
       const ctx = makeCtx({ toolData, setToolData, update: (toolId, key, value) => setToolData((previous) => ({ ...previous, [toolId]: { ...(previous[toolId] || {}), [key]: value } })) });
       return config.render(ctx);
     };
@@ -255,6 +258,42 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(document.activeElement?.textContent).toBe('Show readouts');
     await act(async () => { document.activeElement.click(); await settle(); });
     expect(host.querySelector('#particle-readouts').hidden).toBe(false);
+    expect(host.querySelector('canvas')).toBe(canvas);
+  });
+
+  it('offers a persisted dock width for side placements and a one-line status while the dock is collapsed', async () => {
+    const width = host.querySelector('[aria-label="Chamber readouts width"]');
+    expect(width.tagName).toBe('SELECT');
+    expect(width.value).toBe('standard');
+    const setSelect = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+    await act(async () => { setSelect.call(width, 'wide'); width.dispatchEvent(new Event('change', { bubbles: true })); await settle(); });
+    expect(host.querySelector('#particle-workspace').getAttribute('data-width')).toBe('wide');
+    expect(persisted().readoutsWidth).toBe('wide');
+    // Width is meaningless below the chamber, so the control folds away there.
+    const position = host.querySelector('[aria-label="Chamber readouts position"]');
+    await act(async () => { setSelect.call(position, 'bottom'); position.dispatchEvent(new Event('change', { bubbles: true })); await settle(); });
+    expect(host.querySelector('[aria-label="Chamber readouts width"]')).toBeNull();
+    expect(host.querySelector('[data-testid="particle-mini-status"]')).toBeNull();
+    await act(async () => { buttonByText(host, 'Collapse readouts').click(); await settle(); });
+    const status = host.querySelector('[data-testid="particle-mini-status"]');
+    expect(status.textContent).toMatch(/^\d+ K · 64 particles · paused$/);
+    expect(status.getAttribute('aria-live')).toBeNull();
+    await act(async () => { buttonByText(host, 'Show readouts').click(); await settle(); });
+    expect(host.querySelector('[data-testid="particle-mini-status"]')).toBeNull();
+  });
+
+  it('puts a left dock before the chamber in DOM order without replacing the canvas', async () => {
+    const canvas = host.querySelector('canvas');
+    const workspace = host.querySelector('#particle-workspace');
+    const order = () => Array.from(workspace.children).map((child) => child.id);
+    expect(order()).toEqual(['particle-viewport', 'particle-readouts']);
+    const setSelect = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+    const position = host.querySelector('[aria-label="Chamber readouts position"]');
+    await act(async () => { setSelect.call(position, 'left'); position.dispatchEvent(new Event('change', { bubbles: true })); await settle(); });
+    expect(order()).toEqual(['particle-readouts', 'particle-viewport']);
+    expect(host.querySelector('canvas')).toBe(canvas);
+    await act(async () => { setSelect.call(position, 'bottom'); position.dispatchEvent(new Event('change', { bubbles: true })); await settle(); });
+    expect(order()).toEqual(['particle-viewport', 'particle-readouts']);
     expect(host.querySelector('canvas')).toBe(canvas);
   });
 

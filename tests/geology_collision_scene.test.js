@@ -275,6 +275,17 @@ describe('Geology Explorer — mountain belt registries (mission, quiz, sequence
     expect((peaks.match(/'alpine'/g) || []).length).toBe(4);   // six ridge horns via forEach + three foothills
   });
 
+  it('3D landforms: glacier tongues follow the staircase unscaled, the foreland river hides once the block is cut, and the iso camera faces the steep side', () => {
+    const block = source.slice(source.indexOf('var addGeologyGlacierTongue3d = function'), source.indexOf("'snow-capped-alpine-ridge-relief'"));
+    expect(block).toContain('collisionSurfaceY3d(glacierFx3d) + 0.16');
+    expect(block).not.toMatch(/glacierMesh3d\.scale\.y|riverMesh3d\.scale\.y/);   // scaling about the origin floated the tongues off the slope
+    expect((block.match(/addGeologyGlacierTongue3d\(-?\d/g) || []).length).toBe(3);
+    expect(block).toContain('registerGeologyLandform3d(riverMesh3d, WORLD.d * 0.5 - 0.01, 0, false)');
+    expect(source).toContain("var isoSideX3d = SCENE.id === 'collision' ? -1 : 1;");
+    expect(source).toContain('iso: [[NX * 1.15 * isoSideX3d, NY * 1.05, NZ * 1.4]');
+    expect(source).toContain('camera.position.set(WORLD.w * 1.15 * isoSideX3d, WORLD.h * 1.05, WORLD.d * 1.4);');
+  });
+
   it('ships the same bytes to the bundled desktop copy', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(source);
   });

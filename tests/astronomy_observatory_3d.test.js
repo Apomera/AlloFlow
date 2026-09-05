@@ -201,7 +201,140 @@ describe('Sky brightness, meteors and aurora models', () => {
   });
 });
 
+describe('Refraction, deep sky, day events and identification', () => {
+  it('applies standard refraction that is largest at the horizon and vanishes overhead', () => {
+    expect(sky.refractionDeg(0)).toBeGreaterThan(0.45);
+    expect(sky.refractionDeg(0)).toBeLessThan(0.5);
+    expect(sky.refractionDeg(45)).toBeGreaterThan(0.01);
+    expect(sky.refractionDeg(45)).toBeLessThan(0.02);
+    expect(sky.refractionDeg(90)).toBeLessThan(0.001);
+    expect(sky.refractionDeg(-5)).toBe(0);
+    const bodies = sky.observatoryBodies(Date.UTC(2026, 6, 5, 0, 20), MOOSEHEAD.lat, MOOSEHEAD.lon);
+    expect(bodies.sun.trueAlt).toBeDefined();
+    expect(bodies.sun.alt).toBeGreaterThanOrEqual(bodies.sun.trueAlt);
+  });
+
+  it('ships a sane deep-sky table and full constellation names for every catalog code', () => {
+    expect(sky.DEEP_SKY).toHaveLength(14);
+    expect(new Set(sky.DEEP_SKY.map(o => o.id)).size).toBe(14);
+    for (const o of sky.DEEP_SKY) {
+      expect(o.ra).toBeGreaterThanOrEqual(0); expect(o.ra).toBeLessThan(360);
+      expect(Math.abs(o.dec)).toBeLessThanOrEqual(90);
+      expect(o.size).toBeGreaterThan(0);
+    }
+    expect(sky.DEEP_SKY.find(o => o.id === 'lmc').dec).toBeLessThan(-60);
+    expect(Object.keys(sky.CONSTELLATION_NAMES)).toHaveLength(88);
+    expect(sky.CONSTELLATION_NAMES.UMa).toBe('Ursa Major');
+    const codes = JSON.parse(readFileSync(ASSET, 'utf8')).constellationCodes;
+    for (const code of codes) expect(sky.CONSTELLATION_NAMES[code], code).toBeDefined();
+    expect(sky.starColorClass(-0.2)).toBe('blue-white');
+    expect(sky.starColorClass(0.65)).toBe('yellow');
+    expect(sky.starColorClass(1.8)).toBe('red');
+  });
+
+  it('finds sunset, dark sky, dawn and sunrise for the local day, and reports polar day and night', () => {
+    const maine = sky.skyEvents(Date.UTC(2026, 6, 5, 3, 30), MOOSEHEAD.lat, MOOSEHEAD.lon, 'America/New_York');
+    expect(maine.polar).toBe('');
+    expect(maine.sunset).toBeGreaterThan(Date.UTC(2026, 6, 5, 0, 0));
+    expect(maine.sunset).toBeLessThan(Date.UTC(2026, 6, 5, 0, 50));
+    expect(maine.sunrise).toBeGreaterThan(Date.UTC(2026, 6, 4, 8, 40));
+    expect(maine.sunrise).toBeLessThan(Date.UTC(2026, 6, 4, 9, 30));
+    expect(maine.darkStart).toBeGreaterThan(maine.sunset);
+    expect(maine.darkEnd).toBeLessThan(maine.sunrise);
+    const midsummer = sky.skyEvents(Date.UTC(2026, 5, 21, 12), 69.65, 18.96, 'Europe/Oslo');
+    expect(midsummer.polar).toBe('day');
+    expect(midsummer.sunset).toBeNull();
+    const midwinter = sky.skyEvents(Date.UTC(2026, 11, 21, 12), 69.65, 18.96, 'Europe/Oslo');
+    expect(midwinter.polar).toBe('night');
+    expect(midwinter.sunrise).toBeNull();
+    const quito = sky.skyEvents(Date.UTC(2026, 2, 20, 12), -0.18, -78.47, 'America/Guayaquil');
+    expect((quito.darkStart - quito.sunset) / 60000).toBeGreaterThan(60);
+    expect((quito.darkStart - quito.sunset) / 60000).toBeLessThan(90);
+  });
+
+  it('identifies the brightest object inside the cone and nothing outside it', () => {
+    const dir = { x: 0, y: 0, z: -1 };
+    const off = deg => ({ x: Math.sin(deg * Math.PI / 180), y: 0, z: -Math.cos(deg * Math.PI / 180) });
+    const sirius = Object.assign({ name: 'Sirius', mag: -1.44 }, off(0.6));
+    const faint = Object.assign({ name: 'faint', mag: 5.5 }, off(0.2));
+    expect(sky.identifyNearest(dir, [faint, sirius], 2.5).name).toBe('Sirius');
+    expect(sky.identifyNearest(dir, [Object.assign({ name: 'far', mag: 0 }, off(5))], 2.5)).toBeNull();
+    const moon = Object.assign({ name: 'Moon', mag: -12, priority: 0.6 }, off(1.5));
+    expect(sky.identifyNearest(dir, [faint, moon], 2.5).name).toBe('Moon');
+  });
+});
+
+describe('Tour planning and pattern lookup', () => {
+  it('maps pattern stars to their figure and plans a prioritised tour for a dark sky', () => {
+    expect(sky.HIP_TO_PATTERN[27989]).toBe('orion');
+    expect(sky.HIP_TO_PATTERN[11767]).toBe('ursa_minor');
+    expect(sky.HIP_TO_PATTERN[32349]).toBeUndefined();
+    const catalog = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    const utc = Date.UTC(2026, 6, 5, 3, 30);
+    const bodies = sky.observatoryBodies(utc, MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const limit = sky.limitingMagnitude(3, bodies.sun.alt, bodies.moon.alt, bodies.moon.phase.illum);
+    const deepUp = sky.DEEP_SKY.map(obj => { const p = sky.horizonPoint(obj.ra, obj.dec, bodies.lst, MOOSEHEAD.lat, bodies.d, 1); return { obj, alt: p.alt, az: p.az }; }).filter(x => x.alt > 5).sort((a, b) => a.obj.mag - b.obj.mag);
+    const tour = sky.observatoryTour({ bodies, dark: 1, limit, catalog, lst: bodies.lst, lat: MOOSEHEAD.lat, d: bodies.d, deepUp, radiant: null, rate: 0, aurora: { visible: false } });
+    expect(tour.length).toBeGreaterThanOrEqual(3);
+    expect(tour.length).toBeLessThanOrEqual(6);
+    const kinds = tour.map(s => s.kind);
+    expect(kinds).toContain('constellation');
+    expect(kinds).toContain('deepsky');
+    expect(kinds).toContain('named');
+    expect(kinds).not.toContain('daylight');
+    const con = tour.find(s => s.kind === 'constellation');
+    expect(con.note.length).toBeGreaterThan(20);
+    expect(con.alt).toBeGreaterThan(20);
+    for (const step of tour) { expect(step.title).toBeTruthy(); expect(Number.isFinite(step.az)).toBe(true); }
+  });
+
+  it('starts with the daylight step when the Sun is up and still offers the Moon or Venus', () => {
+    const utc = Date.UTC(2026, 6, 4, 17, 0);
+    const bodies = sky.observatoryBodies(utc, MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const tour = sky.observatoryTour({ bodies, dark: 0, limit: -3, catalog: null, lst: bodies.lst, lat: MOOSEHEAD.lat, d: bodies.d, deepUp: [], radiant: null, rate: 0, aurora: { visible: false } });
+    expect(tour[0].kind).toBe('daylight');
+    expect(tour.every(s => ['daylight', 'moon', 'planet'].includes(s.kind))).toBe(true);
+    expect(tour.find(s => s.kind === 'planet')?.id ?? 'venus').toBe('venus');
+  });
+});
+
 describe('Observatory tab rendering', () => {
+  it('renders the tour, describe and copy controls, and highlights the figure of an identified pattern star', () => {
+    const doc = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsTourStep: 99, obsPicked: { kind: 'star', name: 'Betelgeuse', hip: 27989, mag: 0.45, ci: 1.5, colorClass: 'red', constellation: 'Orion', pattern: 'orion', alt: 30, az: 200 } }), 'text/html');
+    const text = doc.body.textContent;
+    expect(doc.getElementById('astronomy-observatory-tour')).toBeTruthy();
+    expect(text).toMatch(/Tonight's tour · \d \/ \d/);
+    expect(text).toContain('Part of Orion');
+    expect(doc.querySelector('[aria-label="Tour steps"]')).toBeTruthy();
+    expect(Array.from(doc.querySelectorAll('button')).some(b => /Describe this view/.test(b.textContent))).toBe(true);
+    expect(Array.from(doc.querySelectorAll('button')).some(b => /Copy summary/.test(b.textContent))).toBe(true);
+    expect(text).not.toContain('NaN');
+  });
+
+  it('renders guides, identification and day-event controls, and the Sky Map cross-link', () => {
+    const doc = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '21:00', obsLayers: { guides: true }, obsPicked: { kind: 'star', name: 'Sirius', hip: 32349, mag: -1.44, ci: 0.01, colorClass: 'blue-white', constellation: 'Canis Major', alt: 20, az: 150 } }), 'text/html');
+    const text = doc.body.textContent;
+    expect(doc.querySelector('[aria-label="Sky layers"] button[aria-pressed="true"]')).toBeTruthy();
+    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(9);
+    expect(text).toContain('◎ Sirius');
+    expect(text).toContain('Canis Major');
+    expect(text).toContain('HIP 32349');
+    expect(text).toContain('blue-white star');
+    expect(text).toContain('Deep-sky showpieces up');
+    expect(doc.querySelectorAll('[aria-label="Jump to a moment of this day"] button').length).toBeGreaterThanOrEqual(4);
+    expect(text).toMatch(/Sunset 20:\d\d/);
+    expect(text).toContain('refraction');
+    const skymap = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'skymap', observingList: [] } }), 'text/html');
+    expect(skymap.body.textContent).toContain('Open in 3D Observatory');
+  });
+
+  it('shows the polar-day note instead of missing events, and ignores malformed picks', () => {
+    const doc = new DOMParser().parseFromString(render({ obsSite: 'tromso', obsLive: false, obsDate: '2026-06-21', obsTime: '12:00', obsPicked: 'nonsense' }), 'text/html');
+    expect(doc.body.textContent).toContain('Midnight sun');
+    expect(doc.body.textContent).toContain('Click a star, planet');
+    expect(doc.body.textContent).not.toContain('NaN');
+  });
+
   it('renders place, time, layers, summary and attribution for a fixed instant', () => {
     const doc = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '21:00', obsShower: 'perseids', obsAurora: 3 }), 'text/html');
     const text = doc.body.textContent;
@@ -212,7 +345,7 @@ describe('Observatory tab rendering', () => {
     expect(text).toContain('Simulated activity level 3');
     expect(text).toContain('Perseids Radiant');
     expect(doc.getElementById('astronomy-observatory-3d').getAttribute('tabindex')).toBe('0');
-    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(7);
+    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(9);
     expect(doc.querySelector('[aria-label="Sky camera controls"]')).toBeTruthy();
     expect(text).toContain('labelled simulations');
     expect(text).not.toContain('NaN');

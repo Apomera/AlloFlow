@@ -343,6 +343,42 @@ describe('galaxy visuals', () => {
     expect(source).not.toContain('radius=2.65-2.36*eased,');
   });
 
+  it.each(GALAXY_PATHS)('%s builds the cinematic tour from the galaxy on screen and the live home radius', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // One hardcoded script used to play for every type: "Spiral-arm stellar nurseries"
+    // and "Dust-lane edge-on view" over an elliptical that has neither, and both
+    // overview frames at a fixed radius (1.25 / 1.2) from before the home view was
+    // fitted to the canvas - measured: every type ended the tour at r=1.2 with the
+    // home view at 1.49-1.55, so the tour cut in from a different framing and never
+    // returned to it. The array was also rebuilt on every animation frame.
+    expect(source).toContain("r: home, label: __alloT('stem.galaxy.tour_overview'");
+    expect(source).toContain("r: home, label: __alloT('stem.galaxy.tour_return'");
+    expect(source).not.toContain('r: 1.25, label:');
+    expect(source).not.toContain("r: 1.2, label: 'Return");
+    expect(source).toContain("isElliptical ? __alloT('stem.galaxy.tour_edge_on_elliptical'");
+    expect(source).toContain("galaxyType === 'irregular' ? __alloT('stem.galaxy.tour_companions_dwarfs'");
+    expect(source).toContain('tourFrames = tourActive ? buildTourFrames() : null;');
+    expect(source).toContain('if (!tourFrames) tourFrames = buildTourFrames();');
+    expect(source).not.toContain('var tourFrames = [');
+    // buildTourFrames is a function declaration (hoisted), but the tourFrames slot it
+    // fills must be declared with the other tour state, not left to an implicit global.
+    expect(source).toContain('tourLastStage = -1, tourFrames = null;');
+  });
+
+  it.each(GALAXY_PATHS)('%s announces every canvas status through a localised string', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // setCanvasStatus feeds a role="status" aria-live region. All nineteen calls shipped
+    // English literals in a tool where every other string goes through __alloT, so a
+    // screen-reader user in any other language heard English for zoom, focus, tour
+    // stages and fullscreen changes. The React-rendered announcer had the same literal.
+    expect(source.match(/setCanvasStatus\('/g)).toBeNull();
+    expect(source).not.toContain('("Focused on " + sel');
+    expect(source).not.toContain("|| 'Star')");
+    expect(source).toContain("__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}'");
+    expect(source).toContain("__alloT('stem.galaxy.status_tour_stage', 'Grand Tour \u00b7 {stage}').replace('{stage}', label)");
+    expect(source).toContain("__alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selStar.label)");
+  });
+
   it.each(GALAXY_PATHS)('%s keeps the black-hole canvas sized to its own box', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     // resize() ran once from init(), while the canvas still spanned the full width.

@@ -5251,7 +5251,7 @@ if (!window._galaxyHasLoadedOnce) {
             var activeGalaxyPointers = {}, pinchStartDistance = 0, pinchStartRadius = 1.2;
             var autoRotate = canvasEl.getAttribute('data-auto-rotate') !== 'false' && !prefersReducedMotion;
             var tourActive = canvasEl.getAttribute('data-tour-active') === 'true' && !prefersReducedMotion;
-            var tourStart = Date.now(), tourLastStage = -1;
+            var tourStart = Date.now(), tourLastStage = -1, tourFrames = null;
             var hudHidden = canvasEl.getAttribute('data-hud-hidden') === 'true';
             var orientationEl = null, lastOrientationLabel = '';
 
@@ -5288,6 +5288,26 @@ if (!window._galaxyHasLoadedOnce) {
             var cameraLookGoal = new THREE.Vector3(0, 0, 0);
             var liveScaleEl = null, lastLiveScaleText = '', scaleRegimeEl = null, lastScaleRegime = '';
 
+            // The tour used to carry one hardcoded script for every galaxy: it captioned
+            // "Spiral-arm stellar nurseries" and "Dust-lane edge-on view" over an elliptical
+            // that has neither, and both overview frames sat at a fixed radius (1.25 / 1.2)
+            // left over from before the home view was fitted to the canvas, so the tour cut
+            // in from a different framing and never returned to it. Built once per tour.
+            function tourStageStatus(label) { return __alloT('stem.galaxy.status_tour_stage', 'Grand Tour · {stage}').replace('{stage}', label); }
+            function buildTourFrames() {
+              var hasArms = !!(GALAXY_TYPES[galaxyType] && GALAXY_TYPES[galaxyType].arms > 0);
+              var isElliptical = galaxyType === 'elliptical';
+              var home = galaxyOverviewRadius;
+              return [
+                { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: home, label: __alloT('stem.galaxy.tour_overview', 'Galactic overview') },
+                { theta: Math.PI * 0.46, phi: Math.PI * 0.43, r: 0.7, label: hasArms ? __alloT('stem.galaxy.tour_arms', 'Spiral-arm stellar nurseries') : isElliptical ? __alloT('stem.galaxy.tour_halo_stars', 'Smooth halo of old stars') : __alloT('stem.galaxy.tour_clumps', 'Clumpy star-forming regions') },
+                { theta: Math.PI * 0.86, phi: Math.PI * 0.48, r: 0.34, label: hasArms || isElliptical ? __alloT('stem.galaxy.tour_core', 'Luminous galactic core') : __alloT('stem.galaxy.tour_densest_clump', 'Densest star-forming clump') },
+                { theta: Math.PI * 1.3, phi: Math.PI * 0.5, r: 1.04, label: hasArms ? __alloT('stem.galaxy.tour_edge_on', 'Dust-lane edge-on view') : isElliptical ? __alloT('stem.galaxy.tour_edge_on_elliptical', 'Edge-on: no thin disk, no dust lane') : __alloT('stem.galaxy.tour_edge_on_irregular', 'Edge-on: thick and disordered, no flat disk') },
+                { theta: Math.PI * 1.78, phi: Math.PI * 0.27, r: 1.62, label: __alloT('stem.galaxy.tour_dm_halo', 'Dark-matter halo perspective') },
+                { theta: Math.PI * 2.12, phi: Math.PI * 0.39, r: 1.08, label: galaxyType === 'grandDesign' ? __alloT('stem.galaxy.tour_companions_interacting', 'Companion galaxies and tidal streams') : galaxyType === 'irregular' ? __alloT('stem.galaxy.tour_companions_dwarfs', 'Nearby dwarf companions') : __alloT('stem.galaxy.tour_companions_background', 'Distant background galaxies') },
+                { theta: Math.PI * 2.1, phi: Math.PI * 0.35, r: home, label: __alloT('stem.galaxy.tour_return', 'Return to the grand overview') }
+              ];
+            }
             function setCanvasStatus(message) {
               var statusEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-status]');
               if (statusEl) statusEl.textContent = message;
@@ -5304,9 +5324,9 @@ if (!window._galaxyHasLoadedOnce) {
                 autoRotate = false; tourActive = false; warpTween = null;
                 cinematicMotion.warp = 0; cinematicMotion.shock = 0; cinematicMotion.aperture = 0;
                 if (canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true);
-                setCanvasStatus('Motion paused to honor your reduced-motion preference');
+                setCanvasStatus(__alloT('stem.galaxy.status_motion_paused', 'Motion paused to honor your reduced-motion preference'));
               } else {
-                setCanvasStatus('Reduced-motion preference is off; animation remains paused until you resume it');
+                setCanvasStatus(__alloT('stem.galaxy.status_motion_still_paused', 'Reduced-motion preference is off; animation remains paused until you resume it'));
               }
             }
             if (reducedMotionQuery) {
@@ -5410,7 +5430,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (remainingKeys.length === 1) { var remaining = activeGalaxyPointers[remainingKeys[0]]; prevX = remaining.x; prevY = remaining.y; }
             }
 
-            function onGalWheel(e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); setCanvasStatus('Zoom ' + Math.round(100 * galaxyOverviewRadius / spherical.r) + '%'); }
+            function onGalWheel(e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r)))); }
 
             canvasEl.addEventListener('pointerdown', onGalDown);
 
@@ -5545,15 +5565,15 @@ if (!window._galaxyHasLoadedOnce) {
               cameraLookGoal.set(position.x * 0.55, position.y * 0.5, position.z * 0.55);
               if (prefersReducedMotion) cameraLookTarget.copy(cameraLookGoal);
               measurementRulerGroup.visible = kind === 'star'; orbitalMechanicsGroup.visible = kind === 'star' && isSpiralMorphology; if (measurementRulerGroup.visible) { updateMeasurementRuler(position); if (orbitalMechanicsGroup.visible) updateOrbitalMechanics(position, 0.02, 0); }
-              var label = kind === 'star' ? ((data.type && data.type.label) || 'Star') : (data.name || 'Nebula');
-              setCanvasStatus('Focused on ' + label + ' · drag to orbit around it');
+              var label = kind === 'star' ? ((data.type && data.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')) : (data.name || __alloT('stem.galaxy.status_nebula_generic', 'Nebula'));
+              setCanvasStatus(__alloT('stem.galaxy.status_focused_on', 'Focused on {name} · drag to orbit around it').replace('{name}', label));
             }
 
             function clearGalaxySelection() {
               selectionTarget = null; selectionMarker.visible = false; selectionHalo.visible = false; measurementRulerGroup.visible = false; orbitalMechanicsGroup.visible = false;
               cameraLookGoal.set(0, 0, 0);
               if (prefersReducedMotion) { cameraLookTarget.set(0, 0, 0); updateCamera(); }
-              setCanvasStatus('Drag or use arrows to orbit · scroll, pinch, or plus and minus to zoom · brackets select stars');
+              setCanvasStatus(__alloT('stem.galaxy.status_orbit_help', 'Drag or use arrows to orbit · scroll, pinch, or plus and minus to zoom · brackets select stars'));
               if (canvasEl._onClearSelection) canvasEl._onClearSelection();
             }
 
@@ -5566,7 +5586,7 @@ if (!window._galaxyHasLoadedOnce) {
               var keyboardStarPosition = getAnimatedStarVector(keyboardStar);
               focusSelection('star', keyboardStar, keyboardStarPosition);
               if (canvasEl._onSelectStar) canvasEl._onSelectStar(keyboardStar, keyboardStarPosition);
-              setCanvasStatus('Keyboard focus: ' + ((keyboardStar.type && keyboardStar.type.label) || 'Star') + ' · [ and ] choose another star · Escape clears');
+              setCanvasStatus(__alloT('stem.galaxy.status_keyboard_focus', 'Keyboard focus: {name} · [ and ] choose another star · Escape clears').replace('{name}', (keyboardStar.type && keyboardStar.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')));
             };
 
             function onGalClick(e) {
@@ -5635,7 +5655,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               var dTheta = toTheta - spherical.theta;
 
-              if (prefersReducedMotion) { spherical.theta = toTheta; spherical.phi = toPhi; spherical.r = toR; updateCamera(); setCanvasStatus('Viewpoint updated'); return; }
+              if (prefersReducedMotion) { spherical.theta = toTheta; spherical.phi = toPhi; spherical.r = toR; updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_viewpoint_updated', 'Viewpoint updated')); return; }
 
               while (dTheta > Math.PI) dTheta -= Math.PI * 2;
 
@@ -5652,16 +5672,16 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;
             canvasEl._galaxyResetView = function () {
               cameraLookGoal.set(0, 0, 0);
-              if (prefersReducedMotion) { cameraLookTarget.set(0, 0, 0); spherical.theta = Math.PI * 0.1; spherical.phi = Math.PI * 0.35; spherical.r = galaxyOverviewRadius; updateCamera(); setCanvasStatus('Overview restored'); return; }
+              if (prefersReducedMotion) { cameraLookTarget.set(0, 0, 0); spherical.theta = Math.PI * 0.1; spherical.phi = Math.PI * 0.35; spherical.r = galaxyOverviewRadius; updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_overview_restored', 'Overview restored')); return; }
               var dTheta = Math.PI * 0.1 - spherical.theta;
               while (dTheta > Math.PI) dTheta -= Math.PI * 2;
               while (dTheta < -Math.PI) dTheta += Math.PI * 2;
               warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: Math.PI * 0.35 - spherical.phi, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
-              cinematicMotion.aperture = 0.45; setCanvasStatus('Returning to the overview');
+              cinematicMotion.aperture = 0.45; setCanvasStatus(__alloT('stem.galaxy.status_returning_overview', 'Returning to the overview'));
             };
             canvasEl._galaxyZoom = function (direction) {
               spherical.r = Math.max(0.2, Math.min(3, spherical.r * (direction === 'in' ? 0.82 : 1.22)));
-              updateCamera(); setCanvasStatus('Zoom ' + Math.round(100 * galaxyOverviewRadius / spherical.r) + '%');
+              updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r))));
             };
             canvasEl._galaxyGetStarVisualState = function (index, elapsedOverride, motionEnabled) {
               var safeIndex = Math.max(0, Math.min(starData.length - 1, Number.isFinite(index) ? Math.floor(index) : 0));
@@ -5829,9 +5849,9 @@ if (!window._galaxyHasLoadedOnce) {
             };
             canvasEl._galaxySetAutoRotate = function (enabled) { autoRotate = enabled !== false && !prefersReducedMotion; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? 'Gentle auto-rotation on' : prefersReducedMotion ? 'Auto-rotation remains off because reduced motion is enabled' : 'Auto-rotation paused'); };
             canvasEl._galaxySetTour = function (enabled) {
-              if (prefersReducedMotion && enabled) { tourActive = false; setCanvasStatus('Cinematic tour is paused by reduced-motion settings'); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
-              tourActive = enabled === true; tourStart = Date.now(); tourLastStage = -1; warpTween = null;
-              setCanvasStatus(tourActive ? 'Grand Tour · Galactic overview' : 'Cinematic tour stopped');
+              if (prefersReducedMotion && enabled) { tourActive = false; setCanvasStatus(__alloT('stem.galaxy.status_tour_reduced_motion', 'Cinematic tour is paused by reduced-motion settings')); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
+              tourActive = enabled === true; tourStart = Date.now(); tourLastStage = -1; warpTween = null; tourFrames = tourActive ? buildTourFrames() : null;
+              setCanvasStatus(tourActive ? tourStageStatus(tourFrames[0].label) : __alloT('stem.galaxy.status_tour_stopped', 'Cinematic tour stopped'));
             };
             canvasEl._galaxySetHudHidden = function (hidden) { hudHidden = hidden === true; if (!hudHidden) { orientationEl = null; lastOrientationLabel = ''; requestAnimationFrame(function () { if (canvasEl.isConnected) updateCamera(); }); } };
             // ── Fullscreen ────────────────────────────────────────────────────
@@ -5913,7 +5933,7 @@ if (!window._galaxyHasLoadedOnce) {
               document.removeEventListener('fullscreenchange', galaxyFsOnChange);
               document.removeEventListener('webkitfullscreenchange', galaxyFsOnChange);
               galaxyFsRestoreStyles();
-              setCanvasStatus('Fullscreen closed');
+              setCanvasStatus(__alloT('stem.galaxy.status_fullscreen_closed', 'Fullscreen closed'));
             }
 
             function galaxyFsOnKey(event) {
@@ -5979,7 +5999,7 @@ if (!window._galaxyHasLoadedOnce) {
               window.addEventListener('resize', galaxyFsFitViewport);
               galaxyFsFitViewport();
               galaxyFsShowExitPill();
-              setCanvasStatus('Immersive view on. Press Escape to leave it.');
+              setCanvasStatus(__alloT('stem.galaxy.status_immersive_on', 'Immersive view on. Press Escape to leave it.'));
             }
 
             function galaxyFsExitCss() {
@@ -5990,7 +6010,7 @@ if (!window._galaxyHasLoadedOnce) {
               galaxyFsHideExitPill();
               canvasEl.removeAttribute('data-galaxy-immersive');
               galaxyFsRestoreStyles();
-              setCanvasStatus('Immersive view off');
+              setCanvasStatus(__alloT('stem.galaxy.status_immersive_off', 'Immersive view off'));
               if (canvasEl.isConnected && canvasEl.focus) canvasEl.focus();
             }
 
@@ -6068,23 +6088,15 @@ if (!window._galaxyHasLoadedOnce) {
               var elapsed = prefersReducedMotion ? 0 : (Date.now() - startT) * 0.001;
               var motionStep = prefersReducedMotion ? 0 : 1;
               if (tourActive) {
-                var tourFrames = [
-                  { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: 1.25, label: 'Galactic overview' },
-                  { theta: Math.PI * 0.46, phi: Math.PI * 0.43, r: 0.7, label: 'Spiral-arm stellar nurseries' },
-                  { theta: Math.PI * 0.86, phi: Math.PI * 0.48, r: 0.34, label: 'Luminous galactic core' },
-                  { theta: Math.PI * 1.3, phi: Math.PI * 0.5, r: 1.04, label: 'Dust-lane edge-on view' },
-                  { theta: Math.PI * 1.78, phi: Math.PI * 0.27, r: 1.62, label: 'Dark-matter halo perspective' },
-                  { theta: Math.PI * 2.12, phi: Math.PI * 0.39, r: 1.08, label: 'Companion galaxies and tidal streams' },
-                  { theta: Math.PI * 2.1, phi: Math.PI * 0.35, r: 1.2, label: 'Return to the grand overview' }
-                ];
+                if (!tourFrames) tourFrames = buildTourFrames();
                 var tourDuration = 5200; var tourProgress = (Date.now() - tourStart) / tourDuration; var tourStage = Math.floor(tourProgress);
                 if (tourStage >= tourFrames.length - 1) {
                   var tourEnd = tourFrames[tourFrames.length - 1]; spherical.theta = tourEnd.theta; spherical.phi = tourEnd.phi; spherical.r = tourEnd.r; updateCamera();
-                  tourActive = false; setCanvasStatus('Grand Tour complete'); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false);
+                  tourActive = false; setCanvasStatus(__alloT('stem.galaxy.status_tour_complete', 'Grand Tour complete')); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false);
                 } else {
                   var tourLocal = tourProgress - tourStage; var tourEase = 0.5 - Math.cos(Math.PI * tourLocal) * 0.5; var tourFrom = tourFrames[tourStage], tourTo = tourFrames[tourStage + 1];
                   spherical.theta = tourFrom.theta + (tourTo.theta - tourFrom.theta) * tourEase; spherical.phi = tourFrom.phi + (tourTo.phi - tourFrom.phi) * tourEase; spherical.r = tourFrom.r + (tourTo.r - tourFrom.r) * tourEase; updateCamera();
-                  if (tourStage !== tourLastStage) { tourLastStage = tourStage; setCanvasStatus('Grand Tour · ' + tourFrom.label); cinematicMotion.aperture = 0.55; }
+                  if (tourStage !== tourLastStage) { tourLastStage = tourStage; setCanvasStatus(tourStageStatus(tourFrom.label)); cinematicMotion.aperture = 0.55; }
                 }
               } else if (warpTween) {
 
@@ -8220,7 +8232,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("p", { id: "galaxy-canvas-description", className: "sr-only" }, __alloT('stem.galaxy.canvas_description', 'Interactive three-dimensional galaxy model.') + " " + gType.label + ", " + cosmicAge.toFixed(1) + " billion years old. " + activeObserve.label + " observing mode. " + __alloT('stem.galaxy.canvas_description_layers', 'Visible structures can include stars, dust lanes, gas, nebulae, the galactic core, and the dark-matter halo.')),
                 React.createElement("p", { id: "galaxy-canvas-instructions", className: "sr-only" }, __alloT('stem.galaxy.canvas_keyboard_instructions', 'When the galaxy canvas has focus, use the arrow keys to orbit, plus and minus to zoom, left and right brackets or Page Up and Page Down to move between stars, Escape to clear a selection, and R to reset. Equivalent on-screen buttons are available after the canvas.')),
                 React.createElement("p", { id: "galaxy-motion-note", className: "sr-only" }, galaxyReducedMotion ? __alloT('stem.galaxy.motion_preference_on', 'Reduced-motion preference detected. Automatic rotation and cinematic tours are disabled.') : __alloT('stem.galaxy.motion_preference_off', 'The galaxy rotates gently by default. Use the pause rotation button to stop automatic motion.')),
-                React.createElement("span", { id: "galaxy-canvas-status", "data-galaxy-announcer": "true", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, selStar ? ("Focused on " + selStar.label) : selNeb ? ("Focused on " + selNeb.name) : __alloT('stem.galaxy.canvas_status_ready', 'Galaxy canvas ready for exploration.')),
+                React.createElement("span", { id: "galaxy-canvas-status", "data-galaxy-announcer": "true", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, selStar ? __alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selNeb.name) : __alloT('stem.galaxy.canvas_status_ready', 'Galaxy canvas ready for exploration.')),
 
                 d.webglError ?
                   // ── 2-D fallback, not an error screen ──
@@ -8503,7 +8515,7 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 // Held back until the scene exists — announcing "drag to orbit" to a
                 // screen reader while the canvas is still empty is just wrong.
-                galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, selStar ? ("Focused on " + selStar.label + " · drag or use arrow keys to orbit") : selNeb ? ("Focused on " + selNeb.name + " · drag or use arrow keys to orbit") : "Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars"),
+                galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, selStar ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selNeb.name) : __alloT('stem.galaxy.status_chip_help', 'Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars')),
                 // Scale info overlay
 
                 !galaxyHudHidden && layers.grid && React.createElement("div", { className: "absolute bottom-3 right-16 bg-slate-950/70 backdrop-blur-md rounded-lg px-2.5 py-2 text-xs text-white/85 border border-blue-200/15 shadow-xl" },

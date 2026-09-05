@@ -296,7 +296,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('var windSummary =');
     expect(text).toContain('data-target-edge*');
     expect(text).toContain("'data-raptor-selected-profile': 'true'");
-    expect(text).toContain("'aria-keyshortcuts': 'W S A D Q E Shift Space F P V Z T'");
+    expect(text).toContain("'aria-keyshortcuts': raptorSchemeShortcuts(controlScheme)");
     expect(text).toContain("'data-raptor-target-announcement': 'true'");
     expect(text).toContain('targetStateChanged');
     expect(text).toContain("'aria-live': 'polite'");
@@ -3232,7 +3232,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function updateEnvironmentalLight(phase)');
     expect(init).toContain('scene.background.copy(skyFrameColor)');
-    expect(init).toContain("skGrad.addColorStop(0, '#94a3b8')");
+    expect(init).toContain("skGrad.addColorStop(0, '#8fa0b5')");
     expect(init).toContain('skyTintColor.copy(skyFrameColor)');
     expect(init).not.toMatch(/if \(species\.biome === 'forest-night'\) \{[\s\S]{0,300}skGrad\.addColorStop/);
     expect(init).toContain('scene.fog.color.copy(fogFrameColor)');
@@ -3508,4 +3508,41 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
   it('keeps the packaged desktop copy byte-identical to the canonical tool source', () => {
     expect(source(MIRROR)).toBe(source());
   }, 30000);
+});
+
+describe('Raptor Hunt configurable controls and key guide', () => {
+  const text = source();
+  it('ships four control presets that all bind pause, camera, and target assist', () => {
+    for (const id of ['classic', 'arrows', 'lefthand', 'simple']) {
+      expect(text).toContain(id + ": { id: '" + id + "'");
+    }
+    const table = text.slice(text.indexOf('var RAPTOR_CONTROL_SCHEMES'), text.indexOf('var RAPTOR_KEY_NAMES'));
+    expect(table.match(/p: 'pause'/g)).toHaveLength(4);
+    expect(table.match(/v: 'view'/g)).toHaveLength(4);
+    expect(table.match(/t: 'assist'/g)).toHaveLength(4);
+  });
+  it('routes keyboard input through the active preset and ignores unbound keys', () => {
+    expect(text).toContain("var action = controlScheme.keys[raw];\n          if (!action) return;");
+    expect(text).toContain('return action && RAPTOR_ACTION_KEYS[action] ? RAPTOR_ACTION_KEYS[action] : raw;');
+    expect(text).toContain("} else if (action === 'controls' && value) {");
+    expect(text).toContain("} else if (action === 'keyGuide' && value) {");
+  });
+  it('reads the preset from the canvas dataset so a fresh sim starts on the saved preset', () => {
+    expect(text).toContain("'data-raptor-control-scheme': controlScheme,");
+    expect(text).toContain('raptorControlScheme(canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : \'\')');
+  });
+  it('renders a contextual key guide that refreshes on target, pause, and landing changes', () => {
+    expect(text).toContain("keyGuide.className = 'rh-flight-key-guide';");
+    expect(text).toContain('if (targetStateChanged) refreshKeyGuide();');
+    expect(text).toContain('if (raptor.landed !== wasLanded || raptor.crashed !== wasCrashed) refreshKeyGuide();');
+    expect(text).toContain("'data-raptor-key-guide-toggle': 'true'");
+    expect(text).toContain("'data-raptor-control-scheme-select': 'true'");
+    expect(text).toContain(".rh-flight-key-guide[hidden]{display:none;}");
+  });
+  it('spells the dive and take-off keys from the preset instead of hard-coding Shift and Space', () => {
+    expect(text).not.toContain("'STOOP - hold Shift (");
+    expect(text).not.toContain("SPACE to take off'");
+    expect(text).toContain("'STOOP - hold ' + controlKeyLabel('dive') + ' ('");
+    expect(text).toContain("controlKeyLabel('pullUp') + ' to take off'");
+  });
 });

@@ -19073,28 +19073,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var rKts = state.speed * 0.5924838;
 
         // Top-left distress beacon banner
-        var bannerY = 40;
-        gfx.fillStyle = 'rgba(180,30,30,0.85)';
-        gfx.fillRect(8, bannerY, 230, 22);
+        var bannerY = 80;
+        var bannerX = Math.round(W / 2 - 115);
+        gfx.fillStyle = 'rgba(180,30,30,0.88)';
+        gfx.fillRect(bannerX, bannerY, 230, 18);
         gfx.fillStyle = '#fff';
         gfx.font = 'bold 10px system-ui';
         gfx.textAlign = 'left';
         var beaconLabel = rescue.recovered
           ? '✅ SURVIVOR ABOARD — RTB PWM'
           : '🆘 DISTRESS BEACON · ' + rDist.toFixed(1) + ' nm @ ' + Math.round(((rBrg + 360) % 360)) + '°';
-        gfx.fillText(beaconLabel, 14, bannerY + 14);
+        gfx.fillText(beaconLabel, bannerX + 6, bannerY + 13);
 
         // Mission status callout under the beacon banner — close-range info
         if (rDist < 1.5 && !rescue.recovered) {
           gfx.fillStyle = 'rgba(15,23,42,0.85)';
-          gfx.fillRect(8, bannerY + 26, 230, 36);
+          gfx.fillRect(bannerX, bannerY + 22, 230, 40);
           gfx.fillStyle = '#fbbf24';
           gfx.font = 'bold 10px system-ui';
-          gfx.fillText('CLOSE — SLOW + DESCEND TO HOVER', 14, bannerY + 38);
+          gfx.fillText('CLOSE — SLOW + DESCEND TO HOVER', bannerX + 6, bannerY + 35);
           gfx.fillStyle = '#cbd5e1';
           gfx.font = '10px monospace';
-          gfx.fillText('AGL ' + Math.round(rAgl) + ' ft  ·  GS ' + Math.round(rKts) + ' kts', 14, bannerY + 52);
-          gfx.fillText('Δ ' + (rDist * 6076).toFixed(0) + ' ft  ·  TGT < 100 ft AGL, < 10 kts', 14, bannerY + 64);
+          gfx.fillText('AGL ' + Math.round(rAgl) + ' ft  ·  GS ' + Math.round(rKts) + ' kts', bannerX + 6, bannerY + 48);
+          gfx.fillText('Δ ' + (rDist * 6076).toFixed(0) + ' ft  ·  TGT < 100 ft AGL, < 10 kts', bannerX + 6, bannerY + 59);
         }
 
         // Hoist progress bar — only visible while actively hoisting
@@ -19200,7 +19201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Top-right drone HUD strip
         var hudW = 220, hudH = 76;
-        var hudX = W - hudW - 10, hudY = 40;
+        var hudX = W - hudW - 48, hudY = 128;
         gfx.fillStyle = 'rgba(8,47,73,0.88)';
         gfx.fillRect(hudX, hudY, hudW, hudH);
         gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',0.6)';
@@ -19465,6 +19466,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         updMulti({ view: 'flying', showForces: false });
       };
 
+      // A handful of country names take a definite article in English.
+      // Without it the sprint asked "the capital of United States?".
+      var ARTICLE_COUNTRIES = ['United States', 'United Kingdom', 'Netherlands', 'Philippines', 'Czech Republic', 'Dominican Republic', 'United Arab Emirates', 'Bahamas', 'Maldives', 'Gambia', 'Congo', 'Sudan'];
+      var withArticle = function(country) {
+        return ARTICLE_COUNTRIES.indexOf(country) >= 0 ? 'the ' + country : country;
+      };
+
       var updateSprint = function(state, dt) {
         var sp = sprintRef.current;
         if (!sp.active) return;
@@ -19510,7 +19518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var qType = qTypes[Math.floor(Math.random() * qTypes.length)];
 
           if (qType === 'name_capital' || qType === 'capital_of') {
-            sp.question = 'What is the capital of ' + targetPlace.country + '?';
+            sp.question = 'What is the capital of ' + withArticle(targetPlace.country) + '?';
             sp.correctAnswer = targetPlace.name;
             var pool = GEO_PLACES.filter(function(p) { return p.type === 'capital' && p.name !== targetPlace.name; });
             sp.options = [targetPlace.name];
@@ -20369,6 +20377,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Physics step
           var state = Physics.step(flightRef.current, dt, ctrl);
+          if (sprintRef.current.active) {
+            // See updateSprint: the warped ground speed is a position-
+            // integration trick, not real airspeed, so the lift it produces
+            // here is meaningless. Hold the advertised cruise.
+            state.altitude = 35000;
+            state.vsi = 0;
+          }
           // ── Wind drift on the GROUND TRACK ──
           // The airmass carries the aircraft: wind (kts, FROM windDir) displaces
           // lat/lon each frame, exactly like the helicopter drift math in
@@ -21355,9 +21370,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Moon: cool white glow, slower arc (rough 20:00 → 06:00 visible).
             var moonHr = ((solarHrN + 12) % 24);
             var moonT = Math.max(0, Math.min(1, (moonHr - 20) / 10 + (moonHr < 6 ? 1 : 0)));
+            var moonUp = moonT > 0.05 && moonT < 0.95;
             sunX = W * (0.12 + moonT * 0.76);
             sunArc = Math.sin(moonT * Math.PI);
             sunY = horizonY - sunArc * (horizonY * 0.7) - 10;
+            if (moonUp) {
             var moonGrad = gfx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 60);
             moonGrad.addColorStop(0, 'rgba(240,245,255,0.9)');
             moonGrad.addColorStop(0.4, 'rgba(200,220,255,0.25)');
@@ -21386,11 +21403,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var mpShadowDx = mpPhase < 0.5
               ? -(mpPhase * 2) * 2 * mpR         // waxing: shadow on left
               : ((mpPhase - 0.5) * 2) * 2 * mpR; // waning: shadow on right
-            gfx.fillStyle = 'rgba(14,22,40,0.92)';
+            gfx.fillStyle = 'rgba(14,22,40,0.8)';
             gfx.beginPath();
             gfx.arc(sunX + mpShadowDx, sunY, mpR, 0, Math.PI * 2);
             gfx.fill();
             gfx.restore();
+            }
           } else {
             // Sun: warm yellow with a slightly redder tint near horizon (golden hour)
             var horizonProxim = 1 - sunArc; // 0 overhead, 1 at horizon
@@ -21598,6 +21616,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var kts = telemetry.iasKts;
           var fpm = telemetry.fpm;
           var stallKts = telemetry.stallIasKts;
+          if (sprintRef.current.active && sprintRef.current.speed) {
+            // See updateSprint's warp comment: that speed is a position
+            // trick. Publish the advertised HyperJet cruise instead.
+            var sprintKts = Math.round(sprintRef.current.speed * 0.5924838);
+            telemetry.iasKts = sprintKts;
+            telemetry.tasKts = sprintKts;
+            telemetry.gsKts = sprintKts;
+            kts = sprintKts;
+          }
           hudRef.current.vrKts = Math.round(stallKts * 1.1);
 
           // Artificial Horizon (center)
@@ -21831,14 +21858,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Autopilot status (green bar when engaged)
           var ap2 = d.autopilot || {};
           if (ap2.hdg || ap2.alt || ap2.spd) {
-            gfx.fillStyle = 'rgba(34,197,94,0.2)'; gfx.fillRect(0, 32, W, 16);
+            gfx.fillStyle = 'rgba(34,197,94,0.22)'; gfx.fillRect(0, 62, W, 16);
             gfx.fillStyle = '#4ade80'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
             var apStatus = 'AP: ';
             if (ap2.hdg) apStatus += 'HDG ' + ap2.tgtHdg + '°  ';
             if (ap2.alt) apStatus += 'ALT ' + ap2.tgtAlt.toLocaleString() + '  ';
             if (ap2.spd) apStatus += 'SPD ' + ap2.tgtSpd + 'kt  ';
             apStatus += '(B=off, manual input=disengage)';
-            gfx.fillText(apStatus, W / 2, 43);
+            gfx.fillText(apStatus, W / 2, 73);
           }
 
           // ECO badge — honest signal that the adaptive-quality governor has
@@ -21847,11 +21874,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (qualityRef.current.tier > 0) {
             // Left of the heading tape — the top-right corner is covered by
             // the RENDER/VIEW/WEATHER DOM panel, which hid the first cut.
-            var ecoX = W / 2 - 158;
+            var ecoX = W - 262;
             gfx.fillStyle = 'rgba(20,83,45,0.85)';
-            gfx.beginPath(); gfx.roundRect(ecoX, 36, 44, 15, 4); gfx.fill();
+            gfx.beginPath(); gfx.roundRect(ecoX, 64, 44, 15, 4); gfx.fill();
             gfx.fillStyle = '#86efac'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-            gfx.fillText(qualityRef.current.tier >= 2 ? 'ECO+' : 'ECO', ecoX + 22, 44);
+            gfx.fillText(qualityRef.current.tier >= 2 ? 'ECO+' : 'ECO', ecoX + 22, 71);
             gfx.textBaseline = 'alphabetic';
           }
 
@@ -22000,8 +22027,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var atcFade = Math.min(1, Math.max(0, 1 - (ageSec - 8) / 4));
                 gfx.globalAlpha = atcFade;
                 var bw = Math.min(W * 0.42, gfx.measureText(entry.msg).width + 22);
-                var bx = W - bw - 18;
-                var by = H * 0.22 + ei * 26;
+                // Right edge clears the throttle/tach column (x >= W-48).
+                var bx = W - bw - 52;
+                var by = ((d.survey && d.survey.active) ? 222 : H * 0.22) + ei * 26;
                 gfx.fillStyle = 'rgba(6,12,30,0.82)';
                 gfx.beginPath(); gfx.roundRect(bx, by, bw, 22, 4); gfx.fill();
                 gfx.strokeStyle = 'rgba(56,189,248,0.55)'; gfx.lineWidth = 1;

@@ -9561,6 +9561,14 @@ var d = labToolData.dissection || {};
               // Adaptive hotspot labels share collision-aware columns and remain clickable.
               var specimenTextScaleX = Math.max(0.01, Math.abs(specimenScale.x || 1));
               var specimenTextScaleY = Math.max(0.01, Math.abs(specimenScale.y || 1));
+              // Instrument HUD panels live inside the specimen transform because each one tracks a
+              // point on the specimen, but they are read as panels. In the ventral view the box
+              // mirrors as a whole, so left-inset text lands at the box's far edge and runs out of
+              // it. Anchor from the opposite edge when mirrored, then let the helper above flip the
+              // glyphs back. Identity in the dorsal view.
+              function fillPanelText(text, panelX, panelWidth, inset, y) {
+                fillReadableSpecimenText(text, specimenScale.x < 0 ? panelX + panelWidth - inset : panelX + inset, y);
+              }
               function fillReadableSpecimenText(text, x, y) {
                 ctx.save(); ctx.translate(x, y);
                 ctx.scale(1 / (specimenScale.x || 1), 1 / (specimenScale.y || 1));
@@ -10261,7 +10269,7 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) ctx.roundRect(tractionLabelX, tractionLabelY, tractionLabelWidth, 18, 5); else ctx.rect(tractionLabelX, tractionLabelY, tractionLabelWidth, 18);
                 ctx.fill(); ctx.strokeStyle = tractionAccessible ? '#ffffff' : tractionColor; ctx.lineWidth = 1.1; ctx.stroke();
                 ctx.fillStyle = tractionAccessible ? '#ffffff' : (tractionState.key === 'stress' ? '#fecdd3' : (tractionState.key === 'slip' ? '#fef08a' : '#ccfbf1'));
-                ctx.fillText(tractionLabel.slice(0, directAssessment ? 43 : 27), tractionLabelX + 6, tractionLabelY + 12);
+                fillPanelText(tractionLabel.slice(0, directAssessment ? 43 : 27), tractionLabelX, tractionLabelWidth, 6, tractionLabelY + 12);
                 ctx.restore();
               }
               function drawLocalizedTechniqueEvidence(procedureState, tissueState) {
@@ -10586,9 +10594,9 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) ctx.roundRect(forecastLabelX, forecastLabelY, forecastLabelWidth, 34, 6); else ctx.rect(forecastLabelX, forecastLabelY, forecastLabelWidth, 34);
                 ctx.fill(); ctx.strokeStyle = forecastAccessible ? '#ffffff' : forecastColor; ctx.lineWidth = 1.2; ctx.stroke();
                 ctx.fillStyle = forecastAccessible ? '#ffffff' : (forecastState.key === 'pooling' ? '#fecdd3' : (forecastState.key === 'controlled' ? '#dbeafe' : '#fef08a'));
-                ctx.fillText(forecastTitle.slice(0, 32), forecastLabelX + 7, forecastLabelY + 12);
+                fillPanelText(forecastTitle.slice(0, 32), forecastLabelX, forecastLabelWidth, 7, forecastLabelY + 12);
                 ctx.font = '7px Inter, system-ui'; ctx.fillStyle = forecastAccessible ? '#facc15' : '#e2e8f0';
-                ctx.fillText(forecastDetail.slice(0, 34), forecastLabelX + 7, forecastLabelY + 25);
+                fillPanelText(forecastDetail.slice(0, 34), forecastLabelX, forecastLabelWidth, 7, forecastLabelY + 25);
                 ctx.restore();
               }
               function drawWickRecoveryPreview(pointer, canvasEl) {
@@ -10615,7 +10623,7 @@ var d = labToolData.dissection || {};
                 var wickLabelWidth = Math.min(196, Math.max(150, Math.ceil(Math.max(ctx.measureText(wickTitle).width, ctx.measureText(wickDetail).width)) + 14));
                 var wickLabelX = Math.max(8, Math.min(W - wickLabelWidth - 8, wickX + 22)), wickLabelY = Math.max(8, Math.min(H - 38, wickY - 40));
                 ctx.fillStyle = wickAccessible ? '#000000' : 'rgba(15,23,42,0.93)'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(wickLabelX, wickLabelY, wickLabelWidth, 34, 6); else ctx.rect(wickLabelX, wickLabelY, wickLabelWidth, 34); ctx.fill(); ctx.strokeStyle = wickAccessible ? '#ffffff' : wickColor; ctx.lineWidth = 1.2; ctx.stroke();
-                ctx.fillStyle = wickAccessible ? '#ffffff' : (wickState.key === 'controlled' ? '#ccfbf1' : '#fef08a'); ctx.fillText(wickTitle.slice(0, 34), wickLabelX + 7, wickLabelY + 12); ctx.font = '7px Inter, system-ui'; ctx.fillStyle = wickAccessible ? '#facc15' : '#e2e8f0'; ctx.fillText(wickDetail.slice(0, 38), wickLabelX + 7, wickLabelY + 25); ctx.restore();
+                ctx.fillStyle = wickAccessible ? '#ffffff' : (wickState.key === 'controlled' ? '#ccfbf1' : '#fef08a'); fillPanelText(wickTitle.slice(0, 34), wickLabelX, wickLabelWidth, 7, wickLabelY + 12); ctx.font = '7px Inter, system-ui'; ctx.fillStyle = wickAccessible ? '#facc15' : '#e2e8f0'; fillPanelText(wickDetail.slice(0, 38), wickLabelX, wickLabelWidth, 7, wickLabelY + 25); ctx.restore();
               }
               // Legacy signature: function drawProbePalpationPreview(pointer, organ)
               function drawProbePalpationPreview(pointer, organ, canvasEl) {
@@ -10715,12 +10723,12 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) ctx.roundRect(palpationLabelX, palpationLabelY, palpationLabelWidth, palpationLabelHeight, 6); else ctx.rect(palpationLabelX, palpationLabelY, palpationLabelWidth, palpationLabelHeight);
                 ctx.fill(); ctx.strokeStyle = palpationAccessible ? '#ffffff' : palpationColor; ctx.lineWidth = 1.2; ctx.stroke();
                 ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = palpationAccessible ? '#ffffff' : (palpationState.key === 'stress' ? '#fecdd3' : (palpationState.key === 'light' ? '#fef08a' : '#ccfbf1'));
-                ctx.fillText((palpationState.label + ' \u00B7 ' + palpationPressure + '%').slice(0, 31), palpationLabelX + 7, palpationLabelY + 11);
+                fillPanelText((palpationState.label + ' \u00B7 ' + palpationPressure + '%').slice(0, 31), palpationLabelX, palpationLabelWidth, 7, palpationLabelY + 11);
                 ctx.font = '7px Inter, system-ui'; ctx.fillStyle = palpationAccessible ? '#ffffff' : '#e2e8f0';
-                ctx.fillText(organ.name.slice(0, 31), palpationLabelX + 7, palpationLabelY + 23);
+                fillPanelText(organ.name.slice(0, 31), palpationLabelX, palpationLabelWidth, 7, palpationLabelY + 23);
                 ctx.fillStyle = palpationAccessible ? '#facc15' : palpationColor;
-                ctx.fillText(anatomicalDepthLabel(palpationDepth).toUpperCase() + ' \u00B7 ' + palpationResistance + ' RESISTANCE', palpationLabelX + 7, palpationLabelY + 35);
-                if (directProbeAssessment) { ctx.fillStyle = palpationAccessible ? '#facc15' : '#99f6e4'; ctx.fillText(('ALIGN ' + directProbeAssessment.alignment + '% · CONTACT ' + directProbeAssessment.contactPercent + '% · CONTROL ' + directProbeAssessment.control + '%').slice(0, 37), palpationLabelX + 7, palpationLabelY + 47); }
+                fillPanelText(anatomicalDepthLabel(palpationDepth).toUpperCase() + ' \u00B7 ' + palpationResistance + ' RESISTANCE', palpationLabelX, palpationLabelWidth, 7, palpationLabelY + 35);
+                if (directProbeAssessment) { ctx.fillStyle = palpationAccessible ? '#facc15' : '#99f6e4'; fillPanelText(('ALIGN ' + directProbeAssessment.alignment + '% · CONTACT ' + directProbeAssessment.contactPercent + '% · CONTROL ' + directProbeAssessment.control + '%').slice(0, 37), palpationLabelX, palpationLabelWidth, 7, palpationLabelY + 47); }
                 ctx.restore();
               }
               function drawPinStabilityPreview(guide, pointer, pins) {
@@ -10836,7 +10844,7 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) ctx.roundRect(pinLabelX, pinLabelY, pinLabelWidth, 18, 5); else ctx.rect(pinLabelX, pinLabelY, pinLabelWidth, 18);
                 ctx.fill(); ctx.strokeStyle = pinAccessible ? '#ffffff' : pinColor; ctx.lineWidth = 1.1; ctx.stroke();
                 ctx.fillStyle = pinAccessible ? '#ffffff' : (pinState.key === 'stable' ? '#dbeafe' : '#fef08a');
-                ctx.fillText(pinLabel.slice(0, directPinAssessment ? 42 : 27), pinLabelX + 6, pinLabelY + 12);
+                fillPanelText(pinLabel.slice(0, directPinAssessment ? 42 : 27), pinLabelX, pinLabelWidth, 6, pinLabelY + 12);
                 ctx.restore();
               }
               if (!d.quizMode && (d.procedureMode || 'guided') === 'guided' && (d.visualRealism || 'guided') !== 'realistic' && !d.beforeTechniqueView && !canvasProcedure.incisionStarted && !revealedLayers[activeLayer]) {
@@ -10945,8 +10953,8 @@ var d = labToolData.dissection || {};
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(replayLabelX, replayLabelY, replayLabelWidth, 34, 6); else ctx.rect(replayLabelX, replayLabelY, replayLabelWidth, 34);
                 ctx.fill(); ctx.strokeStyle = replayAccessible ? '#ffffff' : '#67e8f9'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = '#ffffff'; ctx.fillText(replayTitle.slice(0, 31), replayLabelX + 7, replayLabelY + 11);
-                ctx.fillStyle = replayAccessible ? '#facc15' : '#a5f3fc'; ctx.fillText(replayDetail.slice(0, 31), replayLabelX + 7, replayLabelY + 23);
+                ctx.fillStyle = '#ffffff'; fillPanelText(replayTitle.slice(0, 31), replayLabelX, replayLabelWidth, 7, replayLabelY + 11);
+                ctx.fillStyle = replayAccessible ? '#facc15' : '#a5f3fc'; fillPanelText(replayDetail.slice(0, 31), replayLabelX, replayLabelWidth, 7, replayLabelY + 23);
                 ctx.fillStyle = replayAccessible ? '#ffffff' : '#22d3ee';
                 ctx.fillRect(replayLabelX + 1, replayLabelY + 30, Math.max(2, (replayLabelWidth - 2) * replayProgress), 3);
                 ctx.restore();
@@ -11130,7 +11138,7 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(clearLabelX, clearLabelY, salineLabelWidth, 18, 5); ctx.fill(); }
                 else ctx.fillRect(clearLabelX, clearLabelY, salineLabelWidth, 18);
                 ctx.strokeStyle = hydrationPooling ? '#facc15' : '#7dd3fc'; ctx.lineWidth = hydrationAccessible ? 1.8 : 0.8; ctx.stroke();
-                ctx.fillStyle = hydrationPooling ? '#fef08a' : '#e0f2fe'; ctx.fillText(salineFieldLabel, clearLabelX + 6, clearLabelY + 12);
+                ctx.fillStyle = hydrationPooling ? '#fef08a' : '#e0f2fe'; fillPanelText(salineFieldLabel, clearLabelX, salineLabelWidth, 6, clearLabelY + 12);
                 ctx.restore();
               }
               if (canvasProcedure.fieldWicked && canvasProcedure.wickPoint) {
@@ -11177,7 +11185,7 @@ var d = labToolData.dissection || {};
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(probeLabelX, probeLabelY, probeLabelWidth, 19, 5); ctx.fill(); }
                   else ctx.fillRect(probeLabelX, probeLabelY, probeLabelWidth, 19);
                   ctx.strokeStyle = '#2dd4bf'; ctx.lineWidth = 0.8; ctx.stroke();
-                  ctx.fillStyle = '#ccfbf1'; ctx.fillText(probeLabel, probeLabelX + 6, probeLabelY + 13);
+                  ctx.fillStyle = '#ccfbf1'; fillPanelText(probeLabel, probeLabelX, probeLabelWidth, 6, probeLabelY + 13);
                   ctx.restore();
                 }
               }

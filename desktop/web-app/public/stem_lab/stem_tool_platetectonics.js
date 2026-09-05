@@ -1527,7 +1527,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           color: new T.Color(tk[2]), transparent: true, opacity: 0.6
         })));
         var tl = makeLabel(tk[1], tk[2]);
-        tl.scale.multiplyScalar(0.7);
+        // 0.7 put 'surface' and '5 km' at about 8 px on a 1000 px canvas —
+        // a scale nobody can read is decoration. 0.9 still sits under the
+        // named parts and, at x = -43, clears 'magma chamber' (x = -25).
+        tl.scale.multiplyScalar(0.9);
         // Inside the block's own x-range. Hung off the left edge the labels sat
         // outside a frustum that fits the block, and only their last letter was
         // on screen.
@@ -1643,8 +1646,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       parts.glow.position.y = coneH * shape.summit - 0.5;
       if (ventLabel) ventLabel.position.y = coneH * shape.summit + 5;
 
+      // No residual glow at rest: 0.12 of orange over the dark theme's sky was a
+      // dark disc hanging above the collapsed summit, a shape with no meaning.
       var hot = ph === 'blast' ? 1 : ph === 'pressure' ? 0.35 + 0.3 * Math.sin(t * 0.09)
-              : ph === 'deflate' ? Math.max(0, 1 - (t - 180) / 200) : 0.12;
+              : ph === 'deflate' ? Math.max(0, 1 - (t - 180) / 200) : 0;
       parts.glow.material.opacity = Math.max(0, Math.min(0.85, hot));
       // Scaled to the edifice, not fixed: a glow sized for the 17-unit
       // stratovolcano sat on the 8-unit shield like a beach ball and swallowed
@@ -3235,6 +3240,52 @@ var d = labToolData.plateTectonics || {};
           var showLabels = d.showLabels !== false;
 
           var showConvection = d.showConvection !== false;
+
+          // A catalogue search that matches nothing used to render NOTHING: the
+          // list vanished with no word about why, and a typo looked like an
+          // empty catalogue. Wraps a filtered list so an empty result says so.
+          // Each of the 60 review cards labels its fields TWICE: a bold "Concept: "
+          // span, and a value that itself begins "Concept: ". Stripping the value's
+          // own leading label at render fixes all 180 fields without editing 180
+          // translation keys — and it strips a TRANSLATED repeat too, because the
+          // match is against whatever label this render passed in.
+          var ptStripLabel = function (label, text) {
+            // Only letters, digits and spaces survive into the pattern, so a label
+            // can never carry regex punctuation into `new RegExp`.
+            var lab = String(label).replace(/[^A-Za-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!lab) return String(text);
+            return String(text).replace(new RegExp('^[\\s]*' + lab + '[\\s]*:[\\s]*', 'i'), '');
+          };
+          // These cards are bg-white in BOTH themes (this tool is a light card
+          // inside a dark shell), so the ink must NOT branch on isDark.
+          var ptReviewField = function (label, text) {
+            return React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
+              React.createElement('span', { className: 'font-bold text-indigo-700' }, label),
+              ptStripLabel(label, text));
+          };
+          // The panel tells the student to answer in their head and then check —
+          // which was impossible, because the answer was printed in the same card
+          // with nothing to hide it. Same defect class as the reference shelf that
+          // used to sit under the quiz: an assessment cannot show its own answers.
+          var ptReviewAnswer = function (n, text) {
+            var open = !!(d._ptRevealAll || (d._ptRevealed || {})[n]);
+            return React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1', 'data-pt-review-answer': String(n) },
+              open
+                ? [React.createElement('span', { key: 'lab', className: 'font-bold text-indigo-700' }, 'Answer: '), ptStripLabel('Answer', text)]
+                : React.createElement('button', {
+                    type: 'button', 'data-pt-review-reveal': String(n),
+                    onClick: function () { var m = Object.assign({}, d._ptRevealed || {}); m[n] = true; upd({ _ptRevealed: m }); },
+                    className: 'px-2 py-1 rounded text-[11px] font-bold border bg-indigo-50 text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+                  }, __alloT('stem.platetectonics.show_answer', 'Show answer')));
+          };
+
+          var ptEmptyOr = function (term, list) {
+            if (list.length || !term) return list;
+            return [React.createElement('div', { key: 'pt-no-match', 'data-pt-no-matches': 'true', role: 'status',
+              className: 'p-3 rounded-lg text-xs italic border ' + (isDark ? 'text-slate-300 border-slate-700' : 'text-slate-600 border-slate-300') },
+              __alloT('stem.platetectonics.no_matches_for', 'No matches for') + ' “' + term + '”. ' +
+              __alloT('stem.platetectonics.try_a_shorter_word', 'Try a shorter word, or clear the search.'))];
+          };
 
           // 3D volcano cutaway. Defaults OFF: the 2D sim is the draggable-plate
           // surface the rest of this tab teaches from, and the cutaway is an
@@ -8821,7 +8872,10 @@ var d = labToolData.plateTectonics || {};
                     ctx.fillStyle = '#fde68a';
                     ctx.font = 'bold 12px system-ui';
                     ctx.textAlign = 'center';
-                    ctx.fillText('crustal root', B.mid, rootTop + rootD + 16);
+                    // Clamped: at the right-hand edge (where drift piles the
+                    // plates) it read 'crustal roo' on a phone.
+                    var rootLblW = ctx.measureText('crustal root').width;
+                    ctx.fillText('crustal root', Math.max(rootLblW / 2 + 6, Math.min(cW - rootLblW / 2 - 6, B.mid)), rootTop + rootD + 16);
                   }
                 }
               }
@@ -9194,6 +9248,14 @@ var d = labToolData.plateTectonics || {};
                   var arcSide = (C._arcX != null) ? (C._arcX >= C.mid ? 1 : -1) : 0;
                   var chxWant = arcSide === 0 ? C.mid : C.mid - arcSide * (cwid / 2 + 6);
                   var chx = Math.max(cwid / 2 + 12, Math.min(cW - cwid / 2 - 12, chxWant));
+                  // On a phone the away-from-arc side is often the canvas edge, so
+                  // the clamp dragged the chip straight back over the cone it was
+                  // dodging. If the clamp moved it, try the ARC side and keep
+                  // whichever ends up further from the arc.
+                  if (arcSide !== 0 && Math.abs(chx - chxWant) > 8) {
+                    var chxAlt = Math.max(cwid / 2 + 12, Math.min(cW - cwid / 2 - 12, C.mid + arcSide * (cwid / 2 + 6)));
+                    if (Math.abs(chxAlt - C._arcX) > Math.abs(chx - C._arcX)) chx = chxAlt;
+                  }
                   var chy = seaY - cH * 0.088;   // band below the legend/hint row, above the arc
                   ctx.fillStyle = 'rgba(2,6,23,0.88)';
                   ctx.fillRect(chx - cwid / 2 - 9, chy - 15, cwid + 18, 23);
@@ -9365,7 +9427,9 @@ var d = labToolData.plateTectonics || {};
                   divergent: 'thin brittle rock, so only a small break'
                 };
                 var lqTxt = 'M ' + lq.mag.toFixed(1);
-                var lqWhy = KIND_WHY[lq.kind] || '';
+                // The reason line is 250 px wide: on a phone it spanned two thirds
+                // of the section and hid the 200 km tick and the cell labels.
+                var lqWhy = cW < 720 ? '' : (KIND_WHY[lq.kind] || '');
                 ctx.save();
                 ctx.globalAlpha = lqA;
                 ctx.font = 'bold 15px system-ui';
@@ -9379,7 +9443,7 @@ var d = labToolData.plateTectonics || {};
                 // Underground, under the boundary, in the clear strip between the
                 // coupling arrows and the cells: the sky band is full, and a quake
                 // is a rupture at depth, not a thing that happens in the air.
-                var lqH = 32;
+                var lqH = lqWhy ? 32 : 22;
                 var lqTop = GEO.dY(lq.kind === 'collision' ? 215 : 165);   // a collision's crustal root label owns the strip above 200 km
                 var lqX = Math.max(lqW / 2 + 4, Math.min(cW - lqW / 2 - 4, lq.x));
                 ctx.fillStyle = isDark ? 'rgba(2,6,23,0.92)' : 'rgba(255,255,255,0.96)';
@@ -10336,11 +10400,15 @@ var d = labToolData.plateTectonics || {};
                 React.createElement("div", { className: "pt-canvas-toolbar", 'data-pt-canvas-toolbar': 'true' },
                   React.createElement("div", null,
                     React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-orange-200" }, "Live tectonic model"),
-                    React.createElement("div", { className: "text-sm font-bold text-white" }, "Drag the crust plates and compare the boundary response")
+                    // The header follows the VIEW: with the volcano cutaway up it
+                    // still told the student to drag plates that were not on screen.
+                    React.createElement("div", { className: "text-sm font-bold text-white" }, ptVent3D
+                      ? "Volcano cutaway: how magma reaches the surface. Drag to turn it, or use the arrow keys"
+                      : "Drag the crust plates and compare the boundary response")
                   ),
                   React.createElement("div", { className: "flex gap-2 flex-wrap" },
                     React.createElement("span", { className: "pt-chip bg-red-500/20 text-red-100 border border-red-400/30" }, speed + "x speed"),
-                    React.createElement("span", { className: "pt-chip bg-orange-500/20 text-orange-100 border border-orange-400/30" }, showConvection ? "Currents visible" : "Currents hidden"),
+                    !ptVent3D && React.createElement("span", { className: "pt-chip bg-orange-500/20 text-orange-100 border border-orange-400/30" }, showConvection ? "Currents visible" : "Currents hidden"),
                     React.createElement("span", { className: "pt-chip bg-slate-700 text-slate-100 border border-slate-500/40" }, showLabels ? "Labels visible" : "Labels hidden")
                   )
                 ),
@@ -12314,7 +12382,7 @@ var d = labToolData.plateTectonics || {};
                 ),
                 React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: __alloT('stem.platetectonics.search_plates_by_name_or_region', 'Search plates by name or region...'), value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
-                  PLATE_DB.filter(function(p) {
+                  ptEmptyOr(d._plateSearch, PLATE_DB.filter(function(p) {
                     if (d._plateTier && d._plateTier !== 'all' && p.tier !== d._plateTier) return false;
                     if (d._plateSearch) {
                       var s = d._plateSearch.toLowerCase();
@@ -12329,7 +12397,7 @@ var d = labToolData.plateTectonics || {};
                       p.motion ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.motion) : null,
                       p.notes ? React.createElement('div', { className: 'text-[10px] mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.notes) : null
                     );
-                  })
+                  }))
                 )
               )
             ),
@@ -12505,7 +12573,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.over_1500_volcanoes_have_been_active_i', "Over 1500 volcanoes have been active in the last 10,000 years. 60 of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas.")),
                 React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: __alloT('stem.platetectonics.search_volcanoes', 'Search volcanoes...'), value: d._volcanoSearch || '', onChange: function(e) { upd({ _volcanoSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
-                  VOLCANO_DB.filter(function(v) {
+                  ptEmptyOr(d._volcanoSearch, VOLCANO_DB.filter(function(v) {
                     if (!d._volcanoSearch) return true;
                     var s = d._volcanoSearch.toLowerCase();
                     return v.name.toLowerCase().indexOf(s) !== -1 || (v.region || '').toLowerCase().indexOf(s) !== -1 || (v.notes || '').toLowerCase().indexOf(s) !== -1;
@@ -12521,7 +12589,7 @@ var d = labToolData.plateTectonics || {};
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-700' }, v.notes)
                     );
-                  })
+                  }))
                 )
               )
             ),
@@ -12608,12 +12676,12 @@ var d = labToolData.plateTectonics || {};
                   (function() {
                     var G = [["Asthenosphere","The plastic, partially molten layer of the upper mantle (~100-350 km depth) where plates move."],["Lithosphere","The rigid outer shell of Earth, including crust and uppermost mantle (~0-100 km)."],["Plate boundary","The edge of a tectonic plate where it meets another plate; can be divergent, convergent, or transform."],["Divergent boundary","Where two plates move apart; produces mid-ocean ridges and continental rifts."],["Convergent boundary","Where two plates push together; produces mountains, trenches, and volcanic arcs."],["Transform boundary","Where two plates slide past each other (e.g., San Andreas Fault)."],["Subduction zone","A convergent boundary where one plate dives beneath another, recycling crust into the mantle."],["Hotspot","A localized region of upwelling mantle that produces volcanism (e.g., Hawaii, Yellowstone)."],["Mantle plume","A column of hot mantle rising from deep within Earth that creates hotspots."],["Magma","Molten rock beneath Earth surface."],["Lava","Molten rock that has reached Earth surface."],["Pyroclastic flow","A fast-moving cloud of hot gas and volcanic debris; one of the deadliest volcanic hazards."],["Caldera","A large, basin-shaped depression formed when a volcano collapses after a major eruption (e.g., Yellowstone, Crater Lake)."],["Stratovolcano","A steep-sided, conical volcano built from alternating layers of lava and ash (e.g., Fuji, Mt St Helens)."],["Shield volcano","A broad, gently sloping volcano built from low-viscosity basaltic lava (e.g., Mauna Loa)."],["Cinder cone","A small, steep volcano built from ejected ash and cinders (e.g., Paricutin, Sunset Crater)."],["Epicenter","The point on Earth surface directly above an earthquake focus."],["Hypocenter (focus)","The actual underground location where an earthquake originates."],["Magnitude","A measure of earthquake size based on the seismic waves it generates. Logarithmic scale."],["Moment magnitude (Mw)","Modern scale used for all earthquake sizes; supplants Richter for large events."],["Richter scale","Original 1935 magnitude scale; works well for small or local quakes; saturates above M7."],["Intensity","A measure of earthquake shaking effects at a location (Mercalli scale); varies by site."],["Aftershock","A smaller earthquake that follows a mainshock in the same area."],["Foreshock","A smaller earthquake that precedes a mainshock in the same area."],["P-wave","Primary wave; compressional; fastest seismic wave; travels through solids and liquids."],["S-wave","Secondary wave; shear; slower than P; travels only through solids."],["Surface wave","Seismic wave traveling along Earth surface; causes most damage (Love, Rayleigh)."],["Seismograph","Instrument that records ground motion during an earthquake."],["Seismic moment","A measure of earthquake size based on fault area times slip times rigidity."],["Fault","A fracture in Earth crust along which rocks have moved."],["Strike-slip fault","A fault where blocks slide horizontally past each other (e.g., San Andreas)."],["Normal fault","A fault where the hanging wall drops down relative to the footwall; tensional."],["Reverse (thrust) fault","A fault where the hanging wall moves up relative to the footwall; compressional."],["Oblique-slip fault","A fault with both horizontal and vertical motion."],["Pangaea","Supercontinent assembled by ~300 million years ago; broke apart starting ~200 Ma."],["Gondwana","Southern supercontinent: Africa, South America, Antarctica, Australia, India."],["Laurasia","Northern supercontinent: North America and Eurasia (minus India)."],["Wilson Cycle","Theory that ocean basins open and close in cycles of ~500 million years."],["Mid-ocean ridge","Underwater mountain range where new ocean crust forms at divergent boundaries."],["Trench","A deep, narrow depression in the ocean floor at a subduction zone."],["Volcanic arc","A chain of volcanoes formed parallel to a subduction zone (e.g., Cascades, Aleutians)."],["Island arc","A volcanic arc formed where two oceanic plates converge (e.g., Mariana, Tonga)."],["Accretionary wedge","Sediment scraped off a subducting plate onto the overriding plate."],["Continental shelf","Submerged extension of a continent; gently sloping."],["Continental slope","Steeper edge of a continent leading from shelf to deep ocean."],["Abyssal plain","Flat, deep-ocean floor."],["Triple junction","Where three plate boundaries meet (e.g., Afar Triangle)."],["Paleomagnetism","The study of ancient magnetic field directions preserved in rocks."],["Magnetic reversal","A complete flip of Earth magnetic field (averages ~250,000 years between reversals)."],["Convection","The transfer of heat by movement of fluid; drives plate motion in the mantle."],["Hotspot track","A chain of progressively older volcanoes formed as a plate moves over a hotspot."],["Mantle wedge","The wedge-shaped piece of mantle between a subducting slab and overriding plate."],["Slab pull","A force from a dense subducting slab pulling the rest of the plate behind it."],["Ridge push","A force from elevated mid-ocean ridges sliding plates away."],["Plate velocity","Speed of plate motion in cm per year; fastest ~24 cm/yr (Pacific-Tonga); slowest ~1 cm/yr."],["Rift","A continental zone where the crust is being pulled apart (e.g., East African Rift)."],["Suture zone","A zone where two continents collided and joined (e.g., Indus-Tsangpo, Urals)."],["Ophiolite","A section of oceanic crust and upper mantle thrust onto a continent during collision."],["Foreland basin","A depression formed in front of an advancing mountain range."],["Backarc basin","An ocean basin formed behind a volcanic arc by extension."],["Fore-arc basin","A sedimentary basin between a trench and volcanic arc."],["Tsunami","A series of ocean waves caused by underwater displacement (quake, landslide, eruption, impact)."],["Seamount","An underwater mountain rising from the seafloor; usually volcanic."],["Guyot","A flat-topped seamount; eroded former island, then subsided."],["Atoll","A ring-shaped coral reef around a sunken volcano."],["Mantle viscosity","Resistance to flow in the mantle; varies with depth and temperature."],["Slab rollback","Backward motion of a subducting slab; causes overriding plate extension."],["Underplating","Addition of magma or sediment to the base of crust."],["Crustal recycling","The process by which crustal material returns to the mantle at subduction zones."],["Plate reconstruction","Models of past plate positions based on geological and paleomagnetic data."],["Euler pole","The point about which a tectonic plate rotates relative to another."],["Diffuse plate boundary","A wide zone where deformation is distributed rather than localized."],["Microplate","A small tectonic plate (e.g., Juan de Fuca, Caribbean)."],["Craton","An ancient and stable interior of a continent (e.g., Canadian Shield, Baltic Shield)."],["Orogeny","Mountain-building episode."],["Terrane","A fragment of crust with a distinct geological history accreted to a larger landmass."],["Exotic terrane","A terrane that originated far from its current location."],["Volcanic gas","Gases released during volcanic eruptions; mainly H2O, CO2, SO2."],["Tephra","Fragmental material ejected by a volcano; ash, lapilli, blocks."],["Lahars","Volcanic mudflows; can travel far and fast, very destructive."],["VEI","Volcanic Explosivity Index; logarithmic 0-8 scale."],["Geyser","A hot spring that periodically erupts steam and hot water."],["Fumarole","A vent emitting steam and volcanic gases."],["Solfatara","A volcanic vent emitting sulfurous gases."],["Hydrothermal vent","Underwater hot spring at mid-ocean ridges; supports chemosynthetic life."],["Continental crust","The lower-density, thicker crust beneath continents; ~30-70 km thick."],["Oceanic crust","The denser, thinner crust beneath oceans; ~5-10 km thick."],["Moho","The Mohorovicic discontinuity; boundary between crust and mantle."],["Outer core","Liquid iron-nickel layer (~2900-5100 km depth); source of magnetic field."],["Inner core","Solid iron-nickel layer (~5100-6371 km depth)."],["Geothermal gradient","Rate of temperature increase with depth in Earth (~25 C/km in crust)."],["Isostasy","The balance between Earth crust and mantle; like icebergs floating in water."],["Glacial isostatic rebound","Land slowly rising after melting of glacial ice loaded it down."],["Eclogite","A high-pressure metamorphic rock formed from subducted oceanic crust."],["Blueschist","A low-temperature high-pressure metamorphic rock; subduction zone marker."],["Decollement","A near-horizontal fault surface separating deformed rocks above from undeformed below."],["Stratovolcano cone","The classic volcanic mountain shape: tall, steep, alternating ash and lava."],["Welded tuff","Pyroclastic rock formed when hot ash particles fuse on landing."],["Pillow lava","Bulbous lava formed when basalt erupts underwater."],["Volcanic neck","Solidified magma in a volcano throat, exposed by erosion (e.g., Devils Tower)."],["Sill","A horizontal intrusion of magma between rock layers."],["Dike","A vertical or steeply-dipping intrusion of magma cutting across rock layers."],["Batholith","A very large intrusive igneous body (e.g., Sierra Nevada batholith)."],["Pluton","A smaller igneous intrusion than a batholith."],["Xenolith","A foreign rock fragment incorporated into magma; samples the deep crust or mantle."],["Volcanic bomb","A blob of molten rock ejected during an eruption."]];
                     var s = (d._glossarySearch || '').toLowerCase();
-                    return G.filter(function(g) { return !s || g[0].toLowerCase().indexOf(s) !== -1 || g[1].toLowerCase().indexOf(s) !== -1; }).map(function(g, i) {
+                    return ptEmptyOr(d._glossarySearch, G.filter(function(g) { return !s || g[0].toLowerCase().indexOf(s) !== -1 || g[1].toLowerCase().indexOf(s) !== -1; }).map(function(g, i) {
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-rose-200' },
                         React.createElement('div', { className: 'font-bold text-rose-800 text-sm mb-1' }, g[0]),
                         React.createElement('div', { className: 'text-[11px] text-slate-700' }, g[1])
                       );
-                    });
+                    }));
                   })()
                 )
               )
@@ -23050,906 +23118,373 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-indigo-200 bg-indigo-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-indigo-800 mb-2' }, __alloT('stem.platetectonics.quick_review_questions', "Quick-Review Questions")),
                 React.createElement('p', { className: 'text-xs text-indigo-700 mb-3' }, __alloT('stem.platetectonics.60_quick_review_questions_covering_key', "60 quick review questions covering key plate tectonic concepts. Use as flash cards: read the question, try to answer in your head, then check below.")),
+                React.createElement('button', {
+                  type: 'button', 'data-pt-review-reveal-all': String(!!d._ptRevealAll),
+                  onClick: function () { upd({ _ptRevealAll: !d._ptRevealAll, _ptRevealed: {} }); },
+                  className: 'mb-3 px-3 py-1.5 rounded-lg text-[12px] font-bold border bg-white text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+                }, d._ptRevealAll
+                  ? __alloT('stem.platetectonics.hide_all_answers', 'Hide all answers')
+                  : __alloT('stem.platetectonics.show_all_answers', 'Show all answers')),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_1', "Review question 1")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(1, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_2', "Review question 2")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(2, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_3', "Review question 3")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(3, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_4', "Review question 4")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(4, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_5', "Review question 5")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(5, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_6', "Review question 6")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil', "Question: What is an index fossil?")),
+                    ptReviewAnswer(6, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_7', "Review question 7")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(7, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_8', "Review question 8")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(8, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_9', "Review question 9")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor_', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor_', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(9, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_10', "Review question 10")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(10, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_11', "Review question 11")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries_2', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_2', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_2', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries_2', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_2', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(11, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_2', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_12', "Review question 12")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude_2', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale_2', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_2', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude_2', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale_2', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(12, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_2', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_13', "Review question 13")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types_2', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano_2', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_2', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types_2', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano_2', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(13, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_2', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_14', "Review question 14")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle_2', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_2', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_2', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle_2', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_2', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(14, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_2', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_15', "Review question 15")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time_2', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_2', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_2', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time_2', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_2', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(15, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_2', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_16', "Review question 16")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation_2', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil_2', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_2', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation_2', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil_2', "Question: What is an index fossil?")),
+                    ptReviewAnswer(16, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_2', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_17', "Review question 17")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones_2', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_2', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_2', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones_2', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_2', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(17, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_2', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_18', "Review question 18")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges_2', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_2', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_2', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges_2', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_2', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(18, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_2', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_19', "Review question 19")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots_2', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__2', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_2', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots_2', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__2', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(19, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_2', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_20', "Review question 20")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults_2', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_2', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_2', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults_2', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_2', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(20, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_2', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_21', "Review question 21")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries_3', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_3', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_3', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries_3', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_3', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(21, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_3', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_22', "Review question 22")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude_3', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale_3', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_3', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude_3', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale_3', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(22, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_3', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_23', "Review question 23")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types_3', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano_3', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_3', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types_3', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano_3', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(23, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_3', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_24', "Review question 24")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle_3', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_3', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_3', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle_3', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_3', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(24, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_3', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_25', "Review question 25")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time_3', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_3', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_3', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time_3', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_3', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(25, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_3', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_26', "Review question 26")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation_3', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil_3', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_3', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation_3', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil_3', "Question: What is an index fossil?")),
+                    ptReviewAnswer(26, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_3', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_27', "Review question 27")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones_3', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_3', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_3', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones_3', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_3', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(27, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_3', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_28', "Review question 28")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges_3', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_3', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_3', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges_3', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_3', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(28, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_3', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_29', "Review question 29")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots_3', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__3', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_3', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots_3', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__3', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(29, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_3', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_30', "Review question 30")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults_3', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_3', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_3', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults_3', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_3', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(30, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_3', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_31', "Review question 31")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries_4', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_4', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_4', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries_4', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_4', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(31, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_4', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_32', "Review question 32")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude_4', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale_4', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_4', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude_4', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale_4', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(32, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_4', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_33', "Review question 33")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types_4', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano_4', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_4', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types_4', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano_4', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(33, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_4', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_34', "Review question 34")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle_4', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_4', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_4', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle_4', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_4', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(34, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_4', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_35', "Review question 35")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time_4', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_4', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_4', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time_4', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_4', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(35, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_4', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_36', "Review question 36")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation_4', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil_4', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_4', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation_4', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil_4', "Question: What is an index fossil?")),
+                    ptReviewAnswer(36, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_4', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_37', "Review question 37")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones_4', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_4', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_4', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones_4', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_4', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(37, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_4', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_38', "Review question 38")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges_4', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_4', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_4', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges_4', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_4', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(38, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_4', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_39', "Review question 39")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots_4', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__4', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_4', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots_4', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__4', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(39, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_4', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_40', "Review question 40")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults_4', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_4', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_4', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults_4', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_4', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(40, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_4', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_41', "Review question 41")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries_5', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_5', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_5', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries_5', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_5', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(41, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_5', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_42', "Review question 42")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude_5', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale_5', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_5', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude_5', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale_5', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(42, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_5', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_43', "Review question 43")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types_5', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano_5', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_5', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types_5', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano_5', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(43, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_5', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_44', "Review question 44")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle_5', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_5', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_5', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle_5', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_5', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(44, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_5', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_45', "Review question 45")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time_5', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_5', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_5', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time_5', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_5', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(45, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_5', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_46', "Review question 46")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation_5', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil_5', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_5', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation_5', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil_5', "Question: What is an index fossil?")),
+                    ptReviewAnswer(46, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_5', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_47', "Review question 47")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones_5', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_5', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_5', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones_5', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_5', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(47, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_5', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_48', "Review question 48")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges_5', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_5', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_5', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges_5', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_5', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(48, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_5', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_49', "Review question 49")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots_5', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__5', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_5', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots_5', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__5', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(49, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_5', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_50', "Review question 50")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults_5', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_5', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_5', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults_5', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_5', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(50, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_5', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_51', "Review question 51")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_plate_boundaries_6', "Concept: plate boundaries")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_6', "Question: What is a divergent boundary?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_6', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_plate_boundaries_6', "Concept: plate boundaries")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_divergent_boundary_6', "Question: What is a divergent boundary?")),
+                    ptReviewAnswer(51, __alloT('stem.platetectonics.answer_a_divergent_plate_boundary_is_w_6', "Answer: A divergent plate boundary is where two plates are moving away from each other, often forming a mid-ocean ridge or continental rift. Examples include the Mid-Atlantic Ridge and the East African Rift."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_52', "Review question 52")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_earthquake_magnitude_6', "Concept: earthquake magnitude")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_richter_scale_6', "Question: What is the Richter scale?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_6', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_earthquake_magnitude_6', "Concept: earthquake magnitude")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_richter_scale_6', "Question: What is the Richter scale?")),
+                    ptReviewAnswer(52, __alloT('stem.platetectonics.answer_the_richter_scale_was_the_origi_6', "Answer: The Richter scale was the original 1935 magnitude scale developed by Charles Richter. It is logarithmic, so M5 is 10x larger than M4. It works well for small to medium quakes but saturates above M7. Modern seismology uses moment magnitude (Mw) for large events."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_53', "Review question 53")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_volcanic_types_6', "Concept: volcanic types")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_stratovolcano_6', "Question: What is a stratovolcano?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_6', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_volcanic_types_6', "Concept: volcanic types")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_stratovolcano_6', "Question: What is a stratovolcano?")),
+                    ptReviewAnswer(53, __alloT('stem.platetectonics.answer_a_stratovolcano_is_a_steep_side_6', "Answer: A stratovolcano is a steep-sided conical volcano built from alternating layers of lava and ash. Examples include Mt Fuji, Mt St Helens, and Vesuvius. They tend to produce explosive eruptions."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_54', "Review question 54")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_rock_cycle_6', "Concept: rock cycle")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_6', "Question: What is metamorphic rock formation?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_6', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite).")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_rock_cycle_6', "Concept: rock cycle")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_metamorphic_rock_form_6', "Question: What is metamorphic rock formation?")),
+                    ptReviewAnswer(54, __alloT('stem.platetectonics.answer_metamorphic_rocks_form_when_exi_6', "Answer: Metamorphic rocks form when existing rocks are transformed by heat, pressure, or chemically active fluids. Examples include marble (from limestone), slate (from shale), and gneiss (from granite)."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_55', "Review question 55")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_geological_time_6', "Concept: geological time")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_6', "Question: What is the Cenozoic Era?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_6', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_geological_time_6', "Concept: geological time")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_cenozoic_era_6', "Question: What is the Cenozoic Era?")),
+                    ptReviewAnswer(55, __alloT('stem.platetectonics.answer_the_cenozoic_era_began_66_milli_6', "Answer: The Cenozoic Era began 66 million years ago and continues to present. It is divided into Paleogene, Neogene, and Quaternary periods. Mammals diversified during this era."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_56', "Review question 56")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_fossil_correlation_6', "Concept: fossil correlation")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_an_index_fossil_6', "Question: What is an index fossil?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_6', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_fossil_correlation_6', "Concept: fossil correlation")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_an_index_fossil_6', "Question: What is an index fossil?")),
+                    ptReviewAnswer(56, __alloT('stem.platetectonics.answer_an_index_fossil_is_a_fossil_spe_6', "Answer: An index fossil is a fossil species that lived during a specific, limited time period and was geographically widespread. Examples include trilobites, ammonites, and graptolites. They help correlate rocks of the same age."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_57', "Review question 57")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_subduction_zones_6', "Concept: subduction zones")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_6', "Question: What is a Wadati-Benioff zone?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_6', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_subduction_zones_6', "Concept: subduction zones")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_a_wadati_benioff_zone_6', "Question: What is a Wadati-Benioff zone?")),
+                    ptReviewAnswer(57, __alloT('stem.platetectonics.answer_a_wadati_benioff_zone_is_the_in_6', "Answer: A Wadati-Benioff zone is the inclined plane of earthquakes that marks a subducting slab. Earthquakes occur as the slab bends, cracks, and undergoes phase changes. Some Wadati-Benioff zones extend to 700 km depth."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_58', "Review question 58")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_mid_ocean_ridges_6', "Concept: mid-ocean ridges")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_6', "Question: What is the East Pacific Rise?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_6', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_mid_ocean_ridges_6', "Concept: mid-ocean ridges")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_east_pacific_rise_6', "Question: What is the East Pacific Rise?")),
+                    ptReviewAnswer(58, __alloT('stem.platetectonics.answer_the_east_pacific_rise_is_the_fa_6', "Answer: The East Pacific Rise is the fastest-spreading mid-ocean ridge on Earth, with rates up to 16 cm/yr. It is the divergent boundary between the Pacific and Nazca plates."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_59', "Review question 59")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_hotspots_6', "Concept: hotspots")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__6', "Question: What is the Hawaiian-Emperor chain?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_6', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_hotspots_6', "Concept: hotspots")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_hawaiian_emperor__6', "Question: What is the Hawaiian-Emperor chain?")),
+                    ptReviewAnswer(59, __alloT('stem.platetectonics.answer_the_hawaiian_emperor_seamount_c_6', "Answer: The Hawaiian-Emperor seamount chain is a 6000 km volcanic chain that records 80 million years of Pacific Plate motion over the Hawaiian hotspot. The bend at 47 Ma marks a change in Pacific Plate motion direction."))
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_60', "Review question 60")),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Concept: "),
-                      __alloT('stem.platetectonics.concept_transform_faults_6', "Concept: transform faults")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Question: "),
-                      __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_6', "Question: What is the San Andreas Fault?")
-                    ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
-                      React.createElement('span', { className: 'font-bold text-indigo-700' }, "Answer: "),
-                      __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_6', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault.")
-                    )
+                    ptReviewField("Concept: ", __alloT('stem.platetectonics.concept_transform_faults_6', "Concept: transform faults")),
+                    ptReviewField("Question: ", __alloT('stem.platetectonics.question_what_is_the_san_andreas_fault_6', "Question: What is the San Andreas Fault?")),
+                    ptReviewAnswer(60, __alloT('stem.platetectonics.answer_the_san_andreas_fault_is_a_tran_6', "Answer: The San Andreas Fault is a transform plate boundary between the Pacific and North American plates. It is right-lateral strike-slip. The 1906 San Francisco quake (M7.9) was on this fault."))
                   )
                 )
               )

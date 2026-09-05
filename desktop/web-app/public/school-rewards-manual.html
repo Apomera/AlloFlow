@@ -323,7 +323,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <img src="school-rewards-manual-assets/09-practice-portal.jpg" width="1180" height="900" loading="lazy" alt="The practice page. A dark purple bar across the top reads Practice mode, fictional data in this browser only, with Role Staff, Scenario Small school, and buttons for Customize, Start the tour, Demo guide, Reset data, and Manual. Below it a card titled Recognize effort, build progress, shop with points introduces the roles, with the Five-minute administrator demo expanded into six numbered steps. Under that, the real portal header shows Practice Elementary Rewards, a STAFF badge, the language menu, and a Help button.">
 <figcaption>The practice page: the role and scenario bar, the introduction, the five-minute demo guide, and the real portal underneath with its own Help button.</figcaption>
 </figure>
-<p>You do not need to customise anything to practise: pick a scenario and press <strong>Start the tour</strong>. <strong>Customize</strong> opens a panel for making the practice school look like yours: the school name, number of students, store status, starting points, the recognition categories and prizes as simple rows, and the <strong>tour steps</strong> as cards. Each card has a role, a tab to open, a control to highlight chosen from a list, a title, and a sentence or two; steps can be added, reordered, or removed, and <em>Use the built-in tour</em> puts the original back. Nothing has to be typed in a technical format. <em>Apply and reload</em> rebuilds the fictional ledger from those settings; <em>Export settings</em> and <em>Import settings</em> move the whole practice set, tour included, between schools as one file. The tour runs the steps for the current role, so a staff meeting can run the staff tour while cashiers run theirs at the register.</p>
+<p>You do not need to customise anything to practise: pick a scenario and press <strong>Start the tour</strong>. <strong>Customize</strong> opens a panel for making the practice school look like yours: the school name, number of students, store status, starting points, the recognition categories and prizes as simple rows, and the <strong>tour steps</strong> as cards. Each card has a role, a tab to open, a control to highlight chosen from a list, a title, and a sentence or two; steps can be added, reordered, or removed, and <em>Use the built-in tour</em> puts the original back. Nothing has to be typed in a technical format. <em>Apply and reload</em> rebuilds the fictional ledger from those settings; <em>Export settings</em> and <em>Import settings</em> move the whole practice set, tour included, between schools as one file. The tour runs the steps for the current role, so a staff meeting can run the staff tour while cashiers run theirs at the register. Choosing Español in the portal's language menu switches the practice bar, introduction, demo guide, and tour as well, so a bilingual staff meeting can run the whole page in Spanish.</p>
 <ol>
 <li><strong>Confirm district review and the managed account</strong> that will own the ledger.</li>
 <li><strong>Create the private Apps Script project</strong> and paste the four files from the copy controls.</li>
@@ -354,7 +354,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p><strong>Sharing with staff.</strong> The staff link is the same portal address. It carries no secret, so posting it in a staff channel or on a poster is fine: sign-in and the roster decide what each person can do. The QR code is the same link.</p>
 <p><strong>If the clipboard is blocked</strong> in your window, the copy control shows the verified source pre-selected in a box; press Ctrl+C (Cmd+C on a Mac) and paste it into the editor. Copying from the box marks the step done.</p>
 <h2 id="awarding">4. Awarding Points</h2>
-<p class="suite">Training day: the <a href="school-rewards-quick-cards.html">printable quick cards</a> hold this section and the next on one page each, for staff and for cashiers.</p>
+<p class="suite">Training day: the <a href="school-rewards-quick-cards.html">printable quick cards</a> hold this section and the next on one page each, for staff and for cashiers, plus a one-page card for students and families.</p>
 <p>Staff award from the portal <strong>Award points</strong> tab. Students appear as tiles with their name, grade and homeroom, a short reference code, and available points. Tap a tile to select the student; the confirmation panel repeats who you chose. Pick a recognition category, enter the points, and write what the student did. The explanation is required and is the sentence the student will read, so write it to them.</p>
 <p><strong>Finding a student.</strong> Type part of a name, grade, or homeroom in the search box; the tiles narrow as you type. The grade and homeroom filters narrow them further. Two students with the same first name are told apart by grade, homeroom, and the short reference code on each tile, and the confirmation panel below the tiles repeats all of these for the student you chose. Tapping the selected tile again keeps it selected, so a second tap never silently clears your choice. Read the confirmation before you record.</p>
 <figure>
@@ -384,6 +384,18 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <img src="school-rewards-manual-assets/12-store-scheduled.jpg" width="1180" height="744" loading="lazy" alt="The Store tab as a cashier. The Store catalog note reads Trimester 1 is set to Open, but shopping has not started yet, checkout opens 2026-09-06 11:47, above a Refresh live availability button and four prizes with their point costs and stock. The Cashier checkout card shows the student search and filters, a Choose a student menu, the Open store window menu reading None available, and an empty cart.">
 <figcaption>A window set to Open before its start time. The note says exactly what is happening and when checkout opens; the window menu offers nothing until then.</figcaption>
 </figure>
+<div class="tablewrap">
+<table>
+<caption>What the Store tab note means</caption>
+<tr><th scope="col">The note reads</th><th scope="col">What is true</th><th scope="col">What a cashier does</th></tr>
+<tr><td><em>Shopping is open for Trimester 1.</em></td><td>The window is Open and the current time is inside its start and end times.</td><td>Check out.</td></tr>
+<tr><td><em>Trimester 1 is set to Open, but shopping has not started yet. Checkout opens …</em></td><td>The window is Open but its start time has not arrived.</td><td>Wait; the time shown is when checkout opens.</td></tr>
+<tr><td><em>Trimester 1 has passed its end time, so checkout is closed until an administrator changes the window.</em></td><td>The window is Open but its end time has passed.</td><td>Stop and ask an administrator; do not work around it.</td></tr>
+<tr><td><em>Previewing Trimester 1. Checkout remains closed.</em></td><td>Students can see prizes; nobody can buy.</td><td>Nothing to do at the register.</td></tr>
+<tr><td><em>No shopping window is open.</em></td><td>No window is in Preview or Open.</td><td>Nothing to do at the register.</td></tr>
+</table>
+</div>
+
 <div class="glance">
 <h3>Shopping day at a glance</h3>
 <div class="cols">
@@ -406,6 +418,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </div>
 <p>The repository README carries a shopping-day runbook with the go/no-go review, the day-of routine, and what to do when a request times out. Follow it as written: the standing rule is never to resubmit an ambiguous request with a new key.</p>
 <h2 id="students">6. For Students and Families</h2>
+<p class="suite">A one-page version of this section, written for a student or a parent, is in the <a href="school-rewards-quick-cards.html#card-student">printable quick cards</a>.</p>
 <p>Students do not need the portal to take part: balance emails arrive on the schedule the school sets. A rostered student who opens the portal with their school account sees only their own balance, growth, recent recognition, and the prize catalog.</p>
 <figure>
 <img src="school-rewards-manual-assets/05-student-overview.jpg" width="1180" height="900" loading="lazy" alt="A student's overview: an available balance of 42 points, growth points earned, store status Preview with the opening date, a Prize preview with two prizes and Save for this buttons, a Saving for line reading Robotics kit hour 80 points with 38 more points to go, and a My growth card with a Helpful level bar.">
@@ -490,7 +503,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>A group award reported failures:</strong> the students named were not recorded; the rest were. Fix the cause and award only the missing students.</li>
 <li><strong>A checkout timed out or the result is ambiguous:</strong> do not submit again with a new request. Keep the screen, note the time and cart, and follow the runbook; the portal keeps a stable retry key for an exact retry.</li>
 <li><strong>Practice shows “not available in practice mode”:</strong> bulk mail, guardian digests, the Print Lab, and integrity recovery need a real deployment; everything a staff member or cashier does on a normal day works in practice.</li>
-<li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design. The practice page's own bar, introduction, and demo guide are English only; the portal inside it is translated.</li>
+<li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design. The practice page follows the same menu: its bar, introduction, demo guide, customize panel, and tour switch to Spanish with the portal. Category and prize names you type into the customize panel stay as you wrote them.</li>
 <li><strong>Not sure what a screen is asking:</strong> press <strong>Help</strong> at the top of the portal. The answers are short, specific to your role, and do not need an outside connection.</li>
 </ul>
 <h2 id="glossary">13. Glossary</h2>

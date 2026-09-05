@@ -473,4 +473,30 @@ describe('dissection workspace bands', () => {
     expect(source).toContain("fillReadableSpecimenText(bpm + ' BPM'");
     expect(source).not.toContain("ctx.fillText(bpm + ' BPM'");
   }, 60_000);
+
+  // 2026-09-05. Instrument HUD panels sit inside the specimen transform because each tracks a
+  // point on the specimen, but they read as panels with a background box. In the ventral view the
+  // box mirrors as a whole, so left-inset text landed at the box's far edge and ran out of it.
+  it.each(DISSECTION_PATHS)('anchors instrument HUD panel text from the mirrored edge in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain('function fillPanelText(text, panelX, panelWidth, inset, y)');
+    expect(source).toContain('specimenScale.x < 0 ? panelX + panelWidth - inset : panelX + inset');
+
+    // Every panel draw inside the transform must go through it. The transform closes at the
+    // "End deterministic specimen-proportion transform" restore; anything after it is screen-fixed.
+    const close = source.indexOf('// End deterministic specimen-proportion transform');
+    expect(close, 'transform restore').toBeGreaterThan(-1);
+    const inside = source.slice(0, close);
+    const rawPanelDraws = inside.split(String.fromCharCode(10)).filter((line) => {
+      return line.indexOf('ctx.fillText(') >= 0 && /LabelX \+ \d/.test(line);
+    });
+    expect(rawPanelDraws, rawPanelDraws.join(' | ')).toEqual([]);
+
+    // The panels themselves, so a new one cannot quietly skip the helper.
+    for (const panel of ['tractionLabelX', 'forecastLabelX', 'wickLabelX', 'palpationLabelX',
+      'pinLabelX', 'replayLabelX', 'clearLabelX', 'probeLabelX']) {
+      expect(source, panel).toContain('fillPanelText(');
+      expect(inside, panel).toContain(panel + ',');
+    }
+  }, 60_000);
 });

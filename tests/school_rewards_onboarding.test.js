@@ -152,6 +152,8 @@ describe('School Rewards onboarding in the complete practice page', () => {
     expect(panel.textContent).toContain('Growth levels never go down.');
     const links = [...panel.querySelectorAll('.help-links a')].map(a => a.getAttribute('href'));
     expect(links).toEqual(expect.arrayContaining([expect.stringContaining('school-rewards-manual'), expect.stringContaining('school-rewards-quick-cards'), expect.stringContaining('school-rewards-practice')]));
+    const more = [...panel.querySelectorAll('.help-more a')].filter(a => a.closest('[data-awarder],[data-checkout],[data-student],[data-admin]').hidden === false).map(a => a.getAttribute('href'));
+    expect(more).toEqual(['https://alloflow-cdn.pages.dev/school-rewards-manual#awarding']);
     panel.dispatchEvent(new app.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(panel.hidden).toBe(true);
     expect(app.doc.activeElement).toBe(toggle);
@@ -177,6 +179,8 @@ describe('School Rewards onboarding in the complete practice page', () => {
     cashier.$('#help-toggle').click();
     expect(cashier.$('#help-panel [data-checkout]').hidden).toBe(false);
     expect(cashier.$('#help-panel [data-awarder]').hidden).toBe(true);
+    expect(cashier.$('#help-panel [data-checkout] .help-more a').getAttribute('href')).toContain('#store');
+    expect(student.$('#help-panel [data-student] .help-more a').textContent).toBe('Leer más en el manual: para estudiantes y familias');
   });
 
   it('tells the cashier when a window marked Open has not started yet', async () => {
@@ -187,6 +191,48 @@ describe('School Rewards onboarding in the complete practice page', () => {
     expect(note).toContain('Trimester 1 is set to Open, but shopping has not started yet.');
     expect(note).toMatch(/Checkout opens \d{4}-\d{2}-\d{2} \d{2}:\d{2}\./);
     expect(app.$('#checkout-submit').disabled).toBe(true);
+  });
+
+  it('translates the practice bar, introduction, and tour into Spanish alongside the portal', async () => {
+    const app = await openPractice();
+    expect(app.$('#practice-tour').textContent).toBe('Start the tour');
+    const lang = app.$('#lang-select');
+    lang.value = 'es';
+    lang.dispatchEvent(new app.w.Event('change', { bubbles: true }));
+    await pause(60);
+    expect(app.$('#practice-tour').textContent).toBe('Iniciar el recorrido');
+    expect(app.$('#practice-welcome-title').textContent).toBe('Reconoce el esfuerzo. Construye el progreso. Compra con puntos.');
+    expect(app.$('#practice-scenario option[value="shopping"]').textContent).toBe('Día de compras (24 estudiantes, tienda abierta)');
+    expect(app.$('.practice-bar').getAttribute('aria-label')).toBe('Controles del modo de práctica');
+    app.$('#practice-tour').click();
+    for (let i = 0; i < 60 && !app.doc.querySelector('.tour-box h2'); i++) await pause(20);
+    await pause(30);
+    expect(app.$('.tour-box h2').textContent).toBe('Elige al estudiante');
+    expect(app.$('.tour-box .kicker').textContent).toBe('Recorrido de práctica · 1 de 4');
+    expect(app.$('.tour-box [data-tour="exit"]').textContent).toBe('Salir del recorrido');
+    lang.value = 'en';
+    lang.dispatchEvent(new app.w.Event('change', { bubbles: true }));
+    await pause(60);
+    expect(app.$('#practice-tour').textContent).toBe('Start the tour');
+    expect(app.$('.tour-box h2').textContent).toBe('Choose the student');
+    app.$('.tour-box [data-tour="exit"]').click();
+  });
+
+  it('names each tour step as the dialog title and can hand keyboard focus to the highlighted control', async () => {
+    const app = await openPractice();
+    app.$('#practice-tour').click();
+    for (let i = 0; i < 60 && !app.doc.querySelector('.tour-box h2'); i++) await pause(20);
+    await pause(30);
+    const box = app.$('.tour-box');
+    expect(box.getAttribute('aria-labelledby')).toBe('practice-tour-title');
+    expect(box.querySelector('#practice-tour-title').textContent).toBe('Choose the student');
+    const go = box.querySelector('[data-tour="focus"]');
+    expect(go.hidden).toBe(false);
+    go.click();
+    const focused = app.doc.activeElement;
+    expect(app.$('#award-student-tiles').contains(focused)).toBe(true);
+    expect(focused.getAttribute('role')).toBe('radio');
+    box.querySelector('[data-tour="exit"]').click();
   });
 
   it('cancels pending tour steps on Escape and ignores superseded step timers', async () => {

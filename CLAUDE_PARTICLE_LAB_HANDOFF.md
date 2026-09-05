@@ -44,9 +44,34 @@ User asked to fix UI overlap in normal and fullscreen Particle Lab 3D, suggested
 7. **One collapse control.** The dock heading's duplicate "Collapse" button is gone; the essential bar's "Collapse readouts / Show readouts" toggle (aria-controls="particle-readouts") is the single owner. The dock hint now mentions the bar controls and the D key. The render suite asserts the dock contains no collapse button and covers D, Shift+D, and D-while-hidden.
 8. **Taller chamber on tall desktops.** The workspace height is `clamp(520px, 62vh, 780px)` (bottom dock: `clamp(740px, 82vh, 1000px)`); mobile (container <= 760px) keeps 610px and fullscreen is unchanged. Because the stage now aligns to the grid start, this is the only way the chamber gains height on a large monitor.
 
+## Third enhancement pass (2026-09-05)
+
+9. **Dock width choice.** A "Width" select (Compact 14rem / Standard 17rem / Wide 22rem) sits beside the position select and is persisted as readoutsWidth. It is offered only for side placements (meaningless below the chamber) and is implemented as a `--particle-dock` custom property on `#particle-workspace[data-width]`, so left and right placements share it. The 1440 px browser case measures the dock at compact and wide and expects at least 100 px difference.
+10. **Collapsed status line.** With the dock collapsed, the essential bar shows a plain-text `227 K · 64 particles · paused` summary (`data-testid="particle-mini-status"`, deliberately NOT a live region), so collapsing the dock never hides the chamber state. Rendered and browser suites assert it.
+11. Render harness now exposes `persisted()` (latest toolData.particleLab3d) so tests can check what the tool saved.
+
+## Fourth enhancement pass (2026-09-05)
+
+12. **Stray hero margin fixed.** The scoped `<style>` was the root's first child, and the root's `space-y-4` skips only `[hidden]` siblings, so the hero card silently gained a 1rem top margin. The style element now carries `hidden`. The browser suite asserts the hero card's computed margin-top is 0.
+13. **Dock scroll shadows.** `#particle-readouts` paints CSS-only scroll shadows (the background-attachment local/scroll pair) so a soft dark edge plus a faint cyan glow appears wherever more cards sit above or below the visible part of the dock. Verified visually at scroll top and scrolled (scratch/particle-layout/variant-dock-scrolled.png).
+14. **Dock hint** now says the dock always sits below the chamber on narrow screens, because the position select still shows the saved side preference there.
+15. **WCAG harness** beforeAll (Chromium launch) got a 60 s budget; a cold launch exceeded vitest's 10 s hook default and skipped all 26 cases.
+16. **Variant capture script** scratch/particle_capture_variants.mjs (run with `node`) screenshots five layouts the suite measures but never captures: mobile 390, dock below, dock left + wide, collapsed with the status line, and a scrolled dock. All five were inspected and look right.
+
+## Fifth enhancement pass (2026-09-05)
+
+17. **Reading and focus order follow the dock placement.** The viewport and dock nodes are hoisted into `particleViewportNode` / `particleReadoutsNode` (keys `viewport` / `readouts`) and the workspace is built with `h.apply(...)` so a LEFT dock precedes the chamber in DOM order (WCAG 1.3.2 / 2.4.3). React moves the existing nodes; the canvas element and its WebGL context are preserved (asserted in both suites).
+18. **`stageNarrow` state** mirrors the CSS container query: a ResizeObserver on `#particle-stage` sets it when the stage is <= 760 px wide (0 px, i.e. unmeasured in jsdom or a hidden tab, counts as wide). It drives the DOM order (a narrow stage keeps the chamber first because the dock is forced below), hides the Width select there, and shows a "shown below on this screen" note beside the position select so the saved side preference is not confusing on a phone. `#particle-workspace` also carries `data-narrow`.
+
 ## Validation status
 
-Latest (after the second enhancement pass, machine still at 100% CPU from other sessions' vitest runs):
+Latest (2026-09-05, after the fifth pass, machine quiet):
+- accessibility + render a11y (jsdom): 48/48 pass (scratch/particle-enh5-jsdom.log).
+- layout browser suite: 8/8 pass including native fullscreen, DOM-order and narrow-note assertions (scratch/particle-enh5-browser.log).
+- WCAG harness particle cases: 4/4 pass (scratch/particle-enh5-wcag.log).
+- Source and mirror byte-identical; node --check and git diff --check clean. scratch/ is not git-ignored, so the capture script and PNGs show as untracked; they are not deliverables.
+
+After the second enhancement pass (machine at 100% CPU from other sessions' vitest runs):
 - accessibility + render a11y (jsdom): 46/46 pass (scratch/particle-enh-jsdom.log).
 - layout browser suite: 7/8 pass (scratch/particle-enh-browser.log). All four normal-mode cases (with the single collapse control and taller clamp) and all three immersive cases pass. The native fullscreen + screenshots case captured all three PNGs at 23:40 and then timed out at 60 s under load. normal.png is now 944 x 931 (was 944 x 3922) and was inspected: stage ends under the control row, dock right, COM line legible. fullscreen.png inspected: same layout at 1440 x 900 with Pause/Exit visible.
 - Source and mirror byte-identical; node --check and git diff --check clean.
@@ -75,7 +100,6 @@ Run the browser suites only when the machine is quiet: check `Get-CimInstance Wi
 
 ## Open items
 
-1. Rerun the native fullscreen case on a quiet machine so the browser suite reports 8/8 (its screenshots already succeeded).
-2. Molecule lab dark theme contrast (see above) belongs to that tool's owner.
-3. Commit by pathspec (the six files above) when Aaron asks; do not deploy unasked.
-4. Further ideas not started: a resizable dock width, and localising the new dock strings through ui_strings if this tool is in the i18n lane.
+1. Molecule lab dark theme contrast (see above) belongs to that tool's owner.
+2. Commit by pathspec (the six files above) when Aaron asks; do not deploy unasked.
+3. Not started: this tool has no ctx.t calls at all, so the new dock strings are English-only like the rest of it; localise with the tool if it enters the i18n lane.

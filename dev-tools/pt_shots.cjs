@@ -13,6 +13,10 @@ window.__mount = function (dark, tab) {
   var cfg = window.StemLab._registry.plateTectonics;
   var Host = function () {
     var pair = React.useState({ plateTectonics: { simTab: tab } });
+    // Exposed so a probe can tell whether a click navigated away from the tab
+    // it was walking: a hub or category card changes simTab, and everything
+    // scanned after that belongs to a different screen.
+    window.__toolState = pair[0];
     var ctx = { React: React, toolData: pair[0], setToolData: pair[1], setStemLabTool: function(){}, setStemLabTab: function(){}, setToolSnapshots: function(){}, addToast: function(){},
       announceToSR: function(m){ window.__sr = (window.__sr || []).concat([m]); }, awardXP: function(){}, getXP: function(){ return 0; }, beep: function(){}, celebrate: function(){},
       canvasNarrate: function(){}, canvasA11yDesc: function(){}, callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null, gradeLevel: '5th',

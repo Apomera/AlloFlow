@@ -28,6 +28,40 @@
  * these are visible. It is deliberately conservative: every detector reports a
  * concrete measured number, and REVIEW-grade heuristics are kept out.
  *
+ * ★A SIXTH DETECTOR, 2026-09-05: `clipped-text` — the HTML analogue of the SVG
+ * one. A label that does not fit its own overflow:hidden box is cut with no
+ * ellipsis, no scrollbar and no error; the reader just sees a word end
+ * mid-stroke. Deliberately narrow: overflow auto/scroll, text-overflow:ellipsis
+ * and -webkit-line-clamp are all AFFORDANCES that announce the cut, and form
+ * controls scroll their own value, so none of them are reported. Calibrated on
+ * a four-box fixture (one real cut + those three affordances): it reports the
+ * cut and stays silent on the rest, and nine sampled tools read 0. The fixture
+ * is kept for re-calibration:
+ *   node dev-tools/check_stem_layout_defects.cjs dev-tools/fixtures/clipped_text_fixture.js
+ * must report exactly ONE clipped-text finding.
+ *
+ * ★★★A CLOSED <details> STILL HAS LAYOUT BOXES, 2026-09-05. Chromium gives the
+ * collapsed subtree content-visibility:hidden — painting is skipped, geometry is
+ * NOT — so getBoundingClientRect() returns real rects for content no reader can
+ * see, and every geometry detector believed them. universe reported 72
+ * light-ink findings in the dark sweep; with closed disclosures skipped it
+ * reports ZERO. watercycle's "row overflows the column by 40px" was inside a
+ * shut <details> too. invisible() now skips closed-<details> subtrees (but not
+ * their <summary>, which IS painted) and anything with content-visibility:hidden.
+ * ★The tell: Playwright's own actionability check calls these elements not
+ * visible while getBoundingClientRect() hands you a box. When two instruments
+ * disagree about the same element, one of them is measuring the wrong thing.
+ *
+ * ★A FOURTH AXIS, 2026-09-05: viewport width (--narrow = 768x1024, or
+ * --viewport=WxH). Every sweep before this ran at 1280x1000, a teacher's laptop;
+ * students are on Chromebooks and tablets, and a narrow column is where overlap
+ * and clipping actually happen. Detector 4, `overflows-tool-column`, is the one
+ * that speaks this axis: content past the right edge of the slot with NO
+ * scrollable ancestor (a wide table inside overflow-x:auto is the correct
+ * pattern and is not reported). Fixture:
+ *   node dev-tools/check_stem_layout_defects.cjs dev-tools/fixtures/overflow_column_fixture.js --narrow
+ * must report exactly ONE overflows-tool-column finding.
+ *
  * ★Calibrated against the known-bad blob before first use:
  *   git show f25a88533:stem_lab/stem_tool_pets.js > /tmp/broken.js
  *   node dev-tools/check_stem_layout_defects.cjs /tmp/broken.js --states='[{"view":"welfare"}]'
@@ -119,6 +153,21 @@ const CONTRAST = args.includes('--contrast');
 // Calibration: dev-tools/fixtures/contrast_ink_fixture.js must report ONE
 // finding with host CSS and FOUR without.
 const HOST_CSS = CONTRAST && !args.includes('--no-host-css');
+// ★ A FOURTH AXIS: viewport width. Every sweep before 2026-09-05 ran at
+// 1280x1000, which is a teacher's laptop. Students are on Chromebooks and
+// tablets, and a narrow column is where overlap and clipping actually
+// happen — the same reason --contrast found a family nobody had seen.
+// --narrow is 768x1024 (portrait tablet); --viewport=WxH sets any size.
+const NARROW = args.includes('--narrow');
+const vpArg = (args.find((a) => a.startsWith('--viewport=')) || '').slice(11);
+const VIEWPORT = (function () {
+  if (vpArg) {
+    const m = /^(\d{2,5})x(\d{2,5})$/.exec(vpArg);
+    if (!m) { console.error('bad --viewport (expected WxH, e.g. 768x1024)'); process.exit(2); }
+    return { width: Number(m[1]), height: Number(m[2]) };
+  }
+  return NARROW ? { width: 768, height: 1024 } : { width: 1280, height: 1000 };
+})();
 // One re-mount per control, so this is the runtime knob. 30 covers the Pets
 // Lab's 28 menu tiles; --all --deep is a long run by design.
 const DEEP_CAP = ALL ? 12 : 30;
@@ -127,7 +176,7 @@ const statesArg = (args.find((a) => a.startsWith('--states=')) || '').slice(9);
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
 
 if (!ALL && !toolArg) {
-  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--deep] [--json] [--gate]');
+  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--narrow|--viewport=WxH] [--deep] [--json] [--gate]');
   process.exit(2);
 }
 
@@ -370,6 +419,21 @@ const PROBE = function (CONTRAST) {
     for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
       const cs = getComputedStyle(n);
       if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) === 0) return true;
+      // ★★★ A CLOSED <details> STILL HAS LAYOUT BOXES. Chromium gives the
+      // collapsed subtree content-visibility:hidden, which skips PAINTING but
+      // keeps geometry — so getBoundingClientRect() returns a real rect for
+      // content no reader can see, and every geometry detector believes it.
+      // watercycle's landing-choice row "overflowed the column by 40px" from
+      // inside a shut disclosure. (Playwright's own actionability check calls
+      // these elements not visible; that disagreement was the tell.)
+      if (cs.contentVisibility === 'hidden') return true;
+      if (n.tagName === 'DETAILS' && !n.open) {
+        // <summary> is the one part of a closed <details> that IS painted.
+        for (let m = el; m && m !== n; m = m.parentElement) {
+          if (m.tagName === 'SUMMARY') return false;
+        }
+        return true;
+      }
     }
     // Parked off-canvas until focused — the standard skip-link pattern
     // (transform: translateY(-180%)). dissection stacks two of them at the same
@@ -379,6 +443,129 @@ const PROBE = function (CONTRAST) {
     if (r.bottom < sr.top || r.right < sr.left || r.top > sr.bottom || r.left > sr.right) return true;
     return false;
   }
+
+  // 3. HTML TEXT CLIPPED BY AN overflow:hidden BOX.
+  // The HTML analogue of detector 2. A label that does not fit its own box is
+  // silently cut: no ellipsis, no scrollbar, no error - the reader just sees a
+  // word end mid-stroke. Deliberately narrow, because truncation is often
+  // intended and the affordances say so:
+  //   - overflow auto/scroll   -> the reader can scroll to the rest
+  //   - text-overflow: ellipsis -> the cut is announced by the "..."
+  //   - -webkit-line-clamp      -> an explicit N-line clamp
+  //   - <input>/<textarea>/<select> -> a caret scrolls the value
+  // and it only judges leaf elements holding their own text, so a tall scroll
+  // panel is not reported once per descendant.
+  slot.querySelectorAll('*').forEach((el) => {
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'svg' || el.namespaceURI === 'http://www.w3.org/2000/svg') return;
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'canvas') return;
+    // Own text only: an element whose text lives in children is a container,
+    // and the child is the thing that would actually be clipped.
+    const own = Array.from(el.childNodes)
+      .filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent)
+      .join('')
+      .trim();
+    if (own.length < 2 || !/[A-Za-z0-9]/.test(own)) return;
+    if (invisible(el)) return;
+    const cs = getComputedStyle(el);
+    if (cs.overflow !== 'hidden' && cs.overflowX !== 'hidden' && cs.overflowY !== 'hidden') return;
+    if (cs.textOverflow === 'ellipsis') return;
+    if (cs.webkitLineClamp && cs.webkitLineClamp !== 'none') return;
+    // sr-only / visually-hidden: a 1px clipped box is the whole point.
+    const r = el.getBoundingClientRect();
+    if (r.width <= 2 || r.height <= 2) return;
+    // 2px of slack absorbs sub-pixel layout noise; a real cut is bigger.
+    const overX = cs.overflowX === 'hidden' ? el.scrollWidth - el.clientWidth : 0;
+    const overY = cs.overflowY === 'hidden' ? el.scrollHeight - el.clientHeight : 0;
+    if (overX <= 2 && overY <= 2) return;
+    const axis = overX > overY ? 'horizontally by ' + overX + 'px' : 'vertically by ' + overY + 'px';
+    findings.push({
+      kind: 'clipped-text',
+      detail: 'text is cut off ' + axis + ' by an overflow:hidden box with no ellipsis ' +
+        'and no scrollbar — content ' + el.scrollWidth + 'x' + el.scrollHeight +
+        ' in a ' + el.clientWidth + 'x' + el.clientHeight + ' box',
+      el: label(el)
+    });
+  });
+
+  // 4. CONTENT WIDER THAN THE TOOL'S OWN COLUMN.
+  // The characteristic narrow-viewport defect, and invisible at 1280px: a fixed
+  // min-width, a long unbroken string, or a rigid grid pushes past the right
+  // edge of the slot. On a Chromebook that is a horizontal scrollbar on the
+  // whole page, or content simply cut off at the card edge.
+  // ★A wide table inside `overflow-x: auto` is the CORRECT pattern, not a
+  // defect, so an element with a scrollable ancestor is skipped — only overflow
+  // that actually reaches the slot is reported.
+  (function () {
+    const sr = slot.getBoundingClientRect();
+    if (!sr.width) return;
+    const worst = new Map();
+    slot.querySelectorAll('*').forEach((el) => {
+      if (el.namespaceURI === 'http://www.w3.org/2000/svg') return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 4) return;
+      const over = r.right - sr.right;
+      if (over <= 2) return;
+      if (invisible(el)) return;
+      // What happens to the part that sticks out? Three different answers.
+      // ★★★ CLIPPED IS NOT THE SAME AS CONTAINED. A first cut treated any
+      // `overflow: hidden` ancestor as making the spill moot, which cleared
+      // sourcebook's decorative ring correctly — and silently cleared
+      // machineLab's energy-ledger TABLE and solarSystem's panel at the same
+      // time. That is a false negative of the worst kind: tool cards are
+      // routinely rounded `overflow-hidden` containers, so one blanket rule
+      // blinds the detector to real overflow across an entire tool.
+      //   • scrollable ancestor  → reachable, the correct pattern, silent.
+      //   • clipping ancestor + DECORATIVE element → a deliberate bleed, silent.
+      //     (sourcebook's aria-hidden ring at `-right-12`.)
+      //   • clipping ancestor + CONTENT → REPORT. The columns past the edge are
+      //     cut off with no way to scroll to them, which is worse than a
+      //     scrollbar, not better.
+      let scrollable = false, clipped = false;
+      for (let n = el.parentElement; n && n !== slot.parentElement; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        const ox = cs.overflowX, oy = cs.overflow;
+        if (ox === 'auto' || ox === 'scroll' || oy === 'auto' || oy === 'scroll') { scrollable = true; break; }
+        if (ox === 'hidden' || ox === 'clip' || oy === 'hidden' || oy === 'clip') { clipped = true; break; }
+      }
+      if (scrollable) return;
+      if (clipped) {
+        // Decorative = carries no text of its own, or the author declared the
+        // whole subtree hidden from assistive tech. Either way nothing is lost.
+        let decorative = !(el.textContent || '').trim();
+        if (!decorative) {
+          for (let n = el; n && n !== slot; n = n.parentElement) {
+            if (n.getAttribute && n.getAttribute('aria-hidden') === 'true') { decorative = true; break; }
+          }
+        }
+        if (decorative) return;
+      }
+      // Fixed/sticky chrome is positioned against the viewport on purpose.
+      const cs = getComputedStyle(el);
+      if (cs.position === 'fixed' || cs.position === 'sticky') return;
+      // Keep the OUTERMOST offender: a spilling row reports itself, not each
+      // of its twelve cells.
+      let redundant = false;
+      for (let n = el.parentElement; n && n !== slot; n = n.parentElement) {
+        if (worst.has(n)) { redundant = true; break; }
+      }
+      if (redundant) return;
+      worst.set(el, { over: over, clipped: clipped });
+    });
+    worst.forEach((info, el) => {
+      findings.push({
+        kind: 'overflows-tool-column',
+        detail: 'extends ' + info.over.toFixed(0) + 'px past the right edge of the tool column ' +
+          '(' + Math.round(sr.width) + 'px wide) and ' + (info.clipped
+            ? 'is CUT OFF by an ancestor with overflow:hidden — the content past the edge ' +
+              'cannot be reached by scrolling at all'
+            : 'is neither clipped nor scrollable — on a narrow screen this forces a ' +
+              'page-wide sideways scroll'),
+        el: label(el)
+      });
+    });
+  })();
 
   const positioned = new Map();
   slot.querySelectorAll('*').forEach((el) => {
@@ -583,6 +770,7 @@ const PROBE = function (CONTRAST) {
   const browser = await chromium.launch();
   const report = [];
   let checked = 0;
+  let scanned = 0;
 
   for (const file of files) {
     const src = fs.readFileSync(path.isAbsolute(file) ? file : path.join(ROOT, file), 'utf8');
@@ -597,10 +785,21 @@ const PROBE = function (CONTRAST) {
         .filter((id) => id !== 'myTool' && id.indexOf('<') === -1)
     ));
     if (!toolIds.length) continue;
+
+    // ★★★ A SWEEP THAT PRINTS NOTHING CANNOT BE TOLD FROM A SWEEP THAT HUNG,
+    // 2026-09-05. A --all run sat 32 minutes at zero bytes of output; because
+    // the JSON is written only at exit, "0 bytes" looked exactly like "still
+    // working". It had in fact died at chromium.launch() — the tell was that
+    // NO chromium process existed and node had burned 15s of CPU in 32
+    // minutes. An instrument needs an instrument: one line per file, on stderr
+    // so it never contaminates the --json stdout a caller is parsing.
+    process.stderr.write('[' + (++scanned) + '/' + files.length + '] ' + file +
+      ' (' + toolIds.length + ' tool' + (toolIds.length === 1 ? '' : 's') + ')' + String.fromCharCode(10));
+
     const toolId = toolIds[0];
     const findings = lintNonUniformRx(src, file);
 
-    const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+    const page = await browser.newPage({ viewport: VIEWPORT });
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 160)));
     await page.setContent('<!doctype html><html><head><style>' + tw + '</style><style>' + palette +
@@ -700,12 +899,39 @@ const PROBE = function (CONTRAST) {
       findings.push({ kind: 'mount-error', file: file, detail: String(e.message).slice(0, 160) });
     }
     await page.close();
-    if (findings.length) report.push({ file: file, tool: toolId, findings: findings });
+    // ★★★ --deep RE-MOUNTS, SO ONE DEFECT REPORTS ONCE PER VIEW. A first
+    // light board read "56 findings across 6 files"; the true figure was 13
+    // distinct defects, each counted up to 13 times because every top-level
+    // view re-renders the same header. An inflated count is not a harmless
+    // cosmetic: it makes a board look like it is getting worse when a tool
+    // merely grew a tab, and it buries the one new defect among its own echoes.
+    // Collapse on (kind, element, detail) and keep a `seen` tally so the deep
+    // coverage is still visible.
+    if (findings.length) {
+      const byKey = new Map();
+      for (const f of findings) {
+        // ★ EVERY FIELD THAT DISTINGUISHES A DEFECT MUST BE IN THE KEY. A first
+        // cut keyed on (kind, el, detail) and silently merged three of the
+        // known-bad blob's collapsed-height findings, dropping it from 7 to 4 —
+        // they share the label "div" and differ only in the `vs` element they
+        // collapse against. Deduping on a partial key does not tidy a board, it
+        // deletes findings. Only `state` is deliberately excluded: collapsing
+        // the same defect across re-mounted views is the whole point.
+        const key = f.kind + '\u0000' + f.el + '\u0000' + f.detail +
+          '\u0000' + (f.vs || '') + '\u0000' + (f.line || '');
+        const hit = byKey.get(key);
+        if (hit) { hit.seen++; continue; }
+        f.seen = 1;
+        byKey.set(key, f);
+      }
+      const distinct = Array.from(byKey.values());
+      report.push({ file: file, tool: toolId, findings: distinct, raw: findings.length });
+    }
   }
   await browser.close();
 
   if (JSON_OUT) {
-    console.log(JSON.stringify({ checked: checked, report: report }, null, 2));
+    console.log(JSON.stringify({ checked: checked, viewport: VIEWPORT.width + 'x' + VIEWPORT.height, theme: CONTRAST ? 'contrast' : (DARK ? 'dark' : 'light'), report: report }, null, 2));
   } else {
     let total = 0;
     report.forEach((entry) => {
