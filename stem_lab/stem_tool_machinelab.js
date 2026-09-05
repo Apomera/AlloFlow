@@ -2980,7 +2980,8 @@ window.StemLab = window.StemLab || {
     { id: 'dawn', icon: '🌅' },
     { id: 'noon', icon: '☀️' },
     { id: 'dusk', icon: '🌇' },
-    { id: 'night', icon: '🌙' }
+    { id: 'night', icon: '🌙' },
+    { id: 'storm', icon: '⛈️' }
   ];
 
   // One sky per hour. The sun direction is also the shadow direction, so the
@@ -3004,6 +3005,11 @@ window.StemLab = window.StemLab || {
         id: 'dusk', top: 0x2a3a7c, horizon: 0xf0895a, sun: 0xffa262, sunDir: [-0.86, 0.15, -0.36],
         sunI: 0.95, hemiSky: 0x8f80b8, hemiGround: 0x4d4838, hemiI: 0.6, fog: 0xe4a688,
         stars: false, glow: 0.8, fire: 0.9
+      };
+      case 'storm': return {
+        id: 'storm', top: 0x2a3140, horizon: 0x6d7683, sun: 0xaab3bf, sunDir: [0.3, 0.55, -0.6],
+        sunI: 0.5, hemiSky: 0x7c8794, hemiGround: 0x2f3a2c, hemiI: 0.55, fog: 0x6d7683,
+        stars: false, glow: 0.15, fire: 0.6, rain: true
       };
       case 'night': return {
         id: 'night', top: 0x050a1c, horizon: 0x172440, sun: 0xb7c9ff, sunDir: [0.42, 0.62, -0.6],
@@ -3246,7 +3252,7 @@ window.StemLab = window.StemLab || {
     var tex = contrast ? {} : { stone: stoneTexture(THREE), wood: woodTexture(THREE) };
 
     if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(P.horizon, 1);
-    if (S.scene) S.scene.fog = (P.fog != null && typeof THREE.Fog === 'function') ? new THREE.Fog(P.fog, 80, 360) : null;
+    if (S.scene) S.scene.fog = (P.fog != null && typeof THREE.Fog === 'function') ? new THREE.Fog(P.fog, P.rain ? 40 : 80, P.rain ? 240 : 360) : null;
 
     // ── Sky ──
     if (typeof THREE.ShaderMaterial === 'function') {
@@ -3264,6 +3270,7 @@ window.StemLab = window.StemLab || {
           ' float d = max(dot(n, sunDir), 0.0); c += sunColor * (pow(d, 420.0) * 1.5 + pow(d, 6.0) * 0.3 * glow); gl_FragColor = vec4(c, 1.0); }',
         side: THREE.BackSide, depthWrite: false, fog: false
       });
+      S.skyMat = skyMat;
       var sky = new THREE.Mesh(new THREE.SphereGeometry(360, 32, 16), skyMat);
       sky.position.set(0, 0, -standoff * 0.5);
       sky.frustumCulled = false;
@@ -3286,6 +3293,24 @@ window.StemLab = window.StemLab || {
 
     // ── Light ──
     var hemi = new THREE.HemisphereLight(P.hemiSky, P.hemiGround, P.hemiI);
+    S.hemi = hemi; S.hemiBase = P.hemiI;
+    if (P.rain && !contrast && typeof THREE.Points === 'function') {
+      // Rain: a box of falling points over the lane, wrapped as they land.
+      // It changes nothing in the model; the crosswind slider is the wind.
+      var RAIN = 1600;
+      var rainPos = new Float32Array(RAIN * 3);
+      for (var ri2 = 0; ri2 < RAIN; ri2++) {
+        rainPos[ri2 * 3] = (hash01(ri2, 1, 81) - 0.5) * 180;
+        rainPos[ri2 * 3 + 1] = hash01(ri2, 2, 82) * 60;
+        rainPos[ri2 * 3 + 2] = -standoff * 0.5 + (hash01(ri2, 3, 83) - 0.5) * (standoff + 120);
+      }
+      var rainGeo = new THREE.BufferGeometry();
+      rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+      var rain = new THREE.Points(rainGeo, new THREE.PointsMaterial({ color: 0xc7d0dc, size: 1.7, sizeAttenuation: false, transparent: true, opacity: 0.5 }));
+      rain.frustumCulled = false;
+      S.model.add(rain); S.rain = rain;
+      S.nextBolt = 4 + hash01(1, 9, 84) * 6; S.boltAt = null;
+    }
     S.model.add(hemi);
     var sun = new THREE.DirectionalLight(P.sun, P.sunI);
     var fieldCentre = new THREE.Vector3(0, 0, -standoff * 0.5);
@@ -3597,6 +3622,48 @@ window.StemLab = window.StemLab || {
     } catch (e) { guest.ml = null; }
     mg.rotation.y = Math.PI / 2;
     skinMachine(THREE, mg, contrast, tex);
+    if (!contrast && guest.ml && m.kind !== 'ballista' && m.kind !== 'onager') {
+      // A trebuchet's frame is braced, its counterweight is an iron-banded
+      // box, and it is cocked by a winch. These are dressing on the guest, in
+      // the guest's own frame (it fires along its +x), and the swing never
+      // touches them.
+      var gm = guest.ml, pH = gm.pivotH || 4;
+      var braceMat = new THREE.MeshLambertMaterial({ color: 0x5b3b1f, map: tex.wood || null });
+      [-0.7, 0.7].forEach(function (zz) {
+        [-1, 1].forEach(function (sx) {
+          // Foot at sx*1.8 on the ground, head at the pivot: a box along y
+          // rotated by +theta about z moves its top toward -x, so the sign
+          // is sx, not -sx (which leaned them outward into an X).
+          var len = Math.sqrt(pH * pH + 1.8 * 1.8);
+          var brace = new THREE.Mesh(new THREE.BoxGeometry(0.16, len, 0.16), braceMat);
+          brace.position.set(sx * 0.9, pH / 2, zz);
+          brace.rotation.z = sx * Math.atan2(1.8, pH);
+          brace.castShadow = true;
+          mg.add(brace);
+        });
+      });
+      var drum = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.5, 10), braceMat);
+      drum.rotation.x = Math.PI / 2; drum.position.set(-2.4, 0.55, 0); drum.castShadow = true;
+      mg.add(drum);
+      [-0.85, 0.85].forEach(function (zz) {
+        var leg = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.7, 0.14), braceMat);
+        leg.position.set(-2.4, 0.35, zz); mg.add(leg);
+        var crank = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.08), new THREE.MeshLambertMaterial({ color: 0x3a3a40 }));
+        crank.position.set(-2.4, 0.85, zz * 1.15); mg.add(crank);
+      });
+      if (gm.arm) {
+        gm.arm.children.forEach(function (c) {
+          if (!c.geometry || !c.geometry.parameters || c.geometry.parameters.width !== c.geometry.parameters.height) return;
+          // The counterweight is the one cube on the arm: band it.
+          var cwSize = c.geometry.parameters.width;
+          [-0.3, 0.3].forEach(function (off) {
+            var band = new THREE.Mesh(new THREE.BoxGeometry(cwSize * 1.04, cwSize * 0.12, cwSize * 1.04), new THREE.MeshLambertMaterial({ color: 0x2b2b30 }));
+            band.position.copy(c.position); band.position.y += off * cwSize;
+            gm.arm.add(band);
+          });
+        });
+      }
+    }
     S.siegeGuest = guest;
     if (!contrast) {
       S.crew = [
@@ -3757,6 +3824,62 @@ window.StemLab = window.StemLab || {
       S.model.add(bm); burst.push(bm);
     }
     S.burst = burst; S.burstT0 = null;
+    if (!contrast && typeof THREE.InstancedMesh === 'function') {
+      // A flock on the far hillside, grazing away from the lane.
+      var SHEEP = 14;
+      var flock = new THREE.InstancedMesh(new THREE.SphereGeometry(0.55, 8, 6), mat(0xf1ede4), SHEEP);
+      var heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 6, 5), mat(0x2b2620), SHEEP);
+      flock.castShadow = true;
+      var sd2 = new THREE.Object3D();
+      var fx0 = laneHalf + 22 + hash01(2, 4, 91) * 20, fz0 = -standoff * 0.35;
+      for (var sh = 0; sh < SHEEP; sh++) {
+        var sx2 = fx0 + (hash01(sh, 5, 92) - 0.5) * 22, sz2 = fz0 + (hash01(sh, 7, 93) - 0.5) * 22;
+        var sy2 = terrainHeight(sx2, sz2, standoff, laneHalf);
+        sd2.position.set(sx2, sy2 + 0.5, sz2); sd2.scale.set(1.2, 0.85, 0.8); sd2.rotation.set(0, hash01(sh, 11, 94) * 6.28, 0);
+        sd2.updateMatrix(); flock.setMatrixAt(sh, sd2.matrix);
+        sd2.position.set(sx2 + Math.cos(sd2.rotation.y) * 0.6, sy2 + 0.55, sz2 - Math.sin(sd2.rotation.y) * 0.6); sd2.scale.set(1, 1, 1);
+        sd2.updateMatrix(); heads.setMatrixAt(sh, sd2.matrix);
+      }
+      flock.instanceMatrix.needsUpdate = true; heads.instanceMatrix.needsUpdate = true;
+      S.model.add(flock); S.model.add(heads);
+      // Chimney smoke from each tower, drifting with the wind like the campfire's.
+      if (m.wallPreset !== 'imported') {
+        S.chimneys = [];
+        [-1, 1].forEach(function (side) {
+          var puffs = [];
+          for (var cp = 0; cp < 6; cp++) {
+            var cpuff = new THREE.Mesh(new THREE.SphereGeometry(0.3 + cp * 0.08, 8, 6), new THREE.MeshLambertMaterial({ color: 0x8f8a84, transparent: true, opacity: 0.3 }));
+            cpuff.position.set(side * (span / 2 + 1.9) + 0.9, wallTop + 2.6 + 2.2 + 0.6, -0.6);
+            S.model.add(cpuff); puffs.push(cpuff);
+          }
+          S.chimneys.push({ x: side * (span / 2 + 1.9) + 0.9, y: wallTop + 2.6 + 2.2 + 0.4, puffs: puffs });
+        });
+      }
+    }
+    // Where the stone last landed: a scorch on the ground and a slow dust cloud.
+    var scorchTex = contrast ? null : makeCanvasTexture(THREE, 128, function (g2, n2) {
+      var rg3 = g2.createRadialGradient(n2 / 2, n2 / 2, 0, n2 / 2, n2 / 2, n2 / 2);
+      rg3.addColorStop(0, 'rgba(40,30,20,0.75)'); rg3.addColorStop(0.5, 'rgba(60,45,30,0.4)'); rg3.addColorStop(1, 'rgba(60,45,30,0)');
+      g2.clearRect(0, 0, n2, n2); g2.fillStyle = rg3; g2.fillRect(0, 0, n2, n2);
+    });
+    if (scorchTex) {
+      var scorch = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), new THREE.MeshLambertMaterial({ map: scorchTex, transparent: true, depthWrite: false }));
+      scorch.rotation.x = -Math.PI / 2; scorch.visible = false;
+      S.model.add(scorch); S.scorch = scorch;
+      var dustTex = makeCanvasTexture(THREE, 128, function (g2, n2) {
+        var rg4 = g2.createRadialGradient(n2 / 2, n2 / 2, 0, n2 / 2, n2 / 2, n2 / 2);
+        rg4.addColorStop(0, 'rgba(210,195,170,0.7)'); rg4.addColorStop(1, 'rgba(210,195,170,0)');
+        g2.clearRect(0, 0, n2, n2); g2.fillStyle = rg4; g2.fillRect(0, 0, n2, n2);
+      });
+      if (dustTex && typeof THREE.Sprite === 'function') {
+        var dusts = [];
+        for (var du = 0; du < 5; du++) {
+          var dsp = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, transparent: true, opacity: 0, depthWrite: false }));
+          dsp.visible = false; S.model.add(dsp); dusts.push(dsp);
+        }
+        S.dusts = dusts;
+      }
+    }
 
     // ── Framing ──
     var torsion = (m.kind === 'ballista' || m.kind === 'onager');
@@ -3948,6 +4071,19 @@ window.StemLab = window.StemLab || {
           var last = pts[pts.length - 1];
           S.impactPos = new THREE.Vector3(last.z || 0, Math.max(0.3, last.y), -standoff + last.x);
           if (data.sound && !red) SCENE_AUDIO.thud(data.outcomeKind === 'hit', (Number(data.impactKJ) || 0));
+          if (S.scorch && data.outcomeKind !== 'hit') {
+            S.scorch.position.set(S.impactPos.x, 0.05, S.impactPos.z);
+            S.scorch.rotation.z = hash01(Math.round(S.impactPos.x * 10), Math.round(S.impactPos.z * 10), 95) * 6.28;
+            S.scorch.visible = true;
+          }
+          if (S.dusts && !red) {
+            S.dusts.forEach(function (dsp, di) {
+              dsp.visible = true;
+              dsp.position.copy(S.impactPos);
+              dsp.position.x += (hash01(di, 3, 96) - 0.5) * 1.6; dsp.position.z += (hash01(di, 5, 97) - 0.5) * 1.6 + (data.outcomeKind === 'hit' ? 1.0 : 0);
+              dsp.userData = { t0: now, dx: (hash01(di, 7, 98) - 0.5) * 0.8, sc: 1.2 + hash01(di, 11, 99) * 1.4 };
+            });
+          }
           if (!red) {
             S.burstT0 = now;
             S.burst.forEach(function (bm, k) {
@@ -4050,6 +4186,51 @@ window.StemLab = window.StemLab || {
           bp.setY(bv, by - Math.max(0, 1 - windAbs / 3) * 0.35 * (bx / 2.4));
         }
         bp.needsUpdate = true;
+      }
+      if (S.rain) {
+        var rp = S.rain.geometry.attributes.position;
+        if (ambient) {
+          for (var rI = 0; rI < rp.count; rI++) {
+            var ry = rp.getY(rI) - 26 * dt;
+            if (ry < 0) ry += 60;
+            rp.setY(rI, ry);
+            rp.setX(rI, rp.getX(rI) + wind * 0.4 * dt);
+          }
+          rp.needsUpdate = true;
+        }
+        // Lightning: a flash every few seconds, then thunder a beat later.
+        if (ambient && S.nextBolt != null) {
+          if (S.boltAt == null && tSec > S.nextBolt) {
+            S.boltAt = tSec; S.nextBolt = tSec + 5 + hash01(Math.round(tSec * 10), 13, 85) * 9;
+            if (data.sound && !red) setTimeout(function () { SCENE_AUDIO.thud(false, 60); }, 700);
+          }
+          var since = S.boltAt == null ? 9 : tSec - S.boltAt;
+          var flash = since < 0.14 ? 1 : (since < 0.3 ? 0.35 : 0);
+          if (S.hemi) S.hemi.intensity = S.hemiBase * (1 + flash * 5);
+          if (S.skyMat) S.skyMat.uniforms.glow.value = 0.15 + flash * 3;
+          if (since > 0.3) S.boltAt = null;
+        }
+      }
+      if (S.chimneys) {
+        S.chimneys.forEach(function (ch, chI) {
+          ch.puffs.forEach(function (pf, pi2) {
+            var ph = ((ambient ? tSec * 0.45 : 0.5) + pi2 * 0.7 + chI) % 4.5;
+            pf.position.set(ch.x + wind * 0.14 * ph * ph * 0.5 + Math.sin(pi2 * 1.3 + ph) * 0.2, ch.y + ph, -0.6);
+            pf.scale.setScalar(0.7 + ph * 0.4);
+            pf.material.opacity = Math.max(0, 0.3 * (1 - ph / 4.5));
+          });
+        });
+      }
+      if (S.dusts) {
+        S.dusts.forEach(function (dsp) {
+          if (!dsp.visible || !dsp.userData.t0) return;
+          var age = (now - dsp.userData.t0) / 1000;
+          if (age > 6) { dsp.visible = false; return; }
+          dsp.material.opacity = Math.max(0, 0.55 * (1 - age / 6));
+          var grow = dsp.userData.sc * (1 + age * 0.9);
+          dsp.scale.set(grow, grow * 0.8, 1);
+          dsp.position.y += dt * 0.5; dsp.position.x += (dsp.userData.dx + wind * 0.25) * dt;
+        });
       }
       if (S.clouds) {
         S.clouds.children.forEach(function (cl, ci2) {
@@ -8011,7 +8192,8 @@ window.StemLab = window.StemLab || {
           dawn: __alloT('stem.machinelab.time_dawn', 'Dawn'),
           noon: __alloT('stem.machinelab.time_noon', 'Noon'),
           dusk: __alloT('stem.machinelab.time_dusk', 'Dusk'),
-          night: __alloT('stem.machinelab.time_night', 'Night')
+          night: __alloT('stem.machinelab.time_night', 'Night'),
+          storm: __alloT('stem.machinelab.time_storm', 'Storm')
         };
         var CAM_MODES = [
           { id: 'cinematic', icon: '🎬', label: __alloT('stem.machinelab.cam_cinematic', 'Cinematic'), title: __alloT('stem.machinelab.cam_cinematic_t', 'Watch the engine, follow the stone, then hold on the impact') },

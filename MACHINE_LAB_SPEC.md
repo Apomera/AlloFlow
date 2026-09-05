@@ -157,6 +157,19 @@ rubble lands in water; tower windows lit (`P.fire >= 0.9`, night) and torches on
 (`0xb8865e`) instead of orange. ★Clouds at 75–120 m were out of every default frame; 38–72 m
 sits them over the hills.
 
+### Wave 6 (2026-09-05)
+
+- **Storm**, a fifth hour: grey sky, close fog (40–240), 1600 rain points falling and leaning
+  with the crosswind, lightning every 5–14 s (hemisphere ×6 and the sky glow uniform spiked
+  for 0.14 s, tail to 0.3 s) with thunder 700 ms later when sound is on. Rain changes
+  NOTHING in the model and writes no state; the crosswind slider remains the wind.
+- **Landing marks**: a scorch decal where a short shot lands (never on the wall) and five
+  dust sprites that rise, spread and die within six seconds at every landing.
+- **Engine dressing** (trebuchet only, in the guest's own frame): four A-frame braces, a
+  winch drum on legs with two cranks, two iron bands round the counterweight.
+- **Life**: 14 sheep on the far hillside, off the lane; chimney smoke from both towers
+  drifting with the wind.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

@@ -44,7 +44,7 @@ describe('Siege Field: reachable and rendered', () => {
 
   it('offers every camera mode, every hour and the ambient toggle as real buttons', () => {
     const html = renderTool('machineLab', state());
-    for (const label of ['Cinematic', 'Follow the stone', 'Engine', 'Castle', 'Whole field', 'Free look', 'Dawn', 'Noon', 'Dusk', 'Night', 'Ambient motion']) {
+    for (const label of ['Cinematic', 'Follow the stone', 'Engine', 'Castle', 'Whole field', 'Free look', 'Dawn', 'Noon', 'Dusk', 'Night', 'Storm', 'Ambient motion']) {
       expect(html, label).toMatch(new RegExp('<button[^>]*aria-pressed="(true|false)"[^>]*>[^<]*' + label));
     }
   });
@@ -167,8 +167,8 @@ describe('Siege Field: the pure pieces', () => {
 
   it('has four hours, each with its own sun direction, and a high-contrast sky that is black', () => {
     const { skyPreset } = evalScene();
-    const dirs = new Set(['dawn', 'noon', 'dusk', 'night'].map((h) => skyPreset(h, false).sunDir.join(',')));
-    expect(dirs.size).toBe(4);
+    const dirs = new Set(['dawn', 'noon', 'dusk', 'night', 'storm'].map((h) => skyPreset(h, false).sunDir.join(',')));
+    expect(dirs.size).toBe(5);
     expect(skyPreset('night', false).stars).toBe(true);
     expect(skyPreset('noon', false).stars).toBe(false);
     const hc = skyPreset('noon', true);
@@ -436,5 +436,49 @@ describe('Siege Field wave 5: dressing that follows the hour', () => {
     expect(body).toContain("if (!contrast && typeof THREE.Sprite === 'function') {");
     expect(body).toContain("var grassTex = contrast ? null : makeCanvasTexture(");
     expect(body).toContain('if (!contrast) {\n        // The moat:');
+  });
+});
+
+describe('Siege Field wave 6: storm, landing marks, life', () => {
+  function grab(name) {
+    const src = source();
+    const m = src.match(new RegExp('\\n  function ' + name + '\\(([^)]*)\\) \\{([\\s\\S]*?)\\n  \\}\\n'));
+    return new Function(m[1], m[2]);
+  }
+
+  it('the storm is the only hour that rains, and it closes the fog in', () => {
+    const skyPreset = grab('skyPreset');
+    for (const h of ['dawn', 'noon', 'dusk', 'night']) expect(skyPreset(h, false).rain, h).toBeFalsy();
+    expect(skyPreset('storm', false).rain).toBe(true);
+    expect(skyPreset('storm', true).rain).toBeFalsy();
+    const src = source();
+    expect(src).toContain('new THREE.Fog(P.fog, P.rain ? 40 : 80, P.rain ? 240 : 360)');
+  });
+
+  it('rain, lightning and thunder are ambient-gated, and the rain changes nothing in the model', () => {
+    const src = source();
+    expect(src).toContain('if (ambient && S.nextBolt != null) {');
+    expect(src).toContain("if (data.sound && !red) setTimeout(function () { SCENE_AUDIO.thud(false, 60); }, 700);");
+    // The rain reads the wind slider for its lean; it never writes state.
+    expect(src).toContain('rp.setX(rI, rp.getX(rI) + wind * 0.4 * dt);');
+    expect(src).not.toMatch(/rain[^\n]*upd\(/);
+  });
+
+  it('scorches the ground only where a stone lands short, never on the wall', () => {
+    const src = source();
+    expect(src).toContain("if (S.scorch && data.outcomeKind !== 'hit') {");
+    // Dust rises at every landing and dies within six seconds.
+    expect(src).toContain('if (age > 6) { dsp.visible = false; return; }');
+  });
+
+  it('dresses only the trebuchet with braces and a winch, in the guest frame', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && guest.ml && m.kind !== 'ballista' && m.kind !== 'onager') {");
+    expect(src).toContain('mg.add(drum);');
+  });
+
+  it('keeps the sheep off the lane', () => {
+    const src = source();
+    expect(src).toContain('var fx0 = laneHalf + 22 + hash01(2, 4, 91) * 20, fz0 = -standoff * 0.35;');
   });
 });
