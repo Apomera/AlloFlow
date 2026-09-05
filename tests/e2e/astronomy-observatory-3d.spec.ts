@@ -467,6 +467,37 @@ test('star trails draw computed arcs, lengthen with the span, and stay off in da
   expect(errors).toEqual([]);
 });
 
+test('a star picked from the sky reaches the printed plan with its times', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 1500 });
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  // Identify a real star by clicking it.
+  const info = await debug(sky);
+  await sky.evaluate((el: any, s: any) => el.__observatoryLookAt(s.az, s.alt), info.brightStar);
+  await sky.scrollIntoViewIfNeeded();
+  const spot = (await debug(sky)).spots.star;
+  const box = (await sky.boundingBox())!;
+  await page.mouse.click(box.x + spot.x, box.y + spot.y);
+  const name = info.brightStar.name;
+  await expect.poll(async () => (await debug(sky)).picked?.name).toBe(name);
+  // Save it, and it appears in the tab's list.
+  await page.getByRole('button', { name: /Add to tonight's list/ }).click();
+  await expect(page.locator('#astronomy-observatory-targets')).toContainText(name);
+  await expect(page.getByRole('button', { name: /On tonight's list/ })).toBeVisible();
+  const saved = await page.evaluate(() => (window as any).__toolData.astronomy.obsTargets);
+  expect(saved).toHaveLength(1);
+  expect(saved[0].name).toBe(name);
+  expect(Number.isFinite(saved[0].ra)).toBe(true);
+  // It survives into the printed kit with a real timetable.
+  await page.getByRole('tab', { name: /Print/ }).click();
+  const table = page.locator('table[aria-label="My targets tonight"]');
+  await expect(table).toContainText(name);
+  await expect(table.locator('tbody tr')).toHaveCount(1);
+  await expect(page.locator('#astro-tonight-plan-heading')).toContainText('Portland, Maine');
+  await page.screenshot({ path: 'scratch/observatory-print-plan.png', fullPage: false });
+  expect(errors).toEqual([]);
+});
+
 test('reduced motion keeps the scene still and disables time-lapse', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsShower: 'perseids', obsDate: '2026-08-12' });

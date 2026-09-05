@@ -131,6 +131,16 @@ Everything the Observatory knows lived behind a screen. Observing happens in the
 - **i18n note:** eight of the new labels were originally written as `__alloT('stem.astronomy.' + key, ...)`. Concatenated keys are invisible to the repo's extraction greps, so they would have shipped untranslatable. They are now static literals. The only remaining dynamic key in this tab is `planet_<id>`, whose five values are listed explicitly in the string tooling.
 - 17 more `ui_strings` keys (208 `obs_*` total). Unit suite 51.
 
+## Enhancement slice 9 (2026-09-05): the learner's own target list
+Slice 8 printed what the tool chose. This prints what the learner chose.
+
+- **`obsTargets`** is a new, separate list, deliberately not the existing `observingList`, which is validated against `CONSTELLATIONS` and shared with the Constellations, Observing and Print tabs. Adding star, planet, Moon and deep-sky entries to that contract would have reached three other tabs and their tests; a parallel list is additive and touches nothing.
+- **Identify → save → print.** The identification panel gains an add/remove toggle, the tab shows the list as removable chips with a count, and the printed kit gains a **"My targets tonight"** timetable: target, rises, highest with its time, sets, and where to look.
+- **`normalizeObsTargets`** treats persisted state as untrusted: an entry survives only if it carries enough to be re-found later. A star without coordinates, a declination beyond ±90, a deep-sky id not in the table, an unknown planet, an unknown kind, or a nameless entry are all dropped; the list deduplicates and caps at 12, and right ascension is normalized.
+- **`observatoryPositionAt`** was lifted to module scope so the tab and the printed plan share one position source rather than two copies that could drift apart. Fixed coordinates for stars and deep sky, a live ephemeris for anything in the solar system.
+- Circumpolar targets print "always up" and "never sets" rather than invented times; a target below the horizon all night prints "not visible tonight".
+- 15 more `ui_strings` keys. Unit suite 56; browser suite 14, including the whole loop: click a star in the real WebGL sky, save it, switch to Print, and find it in the timetable.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.

@@ -580,6 +580,77 @@ describe('When to look tonight', () => {
   });
 });
 
+describe('Tonight\'s target list', () => {
+  const SIRIUS = { kind: 'star', name: 'Sirius', hip: 32349, ra: 101.287, dec: -16.716 };
+
+  it('keeps only entries it could actually re-find, and drops the rest', () => {
+    const kept = sky.normalizeObsTargets([
+      SIRIUS,
+      { kind: 'deepsky', id: 'm42', name: 'Orion Nebula (M42)', ra: 83.82, dec: -5.39 },
+      { kind: 'planet', id: 'jupiter', name: 'Jupiter' },
+      { kind: 'moon', id: 'moon', name: 'Moon' }
+    ]);
+    expect(kept.map(t => t.kind)).toEqual(['star', 'deepsky', 'planet', 'moon']);
+    // Everything below is unusable and must not survive a reload.
+    expect(sky.normalizeObsTargets([
+      { kind: 'star', name: 'No coordinates' },
+      { kind: 'star', name: 'Bad dec', ra: 10, dec: 400 },
+      { kind: 'deepsky', id: 'not-a-real-object', name: 'Ghost', ra: 10, dec: 10 },
+      { kind: 'planet', id: 'pluto', name: 'Pluto' },
+      { kind: 'comet', id: 'x', name: 'Comet' },
+      { kind: 'star', ra: 10, dec: 10 },
+      null, 'nonsense', 42
+    ])).toEqual([]);
+    expect(sky.normalizeObsTargets('nope')).toEqual([]);
+    expect(sky.normalizeObsTargets(null)).toEqual([]);
+  });
+
+  it('deduplicates, caps the list and normalizes right ascension', () => {
+    expect(sky.normalizeObsTargets([SIRIUS, SIRIUS, Object.assign({}, SIRIUS)])).toHaveLength(1);
+    const many = Array.from({ length: 30 }, (_, i) => ({ kind: 'star', name: 'Star ' + i, hip: 1000 + i, ra: i, dec: 10 }));
+    expect(sky.normalizeObsTargets(many)).toHaveLength(sky.MAX_OBS_TARGETS);
+    expect(sky.normalizeObsTargets([Object.assign({}, SIRIUS, { ra: -20 })])[0].ra).toBeCloseTo(340, 6);
+    expect(sky.obsTargetKey({ kind: 'star', hip: 32349 })).toBe('star:32349');
+    expect(sky.obsTargetKey({ kind: 'planet', id: 'mars' })).toBe('planet:mars');
+  });
+
+  it('builds one position source for fixed and moving targets alike', () => {
+    const star = sky.observatoryPositionAt(SIRIUS, 43.66, -70.26);
+    const planet = sky.observatoryPositionAt({ kind: 'planet', id: 'jupiter', name: 'Jupiter' }, 43.66, -70.26);
+    const t = Date.UTC(2026, 11, 22, 3, 0);
+    expect(typeof star).toBe('function');
+    expect(typeof planet).toBe('function');
+    for (const at of [star, planet]) {
+      const p = at(t);
+      expect(Number.isFinite(p.alt)).toBe(true);
+      expect(Number.isFinite(p.az)).toBe(true);
+    }
+    // A fixed star keeps its declination through the night; Jupiter's altitude
+    // still changes, so both sources are actually being evaluated.
+    expect(Math.abs(star(t).alt - star(t + 3600000).alt)).toBeGreaterThan(0.5);
+    expect(sky.observatoryPositionAt({ kind: 'nonsense' }, 43.66, -70.26)).toBeNull();
+    expect(sky.observatoryPositionAt(null, 43.66, -70.26)).toBeNull();
+  });
+
+  it('shows the list in the tab and marks the identified object as saved', () => {
+    const state = { obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsTargets: [SIRIUS], obsPicked: Object.assign({ mag: -1.44, alt: 20, az: 150 }, SIRIUS) };
+    const doc = new DOMParser().parseFromString(render(state), 'text/html');
+    const list = doc.getElementById('astronomy-observatory-targets');
+    expect(list).toBeTruthy();
+    expect(list.textContent).toContain('Sirius');
+    expect(list.textContent).toContain('1/12');
+    expect(list.querySelector('[aria-label="Remove from tonight\'s list: Sirius"]')).toBeTruthy();
+    const saved = Array.from(doc.querySelectorAll('button')).find(b => /On tonight's list/.test(b.textContent));
+    expect(saved).toBeTruthy();
+    expect(saved.getAttribute('aria-pressed')).toBe('true');
+    // An object that is not on the list offers to add instead.
+    const other = new DOMParser().parseFromString(render(Object.assign({}, state, { obsTargets: [] })), 'text/html');
+    expect(other.getElementById('astronomy-observatory-targets')).toBeNull();
+    const add = Array.from(other.querySelectorAll('button')).find(b => /Add to tonight's list/.test(b.textContent));
+    expect(add.getAttribute('aria-pressed')).toBe('false');
+  });
+});
+
 describe('Printable plan for tonight', () => {
   const printed = state => new DOMParser().parseFromString(
     renderTool('astronomy', { astronomy: { tab: 'print', observingList: [], ...state } }), 'text/html');
@@ -605,6 +676,45 @@ describe('Printable plan for tonight', () => {
     expect(text).toMatch(/darkest hour/);
     expect(text).not.toContain('NaN');
     expect(text).not.toContain('undefined');
+  });
+
+  it('prints a timetable for the saved targets, including ones that never set or never rise', () => {
+    const doc = printed({
+      obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00',
+      obsTargets: [
+        { kind: 'star', name: 'Sirius', hip: 32349, ra: 101.287, dec: -16.716 },
+        { kind: 'star', name: 'Polaris', hip: 11767, ra: 37.946, dec: 89.264 },
+        { kind: 'star', name: 'Acrux', hip: 60718, ra: 186.65, dec: -63.099 }
+      ]
+    });
+    const table = doc.querySelector('table[aria-label="My targets tonight"]');
+    expect(table).toBeTruthy();
+    expect(Array.from(table.querySelectorAll('th[scope="col"]')).map(th => th.textContent))
+      .toEqual(['Target', 'Rises', 'Highest', 'Sets', 'Where to look']);
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(r => Array.from(r.querySelectorAll('td')).map(td => td.textContent));
+    expect(rows).toHaveLength(3);
+    const [sirius, polaris, acrux] = rows;
+    expect(sirius[0]).toBe('Sirius');
+    expect(sirius[1]).toMatch(/^\d\d:\d\d$/);
+    expect(sirius[2]).toMatch(/^(29|30)° at \d\d:\d\d$/);
+    expect(sirius[3]).toMatch(/^\d\d:\d\d$/);
+    // Polaris circles the pole all night, so it is stated rather than timed.
+    expect(polaris[1]).toBe('always up');
+    expect(polaris[3]).toBe('never sets');
+    // Acrux is below Portland's horizon at every hour.
+    expect(acrux[2]).toBe('not visible tonight');
+    expect(acrux[1]).toBe('—');
+    expect(table.textContent).not.toContain('NaN');
+  });
+
+  it('does not claim nothing is saved while printing the learner\'s saved targets', () => {
+    const withTargets = printed({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsTargets: [{ kind: 'star', name: 'Sirius', hip: 32349, ra: 101.287, dec: -16.716 }] });
+    expect(withTargets.getElementById('astro-print-region').textContent).not.toContain('No observing targets saved yet');
+    expect(withTargets.querySelector('table[aria-label="My targets tonight"]')).toBeTruthy();
+    // With neither list populated the prompt is still there to guide a first-time user.
+    const empty = printed({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+    expect(empty.getElementById('astro-print-region').textContent).toContain('No observing targets saved yet');
+    expect(empty.querySelector('table[aria-label="My targets tonight"]')).toBeNull();
   });
 
   it('gives students a blank field log to fill in outside', () => {
