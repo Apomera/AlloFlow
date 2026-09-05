@@ -1,7 +1,7 @@
 # MCP remediation connector v0.10.0: readiness pass (2026-09-05)
 
-Continuation of `CLAUDE_HANDOFF_MCP_READINESS_2026-09-04.md`. Everything below is local and
-**uncommitted**. Nothing was published, installed into a real Claude client, or sent to colleagues.
+Continuation of `CLAUDE_HANDOFF_MCP_READINESS_2026-09-04.md`. Everything below is committed on
+`main` (not pushed). Nothing was published, installed into a real Claude client, or sent to colleagues.
 The right sharing claim remains **supervised pilot**, not certified compliance.
 
 ## Installer
@@ -24,7 +24,7 @@ The right sharing claim remains **supervised pilot**, not certified compliance.
 | Fresh text-only EPUB (rebuilt helpers) | EPUBCheck 0/0/0, Ace 0 failures | `scratch/mcp-v010-fresh-epub/EVIDENCE.md` |
 | Fresh read-along EPUB (rebuilt helpers) | EPUBCheck 0/0/0, Ace 0 failures (direct runs on the same bytes) | same |
 | audit_two_engines, real browser | per-engine checks present; bad fixture flagged by both engines | `scratch/mcp-v010-audit-html/EVIDENCE.md` |
-| audit_html without a key | refuses up front; AI-degraded path not exercisable without a key | same |
+| audit_html without a key | runs model-free, `aiEngine: not-run`, `partial` state (round 2) | same |
 | Release CI suite (`verify:mcpb-ci`) | 39/39 after the fixes below | `scratch/mcp-v010-release-ci-*.json` |
 | Narration/core regression (14 files) | 143/143 after isolated reruns | `scratch/mcp-v010-regression-claude.json`, `-smoke-rerun-` |
 | Capability parity gate | PASS | run of `dev-tools/mcp_capability_inventory.cjs --assert-parity` |
@@ -59,11 +59,34 @@ session held 47 node processes and free memory fell to 20 MB. Under that load EP
 35 minutes and a first `remediation_capabilities` call took 35 seconds. Every timeout reported here
 was rerun in isolation before being accepted; none was a hang.
 
+## Round 2 (2026-09-05, later): cross-host support
+
+Commits 323452efe, 08cbee967 and 3f40dfb69.
+
+- Optional Streamable HTTP transport (`--http[=port]`): bearer token (header or `/mcp/<token>`
+  path), loopback-only by default, SSE notification stream, batch POST, cancelled requests collapse
+  to "no reply" instead of hanging. `remediation_capabilities.transports` reports it.
+- `desktop/mcp/HOSTS.md`: Claude Code, Codex CLI, Cursor, VS Code, Gemini CLI, and ChatGPT
+  developer mode through a user-controlled tunnel, with the exposure warning.
+- `audit_html` runs model-free without a Gemini key (`aiEngine: not-run`, `partial` verification
+  state); `geminiOptionalToolNames` in capabilities names it. Real-browser evidence in
+  `scratch/mcp-v010-audit-html/EVIDENCE.md`.
+- EPUBCheck left git: `fetch_epubcheck.cjs` materialises it from a local install or the pinned
+  W3C release (archive SHA-256 `6c07e685...`) and verifies against the vendor manifest; the build
+  calls it. Unit tests in `tests/mcp_fetch_epubcheck.test.js`.
+- `verify_mcpb_artifact.cjs` now also boots the extracted server with `--http=0`, checks that a
+  tokenless request is refused, that initialize answers over HTTP with the manifest version, and
+  that the process survives a closed stdin.
+- Rebuilt installer: v0.10.0, 71,036,286 bytes,
+  SHA-256 `f728142800ce0b76ee35c6ef840bc120f1f873920e3fa8224e7ab9bd389f4952`, built 2026-09-05
+  15:17 UTC, build-time verification passed with the HTTP probe. This supersedes the hash in the
+  Installer section above.
+
 ## Still open before sharing
 
 - Manual screen-reader, keyboard, reading-order and content-fidelity review of real outputs.
 - `audit_html` with a Gemini key present and a failing AI engine (only unit-tested).
 - Install the .mcpb in a Claude Desktop that is not this development machine.
-- Decide whether `desktop/mcp/vendor/epubcheck/` (34.5 MB, 47 files) belongs in git or is fetched
-  at build time; it is currently untracked.
-- Commit. Every change in this pass is uncommitted.
+- Push. The branch carries commits from several sessions; pushing is a deliberate step.
+- Try the HTTP transport from a real ChatGPT developer-mode connector through a tunnel; only the
+  local HTTP contract has been exercised here.

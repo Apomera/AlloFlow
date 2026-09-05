@@ -5,6 +5,59 @@ const os = require('os');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const crypto = require('crypto');
+const http = require('http');
+
+// Boots the extracted server a second time with the Streamable HTTP transport and proves a
+// non-Claude host (Codex, Cursor, ChatGPT through a tunnel) can talk to it: bearer auth is
+// enforced, initialize answers with the same server identity, and the process survives a closed
+// stdin. Runs after the stdio checks so a transport regression cannot hide behind a passing stdio boot.
+function probeHttpTransport(entry, env, manifestVersion) {
+  return new Promise((resolve, reject) => {
+    const token = crypto.randomBytes(16).toString('hex');
+    const proc = spawn(process.execPath, [entry, '--http=0'], {
+      cwd: path.dirname(entry), env: { ...env, ALLOFLOW_MCP_HTTP_TOKEN: token }, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
+    });
+    let stderr = '';
+    let done = false;
+    const finish = (error, result) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (proc.exitCode === null && proc.signalCode === null) proc.kill();
+      error ? reject(error) : resolve(result);
+    };
+    const timer = setTimeout(() => finish(new Error('Extracted artifact did not start its HTTP transport: ' + stderr.slice(-800))), DEFAULT_RPC_TIMEOUT_MS);
+    const post = (port, body, auth) => new Promise((res, rej) => {
+      const data = JSON.stringify(body);
+      const req = http.request({ host: '127.0.0.1', port, path: '/mcp', method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', ...(auth ? { Authorization: 'Bearer ' + auth } : {}) } }, (r) => {
+        let text = '';
+        r.on('data', (chunk) => { text += chunk; });
+        r.on('end', () => res({ status: r.statusCode, body: text && /json/.test(String(r.headers['content-type'])) ? JSON.parse(text) : null }));
+      });
+      req.on('error', rej);
+      req.end(data);
+    });
+    proc.stderr.on('data', async (chunk) => {
+      stderr += chunk;
+      const match = /http transport listening on http:\/\/127\.0\.0\.1:(\d+)\/mcp/.exec(stderr);
+      if (!match || done) return;
+      const port = Number(match[1]);
+      try {
+        proc.stdin.end(); // a service-style host closes stdin; the HTTP transport must keep the process alive
+        const denied = await post(port, { jsonrpc: '2.0', id: 1, method: 'ping' }, null);
+        if (denied.status !== 401) throw new Error('HTTP transport answered without a bearer token (status ' + denied.status + ')');
+        const init = await post(port, { jsonrpc: '2.0', id: 2, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'mcpb-artifact-verifier-http', version: '1' } } }, token);
+        if (init.status !== 200 || !init.body || !init.body.result || init.body.result.serverInfo.name !== 'alloflow-remediation') throw new Error('HTTP initialize failed: status ' + init.status);
+        if (init.body.result.serverInfo.version !== manifestVersion) throw new Error('HTTP transport served version ' + init.body.result.serverInfo.version + ', manifest says ' + manifestVersion);
+        const caps = await post(port, { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'remediation_capabilities', arguments: {} } }, token);
+        const transports = caps.body && caps.body.result && caps.body.result.structuredContent && caps.body.result.structuredContent.transports;
+        if (!transports || !transports.http || !transports.http.listening) throw new Error('remediation_capabilities over HTTP did not report the HTTP transport as listening');
+        finish(null, { port, httpTransport: true });
+      } catch (error) { finish(error); }
+    });
+    proc.on('exit', (code) => finish(new Error('Extracted artifact exited (' + code + ') before the HTTP probe finished: ' + stderr.slice(-800))));
+  });
+}
 
 const DEFAULT_BUNDLE = path.resolve(__dirname, '..', 'dist', 'mcpb', 'alloflow-remediation.mcpb');
 const DEFAULT_RPC_TIMEOUT_MS = 60000;
@@ -148,7 +201,9 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     if (!capabilities.keylessModeAvailable) throw new Error('Extracted artifact did not expose keyless mode');
     if (options.requirePlaywright && !capabilities.playwrightAvailable) throw new Error('Distribution artifact does not contain a resolvable Playwright runtime');
     if(options.requirePlaywright && (!capabilities.narration?.epubVerification?.epubcheck?.installed || !capabilities.narration?.epubVerification?.ace?.installed))throw new Error('Distribution artifact is missing its EPUB verification runtimes');
+    const httpProbe = options.skipHttpProbe ? { httpTransport: false } : await probeHttpTransport(entry, env, manifest.version);
     return {
+      httpTransport: httpProbe.httpTransport,
       bundle,
       version: manifest.version,
       bytes: fs.statSync(bundle).size,
@@ -178,7 +233,7 @@ async function main() {
   const allowSourceDrift = args.includes('--allow-source-drift');
   const bundle = args.find((arg) => arg !== '--require-playwright' && arg !== '--allow-source-drift') || DEFAULT_BUNDLE;
   const result = await verifyArtifact(bundle, { requirePlaywright, assertSourceParity: !allowSourceDrift });
-  process.stdout.write('MCPB ARTIFACT: PASS (v' + result.version + ', ' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + result.bytes + ' bytes)\n');
+  process.stdout.write('MCPB ARTIFACT: PASS (v' + result.version + ', ' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + (result.httpTransport ? 'HTTP transport probed, ' : '') + result.bytes + ' bytes)\n');
 }
 
 module.exports = { extractArchive, verifyArtifact, validatedToolNames, assertSourceParity, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
