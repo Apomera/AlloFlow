@@ -6,7 +6,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const FILE = 'stem_lab/stem_tool_machinelab.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_machinelab.js';
-const VIEWS = ['machines', 'build', 'range', 'siege', 'compare', 'learn'];
+const VIEWS = ['machines', 'build', 'range', 'siege', 'scene', 'compare', 'learn'];
 const BANDS = ['k2', 'g35', 'g68', 'g912'];
 
 let cfg;

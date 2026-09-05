@@ -2106,6 +2106,12 @@ window.StemLab = window.StemLab || {
     S.rangePath = showPath ? path : [];
     S.rangeStone = stone;
     S.rangeLaunchStone = launchStone;
+    var rangeGhosts = [];
+    for (var gi = 0; gi < 7; gi++) {
+      var ghost = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.14, Math.min(0.42, (Number(m.projDiameter) || 0.26) * 0.72)), 12, 10), material(colors.effort, true, 0.45));
+      ghost.visible = false;
+      S.model.add(ghost); rangeGhosts.push(ghost);
+    }
     S.rangeShotId = null;
     S.tick = function (now) {
       var data = S.data || {};
@@ -2123,6 +2129,18 @@ window.StemLab = window.StemLab || {
         fraction = data.shotId ? 1 : 0;
       }
       var pts = S.rangePath || [];
+      // Reduced motion: the arc as a strobe photograph, which is the textbook
+      // figure for a projectile and not a lesser view of it.
+      var strobe = !!(data.reduced && data.shotId && pts.length > 1);
+      for (var gi2 = 0; gi2 < rangeGhosts.length; gi2++) {
+        var gp = rangeGhosts[gi2];
+        gp.visible = strobe;
+        if (strobe) {
+          var gf = (gi2 + 1) / (rangeGhosts.length + 1);
+          var q = pts[Math.min(pts.length - 1, Math.floor(gf * (pts.length - 1)))];
+          gp.position.set(Number(q.x) || 0, Math.max(0.12, Number(q.y) || 0), Number(q.z) || 0);
+        }
+      }
       if (!pts.length) {
         // A previous shot ID can survive while the live controls describe an
         // invalid machine. There is no path to place the stone on in that
@@ -2921,6 +2939,799 @@ window.StemLab = window.StemLab || {
   function siegeGlRef(nodeOrNull) { SIEGE_GL.attach(nodeOrNull); }
 
   // ═══════════════════════════════════════════════════════════════════
+  // SIEGE FIELD: the immersive scene
+  //
+  // The other bays are instruments: flat colours, a grid, a schematic engine,
+  // so nothing competes with the number being taught. This one is a PLACE. It
+  // runs the same model on the same state (the wall, the shot and the ledger
+  // are shared with the Target Wall view, so a breach here is a breach there)
+  // and dresses it as a valley at a chosen hour: terrain, sky, sun and shadow,
+  // a castle with towers and a banner, a timber engine with its crew, and a
+  // stone you can follow through the air with the physics written live beside
+  // it. Everything here is procedural: no texture is fetched, so the view is
+  // as offline as the rest of the tool.
+  // ═══════════════════════════════════════════════════════════════════
+  var SCENE_HOME = { rotY: 202, rotX: 11, zoom: 1 };
+
+  var SCENE_TIMES = [
+    { id: 'dawn', icon: '🌅' },
+    { id: 'noon', icon: '☀️' },
+    { id: 'dusk', icon: '🌇' },
+    { id: 'night', icon: '🌙' }
+  ];
+
+  // One sky per hour. The sun direction is also the shadow direction, so the
+  // long dawn and dusk shadows are not a separate effect: they fall out of the
+  // same three numbers.
+  function skyPreset(id, contrast) {
+    if (contrast) {
+      return {
+        id: 'contrast', top: 0x000000, horizon: 0x000000, sun: 0xffffff, sunDir: [0.4, 0.8, 0.3],
+        sunI: 1.15, hemiSky: 0xffffff, hemiGround: 0x000000, hemiI: 0.55, fog: null,
+        stars: false, glow: 0, fire: 0
+      };
+    }
+    switch (id) {
+      case 'dawn': return {
+        id: 'dawn', top: 0x6e97dc, horizon: 0xf6c9a4, sun: 0xffd9a8, sunDir: [0.82, 0.2, -0.5],
+        sunI: 1.05, hemiSky: 0xbfd3f5, hemiGround: 0x6b7a4a, hemiI: 0.55, fog: 0xe9cfb6,
+        stars: false, glow: 1.0, fire: 0.35
+      };
+      case 'dusk': return {
+        id: 'dusk', top: 0x2a3a7c, horizon: 0xf0895a, sun: 0xffa262, sunDir: [-0.86, 0.15, 0.36],
+        sunI: 0.95, hemiSky: 0x8f80b8, hemiGround: 0x4d4838, hemiI: 0.6, fog: 0xe4a688,
+        stars: false, glow: 0.8, fire: 0.9
+      };
+      case 'night': return {
+        id: 'night', top: 0x050a1c, horizon: 0x172440, sun: 0xb7c9ff, sunDir: [0.42, 0.62, -0.6],
+        sunI: 0.42, hemiSky: 0x24335c, hemiGround: 0x0f1a12, hemiI: 0.35, fog: 0x0f1a30,
+        stars: true, glow: 0.35, fire: 1.6
+      };
+      default: return {
+        id: 'noon', top: 0x3f8ae6, horizon: 0xd2e7fb, sun: 0xfff7e3, sunDir: [0.35, 0.9, 0.22],
+        sunI: 1.25, hemiSky: 0xdfefff, hemiGround: 0x5f7a3c, hemiI: 0.6, fog: 0xd8e9fa,
+        stars: false, glow: 0.7, fire: 0
+      };
+    }
+  }
+
+  // The valley floor. Pure, so a test can pin the one property the physics
+  // depends on: the firing lane, from the engine to the wall, is flat at y = 0,
+  // because that is the ground the flight model assumes. Hills only start once
+  // the blend has run out.
+  function terrainHeight(x, z, standoff, laneHalf) {
+    var so = Math.max(5, standoff || 80);
+    var half = Math.max(12, laneHalf || 12);
+    var h = 2.4 * Math.sin(x * 0.021 + 1.3) * Math.cos(z * 0.017 - 0.7)
+          + 1.3 * Math.sin(x * 0.047 - z * 0.039 + 0.4)
+          + 0.55 * Math.sin(x * 0.13 + z * 0.09) * Math.cos(z * 0.11 - x * 0.05)
+          + 0.22 * Math.sin(x * 0.37 + 0.9) * Math.cos(z * 0.31);
+    var r = Math.sqrt(x * x + z * z);
+    if (r > 110) h += (r - 110) * 0.075 * (0.7 + 0.3 * Math.sin(Math.atan2(z, x) * 3.0 + 0.5));
+    var dz = (z > 14) ? z - 14 : (z < -so - 70 ? -so - 70 - z : 0);
+    var dx = Math.max(0, Math.abs(x) - half - (z < -so ? 10 : 0));
+    var dist = Math.sqrt(dx * dx + dz * dz);
+    var blend = Math.max(0, Math.min(1, (dist - 4) / 26));
+    blend = blend * blend * (3 - 2 * blend);
+    return h * blend;
+  }
+
+  // 1 on the beaten lane, 0 in the grass. Drives the dirt colour and nothing
+  // else, so it can share terrainHeight's blend without owning it.
+  function laneFactor(x, z, standoff, laneHalf) {
+    var so = Math.max(5, standoff || 80);
+    var half = Math.max(12, laneHalf || 12);
+    var dz = (z > 10) ? z - 10 : (z < -so - 12 ? -so - 12 - z : 0);
+    var dx = Math.max(0, Math.abs(x) - half * 0.55);
+    var dist = Math.sqrt(dx * dx + dz * dz);
+    var f = 1 - Math.max(0, Math.min(1, dist / 7));
+    return f * f;
+  }
+
+  function makeCanvasTexture(THREE, size, paint) {
+    if (typeof document === 'undefined' || !THREE || typeof THREE.CanvasTexture !== 'function') return null;
+    var c;
+    try {
+      c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      var g = c.getContext('2d');
+      if (!g) return null;
+      paint(g, size);
+    } catch (e) { return null; }
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  function stoneTexture(THREE) {
+    return makeCanvasTexture(THREE, 128, function (g, n) {
+      g.fillStyle = '#a49e93'; g.fillRect(0, 0, n, n);
+      for (var i = 0; i < 900; i++) {
+        var a = hash01(i, 11, 3), b = hash01(i, 13, 5), c = hash01(i, 17, 7);
+        g.fillStyle = c > 0.5 ? 'rgba(255,255,255,' + (0.05 + c * 0.12) + ')' : 'rgba(40,34,28,' + (0.05 + c * 0.16) + ')';
+        g.fillRect(a * n, b * n, 1 + c * 3, 1 + b * 2);
+      }
+      g.strokeStyle = 'rgba(48,40,32,0.85)'; g.lineWidth = 7;
+      g.strokeRect(0, 0, n, n);
+      g.strokeStyle = 'rgba(255,255,255,0.18)'; g.lineWidth = 2;
+      g.strokeRect(6, 6, n - 12, n - 12);
+    });
+  }
+
+  function woodTexture(THREE) {
+    return makeCanvasTexture(THREE, 128, function (g, n) {
+      g.fillStyle = '#9a6a3c'; g.fillRect(0, 0, n, n);
+      for (var y = 0; y < n; y += 3) {
+        var w = hash01(y, 3, 9);
+        g.fillStyle = 'rgba(60,32,12,' + (0.08 + w * 0.22) + ')';
+        g.fillRect(0, y + Math.sin(y * 0.3) * 1.5, n, 1 + w * 2);
+      }
+      for (var k = 0; k < 6; k++) {
+        var kx = hash01(k, 5, 1) * n, ky = hash01(k, 7, 2) * n;
+        g.strokeStyle = 'rgba(50,26,10,0.5)'; g.lineWidth = 1.5;
+        g.beginPath(); g.ellipse(kx, ky, 4 + k, 2 + k * 0.6, 0.4, 0, Math.PI * 2); g.stroke();
+      }
+    });
+  }
+
+  // The three engines were drawn for the instrument bays in slate and blue.
+  // In the field they are timber, iron and rope. Materials are swapped by the
+  // colour they were built with, which is the only handle the builders expose
+  // and is stable because those colours are constants.
+  function skinMachine(THREE, group, contrast, tex) {
+    if (!group || contrast) return;
+    var MAP = {
+      'cbd5e1': [0x9a6a3c, true], '475569': [0x9a6a3c, true],      // beam / arms
+      '64748b': [0x5b3b1f, true], '94a3b8': [0x5b3b1f, true],      // posts, deck, cord
+      '60a5fa': [0x4b4e57, false],                                  // counterweight: iron-bound box
+      'f59e0b': [0x7d7569, false],                                  // the stone
+      'b45309': [0xc2a36b, false],                                  // rope
+      'e2e8f0': [0x8c8c94, false]                                   // string / metal
+    };
+    group.traverse(function (o) {
+      if (!o.isMesh || !o.material || !o.material.color) return;
+      var hex = o.material.color.getHexString();
+      var to = MAP[hex] || [0x6b4b2a, true];
+      var next = new THREE.MeshLambertMaterial({ color: to[0] });
+      if (to[1] && tex && tex.wood) next.map = tex.wood;
+      try { o.material.dispose(); } catch (e) {}
+      o.material = next;
+      o.castShadow = true; o.receiveShadow = true;
+    });
+  }
+
+  function addFigure(THREE, parent, x, z, tunic, facing) {
+    var grp = new THREE.Group();
+    grp.position.set(x, 0, z);
+    grp.rotation.y = facing || 0;
+    var mat = function (c) { return new THREE.MeshLambertMaterial({ color: c }); };
+    var legs = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.78, 8), mat(0x3b3430));
+    legs.position.y = 0.39;
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.22, 0.72, 10), mat(tunic));
+    body.position.y = 1.12;
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.19, 12, 10), mat(0xd9a77a));
+    head.position.y = 1.68;
+    var hat = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.22, 10), mat(0x6b4b2a));
+    hat.position.y = 1.9;
+    [legs, body, head, hat].forEach(function (m) { m.castShadow = true; grp.add(m); });
+    parent.add(grp);
+    return grp;
+  }
+
+  // Stable ref callbacks for the live HUD. The tick writes these nodes
+  // directly (textContent, ~10 times a frame at most) instead of asking React
+  // to re-render the whole tool sixty times a second for four numbers.
+  var SCENE_HUD = {};
+  function sceneHudRef(name) {
+    if (!SCENE_HUD['_ref_' + name]) {
+      SCENE_HUD['_ref_' + name] = function (node) { SCENE_HUD[name] = node; };
+    }
+    return SCENE_HUD['_ref_' + name];
+  }
+  function sceneHudWrite(name, text) {
+    var n = SCENE_HUD[name];
+    if (n && n.textContent !== text) n.textContent = text;
+  }
+
+  function buildFieldScene(THREE, S, m) {
+    m = m || {};
+    var blocks = m.blocks || [];
+    var contrast = !!m.contrast;
+    var standoff = Math.max(5, m.standoff || 80);
+    var P = skyPreset(m.time || 'dusk', contrast);
+    var reduced = !!m.reduced;
+    var mat = function (c, extra) {
+      var cfg = { color: c };
+      if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) cfg[k] = extra[k];
+      return new THREE.MeshLambertMaterial(cfg);
+    };
+    var tex = contrast ? {} : { stone: stoneTexture(THREE), wood: woodTexture(THREE) };
+
+    if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(P.horizon, 1);
+    if (S.scene) S.scene.fog = (P.fog != null && typeof THREE.Fog === 'function') ? new THREE.Fog(P.fog, 80, 360) : null;
+
+    // ── Sky ──
+    if (typeof THREE.ShaderMaterial === 'function') {
+      var skyMat = new THREE.ShaderMaterial({
+        uniforms: {
+          top: { value: new THREE.Color(P.top) },
+          horizon: { value: new THREE.Color(P.horizon) },
+          sunDir: { value: new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize() },
+          sunColor: { value: new THREE.Color(P.sun) },
+          glow: { value: P.glow }
+        },
+        vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: 'uniform vec3 top; uniform vec3 horizon; uniform vec3 sunDir; uniform vec3 sunColor; uniform float glow; varying vec3 vP;' +
+          ' void main(){ vec3 n = normalize(vP); vec3 mid = mix(horizon, top, 0.55); float t1 = smoothstep(-0.03, 0.22, n.y); float t2 = smoothstep(0.2, 0.95, n.y); vec3 c = mix(mix(horizon, mid, t1), top, t2);' +
+          ' float d = max(dot(n, sunDir), 0.0); c += sunColor * (pow(d, 420.0) * 1.5 + pow(d, 6.0) * 0.3 * glow); gl_FragColor = vec4(c, 1.0); }',
+        side: THREE.BackSide, depthWrite: false, fog: false
+      });
+      var sky = new THREE.Mesh(new THREE.SphereGeometry(360, 32, 16), skyMat);
+      sky.position.set(0, 0, -standoff * 0.5);
+      sky.frustumCulled = false;
+      S.model.add(sky);
+    }
+    if (P.stars && typeof THREE.Points === 'function') {
+      var starPos = new Float32Array(420 * 3);
+      for (var si = 0; si < 420; si++) {
+        var th = hash01(si, 1, 21) * Math.PI * 2, ph = Math.acos(1 - hash01(si, 2, 22) * 0.9);
+        starPos[si * 3] = Math.sin(ph) * Math.cos(th) * 350;
+        starPos[si * 3 + 1] = Math.cos(ph) * 350 + 4;
+        starPos[si * 3 + 2] = Math.sin(ph) * Math.sin(th) * 350 - standoff * 0.5;
+      }
+      var starGeo = new THREE.BufferGeometry();
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+      var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe8ff, size: 2.2, sizeAttenuation: false, fog: false }));
+      stars.frustumCulled = false;
+      S.model.add(stars);
+    }
+
+    // ── Light ──
+    var hemi = new THREE.HemisphereLight(P.hemiSky, P.hemiGround, P.hemiI);
+    S.model.add(hemi);
+    var sun = new THREE.DirectionalLight(P.sun, P.sunI);
+    var fieldCentre = new THREE.Vector3(0, 0, -standoff * 0.5);
+    sun.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 220);
+    sun.target.position.copy(fieldCentre);
+    if (!contrast && sun.shadow) {
+      sun.castShadow = true;
+      sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
+      var reach = standoff * 0.62 + 34;
+      sun.shadow.camera.left = -reach; sun.shadow.camera.right = reach;
+      sun.shadow.camera.top = reach; sun.shadow.camera.bottom = -reach;
+      sun.shadow.camera.near = 20; sun.shadow.camera.far = 520;
+      sun.shadow.bias = -0.0008;
+    }
+    S.model.add(sun); S.model.add(sun.target);
+    var fill = new THREE.DirectionalLight(P.hemiSky, contrast ? 0.35 : 0.5);
+    fill.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(-P.sunDir[0], 0.5, -P.sunDir[2]).normalize(), 200);
+    fill.target.position.copy(fieldCentre);
+    S.model.add(fill); S.model.add(fill.target);
+
+    // ── Ground ──
+    var ext = { minCol: 0, maxCol: 0, maxRow: 0 };
+    blocks.forEach(function (b) {
+      if (b.col < ext.minCol) ext.minCol = b.col;
+      if (b.col > ext.maxCol) ext.maxCol = b.col;
+      if (b.row > ext.maxRow) ext.maxRow = b.row;
+    });
+    var midCol = (ext.minCol + ext.maxCol) / 2;
+    var span = Math.max(2, ext.maxCol - ext.minCol + 1);
+    var wallTop = ext.maxRow + 1;
+    var laneHalf = Math.max(12, span / 2 + 8);
+    var groundSpan = Math.max(320, standoff * 2.4 + 200);
+    var seg = 64;
+    var geo = new THREE.PlaneGeometry(groundSpan, groundSpan, seg, seg);
+    geo.rotateX(-Math.PI / 2);
+    var posAttr = geo.attributes.position;
+    var cols = new Float32Array(posAttr.count * 3);
+    var cGrass = new THREE.Color(contrast ? 0x000000 : 0x4f7a34);
+    var cGrass2 = new THREE.Color(contrast ? 0x000000 : 0x7f9a44);
+    var cRock = new THREE.Color(contrast ? 0x151515 : 0x7b7468);
+    var cDirt = new THREE.Color(contrast ? 0x0a0a0a : 0x8a7452);
+    var tmp = new THREE.Color();
+    for (var vi = 0; vi < posAttr.count; vi++) {
+      var vx = posAttr.getX(vi), vz = posAttr.getZ(vi) - standoff * 0.5;
+      var vy = terrainHeight(vx, vz, standoff, laneHalf);
+      posAttr.setY(vi, vy);
+      posAttr.setZ(vi, vz);
+      var slope = Math.abs(terrainHeight(vx + 2, vz, standoff, laneHalf) - vy) + Math.abs(terrainHeight(vx, vz + 2, standoff, laneHalf) - vy);
+      var n1 = hash01(Math.round(vx), Math.round(vz), 4);
+      tmp.copy(cGrass).lerp(cGrass2, n1 * 0.7 + Math.max(0, Math.min(1, vy / 14)) * 0.5);
+      if (slope > 0.9) tmp.lerp(cRock, Math.min(1, (slope - 0.9) * 0.9));
+      var lf = laneFactor(vx, vz, standoff, laneHalf);
+      if (lf > 0) tmp.lerp(cDirt, lf * (0.55 + n1 * 0.35));
+      cols[vi * 3] = tmp.r; cols[vi * 3 + 1] = tmp.g; cols[vi * 3 + 2] = tmp.b;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    geo.computeVertexNormals();
+    var ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    ground.receiveShadow = !contrast;
+    S.model.add(ground);
+
+    // ── Trees and rocks ──
+    if (!contrast && typeof THREE.InstancedMesh === 'function') {
+      var TREES = 110;
+      var foliage = new THREE.InstancedMesh(new THREE.ConeGeometry(1.15, 3.4, 7), mat(0xffffff), TREES);
+      var trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.24, 1.3, 6), mat(0x5a3d22), TREES);
+      // Foliage throws the shadow; trunks are inside it and only cost a pass.
+      foliage.castShadow = true; trunks.castShadow = false;
+      var dummy = new THREE.Object3D();
+      var placed = 0, tries = 0;
+      var leaf = new THREE.Color();
+      while (placed < TREES && tries < TREES * 6) {
+        tries++;
+        var tx = (hash01(tries, 31, 8) - 0.5) * (groundSpan * 0.86);
+        var tz = (hash01(tries, 37, 9) - 0.5) * (groundSpan * 0.86) - standoff * 0.5;
+        if (Math.abs(tx) < laneHalf + 5 && tz < 14 && tz > -standoff - 20) continue;
+        if (Math.sqrt(tx * tx + (tz + standoff * 0.5) * (tz + standoff * 0.5)) > groundSpan * 0.46) continue;
+        var ty = terrainHeight(tx, tz, standoff, laneHalf);
+        var sc = 0.85 + hash01(tries, 41, 10) * 1.3;
+        dummy.position.set(tx, ty + 1.7 * sc + 0.6, tz);
+        dummy.scale.setScalar(sc);
+        dummy.rotation.set(0, hash01(tries, 43, 11) * 6.28, 0);
+        dummy.updateMatrix();
+        foliage.setMatrixAt(placed, dummy.matrix);
+        leaf.setHex(0x2f6b2a).lerp(new THREE.Color(0x6f9a3a), hash01(tries, 47, 12));
+        foliage.setColorAt(placed, leaf);
+        dummy.position.set(tx, ty + 0.55 * sc, tz);
+        dummy.updateMatrix();
+        trunks.setMatrixAt(placed, dummy.matrix);
+        placed++;
+      }
+      foliage.count = placed; trunks.count = placed;
+      foliage.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
+      if (foliage.instanceColor) foliage.instanceColor.needsUpdate = true;
+      S.model.add(foliage); S.model.add(trunks);
+      for (var ri = 0; ri < 14; ri++) {
+        var rx = (hash01(ri, 53, 13) - 0.5) * 120;
+        var rz = -standoff * hash01(ri, 59, 14) * 1.1 + 10;
+        if (Math.abs(rx) < laneHalf * 0.6) rx += laneHalf * (rx < 0 ? -0.8 : 0.8);
+        var rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 + hash01(ri, 61, 15) * 1.4, 0), mat(0x7b7468));
+        rock.position.set(rx, terrainHeight(rx, rz, standoff, laneHalf) + 0.3, rz);
+        rock.rotation.set(hash01(ri, 67, 16) * 3, hash01(ri, 71, 17) * 3, 0);
+        rock.castShadow = true; rock.receiveShadow = true;
+        S.model.add(rock);
+      }
+    }
+
+    // ── The castle ──
+    var merlonCap = span + 2;
+    var batch = (window.StemLab && typeof window.StemLab.makeVoxelBatch === 'function')
+      ? window.StemLab.makeVoxelBatch(THREE, {
+          capacity: Math.max(16, blocks.length + merlonCap),
+          size: 1.0,
+          edges: contrast,
+          castShadow: !contrast, receiveShadow: !contrast,
+          material: new THREE.MeshLambertMaterial({ color: 0xffffff, map: tex.stone || null })
+        })
+      : null;
+    if (batch) batch.addTo(S.model);
+    S.wall = { batch: batch, contrast: contrast };
+    function colourFor(b) {
+      if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
+      var v = 0.86 + hash01(b.col, b.row, 6) * 0.14;
+      if (b.state === 'cracked') return new THREE.Color(0xd08a4a).getHex();
+      if (b.state === 'breached') return new THREE.Color(0.42 * v, 0.40 * v, 0.37 * v).getHex();
+      if (b.mat === 'granite') return new THREE.Color(0.62 * v, 0.64 * v, 0.68 * v).getHex();
+      if (b.mat === 'earth') return new THREE.Color(0.55 * v, 0.42 * v, 0.28 * v).getHex();
+      return new THREE.Color(0.86 * v, 0.82 * v, 0.74 * v).getHex();
+    }
+    if (m.wallPreset !== 'imported') {
+      var towerMat = mat(contrast ? 0xffffff : 0xb9b1a3, tex.stone ? { map: tex.stone } : null);
+      var roofMat = mat(contrast ? 0xffffff : 0x7a2e2a);
+      [-1, 1].forEach(function (side) {
+        var tx = side * (span / 2 + 1.9);
+        var th = wallTop + 2.6;
+        var tower = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.9, th, 14), towerMat);
+        tower.position.set(tx, th / 2, 0);
+        tower.castShadow = !contrast; tower.receiveShadow = !contrast;
+        S.model.add(tower);
+        var roof = new THREE.Mesh(new THREE.ConeGeometry(2.1, 2.2, 14), roofMat);
+        roof.position.set(tx, th + 1.1, 0);
+        roof.castShadow = !contrast;
+        S.model.add(roof);
+      });
+      if (!contrast) {
+        var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.2, 6), mat(0x3b2a1a));
+        pole.position.set(span / 2 + 1.9, wallTop + 2.6 + 2.2 + 1.5, 0);
+        S.model.add(pole);
+        var bannerGeo = new THREE.PlaneGeometry(2.4, 1.3, 10, 3);
+        bannerGeo.translate(1.2, 0, 0);
+        var banner = new THREE.Mesh(bannerGeo, mat(0xb3202a, { side: THREE.DoubleSide }));
+        banner.position.set(span / 2 + 1.9, wallTop + 2.6 + 2.2 + 2.6, 0);
+        banner.castShadow = true;
+        S.model.add(banner);
+        S.banner = banner;
+        S.bannerBase = bannerGeo.attributes.position.array.slice();
+      }
+    }
+
+    // ── The engine and its crew ──
+    var mg = new THREE.Group();
+    mg.position.set(0, 0, -standoff);
+    S.model.add(mg);
+    var guest = { model: mg, renderer: null };
+    try {
+      buildMachineScene(THREE, guest, Object.assign({}, m, { embedded: true, dark: true, contrast: contrast }));
+    } catch (e) { guest.ml = null; }
+    mg.rotation.y = Math.PI / 2;
+    skinMachine(THREE, mg, contrast, tex);
+    S.siegeGuest = guest;
+    if (!contrast) {
+      addFigure(THREE, S.model, -3.6, -standoff - 2.4, 0x9c3b2e, 1.1);
+      addFigure(THREE, S.model, 3.4, -standoff - 3.0, 0x3b5f9c, -0.9);
+      addFigure(THREE, S.model, -4.4, -standoff + 3.2, 0x6b7b3a, 2.3);
+      var tent = new THREE.Mesh(new THREE.ConeGeometry(2.4, 2.8, 8), mat(0xd9c9a2));
+      tent.position.set(11.5, terrainHeight(11.5, -standoff + 1, standoff, laneHalf) + 1.4, -standoff + 1);
+      tent.castShadow = true; tent.receiveShadow = true;
+      S.model.add(tent);
+      for (var pi = 0; pi < 7; pi++) {
+        var ps = new THREE.Mesh(new THREE.DodecahedronGeometry(0.34 + hash01(pi, 73, 18) * 0.2, 0), mat(0x7d7569));
+        ps.position.set(5.2 + (pi % 3) * 0.7, 0.3 + Math.floor(pi / 3) * 0.55, -standoff + 1.5 + Math.floor(pi / 3) * 0.3 + hash01(pi, 79, 19) * 0.4);
+        ps.castShadow = true;
+        S.model.add(ps);
+      }
+      var fireGrp = new THREE.Group();
+      fireGrp.position.set(7.5, 0, -standoff - 5);
+      for (var li = 0; li < 3; li++) {
+        var log = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.2, 6), mat(0x3f2a16));
+        log.rotation.z = Math.PI / 2; log.rotation.y = li * 1.05;
+        log.position.y = 0.12;
+        fireGrp.add(log);
+      }
+      var flame = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.95, 8), new THREE.MeshLambertMaterial({
+        color: 0xff7a1a, emissive: 0xff5a00, emissiveIntensity: 1.2, transparent: true, opacity: Math.min(0.92, 0.25 + P.fire * 0.5)
+      }));
+      flame.position.y = 0.6;
+      flame.visible = P.fire > 0;
+      fireGrp.add(flame);
+      var fireLight = new THREE.PointLight(0xff8a3a, P.fire, 26, 2);
+      fireLight.position.y = 1.0;
+      fireGrp.add(fireLight);
+      S.model.add(fireGrp);
+      S.fire = { flame: flame, light: fireLight, base: P.fire };
+
+      var birds = new THREE.Group();
+      for (var bi = 0; bi < 6; bi++) {
+        var bird = new THREE.Group();
+        var wl = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 0.22), mat(0x2b2b33));
+        var wr = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 0.22), mat(0x2b2b33));
+        wl.position.x = -0.45; wr.position.x = 0.45;
+        bird.add(wl); bird.add(wr);
+        bird.userData = { wl: wl, wr: wr, phase: bi * 1.3, r: 22 + bi * 4, h: 24 + bi * 2.5 };
+        birds.add(bird);
+      }
+      S.model.add(birds);
+      S.birds = birds;
+    }
+
+    // ── The stone, its trail, the burst ──
+    var stoneR = Math.max(0.3, Math.min(1.1, (m.projDiameter || 0.26) * 1.5));
+    var stoneGeo = new THREE.DodecahedronGeometry(stoneR, 1);
+    var sp = stoneGeo.attributes.position;
+    for (var svi = 0; svi < sp.count; svi++) {
+      var j = 0.82 + hash01(svi, 83, 20) * 0.36;
+      sp.setXYZ(svi, sp.getX(svi) * j, sp.getY(svi) * j, sp.getZ(svi) * j);
+    }
+    stoneGeo.computeVertexNormals();
+    var stone = new THREE.Mesh(stoneGeo, mat(contrast ? 0xffff00 : 0x7d7569));
+    stone.castShadow = !contrast;
+    stone.visible = false;
+    S.model.add(stone);
+    S.flyStone = stone;
+    var trail = [];
+    for (var ti = 0; ti < 16; ti++) {
+      var tm = new THREE.Mesh(new THREE.SphereGeometry(stoneR * (0.55 - ti * 0.02), 8, 6), new THREE.MeshLambertMaterial({
+        color: contrast ? 0xffff00 : 0xf1e2c4, emissive: contrast ? 0xffff00 : 0xd9b46a, emissiveIntensity: 0.5,
+        transparent: true, opacity: 0.42 * (1 - ti / 16)
+      }));
+      tm.visible = false;
+      S.model.add(tm); trail.push(tm);
+    }
+    S.trail = trail; S.trailHist = [];
+    var ghosts = [];
+    for (var gi = 0; gi < 7; gi++) {
+      var gm = new THREE.Mesh(new THREE.SphereGeometry(stoneR * 0.9, 10, 8), new THREE.MeshLambertMaterial({
+        color: contrast ? 0xffff00 : 0xf1e2c4, transparent: true, opacity: 0.45
+      }));
+      gm.visible = false;
+      S.model.add(gm); ghosts.push(gm);
+    }
+    S.ghosts = ghosts;
+    var burst = [];
+    for (var bu = 0; bu < 40; bu++) {
+      var bm = new THREE.Mesh(new THREE.BoxGeometry(0.22 + hash01(bu, 89, 23) * 0.3, 0.2, 0.22), new THREE.MeshLambertMaterial({
+        color: contrast ? 0xffffff : (bu % 3 === 0 ? 0xcbbfa8 : 0x9a8f7c), transparent: true, opacity: 1
+      }));
+      bm.visible = false;
+      bm.userData = { v: new THREE.Vector3(), life: 0 };
+      S.model.add(bm); burst.push(bm);
+    }
+    S.burst = burst; S.burstT0 = null;
+
+    // ── Framing ──
+    var torsion = (m.kind === 'ballista' || m.kind === 'onager');
+    var reachM = torsion
+      ? Math.max(2.6, ((m.geom && m.geom.armLength) || 1.1) * 2.4)
+      : Math.max(3.4, ((m.geom && m.geom.beamLong) || 4.5) * 0.8);
+    var highM = torsion ? 3.2 : Math.max(4.6, ((m.geom && m.geom.cwDrop) || 3.2) + 2.4);
+    var machinePos = new THREE.Vector3(0, highM * 0.38, -standoff);
+    var wallPos = new THREE.Vector3(0, Math.max(1.6, wallTop * 0.42), 0);
+    var fieldTarget = new THREE.Vector3(0, Math.max(2.4, wallTop * 0.45), -standoff * 0.46);
+    var fieldPts = [
+      new THREE.Vector3(-span / 2 - 9, 0, 3), new THREE.Vector3(span / 2 + 9, wallTop + 5, 3),
+      new THREE.Vector3(-4, 0, -standoff - 7), new THREE.Vector3(4, highM + 1, -standoff - 7)
+    ];
+    S.target = fieldTarget.clone();
+    S.fitPts = fieldPts.slice();
+    S.camCur = null;
+    S.lastNow = 0;
+    S.impactAt = null;
+    S.impactPos = null;
+
+    function boxPts(c, hx, hy, hz) {
+      var out = [];
+      for (var sx = -1; sx <= 1; sx += 2) for (var sy = -1; sy <= 1; sy += 2) for (var sz = -1; sz <= 1; sz += 2) {
+        out.push(new THREE.Vector3(c.x + sx * hx, c.y + sy * hy, c.z + sz * hz));
+      }
+      return out;
+    }
+
+    S.tick = function (now) {
+      var data = S.data || {};
+      var red = !!data.reduced;
+      var dt = S.lastNow ? Math.max(0.001, Math.min(0.06, (now - S.lastNow) / 1000)) : 0.016;
+      S.lastNow = now;
+      var tSec = (now || 0) / 1000;
+      var L = data.labels || {};
+
+      // Flight clock, identical to the Target Wall's so the two never disagree.
+      var flying = !!(data.flight && data.flight.path && data.flight.path.length > 1);
+      var t = 0, dur = 0;
+      if (flying) {
+        if (S.flightId !== data.flight.id) {
+          S.flightId = data.flight.id; S.flightT0 = now; S.trailHist = []; S.impactAt = null; S.burstT0 = null;
+          S.strobePath = data.flight.path;
+        }
+        dur = Math.max(0.3, data.flight.seconds || 1.4);
+        t = Math.max(0, (now - (S.flightT0 || now)) / 1000);
+        if (red) t = dur;
+      }
+      var landed = !flying || t >= dur;
+      var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
+
+      // The wall, plus merlons over whichever top-course blocks still stand.
+      if (S.wall.batch) {
+        var n = 0, standing = {};
+        for (var i = 0; i < list.length && n < S.wall.batch.capacity; i++) {
+          var b = list[i];
+          var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
+          if (b.state === 'breached') {
+            var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
+            x += (r1 - 0.5) * 2.4; z += (r2 - 0.5) * 2.8 + 1.2; y = 0.24 + r3 * 0.5; sc = 0.45 + r1 * 0.25;
+          } else if (b.row === ext.maxRow) {
+            standing[b.col] = true;
+          }
+          S.wall.batch.set(n, x, y, z, sc, colourFor(b)); n++;
+        }
+        for (var mc = ext.minCol; mc <= ext.maxCol && n < S.wall.batch.capacity; mc += 2) {
+          if (!standing[mc]) continue;
+          S.wall.batch.set(n, mc - midCol, wallTop + 0.3, 0, 0.6, colourFor({ col: mc, row: ext.maxRow + 1, mat: 'stone', state: 'intact' })); n++;
+        }
+        S.wall.batch.commit(n);
+      }
+
+      // The engine's own swing, on the flight clock.
+      var g = S.siegeGuest;
+      if (g && typeof g.tick === 'function') {
+        g.data = flying
+          ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: data.muzzleV, reduced: red }
+          : {};
+        try { g.tick(flying ? (S.flightT0 || now) + Math.min(t, 0.9) * 1000 : now); } catch (e) {}
+      }
+
+      // The stone. Path x is downrange (+z in the world), z is drift (world x).
+      var stonePos = null, speed = 0, height = 0, downrange = 0, realT = 0;
+      var pts = flying ? data.flight.path : null;
+      if (pts && !landed) {
+        var frac = t / dur;
+        var idx = Math.min(pts.length - 1, Math.max(0, Math.floor(frac * (pts.length - 1))));
+        var nx = Math.min(pts.length - 1, idx + 1);
+        var segf = (frac * (pts.length - 1)) - idx;
+        var a = pts[idx], bb = pts[nx];
+        stonePos = new THREE.Vector3(
+          (a.z || 0) + (((bb.z || 0) - (a.z || 0)) * segf),
+          Math.max(0.25, a.y + ((bb.y - a.y) * segf)),
+          -standoff + a.x + ((bb.x - a.x) * segf));
+        speed = (a.v != null && bb.v != null) ? a.v + (bb.v - a.v) * segf : 0;
+        height = a.y + (bb.y - a.y) * segf;
+        downrange = a.x + (bb.x - a.x) * segf;
+        realT = (a.t != null && bb.t != null) ? a.t + (bb.t - a.t) * segf : frac * dur;
+        S.flyStone.visible = t > 0.02;
+        S.flyStone.position.copy(stonePos);
+        S.flyStone.rotation.x += dt * 6; S.flyStone.rotation.z += dt * 4;
+        if (!red && t > 0.02) {
+          S.trailHist.unshift(stonePos.clone());
+          if (S.trailHist.length > S.trail.length) S.trailHist.length = S.trail.length;
+        }
+      } else {
+        S.flyStone.visible = false;
+        if (flying && landed && S.impactAt == null) {
+          S.impactAt = now;
+          var last = pts[pts.length - 1];
+          S.impactPos = new THREE.Vector3(last.z || 0, Math.max(0.3, last.y), -standoff + last.x);
+          if (!red) {
+            S.burstT0 = now;
+            S.burst.forEach(function (bm, k) {
+              bm.visible = true;
+              bm.position.copy(S.impactPos);
+              bm.userData.v.set((hash01(k, 3, 31) - 0.5) * 9, 2 + hash01(k, 5, 32) * 7, (hash01(k, 7, 33) - 0.2) * 7);
+              bm.userData.life = 0;
+              bm.material.opacity = 1;
+            });
+          }
+        }
+      }
+      for (var tt = 0; tt < S.trail.length; tt++) {
+        var hp = S.trailHist[tt];
+        S.trail[tt].visible = !!(hp && stonePos);
+        if (hp) S.trail[tt].position.copy(hp);
+      }
+      // Reduced motion: a strobe of the arc instead of a moving stone. Motion
+      // photography of a projectile is the classic textbook figure, so the
+      // no-motion path is not a lesser view.
+      var strobe = red && S.strobePath && S.strobePath.length > 1 && (flying || S.impactAt != null);
+      for (var gg = 0; gg < S.ghosts.length; gg++) {
+        var gp = S.ghosts[gg];
+        gp.visible = !!strobe;
+        if (strobe) {
+          var gf = (gg + 1) / (S.ghosts.length + 1);
+          var gpts = S.strobePath;
+          var gidx = Math.min(gpts.length - 1, Math.floor(gf * (gpts.length - 1)));
+          var gpt = gpts[gidx];
+          gp.position.set(gpt.z || 0, Math.max(0.3, gpt.y), -standoff + gpt.x);
+        }
+      }
+      if (S.burstT0 != null) {
+        var age = (now - S.burstT0) / 1000;
+        S.burst.forEach(function (bm) {
+          if (age > 1.6) { bm.visible = false; return; }
+          bm.userData.v.y -= 9.8 * dt;
+          bm.userData.v.multiplyScalar(0.985);
+          bm.position.addScaledVector(bm.userData.v, dt);
+          if (bm.position.y < 0.12) { bm.position.y = 0.12; bm.userData.v.y = Math.abs(bm.userData.v.y) * 0.25; bm.userData.v.x *= 0.6; bm.userData.v.z *= 0.6; }
+          bm.rotation.x += dt * 5; bm.rotation.y += dt * 3;
+          bm.material.opacity = Math.max(0, 1 - Math.max(0, age - 0.8) / 0.8);
+        });
+        if (age > 1.6) S.burstT0 = null;
+      }
+
+      // Live physics for the HUD.
+      var mass = Math.max(0.01, Number(data.projMass) || 25);
+      var grav = Number(data.gravity) || 9.81;
+      if (stonePos) {
+        var ke = 0.5 * mass * speed * speed, pe = mass * grav * Math.max(0, height);
+        sceneHudWrite('phase', t < 0.55 ? (L.swing || '') : (L.flight || ''));
+        sceneHudWrite('speed', fmt(speed, 1) + ' m/s');
+        sceneHudWrite('height', fmt(height, 1) + ' m');
+        sceneHudWrite('dist', fmt(downrange, 0) + ' m');
+        sceneHudWrite('time', fmt(realT, 2) + ' s');
+        sceneHudWrite('energy', (L.ke || 'KE') + ' ' + fmt(ke / 1000, 1) + ' kJ  ·  ' + (L.pe || 'PE') + ' ' + fmt(pe / 1000, 1) + ' kJ  ·  ' + (L.sum || 'total') + ' ' + fmt((ke + pe) / 1000, 1) + ' kJ');
+      } else if ((flying && landed) || (S.impactAt != null && L.outcome)) {
+        sceneHudWrite('phase', L.outcome || L.impact || '');
+        sceneHudWrite('energy', L.outcomeEnergy || L.idleEnergy || '');
+        sceneHudWrite('speed', '—'); sceneHudWrite('height', '—'); sceneHudWrite('dist', '—'); sceneHudWrite('time', '—');
+      } else {
+        sceneHudWrite('phase', L.cocked || '');
+        sceneHudWrite('speed', '—'); sceneHudWrite('height', '—'); sceneHudWrite('dist', '—'); sceneHudWrite('time', '—');
+        sceneHudWrite('energy', L.idleEnergy || '');
+      }
+
+      // Ambient life: banner, birds, fire. All skipped under reduced motion.
+      var ambient = !red && data.ambient !== false;
+      if (S.banner && S.bannerBase) {
+        var bp = S.banner.geometry.attributes.position;
+        var base = S.bannerBase;
+        for (var bv = 0; bv < bp.count; bv++) {
+          var bx = base[bv * 3], by = base[bv * 3 + 1];
+          bp.setZ(bv, ambient ? Math.sin(bx * 2.6 + tSec * 6 + by * 1.5) * 0.16 * (bx / 2.4 + 0.1) : 0);
+        }
+        bp.needsUpdate = true;
+      }
+      if (S.birds) {
+        S.birds.children.forEach(function (bird) {
+          var u = bird.userData, ang = (ambient ? tSec * 0.22 : 0) + u.phase;
+          bird.position.set(Math.cos(ang) * u.r + 6, u.h + Math.sin(tSec * 0.7 + u.phase) * 1.2, Math.sin(ang) * u.r - standoff * 0.45);
+          bird.rotation.y = -ang;
+          var flap = ambient ? Math.sin(tSec * 9 + u.phase) * 0.6 : 0.2;
+          u.wl.rotation.z = flap; u.wr.rotation.z = -flap;
+        });
+      }
+      if (S.fire) {
+        var flick = ambient ? (0.85 + 0.15 * Math.sin(tSec * 23) + 0.1 * Math.sin(tSec * 7.3)) : 1;
+        S.fire.light.intensity = S.fire.base * flick;
+        S.fire.flame.scale.set(1, flick, 1);
+      }
+
+      // Camera. The host fits whatever fitPts describe every frame, so a
+      // "follow" is just a small box moved along with the stone.
+      var mode = data.camMode || 'cinematic';
+      var goal = null;
+      if (mode === 'machine') goal = { target: machinePos, half: [reachM, highM * 0.6, reachM], rotY: 238, rotX: 12 };
+      else if (mode === 'castle') goal = { target: wallPos, half: [span / 2 + 3, wallTop * 0.55 + 2, 4], rotY: 196, rotX: 9 };
+      else if (mode === 'field') goal = { target: fieldTarget, pts: fieldPts, rotY: SCENE_HOME.rotY, rotX: SCENE_HOME.rotX };
+      else if (mode === 'stone') {
+        goal = stonePos
+          ? { target: stonePos, half: [Math.max(6, standoff * 0.06), Math.max(4, standoff * 0.04), Math.max(6, standoff * 0.06)], rotY: 258, rotX: 15 }
+          : (S.impactPos ? { target: S.impactPos, half: [Math.max(5, span * 0.4), Math.max(4, wallTop * 0.6), 5], rotY: 204, rotX: 9 }
+                         : { target: machinePos, half: [reachM, highM * 0.6, reachM], rotY: 238, rotX: 12 });
+      } else if (mode === 'cinematic') {
+        var sinceImpact = S.impactAt != null ? (now - S.impactAt) / 1000 : null;
+        if (flying && !landed && t < 0.6) goal = { target: machinePos, half: [reachM, highM * 0.6, reachM], rotY: 246, rotX: 11 };
+        else if (stonePos) goal = { target: stonePos, half: [Math.max(6, standoff * 0.06), Math.max(4, standoff * 0.04), Math.max(6, standoff * 0.06)], rotY: 258, rotX: 15 };
+        else if (sinceImpact != null && sinceImpact < 4 && S.impactPos) goal = { target: S.impactPos, half: [Math.max(5, span * 0.4), Math.max(4, wallTop * 0.6), 5], rotY: 204, rotX: 9 };
+        else goal = { target: machinePos, half: [reachM * 1.4, highM * 0.7, reachM * 1.4], rotY: 236 + (ambient ? Math.sin(tSec * 0.12) * 8 : 0), rotX: 12 };
+      }
+      if (goal) {
+        // A static bay gets ONE tick per push, so a glide that expects more
+        // frames would stall a fifth of the way: snap unless frames are coming.
+        var k = (red || !S.camCur || data.static) ? 1 : 1 - Math.exp(-dt * 3.4);
+        if (!S.camCur) S.camCur = { target: goal.target.clone(), rotY: goal.rotY, rotX: goal.rotX, half: (goal.half || [10, 6, 10]).slice() };
+        S.camCur.target.lerp(goal.target, k);
+        S.camCur.rotY += (goal.rotY - S.camCur.rotY) * k;
+        S.camCur.rotX += (goal.rotX - S.camCur.rotX) * k;
+        var gh = goal.half || [10, 6, 10];
+        for (var hi = 0; hi < 3; hi++) S.camCur.half[hi] += (gh[hi] - S.camCur.half[hi]) * k;
+        S.target.copy(S.camCur.target);
+        S.fitPts = goal.pts ? goal.pts.slice() : boxPts(S.camCur.target, S.camCur.half[0], S.camCur.half[1], S.camCur.half[2]);
+        S.rotY = S.camCur.rotY; S.rotX = S.camCur.rotX;
+      } else {
+        S.camCur = null;
+        S.target.copy(fieldTarget);
+        S.fitPts = fieldPts.slice();
+      }
+      // A thump on impact: a short shake of the look-at point, not the world.
+      if (!red && S.impactAt != null && data.outcomeKind === 'hit') {
+        var sh = (now - S.impactAt) / 1000;
+        if (sh < 0.5) S.target.y += Math.sin(sh * 60) * 0.45 * (1 - sh / 0.5);
+      }
+    };
+    S.tick(0);
+  }
+
+  var SCENE_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+    ? window.StemLab.makeOrbitViewer({
+        attr: 'data-machinelab-scene-gl',
+        clearColor: 0xe4a688,
+        fov: 48,
+        // Plain PCF: the soft variant is five taps dearer and the field's
+        // shadows are long and blurred by distance anyway.
+        shadowType: 'pcf',
+        fitSlack: 1.04,
+        rot: { y: SCENE_HOME.rotY, x: SCENE_HOME.rotX },
+        failMessage: 'The Siege Field needs 3D. The Target Wall carries the same siege as a diagram.',
+        lights: function (THREE, scene, S) {
+          // The scene builds its own sun per hour; the viewer only turns
+          // shadows on, once, at renderer birth.
+          if (S && S.renderer && S.renderer.shadowMap) {
+            S.renderer.shadowMap.enabled = true;
+            S.renderer.shadowMap.type = THREE.PCFShadowMap;
+          }
+        },
+        build: buildFieldScene
+      })
+    : {
+        attach: function () {}, push: function () {}, onStatusChange: function () {},
+        status: function () { return 'failed'; },
+        debug: function () { return { state: 'failed', hostTooOld: true }; },
+        dispose: function () {}
+      };
+  function sceneGlRef(nodeOrNull) { SCENE_GL.attach(nodeOrNull); }
+  function sceneFsRef(nodeOrNull) { FS_HOSTS.scene = nodeOrNull; }
+  var SCENE_DRAG = null;
+
+  // ═══════════════════════════════════════════════════════════════════
   // DEFAULT STATE
   // ═══════════════════════════════════════════════════════════════════
 
@@ -2965,6 +3776,7 @@ window.StemLab = window.StemLab || {
       machineRotY: 22, machineRotX: 12, machineZoom: 1,
       rangeRotY: 72, rangeRotX: 18, rangeZoom: 1,
       wallRotY: 14, wallRotX: 16, wallZoom: 1,
+      sceneRotY: 202, sceneRotX: 11, sceneZoom: 1,
 
       // Torsion machines. Turns, arm and draw are the same idea on both, so
       // they are shared; the sling and the string belong to one machine each.
@@ -3008,6 +3820,13 @@ window.StemLab = window.StemLab || {
       iqHypothesis: '', iqStuck: false, iqUnderstood: false, iqExplanation: '', iqLog: [],
 
       manualTopic: 'energy',
+
+      // Siege Field. The hour sets sky, sun and shadow; the camera mode is a
+      // choice, not a position, so a snapshot cannot restore a stale glide.
+      sceneTime: 'dusk', sceneCam: 'cinematic', sceneAmbient: true,
+      // auto = follow the OS reduce-motion setting; on/off override it. A
+      // student whose laptop has animations off otherwise sees no shot at all.
+      motionPref: 'auto',
       // null, NOT 'grade5': the AI panel derives its default from the current
       // grade band, and a concrete default here would mask that forever, since
       // the missing-key fill would always supply it.
@@ -3118,7 +3937,7 @@ window.StemLab = window.StemLab || {
       var isContrast = !!ctx.isContrast;
       var isDark = !!ctx.isDark;
       var T = mkTheme(isDark, isContrast);
-      var reducedMotion = typeof window !== 'undefined' && window.matchMedia &&
+      var osReducedMotion = typeof window !== 'undefined' && window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // Single-argument-safe translator. ctx.t may be missing entirely under
@@ -3175,6 +3994,8 @@ window.StemLab = window.StemLab || {
           break;
         }
       }
+      // The OS setting is honoured unless the student has said otherwise.
+      var reducedMotion = (d.motionPref === 'off') ? true : ((d.motionPref === 'on') ? false : !!osReducedMotion);
       var provenCount = Object.keys(d.provenBenches || {}).length;
       var firedCount = (d.machinesFired || []).length;
 
@@ -3408,6 +4229,33 @@ window.StemLab = window.StemLab || {
             },
             style: { width: '100%', accentColor: T.accent }
           })
+        ]);
+      }
+
+      // Shot animation preference. The OS "reduce motion" setting is honoured
+      // by default, and it is exactly what makes a shot look like nothing
+      // happened: the stone jumps straight to the end of its arc. A student
+      // who wants the flight played can say so here without touching a system
+      // setting; one who wants it still gets the strobe instead of nothing.
+      function motionControl(key) {
+        var id = 'ml-motion-' + key;
+        var cur = d.motionPref || 'auto';
+        var autoNote = osReducedMotion
+          ? __alloT('stem.machinelab.motion_auto_reduced', ' (your device asks for less motion)')
+          : __alloT('stem.machinelab.motion_auto_play', ' (your device allows motion)');
+        var opts = [
+          { id: 'auto', label: __alloT('stem.machinelab.motion_auto', 'Follow my device setting') + autoNote },
+          { id: 'on', label: __alloT('stem.machinelab.motion_on', 'Always play the shot') },
+          { id: 'off', label: __alloT('stem.machinelab.motion_off', 'Never animate: show the arc as a strobe') }
+        ];
+        var label = __alloT('stem.machinelab.motion_label', 'Shot animation');
+        return h('div', { key: key, style: { marginTop: 8 } }, [
+          h('label', { key: 'l', htmlFor: id, style: { display: 'block', fontSize: 12, fontWeight: 600, color: T.text, marginBottom: 4 } }, label),
+          h('select', {
+            key: 's', id: id, value: cur, 'aria-label': label,
+            onChange: function (e) { upd('motionPref', e.target.value); },
+            style: { width: '100%', padding: '6px 8px', borderRadius: 8, fontSize: 12, color: T.text, background: T.bg, border: '1px solid ' + T.border }
+          }, opts.map(function (o) { return h('option', { key: o.id, value: o.id }, o.label); }))
         ]);
       }
 
@@ -3654,6 +4502,7 @@ window.StemLab = window.StemLab || {
           { id: 'build', icon: '🏗️', label: __alloT('stem.machinelab.nav_build', 'Build') },
           { id: 'range', icon: '🎯', label: __alloT('stem.machinelab.nav_range', 'Test Range') },
           { id: 'siege', icon: '🏰', label: __alloT('stem.machinelab.nav_siege', 'Target Wall') },
+          { id: 'scene', icon: '🌄', label: __alloT('stem.machinelab.nav_scene', 'Siege Field') },
           { id: 'compare', icon: '📊', label: __alloT('stem.machinelab.nav_compare', 'Compare') },
           { id: 'learn', icon: '📖', label: __alloT('stem.machinelab.nav_learn', 'Field Manual') }
         ];
@@ -4118,9 +4967,11 @@ window.StemLab = window.StemLab || {
       // was no way for a user to look around at all. These are real buttons and
       // real arrow keys, so the camera is reachable without a mouse.
       function camFor(which) {
-        var home = (which === 'wall') ? WALL_HOME : (which === 'shop' ? SHOP_HOME : (which === 'range' ? RANGE_HOME : MACHINE_HOME));
+        var home = (which === 'wall') ? WALL_HOME : (which === 'shop' ? SHOP_HOME : (which === 'range' ? RANGE_HOME : (which === 'scene' ? SCENE_HOME : MACHINE_HOME)));
         var k = (which === 'wall')
           ? { y: 'wallRotY', x: 'wallRotX', z: 'wallZoom' }
+          : (which === 'scene')
+          ? { y: 'sceneRotY', x: 'sceneRotX', z: 'sceneZoom' }
           : (which === 'shop'
             ? { y: 'shopRotY', x: 'shopRotX', z: 'shopZoom' }
             : (which === 'range'
@@ -5193,6 +6044,7 @@ window.StemLab = window.StemLab || {
                 }, band))
               ]),
               slider({ key: 'launchElevation', label: __alloT('stem.machinelab.elevation', 'Launch height'), min: 0, max: 20, step: 0.5, unit: 'm' }),
+              motionControl('rangemotion'),
               windControl(),
               band === 'g912' ? h('p', {
                 key: 'note', style: { margin: '6px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
@@ -5608,7 +6460,27 @@ window.StemLab = window.StemLab || {
         var shots = (d.shotsFired || 0) + 1;
         var work = (d.totalCrankWork || 0) + (preview.crankWork || 0);
 
+        // Clearing the flight returns the bays to render-on-demand. Read from
+        // prev so a second shot fired during the first does not have its
+        // flight wiped by the earlier timer.
+        function clearFlightLater(id, secs) {
+          setTimeout(function () {
+            setLabToolData(function (prev) {
+              var cur = (prev && prev.machineLab) || {};
+              if (!cur.siegeFlight || cur.siegeFlight.id !== id) return prev;
+              return Object.assign({}, prev, {
+                machineLab: Object.assign({}, cur, { siegeFlight: null })
+              });
+            });
+          }, secs * 1000 + 900);
+        }
         if (!impact || impact.status === 'short') {
+          // The stone still flies: to where it lands, short of the wall. A shot
+          // that only produced a sentence taught nothing about WHY it fell short.
+          var shortPath = (preview.path || []).slice();
+          var shortSecs = shortPath.length ? (Number(shortPath[shortPath.length - 1].t) || 1.4) : 1.4;
+          var shortPlay = Math.max(0.9, Math.min(4.5, shortSecs));
+          var shortId = (d.siegeFlightId || 0) + 1;
           updMulti({
             shotsFired: shots, totalCrankWork: work, lastImpact: null,
             siegeFeedback: {
@@ -5616,8 +6488,13 @@ window.StemLab = window.StemLab || {
               message: __alloT('stem.machinelab.fell_short', 'Short by ') +
                 fmt(impact ? impact.shortBy : d.standoff, 1) +
                 __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.')
-            }
+            },
+            siegeFlightId: shortId,
+            siegeFlight: shortPath.length > 1
+              ? { id: shortId, path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' }
+              : null
           });
+          if (shortPath.length > 1) clearFlightLater(shortId, shortPlay);
           announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.'));
           return;
         }
@@ -5667,21 +6544,10 @@ window.StemLab = window.StemLab || {
           // What the 3D field needs to play the throw. `before` is the wall as
           // it stood, drawn until the stone lands.
           siegeFlight: {
-            id: flightId, path: flightPath, seconds: playSecs, before: blocks
+            id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome
           }
         });
-        // Clearing it returns the bay to render-on-demand. Read from prev so a
-        // second shot fired during the first does not have its flight wiped by
-        // the earlier timer.
-        setTimeout(function () {
-          setLabToolData(function (prev) {
-            var cur = (prev && prev.machineLab) || {};
-            if (!cur.siegeFlight || cur.siegeFlight.id !== flightId) return prev;
-            return Object.assign({}, prev, {
-              machineLab: Object.assign({}, cur, { siegeFlight: null })
-            });
-          });
-        }, playSecs * 1000 + 900);
+        clearFlightLater(flightId, playSecs);
         if (nowBreached && !d.breached) {
           awardStemXP(40);
           celebrate();
@@ -6494,6 +7360,306 @@ window.StemLab = window.StemLab || {
         return card(kids, 'beststone');
       }
 
+      // ── Siege Field view ──
+      //
+      // The same siege as the Target Wall (same wall, same shot, same loose()),
+      // staged as a place rather than a diagram. The Target Wall stays the
+      // accessible carrier of the wall state; this view's own text alternative
+      // is the feedback line, the ledger and the shot log beneath the bay.
+      function renderScene() {
+        var blocks = currentWall();
+        var summary = _machineMath.wallSummary(blocks);
+        var wallBreached = _machineMath.isBreached(blocks);
+        var ext = _machineMath.wallExtent(blocks);
+        var sCam = camFor('scene');
+        var sceneStatus = SCENE_GL.status();
+        SCENE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        var camMode = d.sceneCam || 'cinematic';
+        var timeId = d.sceneTime || 'dusk';
+        var ambient = d.sceneAmbient !== false;
+
+        function beginSceneOrbit(ev) {
+          if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
+          SCENE_DRAG = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, rotY: sCam.rotY, rotX: sCam.rotX, zoom: sCam.zoom };
+          try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grabbing';
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function moveSceneOrbit(ev) {
+          if (!SCENE_DRAG || !ev || ev.pointerId !== SCENE_DRAG.id) return;
+          var dx = ev.clientX - SCENE_DRAG.x, dy = ev.clientY - SCENE_DRAG.y;
+          if (Math.abs(dx) + Math.abs(dy) > 3 && camMode !== 'free') upd('sceneCam', 'free');
+          sCam.setView(SCENE_DRAG.rotY - dx * 0.28, SCENE_DRAG.rotX + dy * 0.22, SCENE_DRAG.zoom);
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function endSceneOrbit(ev) {
+          if (!SCENE_DRAG || !ev || ev.pointerId !== SCENE_DRAG.id) return;
+          try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grab'; SCENE_DRAG = null;
+        }
+
+        var outcomeKind = d.lastImpact ? d.lastImpact.outcome : (d.siegeFeedback && !d.siegeFeedback.ok ? 'short' : null);
+        var outcomeText = d.siegeFeedback ? d.siegeFeedback.message : '';
+        var labels = {
+          cocked: __alloT('stem.machinelab.scene_ph_cocked', 'Cocked and ready'),
+          swing: __alloT('stem.machinelab.scene_ph_swing', 'Arm swinging: stored energy becomes motion'),
+          flight: __alloT('stem.machinelab.scene_ph_flight', 'In flight: only gravity and air act now'),
+          impact: __alloT('stem.machinelab.scene_ph_impact', 'Impact'),
+          outcome: outcomeText,
+          outcomeEnergy: d.lastImpact ? (__alloT('stem.machinelab.scene_delivered', 'Delivered ') + fmt(d.lastImpact.ke / 1000, 1) + ' kJ ' + __alloT('stem.machinelab.scene_to_wall', 'to the wall')) : '',
+          idleEnergy: preview
+            ? (__alloT('stem.machinelab.scene_stored', 'Stored ') + fmt(preview.stored / 1000, 1) + ' kJ  →  ' +
+               __alloT('stem.machinelab.scene_stone_gets', 'stone gets ') + fmt(preview.muzzleKE / 1000, 1) + ' kJ (' + fmt(100 * preview.eta, 0) + '%)')
+            : __alloT('stem.machinelab.bad_machine', 'This machine cannot fire. Check the sliders.'),
+          ke: __alloT('stem.machinelab.scene_ke', 'moving'),
+          pe: __alloT('stem.machinelab.scene_pe', 'height'),
+          sum: __alloT('stem.machinelab.scene_total', 'total')
+        };
+
+        SCENE_GL.push({
+          sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0,
+                machineId, Math.round(d.standoff), d.beamLong, d.beamShort, d.slingLength,
+                d.cwMass, d.cwDrop, d.torsionArmLength, d.torsionDraw, d.onagerSling,
+                d.projDiameter, timeId, isContrast].join('|'),
+          // Ambient life (banner, birds, fire) and the camera glide need frames;
+          // with ambient off the field is render-on-demand like the other bays.
+          static: !(d.siegeFlight || (ambient && !reducedMotion)),
+          reduced: reducedMotion,
+          rotY: sCam.rotY, rotX: sCam.rotX, zoom: sCam.zoom,
+          blocks: blocks,
+          prevBlocks: d.siegeFlight ? d.siegeFlight.before : null,
+          flight: d.siegeFlight || null,
+          standoff: d.standoff,
+          wallPreset: d.wallPreset || 'curtain',
+          time: timeId,
+          kind: machineId,
+          releaseAngle: d.releaseAngle,
+          muzzleV: preview ? preview.muzzleV : 0,
+          projDiameter: d.projDiameter,
+          projMass: d.projMass,
+          gravity: d.gravity,
+          camMode: camMode,
+          ambient: ambient,
+          labels: labels,
+          outcomeKind: outcomeKind,
+          dark: true, contrast: isContrast,
+          geom: {
+            beamLong: d.beamLong, beamShort: d.beamShort,
+            slingLength: (machineId === 'onager') ? d.onagerSling : d.slingLength,
+            cwMass: d.cwMass, cwDrop: d.cwDrop, projDiameter: d.projDiameter,
+            armLength: d.torsionArmLength, drawLength: d.torsionDraw
+          }
+        });
+
+        var glass = {
+          padding: '8px 12px', borderRadius: 12, color: '#f8fafc',
+          background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)',
+          boxShadow: '0 8px 22px rgba(0,0,0,.24)', backdropFilter: 'blur(8px)'
+        };
+        function hudStat(key, label) {
+          return h('div', { key: key, style: { minWidth: 64 } }, [
+            h('div', { key: 'l', style: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#cbd5e1' } }, label),
+            h('div', { key: 'v', ref: sceneHudRef(key), style: { fontSize: 16, fontWeight: 850, color: '#fbbf24', fontVariantNumeric: 'tabular-nums' } }, '—')
+          ]);
+        }
+        function chipRow(key, ariaLabel, items, current, onPick) {
+          return h('div', {
+            key: key, role: 'group', 'aria-label': ariaLabel,
+            style: { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', background: T.card, borderRadius: 8, padding: '4px 6px' }
+          }, items.map(function (it) {
+            var on = it.id === current;
+            return h('button', {
+              key: it.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+              title: it.title || it.label,
+              onClick: function () { onPick(it.id); },
+              style: {
+                padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
+                border: '1px solid ' + (on ? T.accent : T.border),
+                background: on ? T.accent : T.card, color: on ? T.accentInk : T.text,
+                fontSize: 11, fontWeight: 700
+              }
+            }, (it.icon ? it.icon + ' ' : '') + it.label);
+          }));
+        }
+
+        var TIME_LABELS = {
+          dawn: __alloT('stem.machinelab.time_dawn', 'Dawn'),
+          noon: __alloT('stem.machinelab.time_noon', 'Noon'),
+          dusk: __alloT('stem.machinelab.time_dusk', 'Dusk'),
+          night: __alloT('stem.machinelab.time_night', 'Night')
+        };
+        var CAM_MODES = [
+          { id: 'cinematic', icon: '🎬', label: __alloT('stem.machinelab.cam_cinematic', 'Cinematic'), title: __alloT('stem.machinelab.cam_cinematic_t', 'Watch the engine, follow the stone, then hold on the impact') },
+          { id: 'stone', icon: '🪨', label: __alloT('stem.machinelab.cam_stone', 'Follow the stone') },
+          { id: 'machine', icon: '🏗️', label: __alloT('stem.machinelab.cam_machine', 'Engine') },
+          { id: 'castle', icon: '🏰', label: __alloT('stem.machinelab.cam_castle', 'Castle') },
+          { id: 'field', icon: '🌄', label: __alloT('stem.machinelab.cam_field', 'Whole field') },
+          { id: 'free', icon: '🖐️', label: __alloT('stem.machinelab.cam_free', 'Free look') }
+        ];
+
+        var shotControls = (machineId === 'trebuchet')
+          ? [
+              { key: 'cwMass', label: __alloT('stem.machinelab.cw_mass', 'Counterweight mass'), min: 100, max: 4000, step: 50, unit: 'kg' },
+              { key: 'cwDrop', label: __alloT('stem.machinelab.cw_drop', 'Counterweight drop'), min: 0.5, max: 8, step: 0.1, unit: 'm' },
+              { key: 'beamLong', label: __alloT('stem.machinelab.beam_long', 'Long arm'), min: 1, max: 8, step: 0.1, unit: 'm' },
+              { key: 'projMass', label: __alloT('stem.machinelab.proj_mass', 'Stone mass'), min: 1, max: 300, step: 1, unit: 'kg' },
+              { key: 'releaseAngle', label: __alloT('stem.machinelab.release_angle', 'Release angle'), min: 15, max: 75, step: 1, unit: '°' }
+            ]
+          : [
+              { key: 'torsionTurns', label: __alloT('stem.machinelab.turns', 'Turns of twist in the bundle'), min: 1, max: 30, step: 1, unit: '' },
+              { key: 'torsionArmLength', label: __alloT('stem.machinelab.arm_len', 'Arm length'), min: 0.4, max: 3, step: 0.05, unit: 'm' },
+              { key: 'torsionDraw', label: __alloT('stem.machinelab.draw', 'Draw length'), min: 0.1, max: 2.5, step: 0.05, unit: 'm' },
+              { key: 'projMass', label: __alloT('stem.machinelab.proj_mass', 'Stone mass'), min: 0.2, max: 120, step: 0.2, unit: 'kg' },
+              { key: 'releaseAngle', label: __alloT('stem.machinelab.release_angle', 'Release angle'), min: 15, max: 75, step: 1, unit: '°' }
+            ];
+
+        var seeing = pick({
+          k2: __alloT('stem.machinelab.scene_seeing_k2', 'The crew winds the machine to store a big push. Press Loose and watch the stone fly to the castle. A heavy stone hits harder; a light stone flies faster.'),
+          g35: __alloT('stem.machinelab.scene_seeing_g35', 'Winding the machine stores energy. Loose it and that energy becomes the moving stone. Watch the numbers over the field: as the stone climbs, moving energy turns into height energy, and it turns back as it falls.'),
+          g68: __alloT('stem.machinelab.scene_seeing_g68', 'Everything the stone does in the air was decided before it left: the machine stores energy, a fixed share of it goes to the stone, and after release only gravity and drag act. Watch the moving and height energies trade places over the arc while their total slowly leaks to the air.'),
+          g912: __alloT('stem.machinelab.scene_seeing_g912', 'The readouts are the energy ledger in real time: ½mv² and mgh trade along the arc, and their sum falls only by drag work. Range depends on the launch speed the machine can give this stone, and the sweet spot in stone mass exists only because drag is on.')
+        }, band);
+
+        return h('div', { key: 'sceneview' }, [
+          h('div', { key: 'pickers', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 } }, [
+            machinePicker(),
+            h('div', { key: 'walls', role: 'group', 'aria-label': __alloT('stem.machinelab.aria_targets', 'Choose a target'),
+              style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
+              WALL_PRESETS.map(function (wp) {
+                var on = wp.id === (d.wallPreset || 'curtain');
+                return h('button', {
+                  key: wp.id, 'aria-pressed': on ? 'true' : 'false', type: 'button',
+                  onClick: function () { resetWall(wp.id); },
+                  style: {
+                    padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
+                    border: '1px solid ' + (on ? T.accent : T.border),
+                    background: on ? T.accent : T.card, color: on ? T.accentInk : T.text, fontSize: 13, fontWeight: 700
+                  }
+                }, wp.icon + ' ' + wp.label);
+              }))
+          ]),
+          oddStoneNote('sceneodd'),
+          h('div', {
+            key: 'world', ref: sceneFsRef,
+            style: {
+              position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              padding: 8, marginBottom: 12, borderRadius: 18, background: T.card,
+              border: '1px solid ' + T.border,
+              boxShadow: isDark ? '0 18px 45px rgba(0,0,0,.28)' : '0 18px 45px rgba(15,23,42,.11)'
+            }
+          }, [
+            h('div', {
+              key: 'bay', ref: sceneGlRef, role: 'img', 'data-ml-orbitable': 'true',
+              onPointerDown: beginSceneOrbit, onPointerMove: moveSceneOrbit,
+              onPointerUp: endSceneOrbit, onPointerCancel: endSceneOrbit,
+              'aria-label': __alloT('stem.machinelab.aria_scene3d', 'Immersive three-dimensional siege field: the engine and its crew at one end, the castle at the other, in a valley at ') +
+                TIME_LABELS[timeId] + '. ' + __alloT('stem.machinelab.aria_scene3d2', 'Drag with a mouse or pen to look around. The readouts, ledger and shot feedback below carry the same numbers in text.'),
+              style: {
+                width: '100%', height: 'clamp(400px, 64vh, 760px)', minHeight: 320, flex: '1 1 auto',
+                borderRadius: 13, background: '#1a2438', border: '1px solid ' + T.border,
+                cursor: 'grab', userSelect: 'none'
+              }
+            }, null),
+            h('div', {
+              key: 'hud', 'aria-hidden': 'true',
+              style: { position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', pointerEvents: 'none' }
+            }, [
+              h('div', { key: 'title', style: glass }, [
+                h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
+                  __alloT('stem.machinelab.scene_eyebrow', 'Siege Field') + ' · ' + TIME_LABELS[timeId]),
+                h('div', { key: 'nm', style: { marginTop: 2, fontSize: 18, fontWeight: 850 } }, machineLabel(machineId) + ' → ' + (d.wallPreset === 'imported' ? __alloT('stem.machinelab.wall_imported', 'Your own build') : (WALL_PRESETS.filter(function (w) { return w.id === (d.wallPreset || 'curtain'); })[0] || WALL_PRESETS[0]).label)),
+                h('div', { key: 'ph', ref: sceneHudRef('phase'), style: { marginTop: 3, fontSize: 11, color: '#e2e8f0' } }, labels.cocked)
+              ]),
+              h('div', { key: 'stats', style: Object.assign({}, glass, { display: 'flex', gap: 14, textAlign: 'right' }) }, [
+                hudStat('speed', __alloT('stem.machinelab.hud_speed', 'Speed')),
+                hudStat('height', __alloT('stem.machinelab.hud_height', 'Height')),
+                hudStat('dist', __alloT('stem.machinelab.hud_dist', 'Downrange')),
+                hudStat('time', __alloT('stem.machinelab.hud_time', 'Time'))
+              ])
+            ]),
+            h('div', {
+              key: 'energyhud', 'aria-hidden': 'true', ref: sceneHudRef('energy'),
+              style: Object.assign({}, glass, { position: 'absolute', left: 20, top: 130, fontSize: 11, fontWeight: 700, pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' })
+            }, labels.idleEnergy),
+            h('div', { key: 'rows', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
+              chipRow('cam', __alloT('stem.machinelab.cam_modes', 'Camera'), CAM_MODES, camMode, function (id) {
+                upd('sceneCam', id);
+                announceToSR(__alloT('stem.machinelab.cam_set', 'Camera: ') + (CAM_MODES.filter(function (c) { return c.id === id; })[0] || {}).label + '.');
+              }),
+              chipRow('time', __alloT('stem.machinelab.time_of_day', 'Time of day'), SCENE_TIMES.map(function (t) { return { id: t.id, icon: t.icon, label: TIME_LABELS[t.id] }; }), timeId, function (id) { upd('sceneTime', id); }),
+              h('button', {
+                key: 'amb', type: 'button', 'aria-pressed': ambient ? 'true' : 'false',
+                onClick: function () { upd('sceneAmbient', !ambient); },
+                title: __alloT('stem.machinelab.ambient_t', 'Banner, birds and fire. Off saves battery and stills the scene.'),
+                style: {
+                  padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
+                  border: '1px solid ' + (ambient ? T.accent : T.border),
+                  background: ambient ? T.accent : T.card, color: ambient ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
+                }
+              }, '🍃 ' + __alloT('stem.machinelab.ambient', 'Ambient motion'))
+            ]),
+            camControls(sCam, __alloT('stem.machinelab.scene_label', 'siege field'), 'scene'),
+            h('div', { key: 'fire', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
+              h('button', {
+                key: 'loose', type: 'button', onClick: loose,
+                disabled: !!wallBreached || !!d.siegeFlight,
+                style: {
+                  padding: '11px 26px', borderRadius: 10,
+                  cursor: (wallBreached || d.siegeFlight) ? 'default' : 'pointer',
+                  border: '1px solid ' + ((wallBreached || d.siegeFlight) ? T.border : T.accent),
+                  background: (wallBreached || d.siegeFlight) ? T.card : T.accent,
+                  color: (wallBreached || d.siegeFlight) ? T.dim : T.accentInk, fontSize: 16, fontWeight: 850
+                }
+              }, wallBreached
+                ? __alloT('stem.machinelab.breached_btn', 'Breached')
+                : (d.siegeFlight ? __alloT('stem.machinelab.in_flight', 'In flight…') : '🔥 ' + __alloT('stem.machinelab.loose', 'Loose!'))),
+              h('button', {
+                key: 'reset', type: 'button', onClick: function () { resetWall(d.wallPreset); },
+                style: { padding: '11px 16px', borderRadius: 10, cursor: 'pointer', border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 13, fontWeight: 700 }
+              }, __alloT('stem.machinelab.rebuild', 'Rebuild the wall')),
+              h('span', { key: 'tally', style: { fontSize: 12, color: T.muted } },
+                __alloT('stem.machinelab.shots_loosed', 'Shots loosed') + ': ' + (d.shotsFired || 0) + ' · ' +
+                __alloT('stem.machinelab.legend_intact', 'intact ') + summary.intact + ' · ' +
+                __alloT('stem.machinelab.legend_cracked', 'cracked ') + summary.cracked + ' · ' +
+                __alloT('stem.machinelab.legend_gone', 'gone ') + summary.breached)
+            ]),
+            d.siegeFeedback ? h('p', {
+              key: 'fb', role: 'status',
+              style: { margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: d.siegeFeedback.ok ? T.ok : T.bad }
+            }, d.siegeFeedback.message) : null
+          ]),
+          sceneStatus !== 'ready' ? card([
+            h('p', { key: 'st', style: { margin: 0, fontSize: 12, color: T.dim } },
+              sceneStatus === 'failed'
+                ? __alloT('stem.machinelab.scene_gl_failed', 'The Siege Field needs 3D, which is not available here. The Target Wall carries the same siege as a diagram and a course table.')
+                : __alloT('stem.machinelab.scene_gl_loading', 'Raising the valley...'))
+          ], 'scenestatus', { borderStyle: 'dashed' }) : null,
+          h('div', { key: 'main', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 } }, [
+            h('div', { key: 'left' }, [
+              card([
+                h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.machinelab.scene_setup', 'Set up the shot')),
+                h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
+                  __alloT('stem.machinelab.scene_setup_hint', 'These are the same controls as Build and the Target Wall. Change one thing, loose, and watch what it did.'))
+              ].concat(shotControls.map(slider)).concat([
+                slider({ key: 'standoff', label: __alloT('stem.machinelab.standoff', 'Standoff from the wall'), min: 10, max: 300, step: 5, unit: 'm' }),
+                slider({ key: 'windZ', label: __alloT('stem.machinelab.crosswind', 'Crosswind'), min: -15, max: 15, step: 0.5, unit: 'm/s' }),
+                motionControl('scenemotion')
+              ]), 'scenesetup')
+            ]),
+            h('div', { key: 'right' }, [
+              card([
+                h('div', { key: 'head', style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } }, [
+                  h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, __alloT('stem.machinelab.scene_seeing', 'What you are seeing')),
+                  readAloud(seeing, 'scenetts')
+                ]),
+                h('p', { key: 'p', style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: T.muted } }, seeing)
+              ], 'sceneseeing'),
+              ledger(preview, 'sceneledger')
+            ])
+          ])
+        ]);
+      }
+
       function renderCompare() {
         var rows = MACHINES.map(function (mm) {
           return { meta: mm, s: _machineMath.shot(inputsFor(mm.id)) };
@@ -7043,6 +8209,10 @@ window.StemLab = window.StemLab || {
           {
             text: __alloT('stem.machinelab.tut5', 'At the Target Wall, aim flat. A high lob sails clean over a wall; walls are battered with direct fire.'),
             top: '84%', left: '50%'
+          },
+          {
+            text: __alloT('stem.machinelab.tut6', 'Then open the Siege Field: the same siege in a real valley. Loose, and the camera follows your stone with its speed, height and energy written beside it.'),
+            top: '90%', left: '50%'
           }
         ];
       }
@@ -7056,6 +8226,7 @@ window.StemLab = window.StemLab || {
       var body = (view === 'build') ? renderBuild()
         : (view === 'range') ? renderRange()
         : (view === 'siege') ? renderSiege()
+        : (view === 'scene') ? renderScene()
         : (view === 'compare') ? renderCompare()
         : (view === 'learn') ? renderLearn()
         : renderMachines();

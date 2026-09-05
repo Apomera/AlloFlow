@@ -6,7 +6,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const FILE = 'stem_lab/stem_tool_machinelab.js';
 const source = () => fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
 const BANDS = ['k2', 'g35', 'g68', 'g912'];
-const VIEWS = ['machines', 'build', 'range', 'siege', 'compare', 'learn'];
+const VIEWS = ['machines', 'build', 'range', 'siege', 'scene', 'compare', 'learn'];
 
 // The harness renders at g35 unless told otherwise, and much of this tool now
 // restates per band. These cases assert the grade 6-8 wording, so they pin it;

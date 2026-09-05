@@ -51,6 +51,56 @@ Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewe
 infers one from the other cannot render high contrast correctly, which is exactly how
 defect 7 arose.
 
+## The Siege Field (2026-09-04)
+
+Aaron: the bays read as schematics, and he could not see a firing animation. Two answers.
+
+**A seventh view, `scene`, "Siege Field".** The same siege as the Target Wall (same
+`wallBlocks`, same `loose()`, same `siegeFlight`; a breach here is a breach there),
+staged as a place: procedural terrain with a flat firing lane and hills beyond, a sky
+shader with a sun disc, sun + hemisphere + fill light with a 1024 PCF shadow map, four
+hours (dawn / noon / dusk / night: sun direction, fog, stars, campfire), a castle built
+from the wall blocks through `makeVoxelBatch` with a procedural stone texture, merlons
+over standing top-course blocks, two towers and a waving banner, the Build engines skinned
+to timber and rope by re-mapping their constant colours, three crew, a tent, a stone pile,
+110 instanced trees, rocks, birds. The stone flies the model's path with a trail; landing
+spawns a debris burst and a look-at shake on a hit. A DOM HUD written by the tick (not by
+React) shows live speed, height, downrange, time and the ½mv² / mgh / total ledger.
+Camera modes: cinematic (engine → follow the stone → hold on the impact), follow the
+stone, engine, castle, whole field, free look (drag switches to free). Ambient motion is a
+toggle; the field is render-on-demand with it off.
+
+- ★★★A STATIC bay gets ONE tick per push. A camera glide that lerps toward its goal stalled
+  a fifth of the way there and Castle looked like Engine. Snap when `data.static`.
+- ★★★BUDGET: 2048 PCFSoft shadows over a 96² terrain with 150 shadow-casting trees measured
+  4.7 s PER FRAME under SwiftShader. 1024 PCF, 64² terrain, 110 trees, trunks not casting:
+  ~10 fps under SwiftShader, which is the floor school laptops have to clear.
+- ★★The scene builder is called BEFORE the host assigns `S.data`, so `S.tick(0)` at the end
+  of a build sees no data; guard every read.
+- ★Sky sphere radius must sit inside the host's `far = dist * 8 + 200`, else it clips; the
+  clear colour is the horizon colour so a clipped sky is invisible.
+- ★A tent placed at -x, -z of the engine sat between the Engine camera and the engine.
+  Place dressing on the far side of every framing you ship.
+
+**The firing animation.** It existed in all three bays, gated on
+`prefers-reduced-motion`. Windows "Animation effects: off" sets that media query, and under
+it the stone JUMPED to the end of its arc: a shot that looks like nothing happened. Now:
+
+- `motionPref` (`auto` | `on` | `off`) in state, a select in the Range conditions and the
+  Siege Field setup. `reducedMotion` derives from the preference before the OS.
+- Under reduced motion the Range and the Field draw the arc as a STROBE (seven ghost stones
+  along the path), the textbook projectile figure, instead of nothing.
+- ★★A SHORT shot never flew at all in either siege bay: `loose()` returned with a sentence.
+  It now flies to where it lands (`siegeFlight.outcome = 'short'`), wall untouched.
+- `ml_interaction_smoke.cjs` battered the wall by clicking Loose 120 ms apart and read the
+  in-flight disabled button as "never breached" (3 of 99 red before this work). It waits
+  for the flight to clear now.
+
+Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
+text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
+motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle
+framing at dawn, night, and the range strobe.
+
 ## WebGL context churn
 
 Two module-scope viewers attach and detach as the view changes, and a browser caps live

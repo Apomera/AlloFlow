@@ -215,6 +215,9 @@ function check(name, cond, detail) {
 
   let looses = 1, guard = 0, breached = false;
   while (guard++ < 60) {
+    // Loose is disabled while the stone is in the air (about 1-5 s of real
+    // playback), so wait for the flight to clear before the next shot.
+    await pg.waitForFunction(() => { const s = window.__state(); return !!s && !s.siegeFlight; }, null, { timeout: 12000 });
     const res = await pg.evaluate(() => window.__click('Loose'));
     if (res !== 'ok') break;                 // button disabled once breached
     looses++;

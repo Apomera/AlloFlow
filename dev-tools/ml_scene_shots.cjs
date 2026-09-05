@@ -151,6 +151,15 @@ const SHOTS = [
   // machine and the castle large across 80 m, so the shot is a choice.
   ['11b-field-castle', S({ view: 'siege', wallPreset: 'gatehouse', siegeFraming: 'castle' }), {}, 2600],
   ['11c-field-machine', S({ view: 'siege', wallPreset: 'gatehouse', siegeFraming: 'machine' }), {}, 2600],
+  // The Siege Field: the same siege as a place. Whole field at dusk (the
+  // default), the castle framing, and night, where the campfire and stars
+  // are the only proof the hour preset reached the scene.
+  ['11d-scene-dusk-field', S({ view: 'scene', sceneTime: 'dusk', sceneCam: 'field', sceneAmbient: false }), {}, 3200],
+  ['11e-scene-castle', S({ view: 'scene', sceneTime: 'dawn', sceneCam: 'castle', sceneAmbient: false, wallPreset: 'gatehouse' }), {}, 3200],
+  ['11f-scene-night', S({ view: 'scene', sceneTime: 'night', sceneCam: 'machine', sceneAmbient: false }), {}, 3200],
+  // Reduced motion in the range: the arc as a strobe, not a stone that
+  // appears at the end. motionPref 'off' forces it regardless of the OS.
+  ['08d-range-strobe', S({ view: 'range', animating: true, shotId: 1, motionPref: 'off', lastShotSig: '' }), {}, 1400],
   ['12-compare', S({ view: 'compare' }), {}, 500],
   ['12b-compare-beststone', S({ view: 'compare', bestStones: BEST_FIXTURE }), {}, 500],
   ['12c-compare-beststone-stale', S({ view: 'compare', bestStones: STALE_FIXTURE }), {}, 500],
