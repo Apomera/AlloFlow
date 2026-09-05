@@ -1,4 +1,10 @@
 {
+  "contrast_pass": "Pass",
+  "contrast_fail": "Fail",
+  "contrast_badge_aa_large": "AA Large",
+  "contrast_badge_aa_normal": "AA Normal",
+  "contrast_badge_aaa_normal": "AAA Normal",
+  "contrast_sample_sizes": "The bold line above is 24-pixel large text. The smaller line is 14-pixel normal text. That is why the checks below use two different targets.",
   "back_to_tools": "Back to tools",
   "art_design_studio": "🎨 Art & Design Studio",
   "launch_3d_architecture_studio": "Launch 3D Architecture Studio",

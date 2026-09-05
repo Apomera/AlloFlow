@@ -7446,6 +7446,8 @@ const d = labToolData.artStudio || {};
 
                 ),
 
+                React.createElement("p", { className: "mb-3 text-[0.6875rem] leading-relaxed text-slate-700" }, __alloT('stem.artstudio.contrast_sample_sizes', "The bold line above is 24-pixel large text. The smaller line is 14-pixel normal text. That is why the checks below use two different targets.")),
+
                 React.createElement("p", { className: "text-3xl font-bold " + (passContrastGoal ? 'text-green-800' : 'text-red-800') }, contrastRatio.toFixed(2) + ':1'),
 
                 React.createElement("p", { id: "artstudio-contrast-goal-result", className: "mt-2 text-sm font-black " + (passContrastGoal ? 'text-green-900' : 'text-red-900') }, (passContrastGoal ? '\u2705 Meets' : '\u274C Does not meet') + ' selected ' + contrastGoalLabel + ' goal of ' + contrastGoalTarget + ':1'),
@@ -7454,11 +7456,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex flex-wrap justify-center gap-2 sm:gap-3 mt-3" },
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAALarge ? '\u2705 Pass' : '\u274C Fail') + ' AA Large'),
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAALarge ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aa_large', 'AA Large')),
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAA ? '\u2705 Pass' : '\u274C Fail') + ' AA Normal'),
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAA ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aa_normal', 'AA Normal')),
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAAA ? '\u2705 Pass' : '\u274C Fail') + ' AAA Normal')
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAAA ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aaa_normal', 'AAA Normal'))
 
                 )
 
