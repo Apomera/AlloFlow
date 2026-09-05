@@ -188,6 +188,16 @@ function buildManifest() {
   };
 }
 
+// SHA256SUMS.txt beside the bundle, in the `sha256sum -c` format the release notes and pilot guide
+// tell people to verify against. The GitHub release workflow publishes its own copy; this one lets a
+// locally built bundle be shared with the same verification step.
+function writeSha256Sums(bundlePath) {
+  const digest = crypto.createHash('sha256').update(fs.readFileSync(bundlePath)).digest('hex');
+  const sums = path.join(path.dirname(bundlePath), 'SHA256SUMS.txt');
+  fs.writeFileSync(sums, digest + '  ' + path.basename(bundlePath) + '\n', 'utf8');
+  return { path: sums, sha256: digest };
+}
+
 function stageBundle(stagingDir) {
   const dest = path.resolve(stagingDir || STAGING);
   // Preflight: every input must exist before we stage anything.
@@ -269,6 +279,8 @@ async function main() {
   log((packed ? 'VALIDATED' : 'UNVALIDATED DIAGNOSTIC') + ' → ' + BUNDLE + ' (' + mb + ' MB)');
   log('extracting and boot-checking the emitted artifact...');
   execSync('node "' + path.join(MCP_DIR, 'verify_mcpb_artifact.cjs') + '" "' + BUNDLE + '"' + (LEAN ? '' : ' --require-playwright'), { stdio: ['ignore', 'inherit', 'inherit'] });
+  const sums = writeSha256Sums(BUNDLE);
+  log('SHA256SUMS.txt → ' + sums.path + ' (' + sums.sha256 + ')');
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; the Gemini API key field is optional and can be left blank for no-account tools.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
   log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 20+ on PATH; veraPDF and EPUBCheck need a local Java runtime.');
@@ -277,5 +289,5 @@ async function main() {
 // Guarded so the manifest can be imported and checked against the live tool registry without
 // building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
 // Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
-module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle };
+module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle, writeSha256Sums };
 if (require.main === module) main().catch((error) => { console.error('[build-mcpb] ERROR: ' + (error && error.stack || error)); process.exitCode = 1; });

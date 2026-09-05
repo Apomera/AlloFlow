@@ -75,7 +75,8 @@ before using model-dependent tools with education records.
 
 ## Verify the download
 
-Compare the file with SHA256SUMS.txt. GitHub CLI users can additionally verify that GitHub Actions
+Compare the file with SHA256SUMS.txt (`sha256sum -c SHA256SUMS.txt`). A local `node desktop/mcp/build_mcpb.cjs`
+writes the same file beside the bundle, so a bundle shared directly for a pilot can be checked the same way. GitHub CLI users can additionally verify that GitHub Actions
 built the exact bytes from this repository:
 
     gh attestation verify alloflow-remediation.mcpb -R Apomera/AlloFlow

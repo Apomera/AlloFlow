@@ -301,9 +301,12 @@ function prehashVendorBundle() {
       (async () => {
         for (const e of workerData.entries) {
           try {
+            const before = fs.statSync(e.absolute);
             const hash = crypto.createHash('sha256'); let bytes = 0;
             await new Promise((res, rej) => { const st = fs.createReadStream(e.absolute); st.on('data', (c) => { bytes += c.length; hash.update(c); }); st.on('end', res); st.on('error', rej); });
-            out[e.path] = { bytes, sha256: hash.digest('hex') };
+            const after = fs.statSync(e.absolute);
+            if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) continue; // changed while hashing: leave it to inline verification
+            out[e.path] = { bytes, sha256: hash.digest('hex'), mtimeMs: after.mtimeMs, ctimeMs: after.ctimeMs };
           } catch (_) {}
         }
         parentPort.postMessage(out);
@@ -384,8 +387,12 @@ function loadVendorBundle() {
     // EPUBCheck's JARs are read from disk by Java, never served to the browser: verify their hashes
     // but do not pin ~35 MB of bytecode in memory for the life of the server.
     const browserAsset = !entry.path.startsWith('epubcheck/');
+    // A worker digest is trusted only while the file is provably the one it hashed: same size,
+    // mtime and ctime as at hashing time. Anything else falls through to inline verification.
     const pre = !browserAsset && entry.normalization === undefined && vendorPrehash ? vendorPrehash.get(entry.path) : null;
-    if (pre && pre.bytes === entry.bytes && pre.sha256 === entry.sha256 && fs.existsSync(absolute)) {
+    let preStat = null;
+    if (pre) { try { preStat = fs.statSync(absolute); } catch (_) { preStat = null; } }
+    if (pre && preStat && preStat.size === entry.bytes && pre.bytes === entry.bytes && pre.sha256 === entry.sha256 && preStat.mtimeMs === pre.mtimeMs && preStat.ctimeMs === pre.ctimeMs) {
       files.set(entry.path, { path: absolute, body: null, bytes: entry.bytes, sha256: pre.sha256 });
       continue;
     }
