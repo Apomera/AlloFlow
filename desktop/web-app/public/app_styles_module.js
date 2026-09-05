@@ -945,7 +945,7 @@ const AppStyles = ({
         @media screen { .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100,
         .theme-contrast .bg-amber-50, .theme-contrast .bg-rose-50, .theme-contrast .bg-sky-50, .theme-contrast .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; } }
         @media screen { .theme-contrast .bg-amber-50 *, .theme-contrast .bg-rose-50 *, .theme-contrast .bg-sky-50 *, .theme-contrast .bg-emerald-50 * { color: #ffff00 !important; } }
-        @media screen { .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li, .theme-contrast label {
+        @media screen { .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li, .theme-contrast label, .theme-contrast h5, .theme-contrast h6, .theme-contrast summary, .theme-contrast legend, .theme-contrast strong, .theme-contrast em, .theme-contrast small, .theme-contrast td, .theme-contrast th, .theme-contrast dt, .theme-contrast dd, .theme-contrast output, .theme-contrast code, .theme-contrast kbd, .theme-contrast figcaption, .theme-contrast time, .theme-contrast blockquote, .theme-contrast caption {
             color: #ffff00 !important;
         } }
         @media screen { .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; } }
@@ -1177,6 +1177,7 @@ const AppStyles = ({
             color: #000000 !important;
             border: 2px solid #FFFFFF !important;
         } }
+        @media screen { .theme-contrast .bg-yellow-200 *, .theme-contrast .bg-yellow-300 *, .theme-contrast .bg-yellow-400 * { color: #000000 !important; } }
         @font-face {
             font-family: 'OpenDyslexic';
             src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format('woff');
