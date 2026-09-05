@@ -24,6 +24,10 @@ through `dataHandling`:
   libraries without intentionally including document content.
 - `geminiDocumentEgressToolNames` send the document or derived content to
   Gemini under the user's key.
+- `geminiOptionalToolNames` (currently `audit_html`) send content to Gemini only when a key
+  exists; without one they run the model-free engines and report `aiEngine: not-run` with a
+  `partial` verification state. Say so when you relay the result; never present it as the
+  full three-engine audit.
 
 A false `fullAiPipelineReady` does not make the connector unusable. Use its
 keyless tools when they satisfy the request. For full semantic remediation,

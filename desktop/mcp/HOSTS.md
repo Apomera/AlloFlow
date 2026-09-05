@@ -133,3 +133,7 @@ Hosts that speak Streamable HTTP locally (Codex, Cursor and VS Code accept a `ur
 - Progress notifications and `notifications/cancelled` are honoured on both transports.
 - Hosts without MCP skill or prompt support lose only the bundled guidance text; the tool
   descriptions carry the same safety rules.
+- `remediation_capabilities.transports` reports which transports this process serves.
+- Without a Gemini key, `audit_html` runs axe-core and IBM Equal Access and reports the AI rubric
+  as `not-run`; the Gemini-only tools (`pdf_audit`, `pdf_remediate`, batch Gemini jobs) still
+  refuse, and the keyless agent bridge covers full remediation instead.

@@ -3040,7 +3040,7 @@ const TOOLS = [
   {
     name: 'audit_html',
     title: 'Audit an HTML file for accessibility',
-    description: 'Run the same three-engine accessibility audit the remediation pipeline uses, on a local .html file: the AI content rubric (score, per-issue WCAG mapping), the axe-core engine and IBM Equal Access. Each engine reports its own status (passed, failed, partial, review-required, unavailable); an engine failure is reported, never counted as a pass, and the result carries the canonical verificationState. Title II is web-first — use this to evidence-check web page exports, LMS content, or any saved HTML without remediating it. Local FILE input only; this tool never fetches URLs, so nothing leaves the machine except the audited HTML going to the Gemini API under your key. Writes no files. Typically 1-2 minutes.',
+    description: 'Run the same three-engine accessibility audit the remediation pipeline uses, on a local .html file: the AI content rubric (score, per-issue WCAG mapping), the axe-core engine and IBM Equal Access. Without a Gemini key the two model-free engines still run and the AI rubric is reported not-run. Each engine reports its own status (passed, failed, partial, review-required, unavailable); an engine failure is reported, never counted as a pass, and the result carries the canonical verificationState. Title II is web-first — use this to evidence-check web page exports, LMS content, or any saved HTML without remediating it. Local FILE input only; this tool never fetches URLs, so nothing leaves the machine except the audited HTML going to the Gemini API under your key. Writes no files. Typically 1-2 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
@@ -3312,6 +3312,9 @@ const GEMINI_REQUIRED_TOOL_NAMES = Object.freeze([
   'pdf_remediate_from_scoreboard_start',
 ]);
 const GEMINI_REQUIRED_TOOL_SET = new Set(GEMINI_REQUIRED_TOOL_NAMES);
+// Listed above because they DO send content to Gemini when a key exists; these still run in a
+// reduced, model-free form without one (audit_html: axe + Equal Access, AI rubric not-run).
+const GEMINI_OPTIONAL_TOOL_NAMES = Object.freeze(['audit_html']);
 const KEYLESS_TOOL_NAMES = Object.freeze(
   TOOLS.map((tool) => tool.name).filter((name) => !GEMINI_REQUIRED_TOOL_SET.has(name))
 );
@@ -3476,9 +3479,11 @@ const OUTPUT_SCHEMAS = {
     readyMeans: S_STR,
     fullAiPipelineReady: S_BOOL,
     keylessModeAvailable: S_BOOL,
+    transports: obj({ stdio: S_BOOL, http: obj({ enabled: S_BOOL, listening: S_BOOL, endpoint: { type: ['string', 'null'] }, host: { type: ['string', 'null'] }, port: { type: ['number', 'null'] } }) }),
     keylessModeMeans: S_STR,
     keylessToolNames: { type: 'array', items: S_STR },
     geminiRequiredToolNames: { type: 'array', items: S_STR },
+    geminiOptionalToolNames: { type: 'array', items: S_STR, description: 'Subset of geminiRequiredToolNames that still runs in a reduced model-free form without a key and says so in its result.' },
     dataHandling: strictObj({
       offlineToolNames: { type: 'array', items: S_STR },
       publicDependencyDownloadToolNames: { type: 'array', items: S_STR },
@@ -3614,6 +3619,7 @@ const OUTPUT_SCHEMAS = {
     issueCount: S_NULLABLE_NUM, issues: { type: 'array', items: obj({ issue: S_STR, wcag: S_STR, severity: S_STR }) },
     equalAccessFailures:S_NULLABLE_NUM,equalAccessScore:S_NULLABLE_NUM,equalAccessReviewFindings:S_NULLABLE_NUM,axeIncomplete:S_NULLABLE_NUM,checks:{},engineErrors:{},verificationState:S_STR,executionState:S_STR,outcomeState:S_STR,requiresManualReview:S_BOOL,verificationCoverage:{},note:S_STR,
     passCount: { type: ['number', 'null'] }, axeViolations: { type: ['number', 'null'] }, axeScore: { type: ['number', 'null'] },
+    aiEngine: { type: 'string', enum: ['gemini', 'not-run'], description: 'not-run means no Gemini key was available: only the model-free engines ran.' },
   }),
   remediation_job_diagnostics: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, source: { type: 'string', enum: ['job', 'last-run'] }, capturedAt: S_STR, fileName: S_STR, diagnostics: {} }, ['ok']),
   remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL, durabilityWarning: S_STR }),
@@ -3848,8 +3854,10 @@ const TOOL_HANDLERS = {
       keyVerificationState: keyVerification ? keyVerification.state : 'not-checked',
       keyVerificationCheckedAt: keyVerification ? keyVerification.checkedAt : null,
       keylessModeAvailable: true,
+      transports: { stdio: true, http: Object.assign({}, HTTP_STATE) },
       keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
       keylessToolNames: KEYLESS_TOOL_NAMES,
+      geminiOptionalToolNames: GEMINI_OPTIONAL_TOOL_NAMES,
       agentBridge: { batchLimit: BATCH_LIMIT_REMEDIATE, resumable: true, activeClientRequired: true, defaultEffort: 'standard' },
       narration: { available: Narration.ASSETS.every(file => fs.existsSync(path.join(Driver.ASSETS_ROOT, file))),
         modes: ['accessible','natural'], defaultMode: 'accessible', languages: fs.existsSync(path.join(Driver.ASSETS_ROOT,'piper_tts_loader.js')) ? Narration.voiceCatalog(Driver.ASSETS_ROOT).map(v=>v.language) : [], accessibleLanguages:Narration.accessibleLanguages, defaultVoice: 'auto', providers:['auto','kokoro','piper'], voiceDiscoveryTool:'document_narration_voices', preflightTool:'document_narration_preflight', mixedLanguageBlocks:true, inlineLanguageSwitches:true, completedOutputReuse:true, incrementalClipReuse:true, contentCoverageChecks:true, epubVerification:EpubValidation.capabilities(),
@@ -4295,11 +4303,15 @@ const TOOL_HANDLERS = {
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
     const stat = fs.statSync(htmlPath);
     if (stat.size > 5 * 1024 * 1024) throw invalidParams('The HTML file is larger than 5MB — audit a page, not an archive.');
-    requireGeminiKey();
+    // Hosts without a Gemini key (Codex, ChatGPT, Cursor...) still get the two model-free engines;
+    // the AI rubric is reported as not-run, never as a pass, and the verification state says so.
+    const includeAi = !!Driver.resolveGeminiApiKey().key;
     return withSingleFlight('audit_html', async () => {
       const out = await getDriver().auditHtml({
-        html: fs.readFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
+        html: fs.readFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi,
       });
+      out.aiEngine = includeAi ? 'gemini' : 'not-run';
+      if (!includeAi) out.note = 'No Gemini key on this host: only axe-core and IBM Equal Access ran. The AI content rubric is not-run, so content-level issues (descriptions, reading order, plain language) were not judged. ' + (out.note || '');
       return out;
     });
   },
@@ -4801,6 +4813,7 @@ const HTTP_PENDING = new Map(); // private id -> { origId, resolve }
 const SSE_CLIENTS = new Set();
 let HTTP_SEQ = 0;
 let STDIO_KEEPALIVE = false; // HTTP mode: a closed stdin must not stop the process
+const HTTP_STATE = { enabled: false, listening: false, endpoint: null, host: null, port: null };
 function send(message) {
   if (message && typeof message.id === 'string' && message.id.startsWith(HTTP_ID_PREFIX)) {
     const waiter = HTTP_PENDING.get(message.id);
@@ -5034,6 +5047,7 @@ function startHttpTransport(port) {
   const token = process.env.ALLOFLOW_MCP_HTTP_TOKEN || crypto.randomBytes(24).toString('hex');
   const sessionId = crypto.randomUUID();
   STDIO_KEEPALIVE = true;
+  HTTP_STATE.enabled = true; HTTP_STATE.host = host;
   const tokenOk = (given) => typeof given === 'string' && given.length === token.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(token));
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://' + host);
@@ -5081,7 +5095,11 @@ function startHttpTransport(port) {
         const privateId = HTTP_ID_PREFIX + (++HTTP_SEQ);
         replies.push(new Promise((resolve) => {
           HTTP_PENDING.set(privateId, { origId: msg.id, resolve });
-          Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).catch((e) => {
+          Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).then(() => {
+            // A cancelled request is deliberately never answered (spec); over HTTP that must not
+            // leave the response hanging, so it collapses to "no reply" (202 when nothing else replied).
+            if (HTTP_PENDING.has(privateId)) { HTTP_PENDING.delete(privateId); resolve(null); }
+          }).catch((e) => {
             HTTP_PENDING.delete(privateId);
             resolve({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: (e && e.message) || 'internal error' } });
           });
@@ -5098,6 +5116,7 @@ function startHttpTransport(port) {
   server.on('error', (e) => log('http transport error: ' + ((e && e.message) || e)));
   server.listen(port, host, () => {
     const address = server.address();
+    HTTP_STATE.listening = true; HTTP_STATE.port = address.port; HTTP_STATE.endpoint = 'http://' + host + ':' + address.port + '/mcp';
     log('http transport listening on http://' + host + ':' + address.port + '/mcp (bearer token required' + (generated ? '; generated token: ' + token : '') + ')');
   });
   return server;

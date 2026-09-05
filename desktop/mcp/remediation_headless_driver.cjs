@@ -2817,15 +2817,17 @@ function createDriver(options) {
   // exactly what the key configuration says.
   async function auditHtml(opts) {
     const o=opts||{};
-    (o.onLog||log)('audit_html: '+(o.fileName||'document.html'));
-    return withRunPage(Object.assign({fileName:o.fileName||'document.html'},o),(page)=>
-      page.evaluate(async ({html,fileName,checksSource})=>{
+    const includeAi=o.includeAi!==false; // false: no model key on this host — the two model-free engines still run
+    (o.onLog||log)('audit_html: '+(o.fileName||'document.html')+(includeAi?'':' (AI rubric not-run: no Gemini key)'));
+    // With a key: the real pipeline page (AI bridge live). Without: the model-free page, same engines.
+    return withHtmlPage(includeAi,(page)=>
+      page.evaluate(async ({html,fileName,checksSource,includeAi})=>{
         const p=window.__mcpPipeline,errors={};
         const run=async(name,fn)=>{try{return await fn();}catch(e){errors[name]=String(e?.message||e).slice(0,300);return null;}};
         const [ai,axe,equalAccess]=await Promise.all([
-          run('ai',()=>p.auditOutputAccessibility(html,{trigger:'mcp-html-audit'})),
+          includeAi?run('ai',()=>p.auditOutputAccessibility(html,{trigger:'mcp-html-audit'})):Promise.resolve(null),
           run('axe',()=>p.runAxeAudit(html)),run('equalAccess',()=>p.runEqualAccessAudit(html))]);
-        const checks=(0,eval)('('+checksSource+')')({ai,axe,equalAccess});
+        const checks=(0,eval)('('+checksSource+')')({ai,axe,equalAccess,includeAi});
         const verification=window.AlloModules.VerificationPolicy.deriveVerificationState({ai,axe,equalAccess,verificationScope:'static-source'});
         const issues=(Array.isArray(ai?.issues)?ai.issues:[]).slice(0,60).map(i=>({issue:i?.issue||i?.description||'',wcag:i?.wcag||'',severity:i?.severity||''}));
         return {fileName,score:Number.isFinite(ai?.score)?ai.score:null,
@@ -2839,7 +2841,7 @@ function createDriver(options) {
           outcomeState:verification.outcomeState,requiresManualReview:verification.requiresManualReview,
           verificationCoverage:verification.verificationCoverage,
           note:'AI, axe-core and IBM Equal Access findings cover static HTML. Complete live interaction, keyboard and assistive-technology checks before making conformance claims.'};
-      },{html:String(o.html||''),fileName:o.fileName||'document.html',checksSource:Verification.auditChecks.toString()}));
+      },{html:String(o.html||''),fileName:o.fileName||'document.html',checksSource:Verification.auditChecks.toString(),includeAi}),Object.assign({fileName:o.fileName||'document.html'},o));
   }
 
   async function close() {

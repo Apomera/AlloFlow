@@ -9,7 +9,8 @@ Title II conformance. A human still reviews every document before it is publishe
 
 ## Setup (about 15 minutes)
 
-1. Install Claude Desktop. Other MCP hosts work too but need Node.js 20 or newer on PATH.
+1. Install Claude Desktop. Other MCP hosts (Codex CLI, Cursor, VS Code, Gemini CLI, ChatGPT via a
+   tunnel) work too; see HOSTS.md. They need Node.js 20 or newer on PATH.
 2. Install a Java runtime (Temurin 21 LTS is fine). veraPDF and EPUBCheck need it.
 3. Drag `alloflow-remediation.mcpb` into Claude Desktop Settings > Extensions. Verify the SHA-256
    against SHA256SUMS.txt first.

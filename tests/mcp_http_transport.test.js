@@ -31,6 +31,8 @@ it('answers initialize, tools/list and tools/call over HTTP with the same regist
  const call=await post(port,{jsonrpc:'2.0',id:7,method:'tools/call',params:{name:'document_narration_voices',arguments:{language:'es-MX'}}});
  expect(call.status).toBe(200);expect(call.body.result.isError).toBe(false);expect(call.body.result.structuredContent.voices[0].voiceId).toBe('es_MX-ald-medium');
  const batch=await post(port,[{jsonrpc:'2.0',id:8,method:'ping'},{jsonrpc:'2.0',id:9,method:'ping'}]);expect(batch.status).toBe(200);expect(batch.body.map(r=>r.id).sort()).toEqual([8,9]);
+ const caps=await post(port,{jsonrpc:'2.0',id:10,method:'tools/call',params:{name:'remediation_capabilities',arguments:{}}});
+ expect(caps.body.result.structuredContent.transports).toMatchObject({stdio:true,http:{enabled:true,listening:true,port,endpoint:'http://127.0.0.1:'+port+'/mcp'}});
 },90000);
 it('rejects missing or wrong tokens, foreign origins and unknown paths, and accepts the path-token form',async()=>{
  const s=startHttpServer();const port=await s.port;const ping={jsonrpc:'2.0',id:1,method:'ping'};
