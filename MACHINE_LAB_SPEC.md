@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 12 (2026-09-05)
+
+- **An inner ward.** A wall with nothing behind it is a fence. The castle now has a keep that
+  clears the parapet, two halls, and a well, all past the water; their windows light after
+  dark on the same `P.fire >= 0.9` rule as the towers. From the field the keep changes the
+  castle's silhouette; from the castle camera it fills the courtyard.
+- **People on the rampart.** Three to six defenders with spears stand on a plank walkway at
+  the top of the wall, facing the engine. They sway while the field is quiet (ambient life, so
+  still under reduced motion), duck for 1.4 s when a stone lands anywhere, and are gone once
+  more than 40% of the wall is rubble.
+- Both are skipped in high contrast and for an imported wall, whose geometry the tool does
+  not own.
+
 ### Wave 11 (2026-09-05)
 
 - **Far ridges.** Three bands of hills ring the valley past its own rim at 236, 278 and 318 m,

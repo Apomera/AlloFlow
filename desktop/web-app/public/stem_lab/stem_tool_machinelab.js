@@ -3606,8 +3606,8 @@ window.StemLab = window.StemLab || {
       if (tufts.instanceColor) tufts.instanceColor.needsUpdate = true;
       S.model.add(tufts);
 
-      var FLOWERS = 140;
-      var HUES = [0xf7e06a, 0xe98ab5, 0xf6f2e4, 0xa8bdf2];
+      var FLOWERS = 105;
+      var HUES = [0xf2d95c, 0xe3a3bb, 0xf1ecd6];
       var flowers = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 6, 4), mat(0xffffff), FLOWERS);
       flowers.castShadow = false;
       var fp = 0, ft = 0;
@@ -3617,7 +3617,7 @@ window.StemLab = window.StemLab || {
         var fz = 12 - hash01(ft, 47, 132) * (standoff + 24);
         if (laneFactor(fx, fz, standoff, laneHalf) > 0.25) continue;
         td.position.set(fx, terrainHeight(fx, fz, standoff, laneHalf) + 0.22, fz);
-        td.scale.setScalar(0.7 + hash01(ft, 53, 133) * 0.6);
+        td.scale.setScalar(0.6 + hash01(ft, 53, 133) * 0.55);
         td.rotation.set(0, 0, 0);
         td.updateMatrix();
         flowers.setMatrixAt(fp, td.matrix);
@@ -3741,6 +3741,98 @@ window.StemLab = window.StemLab || {
         S.model.add(banner);
         S.banner = banner;
         S.bannerBase = bannerGeo.attributes.position.array.slice();
+      }
+    }
+
+    // ── The inner ward. A wall with nothing behind it is a fence; these are
+    // the buildings it is there to protect, set past the water so their roofs
+    // clear the parapet from the field and fill the courtyard from the castle
+    // camera. Windows light after dark, like the towers'. ──
+    if (!contrast && m.wallPreset !== 'imported') {
+      var wardLit = P.fire >= 0.9;
+      var wardWall = mat(0xa89b86, tex.stone ? { map: tex.stone } : null);
+      var wardRoof = mat(0x6f3a2c);
+      var wardWood = mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null);
+      var litMat = function () {
+        return new THREE.MeshLambertMaterial({
+          color: wardLit ? 0xffc36b : 0x2a2420,
+          emissive: wardLit ? 0xffa73a : 0x000000, emissiveIntensity: wardLit ? 0.9 : 0
+        });
+      };
+      // The keep: the last building to fall, so it is the tallest thing here.
+      var keepH = wallTop + 5.5;
+      var keep = new THREE.Mesh(new THREE.BoxGeometry(5.2, keepH, 5.2), wardWall);
+      keep.position.set(0, keepH / 2, 11.5);
+      keep.castShadow = true; keep.receiveShadow = true;
+      S.model.add(keep);
+      var keepRoof = new THREE.Mesh(new THREE.ConeGeometry(3.9, 3.1, 4), wardRoof);
+      keepRoof.rotation.y = Math.PI / 4;
+      keepRoof.position.set(0, keepH + 1.55, 11.5);
+      keepRoof.castShadow = true;
+      S.model.add(keepRoof);
+      for (var kw = 0; kw < 3; kw++) {
+        var keepWin = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.7, 0.12), litMat());
+        keepWin.position.set((kw - 1) * 1.5, keepH * 0.62, 8.85);
+        S.model.add(keepWin);
+      }
+      // Two halls along the ward, roofs across the wall's line so they read
+      // as buildings behind it rather than as more wall.
+      [-1, 1].forEach(function (hs) {
+        var hx = hs * Math.max(4.5, span * 0.29);
+        var hall = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.9, 3.4), wardWall);
+        hall.position.set(hx, 1.45, 8.2);
+        hall.castShadow = true; hall.receiveShadow = true;
+        S.model.add(hall);
+        var hallRoof = new THREE.Mesh(new THREE.ConeGeometry(3.05, 1.9, 4), wardRoof);
+        hallRoof.rotation.y = Math.PI / 4;
+        hallRoof.position.set(hx, 3.85, 8.2);
+        hallRoof.castShadow = true;
+        S.model.add(hallRoof);
+        var hallWin = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.5, 0.12), litMat());
+        hallWin.position.set(hx, 1.7, 6.48);
+        S.model.add(hallWin);
+      });
+      // A well in the yard, because a besieged castle lives or dies by it.
+      var well = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.9, 0.9, 12), wardWall);
+      well.position.set(Math.max(4.5, span * 0.29) * -0.45, 0.45, 6.9);
+      well.castShadow = true;
+      S.model.add(well);
+      var wellRoof = new THREE.Mesh(new THREE.ConeGeometry(1.15, 0.8, 4), wardWood);
+      wellRoof.rotation.y = Math.PI / 4;
+      wellRoof.position.set(well.position.x, 2.1, 6.9);
+      S.model.add(wellRoof);
+      [-0.6, 0.6].forEach(function (wp) {
+        var post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.3, 0.1), wardWood);
+        post.position.set(well.position.x + wp, 1.05, 6.9);
+        S.model.add(post);
+      });
+    }
+
+    // ── The rampart, and the people on it. They sway while the field is
+    // quiet, duck for a moment when a stone lands, and are gone once the wall
+    // they stand on is mostly rubble. ──
+    if (!contrast && m.wallPreset !== 'imported') {
+      var walkway = new THREE.Mesh(new THREE.BoxGeometry(span + 1, 0.16, 1.6), mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null));
+      walkway.position.set(0, wallTop - 0.08, 1.5);
+      walkway.receiveShadow = true;
+      S.model.add(walkway);
+      S.defenders = [];
+      var DEFENDER_TUNICS = [0x3f5f8c, 0x8c4a3f, 0x4a6b3f, 0x6b5a8c, 0x8c7a3f];
+      var defN = Math.max(3, Math.min(6, Math.round(span / 4)));
+      for (var dfi = 0; dfi < defN; dfi++) {
+        var dfx = (defN === 1) ? 0 : (-span / 2 + 1.2 + (dfi * (span - 2.4)) / (defN - 1));
+        var dfr = addFigure(THREE, S.model, dfx, 1.5, DEFENDER_TUNICS[dfi % DEFENDER_TUNICS.length], Math.PI);
+        dfr.position.y = wallTop;
+        dfr.userData = { y0: wallTop, phase: hash01(dfi, 7, 141) * 6.28 };
+        var spear = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 2.4, 5), mat(0x6b4b2a));
+        spear.position.set(0.3, 1.25, 0.1);
+        spear.rotation.z = -0.16;
+        spear.castShadow = true;
+        dfr.add(spear);
+        var head2 = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 6), mat(0x9aa3ad));
+        head2.position.set(0.49, 2.4, 0.1);
+        dfr.add(head2);
+        S.defenders.push(dfr);
       }
     }
 
@@ -4690,6 +4782,22 @@ window.StemLab = window.StemLab || {
           var flap = ambient ? Math.sin(tSec * 9 + u.phase) * 0.6 : 0.2;
           u.wl.rotation.z = flap; u.wr.rotation.z = -flap;
         });
+      }
+      // The rampart. A stone landing anywhere is worth ducking for; a wall
+      // that is mostly gone is worth leaving.
+      if (S.defenders && S.defenders.length) {
+        var gone = 0, blk = data.blocks || [];
+        for (var dbi = 0; dbi < blk.length; dbi++) if (blk[dbi].state === 'breached') gone++;
+        var held = !blk.length || (gone / blk.length) < 0.4;
+        var duck = (S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 1400) : 0;
+        for (var dfj = 0; dfj < S.defenders.length; dfj++) {
+          var df = S.defenders[dfj];
+          df.visible = held;
+          if (!held) continue;
+          var sway = ambient ? Math.sin(tSec * 1.15 + df.userData.phase) * 0.05 : 0;
+          df.position.y = df.userData.y0 - duck * duck * 0.62;
+          df.rotation.x = duck * 0.42 + sway;
+        }
       }
       if (S.sock) {
         // Points downwind; hangs in calm air, lifts to level by about 8 m/s.

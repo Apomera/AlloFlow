@@ -719,3 +719,46 @@ describe('Siege Field wave 11: far ridges, grass and wildflowers', () => {
     expect(scatter).toContain('hash01(');
   });
 });
+
+describe('Siege Field wave 12: an inner ward and people on the rampart', () => {
+  it('builds a keep, two halls and a well behind the wall', () => {
+    const src = source();
+    expect(src).toContain('var keepH = wallTop + 5.5;');
+    expect(src).toContain('keep.position.set(0, keepH / 2, 11.5);');
+    expect(src).toContain("// A well in the yard, because a besieged castle lives or dies by it.");
+    // The keep clears the wall it stands behind, or it would not read as a keep.
+    expect(src).toContain('var keepRoof = new THREE.Mesh(new THREE.ConeGeometry(3.9, 3.1, 4), wardRoof);');
+  });
+
+  it('lights the ward windows on the same rule as the towers', () => {
+    const src = source();
+    expect(src).toContain('var wardLit = P.fire >= 0.9;');
+    expect(src).toContain("emissive: wardLit ? 0xffa73a : 0x000000, emissiveIntensity: wardLit ? 0.9 : 0");
+  });
+
+  it('stands defenders on a walkway at the top of the wall, facing the field', () => {
+    const src = source();
+    expect(src).toContain('walkway.position.set(0, wallTop - 0.08, 1.5);');
+    expect(src).toContain('var dfr = addFigure(THREE, S.model, dfx, 1.5, DEFENDER_TUNICS[dfi % DEFENDER_TUNICS.length], Math.PI);');
+    expect(src).toContain('dfr.position.y = wallTop;');
+  });
+
+  it('ducks them when a stone lands and clears them off a wall that is mostly gone', () => {
+    const src = source();
+    expect(src).toContain('var held = !blk.length || (gone / blk.length) < 0.4;');
+    expect(src).toContain('var duck = (S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 1400) : 0;');
+    expect(src).toContain('df.position.y = df.userData.y0 - duck * duck * 0.62;');
+    // The sway is ambient life; reduced motion and ambient-off leave them still.
+    expect(src).toContain('var sway = ambient ? Math.sin(tSec * 1.15 + df.userData.phase) * 0.05 : 0;');
+  });
+
+  it('builds neither the ward nor the rampart in high contrast or for an imported wall', () => {
+    const src = source();
+    const ward = src.indexOf('// ── The inner ward.');
+    const rampart = src.indexOf('// ── The rampart, and the people on it.');
+    expect(ward).toBeGreaterThan(0);
+    expect(rampart).toBeGreaterThan(ward);
+    expect(src.slice(ward, ward + 700)).toContain("if (!contrast && m.wallPreset !== 'imported') {");
+    expect(src.slice(rampart, rampart + 400)).toContain("if (!contrast && m.wallPreset !== 'imported') {");
+  });
+});
