@@ -1384,6 +1384,45 @@
     { id: 'lmc', name: 'Large Magellanic Cloud', ra: 80.89, dec: -69.76, mag: 0.9, size: 645, type: 'galaxy', color: [0.9, 0.9, 0.95] },
     { id: 'smc', name: 'Small Magellanic Cloud', ra: 13.19, dec: -72.83, mag: 2.7, size: 320, type: 'galaxy', color: [0.9, 0.9, 0.95] }
   ];
+  // What each showpiece actually needs, from standard observing practice rather
+  // than a formula: a naive surface-brightness calculation misjudges centrally
+  // concentrated objects like M31 badly enough to send a class looking for the
+  // wrong thing. darkSky marks the ones a bright suburban sky swallows.
+  var DEEP_SKY_EASE = {
+    m45: { ease: 'naked', darkSky: false }, m42: { ease: 'naked', darkSky: false },
+    m31: { ease: 'naked', darkSky: true }, m44: { ease: 'naked', darkSky: true },
+    m35: { ease: 'binocular', darkSky: false }, m13: { ease: 'binocular', darkSky: false },
+    m7: { ease: 'naked', darkSky: false }, m6: { ease: 'binocular', darkSky: false },
+    m8: { ease: 'binocular', darkSky: true }, m22: { ease: 'binocular', darkSky: false },
+    ngc869: { ease: 'naked', darkSky: true }, ngc5139: { ease: 'naked', darkSky: false },
+    lmc: { ease: 'naked', darkSky: false }, smc: { ease: 'naked', darkSky: true }
+  };
+  // Average surface brightness in magnitudes per square arcsecond. Useful for
+  // teaching why an extended object is harder than its magnitude suggests, but
+  // an average only: real objects are brighter in the middle than at the edge.
+  function surfaceBrightness(mag, sizeArcmin) {
+    var d = Number(sizeArcmin), m = Number(mag);
+    if (!Number.isFinite(d) || !Number.isFinite(m) || d <= 0) return null;
+    var radiusArcsec = d * 60 / 2;
+    var areaArcsec = Math.PI * radiusArcsec * radiusArcsec;
+    return m + 2.5 * (Math.log(areaArcsec) / Math.LN10);
+  }
+  function deepSkyAdvice(id, bortle) {
+    var obj = DEEP_SKY.find(function(o) { return o.id === id; });
+    var ease = DEEP_SKY_EASE[id];
+    if (!obj || !ease) return null;
+    var b = Math.round(meteorBound(bortle, 1, 9, 4));
+    var extended = obj.type === 'nebula' || obj.type === 'galaxy';
+    return {
+      id: id, ease: ease.ease, darkSky: ease.darkSky, extended: extended,
+      tooBright: ease.darkSky && b > 4,
+      bortle: b,
+      surfaceBrightness: extended ? surfaceBrightness(obj.mag, obj.size) : null
+    };
+  }
+  if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
+    DEEP_SKY_EASE: DEEP_SKY_EASE, surfaceBrightness: surfaceBrightness, deepSkyAdvice: deepSkyAdvice
+  });
   var CONSTELLATION_NAMES = (function() {
     var raw = 'And:Andromeda|Ant:Antlia|Aps:Apus|Aqr:Aquarius|Aql:Aquila|Ara:Ara|Ari:Aries|Aur:Auriga|Boo:Boötes|Cae:Caelum|Cam:Camelopardalis|Cnc:Cancer|CVn:Canes Venatici|CMa:Canis Major|CMi:Canis Minor|Cap:Capricornus|Car:Carina|Cas:Cassiopeia|Cen:Centaurus|Cep:Cepheus|Cet:Cetus|Cha:Chamaeleon|Cir:Circinus|Col:Columba|Com:Coma Berenices|CrA:Corona Australis|CrB:Corona Borealis|Crv:Corvus|Crt:Crater|Cru:Crux|Cyg:Cygnus|Del:Delphinus|Dor:Dorado|Dra:Draco|Equ:Equuleus|Eri:Eridanus|For:Fornax|Gem:Gemini|Gru:Grus|Her:Hercules|Hor:Horologium|Hya:Hydra|Hyi:Hydrus|Ind:Indus|Lac:Lacerta|Leo:Leo|LMi:Leo Minor|Lep:Lepus|Lib:Libra|Lup:Lupus|Lyn:Lynx|Lyr:Lyra|Men:Mensa|Mic:Microscopium|Mon:Monoceros|Mus:Musca|Nor:Norma|Oct:Octans|Oph:Ophiuchus|Ori:Orion|Pav:Pavo|Peg:Pegasus|Per:Perseus|Phe:Phoenix|Pic:Pictor|Psc:Pisces|PsA:Piscis Austrinus|Pup:Puppis|Pyx:Pyxis|Ret:Reticulum|Sge:Sagitta|Sgr:Sagittarius|Sco:Scorpius|Scl:Sculptor|Sct:Scutum|Ser:Serpens|Sex:Sextans|Tau:Taurus|Tel:Telescopium|Tri:Triangulum|TrA:Triangulum Australe|Tuc:Tucana|UMa:Ursa Major|UMi:Ursa Minor|Vel:Vela|Vir:Virgo|Vol:Volans|Vul:Vulpecula';
     var map = {};
@@ -9361,6 +9400,7 @@
           if (targets.length >= MAX_OBS_TARGETS) { if (typeof addToast === 'function') addToast(__alloT('stem.astronomy.obs_targets_full', 'Your list is full. Remove a target before adding another.')); return; }
           upd({ obsTargets: targets.concat([{ kind: picked.kind, id: picked.id, hip: picked.hip, name: picked.name, ra: picked.ra, dec: picked.dec }]) });
         }
+        var pickedAdvice = picked && picked.kind === 'deepsky' ? deepSkyAdvice(picked.id, resolved.bortle) : null;
         var pickedWhen = null;
         if (picked && !deepTime) {
           var pickedAt = observatoryPositionAt(picked, resolved.lat, resolved.lon);
@@ -9554,6 +9594,13 @@
                   a11yButton({ type: 'button', 'aria-pressed': pickedSaved, onClick: toggleTarget, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid ' + obsBorder(pickedSaved ? '#86efac' : '#475569'), background: obsBg('#0f172a'), color: pickedSaved ? '#86efac' : '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } },
                     pickedSaved ? '✓ ' + __alloT('stem.astronomy.obs_target_saved', 'On tonight\'s list') : '+ ' + __alloT('stem.astronomy.obs_target_add', 'Add to tonight\'s list')),
                   a11yButton({ type: 'button', onClick: function() { upd({ obsPicked: null }); }, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_clear_pick', 'Clear')),
+                  pickedAdvice ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
+                    h('strong', { style: { color: '#f9a8d4' } }, __alloT('stem.astronomy.obs_ease_title', 'To see it') + ': '),
+                    pickedAdvice.ease === 'naked'
+                      ? (pickedAdvice.darkSky ? __alloT('stem.astronomy.obs_ease_naked_dark', 'naked eye from a dark site, and easy in binoculars.') : __alloT('stem.astronomy.obs_ease_naked', 'naked eye, with binoculars for detail.'))
+                      : __alloT('stem.astronomy.obs_ease_binocular', 'binoculars; a small telescope shows more.'),
+                    pickedAdvice.tooBright ? h('span', { style: { color: '#fca5a5' } }, ' ' + __alloT('stem.astronomy.obs_ease_too_bright', 'A Bortle') + ' ' + pickedAdvice.bortle + ' ' + __alloT('stem.astronomy.obs_ease_too_bright_tail', 'sky is probably too bright for it tonight.')) : null,
+                    pickedAdvice.surfaceBrightness ? h('span', null, ' ' + __alloT('stem.astronomy.obs_ease_extended', 'Its light is spread out, averaging about') + ' ' + pickedAdvice.surfaceBrightness.toFixed(1) + ' ' + __alloT('stem.astronomy.obs_ease_per_arcsec', 'magnitudes per square arcsecond, so it looks fainter than its total magnitude suggests. Surface brightness, not magnitude, decides whether you see an extended object.')) : null) : null,
                   pickedWhen ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
                     h('strong', { style: { color: '#a5f3fc' } }, __alloT('stem.astronomy.obs_when_title', 'Tonight') + ': '),
                     pickedWhen.neverRises ? __alloT('stem.astronomy.obs_when_never', 'never rises at this site.')
@@ -12441,7 +12488,12 @@
                 plan.planets.length ? h('li', null, h('strong', null, __alloT('stem.astronomy.obs_planets_up', 'Planets above the horizon') + ': '),
                   plan.planets.map(function(p) { return p.name + ' (' + Math.round(p.alt) + '° ' + azCompass(p.az) + ')'; }).join(', ')) : null,
                 plan.deepUp.length ? h('li', null, h('strong', null, __alloT('stem.astronomy.obs_deep_sky_up', 'Deep-sky showpieces up') + ': '),
-                  plan.deepUp.map(function(x) { return x.obj.name + ' (' + Math.round(x.alt) + '° ' + azCompass(x.az) + ')'; }).join(', ')) : null
+                  plan.deepUp.map(function(x) {
+                    var advice = deepSkyAdvice(x.obj.id, plan.resolved.bortle);
+                    var how = !advice ? '' : ', ' + (advice.tooBright ? __alloT('stem.astronomy.obs_ease_short_too_bright', 'needs a darker sky')
+                      : advice.ease === 'naked' ? __alloT('stem.astronomy.obs_ease_short_naked', 'naked eye') : __alloT('stem.astronomy.obs_ease_short_binocular', 'binoculars'));
+                    return x.obj.name + ' (' + Math.round(x.alt) + '° ' + azCompass(x.az) + how + ')';
+                  }).join(', ')) : null
               ),
               plan.targetRows.length ? h('div', { style: { marginTop: 6 } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#0f172a', margin: '4px 0' } }, __alloT('stem.astronomy.obs_print_my_targets', 'My targets tonight')),

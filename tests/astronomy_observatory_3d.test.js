@@ -582,6 +582,71 @@ describe('When to look tonight', () => {
   });
 });
 
+describe('What it takes to see a deep-sky object', () => {
+  it('covers every showpiece in the table, with no orphans either way', () => {
+    const ids = sky.DEEP_SKY.map(o => o.id).sort();
+    expect(Object.keys(sky.DEEP_SKY_EASE).sort()).toEqual(ids);
+    for (const id of ids) {
+      const e = sky.DEEP_SKY_EASE[id];
+      expect(['naked', 'binocular']).toContain(e.ease);
+      expect(typeof e.darkSky).toBe('boolean');
+    }
+  });
+
+  it('computes average surface brightness and only for objects that are actually extended', () => {
+    // A magnitude-3.4 galaxy spread over three degrees is far fainter per unit
+    // area than its total magnitude implies.
+    const m31 = sky.surfaceBrightness(3.4, 180);
+    expect(m31).toBeGreaterThan(22);
+    expect(m31).toBeLessThan(24);
+    // The same magnitude packed into a tenth of the width is much brighter.
+    expect(sky.surfaceBrightness(3.4, 18)).toBeLessThan(m31 - 4);
+    expect(sky.surfaceBrightness(3.4, 0)).toBeNull();
+    expect(sky.surfaceBrightness('x', 10)).toBeNull();
+    // Clusters resolve into stars, so an average is meaningless for them.
+    expect(sky.deepSkyAdvice('m31', 3).surfaceBrightness).toBeGreaterThan(0);
+    expect(sky.deepSkyAdvice('m42', 3).surfaceBrightness).toBeGreaterThan(0);
+    expect(sky.deepSkyAdvice('m45', 3).surfaceBrightness).toBeNull();
+    expect(sky.deepSkyAdvice('m13', 3).surfaceBrightness).toBeNull();
+  });
+
+  it('warns when the chosen site is too bright for the faint ones only', () => {
+    // Andromeda needs a dark sky; the Pleiades do not.
+    expect(sky.deepSkyAdvice('m31', 3).tooBright).toBe(false);
+    expect(sky.deepSkyAdvice('m31', 7).tooBright).toBe(true);
+    expect(sky.deepSkyAdvice('m45', 9).tooBright).toBe(false);
+    expect(sky.deepSkyAdvice('m45', 9).ease).toBe('naked');
+    expect(sky.deepSkyAdvice('m13', 3).ease).toBe('binocular');
+    expect(sky.deepSkyAdvice('m31', 'nonsense').bortle).toBe(4);
+    expect(sky.deepSkyAdvice('not-an-object', 3)).toBeNull();
+  });
+
+  it('tells the observer what to bring when they identify one, and prints it too', () => {
+    const m31 = { kind: 'deepsky', id: 'm31', name: 'Andromeda Galaxy (M31)', type: 'galaxy', size: 180, mag: 3.4, ra: 10.68, dec: 41.27, alt: 50, az: 120 };
+    const dark = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 2, obsPicked: m31 }), 'text/html');
+    const panel = dark.getElementById('astronomy-observatory-picked').textContent;
+    expect(panel).toContain('To see it:');
+    expect(panel).toContain('naked eye from a dark site');
+    expect(panel).toContain('magnitudes per square arcsecond');
+    expect(panel).toContain('Surface brightness, not magnitude');
+    expect(panel).not.toContain('too bright for it tonight');
+
+    const town = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 7, obsPicked: m31 }), 'text/html');
+    expect(town.getElementById('astronomy-observatory-picked').textContent).toContain('A Bortle 7 sky is probably too bright');
+
+    // A star gets no such line: the advice is for extended showpieces.
+    const star = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsPicked: { kind: 'star', name: 'Sirius', hip: 32349, ra: 101.287, dec: -16.716, mag: -1.44, alt: 20, az: 150 } }), 'text/html');
+    expect(star.getElementById('astronomy-observatory-picked').textContent).not.toContain('To see it:');
+
+    // The printed plan carries the same guidance next to each object.
+    const kit = new DOMParser().parseFromString(
+      renderTool('astronomy', { astronomy: { tab: 'print', observingList: [], obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 2 } }), 'text/html');
+    const line = kit.getElementById('astro-tonight-plan-heading').parentElement.textContent;
+    expect(line).toMatch(/Deep-sky showpieces up:.*(naked eye|binoculars)/);
+    expect(line).not.toContain('NaN');
+  });
+});
+
 describe('Sky settings disclosure', () => {
   const bare = state => new DOMParser().parseFromString(
     renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], ...state } }), 'text/html');

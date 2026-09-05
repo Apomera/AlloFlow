@@ -151,6 +151,30 @@ Nine slices of features left the tab dense. Measured before changing anything: *
 - **Test churn was the honest cost.** The unit helper opens the disclosure because most tests drive those controls, and two new tests cover the collapsed default and the opened panel directly. Six browser tests gained an `openSettings()` step, which makes them mirror what a user actually does. One call site was missed on the first run and the suite caught it.
 - Unit suite 59; browser suite 14.
 
+## Enhancement slice 11 (2026-09-05): what it takes to see it
+A magnitude alone does not tell a learner whether they will see something.
+
+- Identifying a deep-sky object now says what it needs: naked eye, naked eye from a dark site, or binoculars, and warns when the site's own Bortle setting is too bright for that particular target. The printed plan carries the same short guidance beside each showpiece.
+- **The teaching point:** for a nebula or galaxy the panel also gives the average surface brightness and says plainly that surface brightness, not total magnitude, decides whether an extended object is visible. Andromeda is magnitude 3.4 but spread across three degrees, which works out near 23 magnitudes per square arcsecond.
+- **Why the ease values are curated data rather than a formula.** A naive surface-brightness threshold misjudges centrally concentrated objects badly: it would rank Andromeda as invisible to the unaided eye when it is a classic naked-eye target, because its light is concentrated in the core rather than spread evenly. The code says so in a comment, and the surface-brightness figure is labelled an average. Clusters get no figure at all, because they resolve into stars and an average is meaningless for them.
+- Unit suite 63.
+
+### Performance: measured, and there is nothing to fix
+Before this slice I suspected the tab was recomputing too much per render, so I measured instead of optimising.
+
+| what | cost |
+|---|---|
+| Tonight tab (baseline) | 1.6 ms |
+| Sky Map tab (existing) | 3.4 ms |
+| Observatory, collapsed | 4.5 ms |
+| Observatory, object identified | 6.1 ms |
+| Print tab with 6 targets | 8.0 ms |
+| `catalogHorizon` cache hit (every animated frame) | 2.2 ms |
+| `catalogHorizon` full re-precession (deep-time slider) | 5.7 ms |
+| Star-trail rebuild, 250 stars | 1.6 ms |
+
+The Observatory sits in the same range as the tool's existing computed-sky tab, and the heaviest interaction is under 6 ms. **No optimisation was made, because none is warranted.** Anyone revisiting this should re-measure rather than assume.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
