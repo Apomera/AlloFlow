@@ -1428,6 +1428,16 @@ var d = labToolData.brainAtlas || {};
             real_small: { color: '#0369a1', label: t('stem.brainatlas.verdict_real_small', 'Real, but small and not diagnostic'), meaning: t('stem.brainatlas.verdict_real_small_meaning', 'Group-level differences replicate, but they are small, overlap almost completely between groups, and cannot classify an individual.') },
             promising: { color: '#6d28d9', label: t('stem.brainatlas.verdict_promising', 'Promising, not proven'), meaning: t('stem.brainatlas.verdict_promising_meaning', 'An early result worth following, but not yet validated in new populations or real-world use.') }
           };
+          var MYTH_HEADLINES = [
+            { id: 'hl_styles', headline: 'Teachers urged to match every lesson to each child\'s learning style', verdict: 'debunked', card: 'myth_learning_styles', cue: 'The cue is "match the lesson to the style". That is the meshing hypothesis, and controlled tests have not supported it. Preferences are real; matching does not improve learning.' },
+            { id: 'hl_sides', headline: 'Quiz: are you a left-brained thinker or a right-brained creative?', verdict: 'oversimplified', card: 'myth_left_right_brain', cue: 'Built on a real finding (some functions lateralize) and stretched into personality types, which resting-state scans of over a thousand people did not support.' },
+            { id: 'hl_ten', headline: 'New method claims to unlock the 90% of your brain you never use', verdict: 'debunked', card: 'myth_ten_percent', cue: 'There is no idle 90%. Imaging shows activity across the whole brain over a day, and damage almost anywhere costs something.' },
+            { id: 'hl_adhd_scan', headline: 'Brain scans reveal what the ADHD brain looks like', verdict: 'real_small', card: 'myth_adhd_brain', cue: 'Large consortia do find group differences, but they are small and the groups overlap almost completely. "Reveal" hides that no scan can sort an individual.' },
+            { id: 'hl_retina', headline: 'AI spots ADHD from a photo of the eye with 96% accuracy', verdict: 'promising', card: 'myth_retina_screening', cue: 'A real early result. Ask who was in the sample (matched cases and controls), whether it was tested on new people (not yet), and what "accuracy" means outside that design.' },
+            { id: 'hl_window', headline: 'Play classical music to your baby before the learning window closes', verdict: 'oversimplified', card: 'myth_first_three_years', cue: 'Critical periods are real for basic senses; most learning stays open for life. The music claim traces to one small adult study that later analyses did not support.' },
+            { id: 'hl_games', headline: 'Ten minutes of brain games a day raises IQ, company reports', verdict: 'oversimplified', card: 'myth_brain_training', cue: 'Practice improves the practised game. Transfer to IQ or schoolwork has not held up, and "company reports" is the sample-and-source warning.' },
+            { id: 'hl_autism', headline: 'Study finds "the autism brain" is wired differently', verdict: 'real_small', card: 'myth_autism_brain', cue: 'Differences exist at the group level and vary a lot between people. "The autism brain" implies one anatomy where the main finding is heterogeneity.' }
+          ];
           var EEG_ACTIVITY_MODES = [
             { id: 'resting', label: t('stem.brainatlas.resting', 'Resting') || 'Resting', mults: [0.3, 0.5, 1.0, 0.4, 0.2] },
             { id: 'sleeping', label: t('stem.brainatlas.sleeping', 'Sleeping') || 'Sleeping', mults: [1.0, 0.7, 0.2, 0.1, 0.05] },
@@ -11375,6 +11385,48 @@ var d = labToolData.brainAtlas || {};
                 ),
                 React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.neuromyths_panel_note', 'Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team.'))
               ),
+              currentView.isNeuromyths && (function () {
+                var hlIdx = (parseInt(d.mythHeadlineIdx, 10) || 0) % MYTH_HEADLINES.length;
+                var hl = MYTH_HEADLINES[hlIdx];
+                var hlFb = d.mythHeadlineFeedback && d.mythHeadlineFeedback.id === hl.id ? d.mythHeadlineFeedback : null;
+                var hlShow = !!hlFb;
+                var hlCard = regions.find(function (region) { return region.id === hl.card; });
+                var verdictKeys = ['debunked', 'oversimplified', 'real_small', 'promising'];
+                return React.createElement("section", { className: "bg-white rounded-xl border-2 border-violet-200 p-4 space-y-2 mt-3", "data-brainatlas-headline-check": hl.id, "aria-labelledby": "brainatlas-headline-heading" },
+                  React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                    React.createElement("h4", { id: "brainatlas-headline-heading", className: "font-black text-violet-800 text-sm" }, t('stem.brainatlas.headline_check_title', 'Headline check')),
+                    React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700", "data-brainatlas-headline-position": "true" }, (hlIdx + 1) + ' / ' + MYTH_HEADLINES.length)
+                  ),
+                  React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.headline_check_intro', 'These headlines are invented for practice, but each one echoes a claim you will meet. Sort it into the verdict the evidence supports. This is practice, not a grade.')),
+                  React.createElement("blockquote", { className: "text-sm text-slate-800 font-bold border-l-4 border-violet-300 pl-3", "data-brainatlas-headline-text": "true" }, '\u201C' + hl.headline + '\u201D'),
+                  React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.headline_check_choose', 'Which verdict fits this headline?'), className: "grid grid-cols-1 gap-1.5" },
+                    verdictKeys.map(function (vk) {
+                      var meta = BRAIN_ATLAS_MYTH_VERDICTS[vk];
+                      var isCorrect = vk === hl.verdict; var wasChosen = hlShow && hlFb.chosen === vk;
+                      return React.createElement("button", { key: vk, type: "button", role: "radio", "aria-checked": wasChosen ? "true" : "false", disabled: hlShow, "data-brainatlas-headline-choice": vk,
+                        onClick: function () {
+                          upd('mythHeadlineFeedback', { id: hl.id, chosen: vk, correct: isCorrect });
+                          if (typeof announceToSR === 'function') announceToSR(isCorrect ? (t('stem.brainatlas.headline_fits', 'Yes, that verdict fits.') || 'Yes, that verdict fits.') : (t('stem.brainatlas.headline_different', 'The evidence points to a different verdict.') || 'The evidence points to a different verdict.'));
+                        },
+                        className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                          (hlShow && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : hlShow && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-violet-300 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
+                      }, (hlShow && isCorrect ? '\u2705 ' : hlShow && wasChosen ? '\u274C ' : '') + meta.label);
+                    })
+                  ),
+                  hlShow && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed " + (hlFb.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'), role: "status", "data-brainatlas-headline-feedback": hlFb.correct ? "fits" : "different" },
+                    React.createElement("p", { className: "font-black " + (hlFb.correct ? 'text-green-800' : 'text-amber-800') }, hlFb.correct ? t('stem.brainatlas.headline_fits', 'Yes, that verdict fits.') : (t('stem.brainatlas.headline_verdict_is', 'The evidence verdict is') + ' ' + BRAIN_ATLAS_MYTH_VERDICTS[hl.verdict].label + '.')),
+                    React.createElement("p", { className: "text-slate-700" }, hl.cue)
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap gap-2" },
+                    hlShow && hlCard && React.createElement("button", { type: "button", "data-brainatlas-headline-open-card": hl.card,
+                      onClick: function () { openBrainAtlasRegion(hlCard); },
+                      className: "transition-colors flex-1 py-2 px-3 rounded-lg text-xs font-bold border-2 border-violet-300 text-violet-800 hover:bg-violet-50 active:scale-[0.97]" }, t('stem.brainatlas.headline_open_card', 'Open the card') + ': ' + hlCard.name),
+                    hlShow && React.createElement("button", { type: "button", "data-brainatlas-headline-next": "true",
+                      onClick: function () { upd('mythHeadlineIdx', hlIdx + 1); upd('mythHeadlineFeedback', null); },
+                      className: "transition-colors flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 active:scale-[0.97]" }, t('stem.brainatlas.next_headline', 'Next headline \u2192'))
+                  )
+                );
+              })(),
               currentView.isStim && React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3" },
                 React.createElement("div", { className: "flex items-center justify-between" },
                   React.createElement("h4", { className: "font-black text-amber-800 text-sm" }, t('stem.brainatlas.stimulation_lab_2', "\u26A1 Stimulation Lab")),
