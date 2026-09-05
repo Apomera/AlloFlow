@@ -18,7 +18,7 @@
       "title": "The Fence and the Floor",
       "timestamp": "2026-07-21T12:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nTwo numbers describe every rectangle, and mixing them up is the single most common mistake in this whole topic. Today you make sure that never happens to you.\n\n1. Read **The Fence and the Floor** — one picture holds the whole idea.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Which One Do I Need?** chart open while you work.\n4. Do the **Practice Problems** — draw each rectangle before you calculate.\n5. Sort the cards in **Fence or Floor?**\n6. Take the quiz — question 5 has two rectangles that trick almost everyone.\n\nRemember: perimeter is measured in regular units (feet), area is measured in SQUARE units (square feet). If your units are wrong, your answer is wrong. 📏",
+        "body": "**Due:** (your teacher will tell you)\n\nTwo numbers describe every rectangle, and mixing them up is the single most common mistake in this whole topic. Today you make sure that never happens to you.\n\n1. Read **The Fence and the Floor** — one picture holds the whole idea.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Which One Do I Need?** chart open while you work.\n4. Do the **Practice Problems** — draw each rectangle before you calculate.\n5. Sort the cards in **Fence or Floor?**\n6. Take the quiz — question 5 has two rectangles that trick almost everyone.\n7. Lock the ideas in with **Remember Fence and Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: The Best Garden From 24 Feet of Fence** — use what you learned on a real problem, and mark every guess as a guess.\n\nRemember: perimeter is measured in regular units (feet), area is measured in SQUARE units (square feet). If your units are wrong, your answer is wrong. 📏",
         "objectives": [
           {
             "id": "ap-goal-scramble",
@@ -158,6 +158,124 @@
         ]
       },
       "meta": "4 sections • decision reference"
+    },
+    {
+      "id": "ap-memory",
+      "type": "memory-aid",
+      "title": "Remember Fence and Floor",
+      "timestamp": "2026-09-05T12:42:00.000Z",
+      "meta": "3rd-4th Grade • 3 memory aids • fence vs floor, square units, the surprise",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Fence and Floor",
+        "instructions": "Each card locks in one idea from The Fence and the Floor. Look at the example aid, make it your own, and tell how it helps you pick the right number.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Perimeter is the fence: the distance all the way around the outside. Add up every side. Area is the floor: how much space is covered inside. Multiply length by width. Area is measured in square units because you are counting squares. Two rectangles can have the same perimeter and completely different areas.",
+        "lessonRef": {
+          "resourceId": "ap-reading",
+          "title": "The Fence and the Floor"
+        },
+        "cards": [
+          {
+            "id": "ap-ma-fencefloor",
+            "target": "Perimeter is the fence; area is the floor",
+            "essentialFacts": [
+              "Perimeter is the distance around the outside: add up every side.",
+              "Area is the space covered inside: multiply length by width.",
+              "Fence, frame, trim, and border mean perimeter; carpet, paint, sod, and tile mean area."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "PeRIMeter has RIM in it: the rim goes around. AREA sounds like 'a rug': a rug covers the floor.",
+            "mapping": "The hidden word rim points to the edge, and the sound-alike rug points to covering, so each word carries its own picture of around versus inside.",
+            "scaffoldStarter": "Perimeter has ____ in it, which goes ____. Area sounds like ____, which ____.",
+            "scaffoldSteps": [
+              "Find a hidden word or sound in each term.",
+              "Match it to around or inside.",
+              "Sort three jobs from the anchor chart with your hooks."
+            ],
+            "coachPrompts": [
+              "Using your hooks, which one do you need to buy baseboard trim?"
+            ],
+            "studentPrompt": "Make your own two word hooks.",
+            "reasoningPrompt": "How do your hooks stop you from mixing the two up on a test?",
+            "hookFact": {
+              "text": "Fence goes around. Floor fills in.",
+              "sourceTitle": "The Fence and the Floor (this lesson)"
+            }
+          },
+          {
+            "id": "ap-ma-square",
+            "target": "Why area uses square units",
+            "essentialFacts": [
+              "Picture covering the yard with 1-foot square tiles: 8 tiles in a row, 5 rows, 40 tiles.",
+              "Multiplication is fast repeated addition of those rows.",
+              "Area is measured in square feet because you are literally counting squares; perimeter is in plain feet because it is a length."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "See the floor as a sheet of graph paper laid over the yard. Every little square is one square foot. Counting the squares IS the area, and the word square is right there in the answer.",
+            "mapping": "The graph paper makes the unit visible: the answer's name comes from the shape you are counting, so square units stop being a rule and become a picture.",
+            "scaffoldStarter": "I picture the floor covered in ____. Each one is a ____. Counting them gives the ____.",
+            "scaffoldSteps": [
+              "Draw a small rectangle on grid paper.",
+              "Count the squares, then multiply the sides; check they match.",
+              "Say why the answer is square units."
+            ],
+            "coachPrompts": [
+              "What would you be counting for the perimeter, and why is that not squares?"
+            ],
+            "studentPrompt": "Make your own tile picture for a room you know.",
+            "reasoningPrompt": "How does your picture explain the word square in square feet?",
+            "hookFact": {
+              "text": "Writing '40 feet' for an area is not a small slip; it describes a different quantity entirely.",
+              "sourceTitle": "The Fence and the Floor (this lesson)"
+            }
+          },
+          {
+            "id": "ap-ma-surprise",
+            "target": "Same fence, different floor: same perimeter, different area",
+            "essentialFacts": [
+              "24 feet of fence as a 6 by 6 square gives an area of 36 square feet.",
+              "The same 24 feet as a 2 by 10 rectangle gives only 20 square feet.",
+              "The more square-like the rectangle, the more area you get from the same perimeter."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "Two neighbors buy the same 24 feet of fence. One builds 6 by 6 and gets 36 squares of grass. The other builds 2 by 10, a skinny dog run, and gets 20. Same fence, different floor. The square neighbor's dog is happier.",
+            "mapping": "Two characters with the same fence make the surprise concrete: the chain goes fence, shape, area, and the ending shows which shape wins.",
+            "scaffoldStarter": "Two neighbors both have ____ feet of fence. One builds ____ by ____ and gets ____. The other builds ____ by ____ and gets ____.",
+            "scaffoldSteps": [
+              "Pick a fence length that makes two easy rectangles.",
+              "Compute both areas.",
+              "Say which shape wins and why."
+            ],
+            "coachPrompts": [
+              "Can you make a third neighbor with an even smaller yard from the same fence?"
+            ],
+            "studentPrompt": "Write your own two-neighbor story.",
+            "reasoningPrompt": "How does your story show that perimeter does not decide area?",
+            "hookFact": {
+              "text": "For rectangles, a square wins every time. If you allow any shape at all, a circle beats even the square.",
+              "sourceTitle": "The Fence and the Floor (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "ap-math",
@@ -365,10 +483,10 @@
             "type": "mcq",
             "question": "What does PERIMETER measure?",
             "options": [
-              "The space covered inside a shape",
+              "The amount of space that is covered inside a shape",
               "The distance all the way around the outside of a shape",
-              "How heavy a shape is",
-              "The longest side of a shape"
+              "How heavy a shape would be if you could pick it up",
+              "The length of the longest single side of a shape"
             ],
             "correctAnswer": "The distance all the way around the outside of a shape",
             "conceptLabel": "perimeter meaning"
@@ -389,9 +507,9 @@
             "type": "mcq",
             "question": "Why is area measured in SQUARE units?",
             "options": [
-              "Because rectangles have four square corners",
-              "Because you always multiply two numbers",
-              "It is just a naming tradition with no reason",
+              "Because rectangles and squares always have four square corners",
+              "Because you always multiply two numbers together to find it",
+              "It is just a naming tradition from long ago with no real reason",
               "Because you are counting how many unit squares cover the shape"
             ],
             "correctAnswer": "Because you are counting how many unit squares cover the shape",
@@ -477,6 +595,87 @@
         }
       ],
       "meta": "6 questions • practical framing"
+    },
+    {
+      "id": "ap-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: The Best Garden From 24 Feet of Fence",
+      "timestamp": "2026-09-05T12:43:00.000Z",
+      "meta": "3rd-4th Grade • Design brief • choose a shape and prove it",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Best Garden From 24 Feet of Fence",
+        "instructions": "You have exactly 24 feet of fence for a rectangular garden. Design the garden that gives the most growing space, or explain why a different shape is better for your reasons, using perimeter and area correctly.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading's surprise, that the same fence can enclose very different floors, becomes a decision students own when the fence is fixed and the garden is theirs.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "The school garden club received a donation of 24 feet of fencing and a patch of ground along a wall. They want as much growing space as possible, but the garden also needs to fit against the wall and leave a path for a wheelbarrow.",
+          "role": "Student garden designers",
+          "audience": "The garden club and the teacher who will approve the build",
+          "drivingQuestion": "Which rectangle made from exactly 24 feet of fence gives the garden the most area, and does the best-area shape still work for the club's needs?",
+          "seedDirection": "List every whole-number rectangle with a perimeter of 24 first. There are only a few. Then compute each area before you argue.",
+          "lockedLessonFacts": [
+            "Perimeter is the distance around the outside: add all four sides.",
+            "Area is the space covered inside: length times width, in square units.",
+            "Two rectangles can have the same perimeter and different areas; 6 by 6 gives 36 square feet and 2 by 10 gives 20 from the same 24 feet.",
+            "The more square-like the rectangle, the more area from the same perimeter."
+          ],
+          "openQuestions": [
+            "Does the wall count as one side, so the fence only needs to cover three sides?",
+            "How wide does the wheelbarrow path need to be?",
+            "Is the biggest area always the best garden, or does shape matter for reaching the plants?"
+          ],
+          "stakeholders": [
+            "The garden club",
+            "Students who will weed and water from the path",
+            "The teacher approving the build",
+            "Whoever mows around it"
+          ],
+          "criteria": [
+            "A table of every whole-number rectangle with perimeter 24 and its area",
+            "The chosen design is drawn with labeled sides and both measurements in the correct units",
+            "The explanation says why the chosen shape was picked and names any tradeoff",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "Exactly 24 feet of fence, whole-number sides",
+            "Must leave a path at least 3 feet wide beside the garden",
+            "One page plus the drawing"
+          ],
+          "deliverable": "A labeled drawing of the garden with perimeter and area, the table of all options, and a short recommendation to the club that explains the choice.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A family had 40 feet of fence for a dog yard.",
+            "move": "They listed every rectangle with a perimeter of 40, saw that 10 by 10 gave 100 square feet while 5 by 15 gave only 75, and chose the square. Then they realized the yard had to fit beside the garage and picked 8 by 12 (96 square feet) as the best shape that fit.",
+            "whyItHelps": "It is your problem with different numbers: list, compute, pick the biggest, then check it against the real space."
+          },
+          "frameStarter": "With 24 feet of fence, the rectangles are ____. The biggest area is ____ by ____, which is ____ square feet. We chose ____ because ____.",
+          "frameChoices": [
+            "Choose the square for maximum area",
+            "Choose a longer rectangle so the path fits",
+            "Use the wall as one side and refigure the options",
+            "Compare two shapes and explain the tradeoff"
+          ],
+          "coachPrompts": [
+            "Did you write your area in square feet and your perimeter in feet?",
+            "If the wall counts as a side, how does your table change?",
+            "Is the biggest garden the easiest one to reach into?"
+          ]
+        },
+        "coachHint": "Perimeter is fixed at 24. Only the area moves. Make the table and let the numbers argue for you.",
+        "sourceExcerpt": "Take 24 feet of fence. Build a 6 by 6 square: perimeter 24, area 36 square feet. Now build a 2 by 10 rectangle: perimeter also 24, but area only 20 square feet.",
+        "lessonRef": {
+          "resourceId": "ap-reading",
+          "title": "The Fence and the Floor"
+        }
+      }
     }
   ]
 }

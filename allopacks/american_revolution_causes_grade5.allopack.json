@@ -18,7 +18,7 @@
       "title": "How Does a Fight Become a War?",
       "timestamp": "2026-07-21T11:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWars almost never start over one thing. They build. Today you trace ten years of small decisions that turned loyal British subjects into revolutionaries.\n\n1. Read **A Slow Build** — notice how each side thought it was being reasonable.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Walk the **Ten Years to Lexington** timeline and watch the pattern repeat.\n4. Sort the events in **Cause or Effect?**\n5. Take the quiz — the last two questions ask you to think like a historian.\n6. Fill in the **Cornell Notes** in your own words.\n\nOne honest note before you start: the colonists who demanded liberty included people who enslaved others. Both facts are true at once, and good history holds them together. 🇺🇸",
+        "body": "**Due:** (your teacher will tell you)\n\nWars almost never start over one thing. They build. Today you trace ten years of small decisions that turned loyal British subjects into revolutionaries.\n\n1. Read **A Slow Build** — notice how each side thought it was being reasonable.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Walk the **Ten Years to Lexington** timeline and watch the pattern repeat.\n4. Sort the events in **Cause or Effect?**\n5. Take the quiz — the last two questions ask you to think like a historian.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Slow Build** — study the example aid, then make one your own.\n8. Finish with **Decision: Would You Sign the Boycott?** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne honest note before you start: the colonists who demanded liberty included people who enslaved others. Both facts are true at once, and good history holds them together. 🇺🇸",
         "objectives": [
           {
             "id": "ar-goal-matching",
@@ -119,6 +119,124 @@
         }
       ],
       "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ar-memory",
+      "type": "memory-aid",
+      "title": "Remember the Slow Build",
+      "timestamp": "2026-09-05T12:22:00.000Z",
+      "meta": "5th Grade • 3 memory aids • the timeline, the argument, the pattern",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Slow Build",
+        "instructions": "Each card locks in facts from A Slow Build. Study the example aid, make it yours, and explain how it leads back to the history.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "keyword-association",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The Stamp Act of 1765 taxed paper goods. Colonists made an argument about who has the right to tax: no taxation without representation. Britain tried again with the Townshend Acts; colonists boycotted. The Boston Massacre, 1770. The Boston Tea Party, 1773. The Intolerable Acts. Britain acts. Colonists protest. Britain responds harder. More colonists join.",
+        "lessonRef": {
+          "resourceId": "ar-reading",
+          "title": "A Slow Build"
+        },
+        "cards": [
+          {
+            "id": "ar-ma-timeline",
+            "target": "Ten years to Lexington: the key events in order",
+            "essentialFacts": [
+              "1763 war debt; 1765 Stamp Act; 1767 Townshend Acts and boycotts.",
+              "1770 Boston Massacre; 1773 Boston Tea Party; 1774 Intolerable Acts and First Continental Congress.",
+              "April 1775: first shots at Lexington."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Debt, Stamp, Tea-tax, Massacre, Tea Party, Intolerable, Congress, Lexington: D-S-T-M-T-I-C-L. Say it as a drumbeat: 'Debt Stamp Tea, Massacre Party, Intolerable, Congress, Lexington.'",
+            "mapping": "The beat groups the events into three clusters (taxes, Boston violence, the break) in the order they happened, so the rhythm carries the chronology.",
+            "scaffoldStarter": "____, ____, ____ (taxes) — ____, ____ (Boston) — ____, ____, ____ (the break).",
+            "scaffoldSteps": [
+              "Write the eight events in date order.",
+              "Group them into three clusters.",
+              "Turn each cluster into a beat you can clap."
+            ],
+            "coachPrompts": [
+              "Which event in your beat is the one that pulled the other colonies in?"
+            ],
+            "studentPrompt": "Make your own drumbeat for the timeline.",
+            "reasoningPrompt": "How does your rhythm keep the events in the right order?",
+            "hookFact": {
+              "text": "In 1760, almost nobody in the thirteen colonies wanted independence. Fifteen years later they were shooting at British soldiers.",
+              "sourceTitle": "A Slow Build (this lesson)"
+            }
+          },
+          {
+            "id": "ar-ma-argument",
+            "target": "'No taxation without representation' and the boycott weapon",
+            "essentialFacts": [
+              "Colonists elected their own assemblies but nobody in Parliament, so they said Parliament had no right to tax them.",
+              "The argument was about who has the right to tax, not simply about paying.",
+              "A boycott (refusing to buy British goods) worked because huge numbers of ordinary people, including women who spun their own cloth, joined in."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "REPRESENTATION = 'no vote, no tax.' BOYCOTT = 'buy-cut' — cut what you buy. The first is the argument; the second is the weapon.",
+            "mapping": "Each keyword compresses the idea into a phrase you can say fast: the slogan becomes a four-word rule, and boycott sounds like what it is.",
+            "scaffoldStarter": "Representation means ____. A boycott is when ____.",
+            "scaffoldSteps": [
+              "Say the slogan in your own four words.",
+              "Find a sound-alike or hidden word in boycott.",
+              "Name who made the boycott work."
+            ],
+            "coachPrompts": [
+              "Does your keyword show that the argument was about rights, not money?"
+            ],
+            "studentPrompt": "Write your own two keyword links.",
+            "reasoningPrompt": "How do your keywords show the difference between the argument and the weapon?",
+            "hookFact": {
+              "text": "The Tea Act actually made legal tea cheaper; the protest was about Parliament's right to tax at all.",
+              "sourceTitle": "A Slow Build (this lesson)"
+            }
+          },
+          {
+            "id": "ar-ma-pattern",
+            "target": "The escalation pattern: act, protest, respond harder, more join",
+            "essentialFacts": [
+              "Britain acts; colonists protest; Britain responds harder; more colonists join.",
+              "The Intolerable Acts closed Boston's port and suspended Massachusetts self-government, convincing other colonies the fight was theirs too.",
+              "Each side believed it was being reasonable and that the other side was not."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "Tea Act → Tea Party → Intolerable Acts → twelve colonies meet in Congress. One tax, one protest, one crackdown, one union. The crackdown did the recruiting.",
+            "mapping": "The four-link chain is the pattern from the reading with real events plugged in, and the last link shows the surprise: Britain's harsh response created the unity it feared.",
+            "scaffoldStarter": "Britain ____ → colonists ____ → Britain ____ → more colonists ____.",
+            "scaffoldSteps": [
+              "Pick one British action from the timeline.",
+              "Add the protest and the harsher response.",
+              "End with who joined because of it."
+            ],
+            "coachPrompts": [
+              "Could you run the same chain with the Stamp Act? What changes?"
+            ],
+            "studentPrompt": "Write your own four-link chain with different events.",
+            "reasoningPrompt": "How does your chain show that each side thought it was being reasonable?",
+            "hookFact": {
+              "text": "About one in five colonists stayed loyal to Britain, and both sides believed they were defending liberty.",
+              "sourceTitle": "A Slow Build (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "ar-timeline",
@@ -253,9 +371,9 @@
             "question": "Why did Britain begin taxing the colonies more heavily after 1763?",
             "options": [
               "It was deeply in debt from the French and Indian War and wanted help paying for colonial defense",
-              "It wanted to punish the colonies for supporting France",
-              "The colonies had asked to be taxed more",
-              "Britain needed money to build colonial schools"
+              "It wanted to punish the colonies for secretly trading with France during the war",
+              "The colonies had asked Parliament to raise their taxes so they could build roads",
+              "Britain needed money to build schools and churches across the thirteen colonies"
             ],
             "correctAnswer": "It was deeply in debt from the French and Indian War and wanted help paying for colonial defense",
             "conceptLabel": "why britain taxed"
@@ -276,10 +394,10 @@
             "type": "mcq",
             "question": "Which British action most convinced OTHER colonies that Massachusetts' fight was their fight too?",
             "options": [
-              "The repeal of the Stamp Act",
-              "The Townshend Acts on glass and paper",
+              "The repeal of the Stamp Act, which showed colonists that protest could change laws",
+              "The Townshend Acts, which put small taxes on imported glass, paper, and tea",
               "The Intolerable Acts, which closed Boston's port and suspended self-government",
-              "The end of the French and Indian War"
+              "The end of the French and Indian War, which removed the threat from France"
             ],
             "correctAnswer": "The Intolerable Acts, which closed Boston's port and suspended self-government",
             "conceptLabel": "intolerable acts effect"
@@ -300,17 +418,17 @@
             "type": "mcq",
             "question": "What was a boycott, and why was it an effective colonial weapon?",
             "options": [
-              "A tax colonists placed on British ships",
+              "A tax that colonial assemblies placed on British ships entering their harbors",
               "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
-              "A law passed by the Continental Congress",
-              "A type of militia drill practiced on town greens"
+              "A law passed by the Continental Congress that banned British soldiers from towns",
+              "A type of militia drill that colonists practiced on town greens every week"
             ],
             "correctAnswer": "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
             "conceptLabel": "boycott as protest"
           },
           {
             "type": "shortAnswer",
-            "question": "The reading says each side thought it was 'responding reasonably to the other's unreasonable behavior.' Explain Britain's side of the tax dispute as fairly as you can — even if you disagree with it.",
+            "question": "The reading says each side believed it was being reasonable and that the other side was not. Explain Britain's side of the tax dispute as fairly as you can — even if you disagree with it.",
             "expectedAnswer": "Britain had gone into debt fighting a war that protected colonial land, and taxes on British citizens at home were already high. From Parliament's view, asking colonists to pay part of the cost of their own defense was fair, and Parliament believed it had authority over all British subjects.",
             "conceptLabel": "perspective taking"
           },
@@ -451,6 +569,90 @@
         }
       ],
       "meta": "6 questions • Loyalists, Native nations, honest unknowns"
+    },
+    {
+      "id": "ar-challenge",
+      "type": "applied-challenge",
+      "title": "Decision: Would You Sign the Boycott?",
+      "timestamp": "2026-09-05T12:23:00.000Z",
+      "meta": "5th Grade • Decision brief • a 1768 family decides, with evidence",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Would You Sign the Boycott?",
+        "instructions": "Step into a colonial family in 1768 deciding whether to join the boycott of British goods. Weigh the evidence and the costs from the lesson, decide, and defend the decision so that someone who chose differently would still say you were fair.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The lesson asks students to explain the British side fairly and to see how ordinary people's choices built a revolution. A decision brief puts them inside one of those choices with real stakes.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "It is 1768 in a small Massachusetts town. Your family runs a shop that sells cloth, tea, and paper, most of it shipped from Britain. Neighbors are signing a pledge not to buy British goods until the Townshend taxes are repealed. Some customers say they will stop shopping with anyone who does not sign. Others, including a cousin who is a Loyalist, say the pledge is disloyal and will ruin the shop.",
+          "role": "A shopkeeping family in 1768",
+          "audience": "The town meeting, where families will explain their choice",
+          "drivingQuestion": "Should our family sign the boycott pledge, and what would we need to be true for that to be the right call?",
+          "seedDirection": "List what the family gains and risks either way before choosing. The reading says both sides believed they were reasonable; your job is to show you understand why.",
+          "lockedLessonFacts": [
+            "Britain taxed the colonies after 1763 because it was deeply in debt from the French and Indian War and wanted help paying for colonial defense.",
+            "Colonists argued 'no taxation without representation': they elected nobody to Parliament.",
+            "The Townshend Acts (1767) taxed imported glass, paper, and tea; colonists organized boycotts, and women led much of it by spinning their own cloth.",
+            "A boycott works only if huge numbers of ordinary people join.",
+            "About one in five colonists stayed loyal to Britain, and families genuinely split over this."
+          ],
+          "openQuestions": [
+            "How long can the shop last if it stops selling British cloth?",
+            "Will neighbors really stop shopping with families that do not sign?",
+            "Did earlier protest actually change a law? (The Stamp Act was repealed in 1766.)",
+            "What does the Loyalist cousin get right?"
+          ],
+          "stakeholders": [
+            "The family and its shop",
+            "Neighbors organizing the boycott",
+            "Loyalist relatives",
+            "British merchants whose goods go unsold",
+            "The town's poorest families who need cheap cloth"
+          ],
+          "criteria": [
+            "The decision names at least two costs and two benefits, each tied to a lesson fact",
+            "The British and Loyalist view is stated fairly in at least three sentences",
+            "The choice includes one condition that would make you change your mind",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Stay in 1768: no knowledge of how the war ends",
+            "No inventing facts about the town; use the lesson and clearly labeled assumptions",
+            "One page"
+          ],
+          "deliverable": "A one-page family statement for the town meeting: your decision, the evidence for it, the fairest version of the other side, and the one thing that would change your mind.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "In the 1950s, Black residents of Montgomery, Alabama decided whether to boycott the city buses to protest segregated seating.",
+            "move": "Families weighed real costs — walking miles to work, losing pay, facing threats — against the chance that enough people refusing to ride would force change. They organized carpools so the cost was shared, and the boycott held for over a year because most people joined.",
+            "whyItHelps": "It shows the same decision structure: a boycott only works if many ordinary people accept a cost, and the choice is about shared risk, not just belief."
+          },
+          "frameStarter": "We choose to ____ because ____. We understand that people who ____ believe ____. We would change our minds if ____.",
+          "frameChoices": [
+            "Sign, and switch the shop to homespun cloth and local goods",
+            "Sign, but keep selling what is already on the shelves",
+            "Do not sign, and explain why Parliament's view has a point",
+            "Wait, and decide after seeing how many neighbors sign"
+          ],
+          "coachPrompts": [
+            "Which lesson fact tells you whether a boycott by a few families can work?",
+            "What would the Loyalist cousin say is the strongest argument against you?",
+            "Is there a choice that keeps the shop open AND joins the protest?"
+          ]
+        },
+        "coachHint": "A fair decision states the other side so well that the other side would nod. Then decide anyway.",
+        "sourceExcerpt": "A boycott is an ordinary-person weapon. It only works if huge numbers of people join in. Women organized much of it, spinning their own cloth instead of buying British.",
+        "lessonRef": {
+          "resourceId": "ar-reading",
+          "title": "A Slow Build"
+        }
+      }
     }
   ]
 }

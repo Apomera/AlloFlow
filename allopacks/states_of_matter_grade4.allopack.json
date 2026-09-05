@@ -18,7 +18,7 @@
       "title": "Same Stuff, Different Rules",
       "timestamp": "2026-07-21T09:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Take the quiz. Question 3 is the one that catches almost everybody.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
+        "body": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Take the quiz. Question 3 is the one that catches almost everybody.\n6. Lock the ideas in with **Remember the Dance Floor** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Disappearing Puddle** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
         "objectives": [
           {
             "id": "sm-goal-matching",
@@ -172,6 +172,124 @@
         ]
       },
       "meta": "5 sections • states + conservation rule"
+    },
+    {
+      "id": "sm-memory",
+      "type": "memory-aid",
+      "title": "Remember the Dance Floor",
+      "timestamp": "2026-09-05T12:03:00.000Z",
+      "meta": "4th-5th Grade • 3 memory aids • states, changes, the big rule",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Dance Floor",
+        "instructions": "Each card locks in facts from The Dance Floor. Study the example, then make the aid your own and explain how it points back to how particles move.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "sequence-cue",
+          "rhyme-rhythm"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "In a solid, everyone is packed shoulder to shoulder and only shivering in place. In a liquid, people slide past each other, still touching. In a gas, everyone breaks loose and bounces around the whole room. Add heat and the particles move faster. A melted ice cube weighs exactly what it weighed frozen.",
+        "lessonRef": {
+          "resourceId": "sm-reading",
+          "title": "The Dance Floor"
+        },
+        "cards": [
+          {
+            "id": "sm-ma-states",
+            "target": "Solid, liquid, gas: how the particles move",
+            "essentialFacts": [
+              "Solid: particles packed tight, shivering in place, so it keeps its own shape.",
+              "Liquid: particles slide past each other while still touching, so it takes the shape of its container.",
+              "Gas: particles far apart and bouncing fast, so it spreads to fill any space."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "A crowded dance floor: before the music, everyone stands shoulder to shoulder (solid). Slow song, people drift past each other (liquid). Fast song, everyone spreads across the whole room (gas).",
+            "mapping": "One picture, three moments. The dancers are the particles, and the music is the heat: more energy, more movement, more space between them.",
+            "scaffoldStarter": "Before the music: ____. Slow song: ____. Fast song: ____.",
+            "scaffoldSteps": [
+              "Picture your own crowd: a hallway, a playground, a stadium.",
+              "Describe the crowd standing still, drifting, and running.",
+              "Match each moment to solid, liquid, gas."
+            ],
+            "coachPrompts": [
+              "In your picture, what is the heat that makes the crowd move faster?"
+            ],
+            "studentPrompt": "Describe your own crowd picture for the three states.",
+            "reasoningPrompt": "How does your picture show that the particles are the same in all three states?",
+            "hookFact": {
+              "text": "What makes ice different from water is not what the particles are. It is how they are moving.",
+              "sourceTitle": "The Dance Floor (this lesson)"
+            }
+          },
+          {
+            "id": "sm-ma-changes",
+            "target": "The four state changes and which way heat goes",
+            "essentialFacts": [
+              "Adding heat: melting (solid to liquid), then evaporating or boiling (liquid to gas).",
+              "Removing heat: condensing (gas to liquid), then freezing (liquid to solid).",
+              "Every change can be reversed by sending the heat the other way."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Up the ladder with heat: ice → melt → water → evaporate → vapor. Down the ladder without it: vapor → condense → water → freeze → ice. Same rungs, opposite direction.",
+            "mapping": "A ladder puts the changes in order and makes the direction of heat the direction you climb. Going down uses the two 'cold' words.",
+            "scaffoldStarter": "Up with heat: ____ → ____ → ____. Down without it: ____ → ____ → ____.",
+            "scaffoldSteps": [
+              "Write the three states on three rungs, solid at the bottom.",
+              "Label the arrows going up with melt and evaporate.",
+              "Label the arrows going down with condense and freeze."
+            ],
+            "coachPrompts": [
+              "Which two words belong to cooling, and how will you remember they go together?"
+            ],
+            "studentPrompt": "Draw or write your own ladder with the four change words.",
+            "reasoningPrompt": "How does your ladder show what heat does to the particles?",
+            "hookFact": {
+              "text": "The fog on a bathroom mirror is water vapor condensing back into liquid.",
+              "sourceTitle": "The Dance Floor (this lesson)"
+            }
+          },
+          {
+            "id": "sm-ma-rule",
+            "target": "The big rule: matter changes how it behaves, not how much there is",
+            "essentialFacts": [
+              "A melted ice cube weighs exactly what it weighed frozen.",
+              "A puddle that dries up did not vanish; its particles spread into the air as invisible vapor.",
+              "Nothing is created or destroyed when matter changes state."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Melt it, freeze it, boil it too — the amount stays just as true.",
+            "mapping": "The rhyme pairs the three changes with the one fact that never changes, so saying the changes out loud pulls the rule along with them.",
+            "scaffoldStarter": "____ it, ____ it, ____ it too — ____.",
+            "scaffoldSteps": [
+              "List two or three change words that fit a beat.",
+              "End the line with what stays the same: the amount, the mass, the stuff.",
+              "Clap it out and fix any word that trips the rhythm."
+            ],
+            "coachPrompts": [
+              "Does your rhyme say what stays the same, or only what changes?"
+            ],
+            "studentPrompt": "Write your own two-line rhyme for the big rule.",
+            "reasoningPrompt": "How does your rhyme remind you that the puddle did not disappear?",
+            "hookFact": {
+              "text": "Matter changes how it behaves, not how much of it there is. That rule holds everywhere, which is why scientists trust it enough to build on it.",
+              "sourceTitle": "The Dance Floor (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "sm-sort",
@@ -369,6 +487,86 @@
         }
       ],
       "meta": "6 questions • busts the glass-flows myth"
+    },
+    {
+      "id": "sm-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Disappearing Puddle",
+      "timestamp": "2026-09-05T12:04:00.000Z",
+      "meta": "4th-5th Grade • Investigation brief • a fair test you can run",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Disappearing Puddle",
+        "instructions": "Plan a fair test that shows where the water in a puddle goes and what makes it go faster. Use the lesson's particle idea to predict, then design a test someone else could repeat.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "Students can say 'the puddle evaporated' without believing the water still exists. An investigation with a scale and a timer turns the big rule into something they measure.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Two identical trays of water are left on the same windowsill. By the next morning one is nearly empty and the other is still half full. A younger student says the water in the empty tray 'is just gone.' Your class has trays, water, a kitchen scale, a fan, a lamp, and plastic wrap.",
+          "role": "Student investigators",
+          "audience": "A second-grade class that wants to know where the water went",
+          "drivingQuestion": "Where does the water in a drying tray go, and which one change (heat, moving air, or a cover) makes the most difference in how fast it goes?",
+          "seedDirection": "Weigh before and after. If the water is 'gone,' the numbers will show whether it left the tray or truly vanished.",
+          "lockedLessonFacts": [
+            "Adding heat makes particles move faster; taking heat away slows them down.",
+            "Evaporation changes liquid water into invisible water vapor that spreads into the air.",
+            "The visible white cloud above boiling water is liquid droplets, not vapor; real vapor cannot be seen.",
+            "Nothing is created or destroyed when matter changes state; a puddle that dries up did not vanish."
+          ],
+          "openQuestions": [
+            "Does moving air or warmth matter more for this tray?",
+            "How do we make the trays a fair comparison, changing only one thing?",
+            "If we cover a tray with plastic wrap, where will the water show up?"
+          ],
+          "stakeholders": [
+            "The second graders who asked",
+            "Your teammates who will repeat the test",
+            "Whoever cleans the windowsill"
+          ],
+          "criteria": [
+            "Only one thing changes between the two trays in each test",
+            "Water is measured by weight before and after, not guessed",
+            "The explanation uses particles and the word evaporate correctly",
+            "The result is written so a second grader could follow it"
+          ],
+          "constraints": [
+            "No boiling water or open flames",
+            "Tests must finish within two school days",
+            "Use only the equipment listed"
+          ],
+          "deliverable": "A one-page test plan with a data table (starting weight, ending weight, what changed), your prediction, your result, and a two-sentence explanation for second graders of where the water went.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student wanted to know whether wet laundry dries faster in the sun or in the wind.",
+            "move": "She weighed two identical wet towels, hung one in the sun with no wind and one in the shade with a fan, and weighed them again after an hour. The lost weight was the water that had evaporated, so the towel that lost more weight dried faster.",
+            "whyItHelps": "Same move: change one thing, weigh instead of guess, and let the missing weight tell you the water left as vapor."
+          },
+          "frameStarter": "We think the tray with ____ will lose more water because its particles ____.",
+          "frameChoices": [
+            "Warm the tray with a lamp",
+            "Blow air across the tray with a fan",
+            "Cover one tray with plastic wrap",
+            "Put one tray in a cooler spot"
+          ],
+          "coachPrompts": [
+            "If both trays change two things at once, what will you be unable to say?",
+            "Where did the missing weight go? Point to it in the room.",
+            "What would the covered tray look like after a day, and what does that prove?"
+          ]
+        },
+        "coachHint": "The scale is your proof. Water that leaves a tray shows up as missing grams, and missing grams are not vanished grams.",
+        "sourceExcerpt": "A puddle that dries up did not vanish — its particles spread into the air. Matter changes how it behaves, not how much of it there is.",
+        "lessonRef": {
+          "resourceId": "sm-reading",
+          "title": "The Dance Floor"
+        }
+      }
     }
   ]
 }

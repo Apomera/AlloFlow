@@ -18,7 +18,7 @@
       "title": "Your Water Cycle Mission",
       "timestamp": "2026-07-20T00:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Keep **The Four Moves of Water** chart open while you work — it is your cheat sheet, and using it is allowed.\n4. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n5. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n6. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
+        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Keep **The Four Moves of Water** chart open while you work — it is your cheat sheet, and using it is allowed.\n4. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n5. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n6. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n7. Lock the ideas in with **Remember the Water Cycle** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Where Should Our Rain Go?** — use what you learned on a real problem, and mark every guess as a guess.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
         "objectives": [
           {
             "id": "wc-goal-crossword",
@@ -171,6 +171,128 @@
         ]
       },
       "meta": "5 sections • classroom reference chart"
+    },
+    {
+      "id": "wc-memory",
+      "type": "memory-aid",
+      "title": "Remember the Water Cycle",
+      "timestamp": "2026-09-05T12:00:00.000Z",
+      "meta": "6th Grade • 3 memory aids • acrostic, picture, story",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Water Cycle",
+        "instructions": "Each card locks in one set of facts from Journey of a Raindrop. Study the example aid, then build or personalize your own and explain how it points back to the real science.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "visual-association",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Sunlight warms oceans, lakes, and puddles until some of the water changes from a liquid into an invisible gas called water vapor. This change is called evaporation. High in the sky, the air is much colder. As water vapor cools, its molecules slow down and gather on tiny specks of dust and salt, changing back into liquid. This is condensation. When droplets grow too heavy for the rising air to keep them up, gravity wins: precipitation. Lakes, rivers, oceans, and underground layers store the water in collection — until the Sun lifts it again.",
+        "lessonRef": {
+          "resourceId": "wc-reading",
+          "title": "Journey of a Raindrop"
+        },
+        "cards": [
+          {
+            "id": "wc-ma-moves",
+            "target": "The four moves of water, in order: evaporation, condensation, precipitation, collection",
+            "essentialFacts": [
+              "Evaporation: the Sun's energy turns liquid water into invisible water vapor.",
+              "Condensation: cooling vapor gathers on tiny specks and becomes liquid droplets — that is a cloud.",
+              "Precipitation: droplets or ice crystals grow heavy and fall as rain, snow, sleet, or hail.",
+              "Collection: water gathers in oceans, lakes, rivers, ice, and underground until it evaporates again."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "Every Cloud Pours Carefully. E-C-P-C: Evaporation, Condensation, Precipitation, Collection.",
+            "mapping": "Each capital letter is the first letter of one move, and the sentence keeps them in the order water actually takes: it rises (E), gathers (C), falls (P), and rests (C) before the loop starts over.",
+            "scaffoldStarter": "Every ____ Pours ____.",
+            "scaffoldSteps": [
+              "Write the four moves in order and circle their first letters: E, C, P, C.",
+              "Choose a word for each letter that also hints at the move (a word about clouds for C, about falling for P).",
+              "Read your sentence out loud and check that the order still matches rising, gathering, falling, resting."
+            ],
+            "coachPrompts": [
+              "Which letter is repeated, and how will your sentence keep the two C words from swapping places?",
+              "Does your sentence hint at what each move does, or only at its letter?"
+            ],
+            "studentPrompt": "Write your own four-word sentence for E-C-P-C, or change the example so it sounds like you.",
+            "reasoningPrompt": "Explain how each word in your sentence leads back to one move of the water cycle.",
+            "hookFact": {
+              "text": "Earth almost never gets new water: the same water has cycled through these four moves for about four billion years.",
+              "sourceTitle": "Journey of a Raindrop (this lesson)"
+            }
+          },
+          {
+            "id": "wc-ma-vapor",
+            "target": "Water vapor is invisible; the white mist you can see is already liquid droplets",
+            "essentialFacts": [
+              "Water vapor is a gas and cannot be seen.",
+              "Steam, fog, breath clouds, and cloud puffs are visible because they are tiny liquid droplets, not vapor.",
+              "Right above a kettle spout there is a short clear gap: that is where the real vapor is."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a kettle. The empty-looking gap just above the spout is the invisible vapor. The white plume only begins where the air is cool enough for droplets to form. Clear gap = gas. White cloud = liquid.",
+            "mapping": "The picture puts the two ideas side by side in one place you have seen: the gap stands for vapor you cannot see, and the plume stands for droplets you can.",
+            "scaffoldStarter": "When I picture ____, the invisible part is ____ and the white part is ____.",
+            "scaffoldSteps": [
+              "Choose a scene where mist appears: a kettle, your breath on a cold day, a hot shower.",
+              "Mark where the vapor is (invisible) and where the droplets are (white).",
+              "Say the rule the picture proves: if you can see it, it is already liquid."
+            ],
+            "coachPrompts": [
+              "Where exactly in your picture is the vapor, and how do you know it is there if you cannot see it?",
+              "What cooled the vapor enough to make droplets in your scene?"
+            ],
+            "studentPrompt": "Describe or sketch your own scene that separates invisible vapor from visible droplets.",
+            "reasoningPrompt": "How does your picture help you remember that vapor is invisible?",
+            "hookFact": {
+              "text": "The cloudy stuff above a boiling pot is not steam in the scientific sense; real water vapor is completely invisible.",
+              "sourceTitle": "Journey of a Raindrop (this lesson)"
+            }
+          },
+          {
+            "id": "wc-ma-paths",
+            "target": "After rain, water takes two routes: runoff over the surface, or soaking in to become groundwater",
+            "essentialFacts": [
+              "Runoff flows over the land surface into streams and rivers.",
+              "Groundwater soaks into the ground and fills the spaces between soil and rock.",
+              "Both routes end in collection: rivers carry water toward the ocean, and groundwater stores it underground."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "A raindrop lands on a hill and meets a fork in the road. Its twin slides downhill over the grass, joins a stream, and rides all the way to the sea (runoff). It sinks between the soil grains instead, squeezes down past the roots, and settles into the gaps between rocks, where a well finds it years later (groundwater).",
+            "mapping": "The two twins keep the two routes apart in your memory: one stays on top and moves fast toward the ocean, one goes underneath and moves slowly into storage. Both are collection in the end.",
+            "scaffoldStarter": "A raindrop lands on ____. One twin ____ (runoff). The other twin ____ (groundwater).",
+            "scaffoldSteps": [
+              "Pick a place the rain lands: a roof, a field, a hillside.",
+              "Send one twin over the surface and name where it ends up.",
+              "Send the other twin into the ground and name what it fills."
+            ],
+            "coachPrompts": [
+              "What decides whether more water runs off or soaks in at your chosen spot?",
+              "Where does each twin finally rest, and why does that count as collection?"
+            ],
+            "studentPrompt": "Write your own two-twin story for a place you know.",
+            "reasoningPrompt": "How does each twin's path match the definition of runoff or groundwater?",
+            "hookFact": {
+              "text": "Groundwater fills the spaces between soil and rock like water filling a sponge.",
+              "sourceTitle": "Journey of a Raindrop (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "wc-sort",
@@ -409,6 +531,91 @@
         }
       ],
       "meta": "6 questions kids actually ask"
+    },
+    {
+      "id": "wc-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Where Should Our Rain Go?",
+      "timestamp": "2026-09-05T12:05:00.000Z",
+      "meta": "6th Grade • Design brief • proposal with labeled sketch",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Where Should Our Rain Go?",
+        "instructions": "Use what you learned about evaporation, runoff, groundwater, and collection to design a plan for the rain that lands on your school grounds. Frame the challenge, weigh options, build a proposal, test it against the facts, and revise.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The lesson explains the two routes rain can take after it lands. A design brief asks students to steer that choice on purpose for a real place, which is where the runoff-versus-groundwater idea earns its keep.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "After a heavy rain, water pools on the paved play area, then streams across the parking lot into the street drain. The garden beds near the fence stay dry for days. The principal has asked a student team for ideas before the district repaves the lot next summer.",
+          "role": "Schoolyard water team",
+          "audience": "The principal and the facilities manager",
+          "drivingQuestion": "How should our school handle the rain that lands on the paved area so that more of it soaks in or gets stored instead of running straight into the street?",
+          "seedDirection": "Start from the two routes in the lesson: where on the grounds could runoff be slowed down, and where could water be given a chance to infiltrate?",
+          "lockedLessonFacts": [
+            "After rain, some water flows over the surface as runoff and some soaks into the ground as groundwater.",
+            "Runoff moves downhill and gathers in streams, rivers, and drains; pavement gives it nowhere to soak in.",
+            "Groundwater fills the spaces between soil and rock and can be reached by plant roots and wells.",
+            "Water stored in soil, ponds, or tanks is part of collection, and the Sun eventually evaporates some of it again.",
+            "Gravity pulls water downhill, so the slope of a surface decides where runoff ends up."
+          ],
+          "openQuestions": [
+            "How much of the paved area drains toward the street, and how much toward the beds?",
+            "What kind of soil is under the grass and beds, and how fast does it soak up water?",
+            "Are there rules about what can be built on school grounds or connected to the storm drain?",
+            "How much rain falls in a typical storm here?"
+          ],
+          "stakeholders": [
+            "Students who use the play area",
+            "Facilities staff who maintain the lot",
+            "Neighbors downhill from the street drain",
+            "The garden club",
+            "The district paving crew"
+          ],
+          "criteria": [
+            "Less water leaves the grounds as runoff after a typical storm",
+            "The play area still drains and is safe to use",
+            "The plan uses at least four glossary words correctly",
+            "Every claim about where water will go is tied to a lesson fact or marked as an assumption"
+          ],
+          "constraints": [
+            "No digging near buried utility lines",
+            "Must not send water toward the building foundation",
+            "Budget for a first version is small; the paving job is the main opportunity",
+            "Nothing that creates standing water for more than two days"
+          ],
+          "deliverable": "A one-page proposal with a labeled sketch of the grounds showing where rain lands, where you want it to go, and one change that slows runoff or lets water soak in, plus a short explanation of the water-cycle reasoning behind it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A town noticed its new shopping center flooded the road below it every storm.",
+            "move": "Instead of a bigger drain, engineers cut the parking lot into sections that tilt toward planted strips, so runoff has to cross soil before it reaches the road. They measured how fast the soil soaked up water before deciding how wide the strips needed to be.",
+            "whyItHelps": "It shows the same move you are making: change where gravity takes the water, and give it soil to infiltrate. It also shows that measuring the soil came before designing the fix."
+          },
+          "frameStarter": "Right now rain that lands on ____ runs toward ____ because ____. We want more of it to ____.",
+          "frameChoices": [
+            "Slow the runoff so it has time to soak in",
+            "Redirect the runoff toward soil or beds that need water",
+            "Store the water in a tank or pond for later use",
+            "Replace part of the pavement with a surface water can pass through"
+          ],
+          "coachPrompts": [
+            "Which of your claims about where the water goes could you check by watching the grounds during the next rain?",
+            "What happens to your design in a very heavy storm, or after a week of dry weather?",
+            "Which glossary word describes each arrow on your sketch?"
+          ]
+        },
+        "coachHint": "Trace the slope first. Everything else in the design follows from where gravity already sends the water.",
+        "sourceExcerpt": "Some of it flows downhill across the surface as runoff, joining streams and rivers that carry it back toward the ocean. Some soaks into the ground and becomes groundwater, filling the spaces between soil and rock like water filling a sponge.",
+        "lessonRef": {
+          "resourceId": "wc-reading",
+          "title": "Journey of a Raindrop"
+        }
+      }
     }
   ]
 }

@@ -18,7 +18,7 @@
       "title": "The Deal Every Machine Makes",
       "timestamp": "2026-07-21T13:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA machine cannot give you something for nothing. Every one of them makes the same trade, and once you see it you cannot unsee it.\n\n1. Read **The Deal** — the last paragraph is the point of the whole lesson.\n2. Learn the six machines in the **Glossary**, then win the **Matching** game.\n3. Keep the **Six Machines** chart open while you look around the room.\n4. Sort the objects in **Which Machine Is It?** — two of them are arguments.\n5. Take the quiz. Question 4 asks about the trade, which is the real idea.\n6. Use the **Sentence Frames** to explain a machine you actually use.\n\nChallenge while you work: find five simple machines in the room you are sitting in right now. There are more than you think. ⚙️",
+        "body": "**Due:** (your teacher will tell you)\n\nA machine cannot give you something for nothing. Every one of them makes the same trade, and once you see it you cannot unsee it.\n\n1. Read **The Deal** — the last paragraph is the point of the whole lesson.\n2. Learn the six machines in the **Glossary**, then win the **Matching** game.\n3. Keep the **Six Machines** chart open while you look around the room.\n4. Sort the objects in **Which Machine Is It?** — two of them are arguments.\n5. Take the quiz. Question 4 asks about the trade, which is the real idea.\n6. Use the **Sentence Frames** to explain a machine you actually use.\n7. Lock the ideas in with **Remember the Six Machines** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Lift the Water Jug** — use what you learned on a real problem, and mark every guess as a guess.\n\nChallenge while you work: find five simple machines in the room you are sitting in right now. There are more than you think. ⚙️",
         "objectives": [
           {
             "id": "sk-goal-matching",
@@ -193,6 +193,125 @@
         ]
       },
       "meta": "6 sections • the trade named explicitly"
+    },
+    {
+      "id": "sk-memory",
+      "type": "memory-aid",
+      "title": "Remember the Six Machines",
+      "timestamp": "2026-09-05T12:10:00.000Z",
+      "meta": "5th-6th Grade • 3 memory aids • six machines, the deal, disguises",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Six Machines",
+        "instructions": "Each card locks in facts from The Deal. Study the example aid, make it yours, and explain how it leads back to the trade every machine makes.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "analogy-pattern",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "There are six classic simple machines: lever, inclined plane, wedge, screw, wheel and axle, pulley. You trade distance for force. Use half the force, move twice as far. A machine never reduces the total work. Every real machine charges a small extra fee called friction.",
+        "lessonRef": {
+          "resourceId": "sk-reading",
+          "title": "The Deal"
+        },
+        "cards": [
+          {
+            "id": "sk-ma-six",
+            "target": "The six simple machines",
+            "essentialFacts": [
+              "Lever: a stiff bar turning on a fulcrum.",
+              "Inclined plane: a ramp; a wedge is a ramp that moves; a screw is a ramp wrapped around a post.",
+              "Wheel and axle: a wheel fixed to a rod so they turn together.",
+              "Pulley: a grooved wheel with a rope that changes the direction or size of a pull."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "L.I.W.S.W.P. — Lazy Inventors Want Simple Work, Please: Lever, Inclined plane, Wedge, Screw, Wheel and axle, Pulley.",
+            "mapping": "Six words, six machines, and the sentence itself says what machines are for: making work feel simpler. The three middle letters (I, W, S) are the ramp family, which helps you remember they are related.",
+            "scaffoldStarter": "L ____ I ____ W ____ S ____ W ____ P ____.",
+            "scaffoldSteps": [
+              "Write the six machines and circle the first letters.",
+              "Build a sentence; try to make the I-W-S words go together since those machines are all ramps.",
+              "Read it back and point to a real object for each letter."
+            ],
+            "coachPrompts": [
+              "Can you group the three ramp machines inside your sentence?"
+            ],
+            "studentPrompt": "Write your own six-word sentence or reorder the example.",
+            "reasoningPrompt": "Explain how each word points to a machine and what that machine does.",
+            "hookFact": {
+              "text": "The bones in your arm are levers, and your front teeth are wedges.",
+              "sourceTitle": "The Deal (this lesson)"
+            }
+          },
+          {
+            "id": "sk-ma-deal",
+            "target": "The deal: less force, more distance, same work (plus a friction fee)",
+            "essentialFacts": [
+              "A machine trades distance for force: half the force means moving twice as far.",
+              "A machine never reduces the total work; it spreads the work into a form your body can manage.",
+              "Friction turns a little of your effort into heat, so real machines always cost slightly more than the trade alone."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Paying for a bike in installments: the price never changes, you just pay smaller amounts more times. A machine lets you pay for work in smaller pushes over a longer distance, and friction is the small fee on every payment.",
+            "mapping": "Total price maps to total work, each installment maps to the smaller force, the number of payments maps to the longer distance, and the fee maps to friction.",
+            "scaffoldStarter": "A machine is like paying for ____ in ____: the total stays ____, but each ____ is smaller.",
+            "scaffoldSteps": [
+              "Choose something you pay for a little at a time.",
+              "Match total, installment, and number of payments to work, force, and distance.",
+              "Add where friction shows up as an extra cost."
+            ],
+            "coachPrompts": [
+              "What in your analogy shows that the total never goes down?"
+            ],
+            "studentPrompt": "Write your own analogy for the distance-for-force trade.",
+            "reasoningPrompt": "How does your analogy show why a machine cannot give you something for nothing?",
+            "hookFact": {
+              "text": "A machine does not make you stronger. It changes how your strength gets used, and it always charges you for the favor.",
+              "sourceTitle": "The Deal (this lesson)"
+            }
+          },
+          {
+            "id": "sk-ma-disguise",
+            "target": "Machines in disguise: wedge and screw are inclined planes",
+            "essentialFacts": [
+              "A wedge is an inclined plane that moves: an axe, a knife, a nail, your front teeth.",
+              "A screw is an inclined plane wrapped around a post; the threads are a rolled-up ramp.",
+              "Turning a screw many times pulls it forward a small distance with great force."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "WEDGE = a ramp on the MOVE (it drives into things). SCREW = a ramp that SPIRALS (unroll the threads and you get a ramp).",
+            "mapping": "Both keywords keep the word ramp attached to the machine, so when you see a knife or a jar lid you see the inclined plane hiding inside it.",
+            "scaffoldStarter": "A wedge is a ramp that ____. A screw is a ramp that ____.",
+            "scaffoldSteps": [
+              "Say what a ramp does: makes a climb gentler over a longer path.",
+              "Describe what happens when the ramp moves (wedge) and when it wraps (screw).",
+              "Find one real object for each."
+            ],
+            "coachPrompts": [
+              "If you unrolled a screw's thread, how long would the ramp be compared to the screw?"
+            ],
+            "studentPrompt": "Write your own two keyword links.",
+            "reasoningPrompt": "How do your keywords prove a knife and a bolt are the same machine underneath?",
+            "hookFact": {
+              "text": "Look closely at the threads of a screw: that spiral is a ramp that has been rolled up.",
+              "sourceTitle": "The Deal (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "sk-sort",
@@ -431,6 +550,90 @@
         }
       ],
       "meta": "6 questions • includes compound machines and the body"
+    },
+    {
+      "id": "sk-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Lift the Water Jug",
+      "timestamp": "2026-09-05T12:11:00.000Z",
+      "meta": "5th-6th Grade • Design brief • a machine that lifts more than you can",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Lift the Water Jug",
+        "instructions": "Design a simple machine, or a combination of two, that lets one student lift a full five-gallon water jug onto a table using less force than lifting it by hand. Predict the trade you are making, then test it.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading's claim that machines trade distance for force is easy to repeat and hard to feel. A design task with a real load makes students choose the trade and measure what it costs.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "The classroom water cooler sits on a table. Full replacement jugs weigh about 19 kilograms (over 40 pounds), too heavy for most students to lift safely onto the table. You have a sturdy plank, a wooden block, rope, two pulleys with hooks, a hand truck wheel, tape, and a spring scale that reads up to 10 kilograms of pull.",
+          "role": "Student engineers",
+          "audience": "Your teacher and the students who refill the cooler",
+          "drivingQuestion": "Which simple machine, or pair of machines, lets one student raise the full jug onto the table with a pull the spring scale can measure, and exactly what does that machine cost us in distance?",
+          "seedDirection": "Start from the deal: if you want to pull with half the force, plan to move something twice as far. Which machine makes that trade in the space you have?",
+          "lockedLessonFacts": [
+            "A lever is a stiff bar turning on a fulcrum; push down on one end and the other lifts.",
+            "An inclined plane lets you push a load up with less force over a longer path.",
+            "One pulley changes the direction of a pull; more pulleys reduce the force needed but you must pull more rope.",
+            "Every machine trades distance for force; the total work never decreases.",
+            "Friction turns some effort into heat, so a real machine costs a little more than the trade alone."
+          ],
+          "openQuestions": [
+            "How long can the ramp be before it runs into the wall, and how steep does that make it?",
+            "Where should the fulcrum sit so the student's end goes down far enough?",
+            "How much rope do we need if two pulleys cut the force in half?",
+            "How much of our effort will friction eat on the plank?"
+          ],
+          "stakeholders": [
+            "The student doing the lifting",
+            "Anyone standing nearby while a heavy jug moves",
+            "The teacher who must approve the setup",
+            "Whoever stores the equipment afterward"
+          ],
+          "criteria": [
+            "The jug reaches the table height safely with a measured pull of 10 kilograms or less",
+            "The team predicts the trade (how far the student moves for how much less force) before testing and compares it to the result",
+            "The design sheet names the machine and its parts with lesson vocabulary",
+            "Friction is measured or estimated and mentioned in the explanation"
+          ],
+          "constraints": [
+            "Nothing may be lifted more than waist high by hand",
+            "The jug must be secured so it cannot roll or fall",
+            "Only the listed materials",
+            "Setup and test fit in one class period"
+          ],
+          "deliverable": "A labeled design drawing, a prediction (force before, force with machine, distance moved), a test table with spring-scale readings, and a short explanation of the trade using at least four glossary words.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "Movers needed to get a piano into a truck bed a meter off the ground.",
+            "move": "They laid a long ramp instead of lifting, then added a rope around a pulley on the truck so two people could pull from the truck bed. They accepted walking the piano four meters to gain one meter of height, and they waxed the ramp to cut friction.",
+            "whyItHelps": "It is the same trade with the same two fixes you can use: a longer path for less force, and a pulley to change direction. Waxing the ramp is the friction fee being paid on purpose."
+          },
+          "frameStarter": "We will use a ____ because it lets us ____. In exchange, we will have to ____.",
+          "frameChoices": [
+            "A ramp from the floor to the table, pushing the jug up on the hand-truck wheel",
+            "A lever with the fulcrum near the jug so a small push lifts a heavy load",
+            "Two pulleys hooked above the table to halve the pull and change its direction",
+            "A ramp plus one pulley so the student pulls down instead of pushing up"
+          ],
+          "coachPrompts": [
+            "Where in your design does the extra distance show up: rope, ramp, or lever arm?",
+            "What would happen to your force reading if you made the ramp shorter?",
+            "How will you show that the total work did not get smaller?"
+          ]
+        },
+        "coachHint": "Measure the pull with the scale before you use the machine and after. The difference is the trade; the extra distance is the price.",
+        "sourceExcerpt": "You trade distance for force. Use half the force, move twice as far. A machine never reduces the total work; it just spreads it out into a form your body can manage.",
+        "lessonRef": {
+          "resourceId": "sk-reading",
+          "title": "The Deal"
+        }
+      }
     }
   ]
 }

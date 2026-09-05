@@ -18,7 +18,7 @@
       "title": "Feel the Invisible",
       "timestamp": "2026-07-21T07:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nHold two magnets close and you can feel something pushing back through empty air. Nothing is touching. That push is a **field**, and fields are one of the strangest true things in physics.\n\n1. Read **The Push You Can Feel Through Nothing**.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Keep the **Magnet Rules** chart open while you experiment.\n4. Sort the materials in **Will It Stick?** — three of these surprise people.\n5. Take the quiz. Question 4 is the one almost everyone gets wrong.\n6. If your class has the **Magnetism Lab** in the STEM Lab, run the Field Walk challenge and find the hidden magnet.\n\nOne rule for this lesson: every time you predict, say it OUT LOUD before you test. Being wrong out loud is how physics gets learned. 🧲",
+        "body": "**Due:** (your teacher will tell you)\n\nHold two magnets close and you can feel something pushing back through empty air. Nothing is touching. That push is a **field**, and fields are one of the strangest true things in physics.\n\n1. Read **The Push You Can Feel Through Nothing**.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Keep the **Magnet Rules** chart open while you experiment.\n4. Sort the materials in **Will It Stick?** — three of these surprise people.\n5. Take the quiz. Question 4 is the one almost everyone gets wrong.\n6. If your class has the **Magnetism Lab** in the STEM Lab, run the Field Walk challenge and find the hidden magnet.\n7. Lock the ideas in with **Remember the Rules of the Invisible** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: A Sorter That Lets Go** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne rule for this lesson: every time you predict, say it OUT LOUD before you test. Being wrong out loud is how physics gets learned. 🧲",
         "objectives": [
           {
             "id": "mg-goal-matching",
@@ -181,6 +181,125 @@
       "meta": "5 sections • lab reference chart"
     },
     {
+      "id": "mg-memory",
+      "type": "memory-aid",
+      "title": "Remember the Rules of the Invisible",
+      "timestamp": "2026-09-05T12:07:00.000Z",
+      "meta": "6th-7th Grade • 3 memory aids • poles, materials, electromagnets",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Rules of the Invisible",
+        "instructions": "Each card locks in facts from The Push You Can Feel Through Nothing. Study the example aid, make it yours, and explain how it leads back to the physics.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "rhyme-rhythm",
+          "acronym-acrostic",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Opposite poles attract, like poles repel. Cut a bar magnet in half and you get two complete smaller magnets. Iron, nickel, and cobalt are the common magnetic materials. Coil a wire around an iron nail and run current through it and you have built an electromagnet, whose enormous advantage is that it can be switched off.",
+        "lessonRef": {
+          "resourceId": "mg-reading",
+          "title": "The Push You Can Feel Through Nothing"
+        },
+        "cards": [
+          {
+            "id": "mg-ma-poles",
+            "target": "Pole rules: opposites attract, likes repel, and you can never isolate one pole",
+            "essentialFacts": [
+              "Every magnet has a north and a south pole.",
+              "Opposite poles attract; like poles repel.",
+              "Cutting a magnet in half gives two complete magnets, each with both poles; no single pole has ever been confirmed."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Opposites hug, twins shove; cut it in half, you get two of.",
+            "mapping": "The first line is the attract-repel rule in four words; the second line is the no-monopole rule. Saying one pulls the other along.",
+            "scaffoldStarter": "Opposites ____, twins ____; cut it in half, ____.",
+            "scaffoldSteps": [
+              "Pick two verbs for attract and repel that fit a beat.",
+              "Add a line about what happens when you cut a magnet.",
+              "Clap it and fix the rhythm."
+            ],
+            "coachPrompts": [
+              "Does your rhyme make clear that BOTH halves still have two poles?"
+            ],
+            "studentPrompt": "Write your own two-line pole rhyme.",
+            "reasoningPrompt": "How does each line of your rhyme match a rule from the reading?",
+            "hookFact": {
+              "text": "Physicists have searched hard for a single isolated pole — a magnetic monopole — and have never confirmed one.",
+              "sourceTitle": "The Push You Can Feel Through Nothing (this lesson)"
+            }
+          },
+          {
+            "id": "mg-ma-materials",
+            "target": "Which materials a magnet sticks to",
+            "essentialFacts": [
+              "Iron, nickel, and cobalt are strongly magnetic; steel is mostly iron, so it sticks too.",
+              "Aluminum, copper, gold, and plastic are not attracted.",
+              "If a magnet does not stick to a metal, that tells you which metal it is not."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "I.N.C. — Iron, Nickel, Cobalt: the INC. that magnets do business with. Everything else, the magnet slides right off.",
+            "mapping": "Three letters, three metals, one company name you already know how to say. Steel joins because it is mostly iron.",
+            "scaffoldStarter": "I ____, N ____, C ____ — the metals that ____.",
+            "scaffoldSteps": [
+              "Write the three magnetic metals and circle I, N, C.",
+              "Find a word or phrase those letters make.",
+              "Add one line about what does NOT stick."
+            ],
+            "coachPrompts": [
+              "Where does steel fit in your aid, and why?"
+            ],
+            "studentPrompt": "Make your own I-N-C aid.",
+            "reasoningPrompt": "How does your aid help you predict whether a magnet will stick to a soda can?",
+            "hookFact": {
+              "text": "A refrigerator magnet grabs a steel door but slides right off an aluminum can, a copper pipe, or a gold ring.",
+              "sourceTitle": "The Push You Can Feel Through Nothing (this lesson)"
+            }
+          },
+          {
+            "id": "mg-ma-electro",
+            "target": "An electromagnet's superpower: it can be switched off",
+            "essentialFacts": [
+              "Electricity and magnetism are two faces of one thing; a current in a wire makes a magnetic field (Ørsted, 1820).",
+              "Coil a wire around an iron core and run current through it to make an electromagnet.",
+              "More coils or more current makes it stronger, and cutting the current switches it off.",
+              "Junkyard cranes, doorbells, speakers, and motors depend on being able to switch magnetism on and off."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A permanent magnet is a light with no switch: always on. An electromagnet is the same light with a wall switch: the current is the switch, the coil is the bulb, and more current is a brighter bulb.",
+            "mapping": "The light-switch analogy maps each part: current to switch, coil turns to brightness, and 'off' to the moment the junkyard crane drops the car.",
+            "scaffoldStarter": "A permanent magnet is like ____ with no ____. An electromagnet is like ____ with a ____.",
+            "scaffoldSteps": [
+              "Choose something in your life that can be switched on and off.",
+              "Match the switch to the current and the strength to the coils.",
+              "Name one job that needs the off switch."
+            ],
+            "coachPrompts": [
+              "What in your analogy stands for adding more coils?"
+            ],
+            "studentPrompt": "Write your own on-off analogy for an electromagnet.",
+            "reasoningPrompt": "How does your analogy explain why a junkyard crane cannot use a permanent magnet?",
+            "hookFact": {
+              "text": "In 1820, Hans Christian Ørsted noticed a compass needle twitch whenever he switched on a nearby electric current.",
+              "sourceTitle": "The Push You Can Feel Through Nothing (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "mg-sort",
       "type": "concept-sort",
       "title": "Will It Stick?",
@@ -246,7 +365,7 @@
           },
           {
             "id": "m10",
-            "content": "A stainless steel fork (varies by type)",
+            "content": "A steel screwdriver tip",
             "categoryId": "mg-yes"
           }
         ]
@@ -376,6 +495,90 @@
         }
       ],
       "meta": "6 questions • includes the levitating frog"
+    },
+    {
+      "id": "mg-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: A Sorter That Lets Go",
+      "timestamp": "2026-09-05T12:08:00.000Z",
+      "meta": "6th-7th Grade • Design brief • a magnetic sorter you can build and test",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Sorter That Lets Go",
+        "instructions": "Design a device that pulls steel items out of a mixed recycling bin and then releases them into a separate container. Use the lesson's rules about materials, fields, and electromagnets, and test your design against a mixed pile.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading names the electromagnet's single biggest advantage: it can be switched off. A sorter that must pick up AND let go forces students to use that fact rather than recite it.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "Your school's recycling bins mix steel cans, aluminum cans, plastic bottles, and paper. The custodian sorts them by hand, which takes an hour a day. You have magnets, insulated wire, batteries, iron nails, cardboard, string, and tape.",
+          "role": "Student engineers",
+          "audience": "The custodian and the school's green team",
+          "drivingQuestion": "How can we build a device that lifts only the steel out of a mixed bin and then drops it exactly where we want it, using what we know about magnetic materials and fields?",
+          "seedDirection": "Two problems hide in one: grabbing only steel, and letting go on command. Decide which magnet type solves the second problem before you design the first.",
+          "lockedLessonFacts": [
+            "Iron, nickel, and cobalt are strongly magnetic; steel is mostly iron. Aluminum, copper, gold, and plastic are not attracted.",
+            "A magnetic field acts through empty space; the force is strongest closest to the poles.",
+            "A current in a coil of wire makes an electromagnet; more coils or more current makes it stronger.",
+            "An electromagnet can be switched off, which is why junkyard cranes can drop what they lift.",
+            "Opposite poles attract and like poles repel."
+          ],
+          "openQuestions": [
+            "How heavy is a full steel can, and how strong does our magnet need to be to lift it through the pile?",
+            "How close does the magnet have to be before a can jumps to it?",
+            "How many coils and how many batteries give enough strength without getting hot?",
+            "Will aluminum cans ever come along by accident, and why or why not?"
+          ],
+          "stakeholders": [
+            "The custodian who sorts by hand now",
+            "The green team that tracks recycling",
+            "Students who use the bins",
+            "The recycling company that rejects mixed loads"
+          ],
+          "criteria": [
+            "Picks up at least four of five steel cans from a mixed pile in one pass",
+            "Picks up zero aluminum cans, plastic, or paper",
+            "Releases every steel can into the steel container on command",
+            "The design sheet explains each choice with a lesson fact"
+          ],
+          "constraints": [
+            "Batteries only, no wall power",
+            "Nothing that gets hot enough to be uncomfortable to touch",
+            "Built from the listed materials",
+            "Must be testable in one class period"
+          ],
+          "deliverable": "A labeled design sketch, a built prototype or a detailed build plan, a test table (item, picked up yes or no, released yes or no), and a short explanation that uses at least four glossary words.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A scrap yard needed to separate steel from a mountain of mixed metal.",
+            "move": "Engineers hung a huge electromagnet from a crane. Switched on, it lifted only the iron and steel; switched off over a separate pile, it dropped everything at once. Aluminum and copper never moved, so no one had to sort those by hand.",
+            "whyItHelps": "It is your problem at full scale: the material rule does the sorting, and the off switch does the releasing."
+          },
+          "frameStarter": "Our sorter uses ____ because ____. It lets go by ____.",
+          "frameChoices": [
+            "An electromagnet on a string that we switch off over the steel bin",
+            "A permanent magnet with a lever that pushes the cans off",
+            "A ramp with a magnet underneath that pulls steel cans off course",
+            "A rotating drum with an electromagnet inside one section"
+          ],
+          "coachPrompts": [
+            "Which lesson fact tells you the aluminum cans will stay behind?",
+            "What happens to your design if the battery runs low halfway through the pile?",
+            "How does field strength change as you move the magnet farther from a can, and how does that shape your design?"
+          ]
+        },
+        "coachHint": "Picking up is the easy half. Design for letting go first, then make the pickup strong enough.",
+        "sourceExcerpt": "Coil a wire around an iron nail and run current through it and you have built an electromagnet, whose enormous advantage is that it can be switched OFF. That single property runs junkyard cranes, doorbells, speakers, hard drives, and every electric motor you have ever used.",
+        "lessonRef": {
+          "resourceId": "mg-reading",
+          "title": "The Push You Can Feel Through Nothing"
+        }
+      }
     }
   ]
 }

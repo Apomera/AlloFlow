@@ -18,7 +18,7 @@
       "title": "Become a Plant Detective",
       "timestamp": "2026-07-20T01:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️",
+        "body": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n7. Lock the ideas in with **Remember the Sugar Factory** — study the example aid, then make one your own.\n8. Finish with **Investigation: Which Light Grows a Plant?** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️",
         "objectives": [
           {
             "id": "ph-goal-scramble",
@@ -119,6 +119,124 @@
       "meta": "10 terms • Tiered"
     },
     {
+      "id": "ph-memory",
+      "type": "memory-aid",
+      "title": "Remember the Sugar Factory",
+      "timestamp": "2026-09-05T12:14:00.000Z",
+      "meta": "7th Grade • 3 memory aids • reactants and products, green leaves, respiration",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Sugar Factory",
+        "instructions": "Each card locks in facts from The Sugar Factory in Every Leaf. Study the example aid, make it yours, and explain how it leads back to the chemistry.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "chunking",
+          "keyword-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The reaction has three reactants: carbon dioxide from the air, water from the roots, and light itself. It makes two products: glucose and oxygen. Chlorophyll absorbs red and blue light and reflects green. Plants also perform cellular respiration, day and night. Photosynthesis is how the plant makes the fuel that its breathing burns.",
+        "lessonRef": {
+          "resourceId": "ph-reading",
+          "title": "The Sugar Factory in Every Leaf"
+        },
+        "cards": [
+          {
+            "id": "ph-ma-inout",
+            "target": "Three reactants in, two products out",
+            "essentialFacts": [
+              "Reactants (in): carbon dioxide from the air, water from the roots, light energy captured by chlorophyll.",
+              "Products (out): glucose for food and building, oxygen released through the stomata.",
+              "Most of a tree's mass comes from the carbon dioxide in the air, not from the soil."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "chunking",
+            "mode": "scaffolded",
+            "aiExample": "Chunk it 3-and-2. IN: Air, Water, Light. OUT: Sugar, Oxygen. Say 'three in, two out' and the numbers catch any missing ingredient.",
+            "mapping": "Splitting the list into a chunk of three and a chunk of two turns five separate facts into two groups you can count on your fingers, and the count itself is a check.",
+            "scaffoldStarter": "IN: ____, ____, ____. OUT: ____, ____.",
+            "scaffoldSteps": [
+              "Write the three reactants as one group and the two products as another.",
+              "Give each group a one-word label a younger student would get.",
+              "Say the counts out loud: three in, two out."
+            ],
+            "coachPrompts": [
+              "Which of your IN items is not made of matter, and does your chunk show that?"
+            ],
+            "studentPrompt": "Build your own 3-and-2 chunk with your own labels.",
+            "reasoningPrompt": "How does counting the chunks help you catch a mistake on a test?",
+            "hookFact": {
+              "text": "Van Helmont's willow gained about 74 kilograms in five years while the soil lost almost nothing.",
+              "sourceTitle": "The Sugar Factory in Every Leaf (this lesson)"
+            }
+          },
+          {
+            "id": "ph-ma-green",
+            "target": "Why leaves look green",
+            "essentialFacts": [
+              "Chlorophyll is the pigment that absorbs light energy.",
+              "It absorbs red and blue light most strongly.",
+              "It reflects green light, which is the only reason leaves look green to you."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "Green is the REJECT. Chlorophyll keeps red and blue and throws green back at your eyes. What you see is what the leaf did not want.",
+            "mapping": "The keyword REJECT flips the usual assumption (green must be what the leaf uses) into the correct one (green is what it reflects), and it sticks because it is surprising.",
+            "scaffoldStarter": "Green is the ____. The leaf keeps ____ and ____ and throws back ____.",
+            "scaffoldSteps": [
+              "Name the two colors chlorophyll absorbs.",
+              "Choose a keyword for what happens to green.",
+              "Say what that means for growing plants under colored light."
+            ],
+            "coachPrompts": [
+              "Using your keyword, which color of light would be the worst for a plant?"
+            ],
+            "studentPrompt": "Choose your own keyword for green light.",
+            "reasoningPrompt": "How does your keyword explain the FAQ about growing plants under red light?",
+            "hookFact": {
+              "text": "Pure green light is the worst choice for growing a plant, because that is the color chlorophyll reflects away.",
+              "sourceTitle": "The Sugar Factory in Every Leaf (this lesson)"
+            }
+          },
+          {
+            "id": "ph-ma-respire",
+            "target": "Plants respire too; photosynthesis makes the fuel that respiration burns",
+            "essentialFacts": [
+              "Plants perform cellular respiration, releasing energy from sugar, day and night.",
+              "Photosynthesis is not the opposite of breathing; it makes the fuel that respiration uses.",
+              "In bright daylight a healthy plant photosynthesizes much faster than it respires, so oxygen flows out on balance."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A leaf is a kitchen with a stove. Photosynthesis is cooking the meal from sunlight, water, and air. Respiration is eating it. You can only cook in daylight, but you eat all day and all night.",
+            "mapping": "Cooking maps to making glucose, eating maps to releasing its energy, and the daylight rule maps to why photosynthesis stops at night while respiration keeps going.",
+            "scaffoldStarter": "Photosynthesis is like ____ a meal; respiration is like ____ it. Plants can only ____ in daylight, but they ____ all the time.",
+            "scaffoldSteps": [
+              "Pick a make-then-use pair from your life (cook and eat, charge and use, save and spend).",
+              "Match making to photosynthesis and using to respiration.",
+              "Add the day-and-night rule."
+            ],
+            "coachPrompts": [
+              "In your analogy, what happens at night?"
+            ],
+            "studentPrompt": "Write your own make-and-use analogy.",
+            "reasoningPrompt": "How does your analogy correct the idea that plants only breathe out oxygen?",
+            "hookFact": {
+              "text": "A bedroom plant will not steal your air at night; the amounts it takes in are tiny.",
+              "sourceTitle": "The Sugar Factory in Every Leaf (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "ph-timeline",
       "type": "timeline",
       "title": "Follow One Carbon Atom",
@@ -144,7 +262,7 @@
           },
           {
             "date": "Step 5",
-            "event": "The atoms rearrange: a glucose molecule is assembled, and oxygen atoms are left over."
+            "event": "The atoms rearrange: water molecules are split, their oxygen is released, and the carbon and hydrogen are built into a glucose molecule."
           },
           {
             "date": "Step 6",
@@ -431,6 +549,90 @@
         }
       ],
       "meta": "6 questions • misconception-friendly"
+    },
+    {
+      "id": "ph-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: Which Light Grows a Plant?",
+      "timestamp": "2026-09-05T12:15:00.000Z",
+      "meta": "7th Grade • Investigation brief • a colored-light experiment",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Which Light Grows a Plant?",
+        "instructions": "Design a fair test of how light color affects a fast-growing plant. Predict from what chlorophyll absorbs, control everything but the color, and decide what counts as evidence of photosynthesis.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The reading says chlorophyll absorbs red and blue and reflects green. An investigation lets students turn that into a prediction, then find out whether the plant agrees.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "A gardening club wants to grow lettuce indoors under colored LED strips to save electricity, and someone suggested green light because 'plants are green.' Your class has seedling trays, identical seeds, red, blue, green, and white LED strips, cardboard for light boxes, a ruler, and a scale.",
+          "role": "Student plant scientists",
+          "audience": "The gardening club deciding which LEDs to buy",
+          "drivingQuestion": "Which light color, or mix of colors, produces the most growth in two weeks, and does the result match what chlorophyll absorbs?",
+          "seedDirection": "Predict first from the pigment: chlorophyll absorbs red and blue and reflects green. Then design the test so that only the color changes.",
+          "lockedLessonFacts": [
+            "Photosynthesis needs carbon dioxide, water, and light energy; it produces glucose and oxygen.",
+            "Chlorophyll absorbs red and blue light most strongly and reflects green.",
+            "A plant kept in the dark cannot photosynthesize and grows pale and weak even with water.",
+            "Plants also respire day and night, releasing energy from the sugar they made.",
+            "Most of a plant's mass comes from carbon dioxide in the air."
+          ],
+          "openQuestions": [
+            "How will we keep water, temperature, and distance from the light the same for every tray?",
+            "What should we measure: height, number of leaves, weight, or color?",
+            "How bright is each strip, and does brightness differ between colors?",
+            "How many seedlings per color do we need so one unusual plant does not decide the result?"
+          ],
+          "stakeholders": [
+            "The gardening club paying for LEDs",
+            "Students tending the trays daily",
+            "The custodian who controls room temperature",
+            "Anyone who will eat the lettuce"
+          ],
+          "criteria": [
+            "Only light color differs between trays; water, distance, and temperature are matched and recorded",
+            "At least four seedlings per color",
+            "Growth is measured the same way on the same days",
+            "The conclusion compares results to the prediction from chlorophyll's absorption and uses at least four glossary words"
+          ],
+          "constraints": [
+            "Two weeks of growing time",
+            "Only the listed equipment",
+            "Trays must be checked and watered every school day",
+            "No claims beyond what the data shows"
+          ],
+          "deliverable": "A test plan, a prediction with its reason, a data table across two weeks, and a one-page recommendation to the gardening club that explains the result using the pigment facts.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A greenhouse wondered whether extra CO2 in the air made tomatoes grow faster.",
+            "move": "Growers split identical plants into two rooms that differed only in CO2 level, kept light and water the same, weighed the harvest, and found the higher-CO2 room grew more. Because one thing changed, the result meant something.",
+            "whyItHelps": "Same discipline: change exactly one input to photosynthesis and measure the output. Your input is light color instead of CO2."
+          },
+          "frameStarter": "We predict ____ light will grow the most because chlorophyll ____. We will keep ____, ____, and ____ the same.",
+          "frameChoices": [
+            "Compare red, blue, green, and white light",
+            "Compare white light to a red-plus-blue mix",
+            "Compare green light to darkness to see whether green does anything at all",
+            "Compare two brightness levels of the same color"
+          ],
+          "coachPrompts": [
+            "If the green tray grows a little, what does that tell you about 'reflects green'?",
+            "Which of your measurements shows photosynthesis happened, and which only shows the plant stretched toward light?",
+            "What would make the club's decision wrong even if your data is right?"
+          ]
+        },
+        "coachHint": "Match everything but color. If the green tray also sat farther from its light, you learned nothing about color.",
+        "sourceExcerpt": "Chlorophyll absorbs red and blue light and reflects green, which is the only reason leaves look green to you.",
+        "lessonRef": {
+          "resourceId": "ph-reading",
+          "title": "The Sugar Factory in Every Leaf"
+        }
+      }
     }
   ]
 }

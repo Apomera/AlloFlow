@@ -5,6 +5,8 @@ type at least twice. All authored to AlloPack v0.1 (English-first policy; embedd
 glossary translations where high-ELL-value). Standards are load-bearing metadata: every pack
 names its codes with a gloss.
 
+> **Status, September 5, 2026 (Claude).** 24 packs now exist in `allopacks/` (the 10 seed packs, 11 more authored later, and three new on this date: Moon Phases grade 6, Forces and Motion grade 3, Point of View grade 4). Every pack carries a `memory-aid` and an `applied-challenge` resource plus a FAQ, and all 24 pass `tests/allopack_catalog.test.js` (automated check 1). A close factual read of all packs and 86 targeted text fixes are recorded in `reports/allopack_quality_pass_2026-09-05.md`. Only the illustrated Water Cycle pilot and the grade 2-3 seed are in `catalog/index.json`; adding the other packs is a publication decision (raw main is live), and `node dev-tools/build_allopack_catalog_entries.cjs` prints the entries ready to paste when that decision is made. Manual checks 2-7 remain per pack.
+
 ## Seed list
 
 | # | Pack | Grade | Standards | Notes |

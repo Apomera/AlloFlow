@@ -18,7 +18,7 @@
       "title": "Become the Person Who Cannot Be Fooled",
       "timestamp": "2026-07-21T06:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nStores count on you not doing this math. The bigger box is not always the better deal, and today you learn the one move that settles it in about four seconds.\n\n1. Read **The Four-Second Trick**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Ratio Moves** chart open — it lists every move you need.\n4. Work the **Practice Problems**. Do the unit rate FIRST every time.\n5. Sort the cards in **Same Ratio or Not?**\n6. Take the quiz — question 5 is the one stores are counting on.\n\nHomework challenge: find two sizes of the same product at home and figure out which is actually the better buy. Bring the numbers. 🛒",
+        "body": "**Due:** (your teacher will tell you)\n\nStores count on you not doing this math. The bigger box is not always the better deal, and today you learn the one move that settles it in about four seconds.\n\n1. Read **The Four-Second Trick**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Ratio Moves** chart open — it lists every move you need.\n4. Work the **Practice Problems**. Do the unit rate FIRST every time.\n5. Sort the cards in **Same Ratio or Not?**\n6. Take the quiz — question 5 is the one stores are counting on.\n7. Lock the ideas in with **Remember the Four-Second Trick** — study the example aid, then make one your own.\n8. Finish with **Decision: The Snack Stand Order** — use what you learned on a real problem, and mark every guess as a guess.\n\nHomework challenge: find two sizes of the same product at home and figure out which is actually the better buy. Bring the numbers. 🛒",
         "objectives": [
           {
             "id": "rt-goal-scramble",
@@ -158,6 +158,124 @@
         ]
       },
       "meta": "4 moves • problem-solving reference"
+    },
+    {
+      "id": "rt-memory",
+      "type": "memory-aid",
+      "title": "Remember the Four-Second Trick",
+      "timestamp": "2026-09-05T12:44:00.000Z",
+      "meta": "6th Grade • 3 memory aids • per what, unit rate, scaling both parts",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Four-Second Trick",
+        "instructions": "Each card locks in a move from The Four-Second Trick. Study the example aid, make it yours, and explain how it leads back to the math.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "sequence-cue",
+          "rhyme-rhythm"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A ratio compares two amounts. The move that makes ratios useful is turning them into a unit rate: how much for exactly one of something. Divide the price by the number of ounces. Ratios stay true when you scale them: multiply or divide both parts. Ratio reasoning is the habit of asking, per what?",
+        "lessonRef": {
+          "resourceId": "rt-reading",
+          "title": "The Four-Second Trick"
+        },
+        "cards": [
+          {
+            "id": "rt-ma-perwhat",
+            "target": "The habit: ask 'per what?'",
+            "essentialFacts": [
+              "A ratio compares two amounts, written as 3 to 4, 3:4, or 3/4.",
+              "When someone gives you a number, ask what it is being compared to.",
+              "Order matters: 2:3 flour to milk is a different recipe from 3:2."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "PER = 'for each one.' Every time you see a rate, say the word per out loud and finish it: dollars per ounce, miles per hour, points per game. If you cannot finish 'per ____,' you do not have a rate yet.",
+            "mapping": "The keyword per is the test itself: finishing the phrase forces you to name the second amount, which is the whole habit the reading is teaching.",
+            "scaffoldStarter": "____ per ____. ____ per ____. ____ per ____.",
+            "scaffoldSteps": [
+              "Collect three rates from your day.",
+              "Say each with the word per.",
+              "Swap the order in one and say why it changes the meaning."
+            ],
+            "coachPrompts": [
+              "What happens to 'miles per hour' if you flip it? Is it wrong or just different?"
+            ],
+            "studentPrompt": "Write your own per list from real life.",
+            "reasoningPrompt": "How does saying per help you check a number someone gives you?",
+            "hookFact": {
+              "text": "Ratio reasoning is not really a math topic. It is the habit of asking, per what?",
+              "sourceTitle": "The Four-Second Trick (this lesson)"
+            }
+          },
+          {
+            "id": "rt-ma-unitrate",
+            "target": "The four-second trick: divide to get the unit rate, then compare",
+            "essentialFacts": [
+              "A unit rate is how much for exactly one: divide the price by the number of ounces.",
+              "$3.60 for 12 ounces is $0.30 per ounce; $5.76 for 18 ounces is $0.32 per ounce.",
+              "The smaller box was the better deal; bigger is usually cheaper per unit, but not always."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Divide, divide, compare. Price over amount for box A, price over amount for box B, then look at which per-one number is smaller.",
+            "mapping": "Three beats in order: two divisions and one comparison. The rhythm stops you from comparing totals, which is the mistake the trick exists to prevent.",
+            "scaffoldStarter": "Divide ____ by ____. Divide ____ by ____. Compare ____.",
+            "scaffoldSteps": [
+              "Write the two prices and two amounts.",
+              "Divide each price by its amount.",
+              "Circle the smaller per-one number."
+            ],
+            "coachPrompts": [
+              "What if you divided amount by price instead? What would the number mean?"
+            ],
+            "studentPrompt": "Run your own divide-divide-compare on two real products.",
+            "reasoningPrompt": "How does your sequence keep you from being fooled by the bigger box?",
+            "hookFact": {
+              "text": "The store is counting on you not checking.",
+              "sourceTitle": "The Four-Second Trick (this lesson)"
+            }
+          },
+          {
+            "id": "rt-ma-scale",
+            "target": "Equivalent ratios: multiply or divide BOTH parts, never add",
+            "essentialFacts": [
+              "2:3 equals 4:6 equals 20:30: both parts multiplied by the same number.",
+              "Adding the same number to both parts breaks the ratio: 4:5 is not equivalent to 2:3.",
+              "Recipes and map scales work because ratios stay true when scaled."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Times both sides and it stays the same; add to both and you change the game.",
+            "mapping": "One line for the right move, one for the wrong move, so the rhyme carries the rule and the trap together.",
+            "scaffoldStarter": "____ both sides and it stays the same; ____ to both and you change the game.",
+            "scaffoldSteps": [
+              "Write the correct operation and the trap.",
+              "Fit them into a two-line beat.",
+              "Test it: is 6:9 equivalent to 2:3? Is 3:4?"
+            ],
+            "coachPrompts": [
+              "Does your rhyme also cover dividing both parts?"
+            ],
+            "studentPrompt": "Write your own rhyme for scaling ratios.",
+            "reasoningPrompt": "How does your rhyme explain the friend's 'add 2 to each side' mistake?",
+            "hookFact": {
+              "text": "Doubling to 4 cups and 6 cups keeps the ratio identical, and the pancakes taste the same.",
+              "sourceTitle": "The Four-Second Trick (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "rt-math",
@@ -384,10 +502,10 @@
             "type": "mcq",
             "question": "Which ratio is equivalent to 2:3?",
             "options": [
-              "4:5",
-              "3:2",
+              "20:25",
+              "15:10",
               "10:15",
-              "2:6"
+              "12:16"
             ],
             "correctAnswer": "10:15",
             "conceptLabel": "equivalent ratios"
@@ -472,6 +590,90 @@
         }
       ],
       "meta": "6 questions • consumer-math angle"
+    },
+    {
+      "id": "rt-challenge",
+      "type": "applied-challenge",
+      "title": "Decision: The Snack Stand Order",
+      "timestamp": "2026-09-05T12:45:00.000Z",
+      "meta": "6th Grade • Decision brief • which sizes to buy, with unit rates",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Snack Stand Order",
+        "instructions": "Decide which package sizes a school snack stand should buy, using unit rates, and defend the decision to people who assumed bigger is always cheaper.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The reading's four-second trick is a decision tool. A real order with a budget makes students use unit rates to choose, and to notice when the best unit price is not the best decision.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "The student council runs a snack stand at games. The supplier's list shows each snack in two or three package sizes with prices. The stand has $60 for this order and about 120 customers per game. Last time, the council bought the biggest boxes of everything and half of one snack went stale.",
+          "role": "Student purchasing team",
+          "audience": "The student council treasurer and the teacher who signs the order",
+          "drivingQuestion": "Which package size of each snack gives the best price per serving, and when should we choose a worse unit price on purpose?",
+          "seedDirection": "Unit rate first for every option. Then ask a second question the unit rate cannot answer: how much will we actually sell before it goes stale?",
+          "lockedLessonFacts": [
+            "A ratio compares two amounts; a unit rate is how much for exactly one, found by dividing.",
+            "Bulk sizes are usually cheaper per unit, but not always; the 12-ounce box at $0.30 per ounce beat the 18-ounce box at $0.32.",
+            "Totals cannot be compared directly when the amounts differ; you need a rate.",
+            "Equivalent ratios come from multiplying or dividing both parts, not adding."
+          ],
+          "openQuestions": [
+            "How many servings are in each package size?",
+            "How many of each snack sold at the last three games?",
+            "Which snacks go stale, and how fast?",
+            "Does the supplier charge for delivery, and how does that change the per-serving cost?"
+          ],
+          "stakeholders": [
+            "Customers who want low prices",
+            "The council that needs the profit",
+            "The teacher responsible for the budget",
+            "The volunteers who store the boxes"
+          ],
+          "criteria": [
+            "A table with unit price per serving for every package option",
+            "The chosen size for each snack is stated with its unit price",
+            "At least one decision picks a smaller size on purpose, with the reason",
+            "The whole order fits within $60",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "$60 total",
+            "Only packages on the supplier's list",
+            "Nothing likely to go stale before the next two games",
+            "One page including the table"
+          ],
+          "deliverable": "A one-page order recommendation with the unit-price table, the chosen sizes, the total cost, and a short explanation for the council of why bigger was not always the answer.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A family compared a 5-pound bag of rice with a 20-pound bag.",
+            "move": "The 20-pound bag was cheaper per pound, so it looked like the obvious choice. Then they checked how much rice they cooked a month and realized the big bag would take a year, and the pantry had bugs before. They bought the 5-pound bag and accepted a slightly worse unit price.",
+            "whyItHelps": "It shows both halves of your decision: the unit rate finds the cheapest per-serving option, and a second fact, how fast you use it, decides whether that option is actually best."
+          },
+          "frameStarter": "For ____, the sizes cost ____ per serving and ____ per serving. We chose ____ because ____.",
+          "frameChoices": [
+            "Pick the best unit price for snacks that never go stale",
+            "Pick a smaller size for snacks that went stale last time",
+            "Split the budget so no single snack takes more than a third",
+            "Compare the supplier's price to a store's price per serving"
+          ],
+          "coachPrompts": [
+            "Which snack's biggest box has the best unit price but the worst decision?",
+            "Did you compare per serving or per package?",
+            "What would change if 200 customers came instead of 120?"
+          ]
+        },
+        "coachHint": "Unit price tells you what is cheapest. Sales history tells you what you will actually use. You need both numbers to decide.",
+        "sourceExcerpt": "Bulk sizes are usually cheaper per unit, but not always, and 'usually' is exactly the assumption that costs you money.",
+        "lessonRef": {
+          "resourceId": "rt-reading",
+          "title": "The Four-Second Trick"
+        }
+      }
     }
   ]
 }

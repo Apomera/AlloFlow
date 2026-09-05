@@ -18,7 +18,7 @@
       "title": "Meet the Team Inside You",
       "timestamp": "2026-07-21T17:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
+        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Relay Team** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Changes When You Move?** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
         "objectives": [
           {
             "id": "bs-goal-matching",
@@ -177,6 +177,126 @@
       "meta": "4 sections • systems-and-handoffs reference"
     },
     {
+      "id": "bs-memory",
+      "type": "memory-aid",
+      "title": "Remember the Relay Team",
+      "timestamp": "2026-09-05T12:12:00.000Z",
+      "meta": "6th Grade • 3 memory aids • six systems, the oxygen relay, the handoffs",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Relay Team",
+        "instructions": "Each card locks in facts from The Relay Race. Study the example aid, make it yours, and explain how it leads back to the way the systems hand off to each other.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "sequence-cue",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "It begins in the respiratory system: oxygen slips out of the alveoli into your blood. The circulatory system takes the baton: your heart pumps oxygen-rich blood through vessels. Food comes from the digestive system, where nutrients pass into the blood in the small intestine. The nervous system is the coordinator. The skeletal system holds it up and anchors the muscular system.",
+        "lessonRef": {
+          "resourceId": "bs-reading",
+          "title": "The Relay Race"
+        },
+        "cards": [
+          {
+            "id": "bs-ma-six",
+            "target": "The six systems and each one's job",
+            "essentialFacts": [
+              "Respiratory: brings oxygen in and carbon dioxide out through the lungs.",
+              "Circulatory: the heart and vessels deliver oxygen and nutrients and carry waste away.",
+              "Digestive: breaks food into nutrients that pass into the blood.",
+              "Nervous: sends electrical signals that control and coordinate the body.",
+              "Skeletal: 206 bones give structure and protect organs; Muscular: muscles pull the body into motion."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say 'Move!' Respiratory, Circulatory, Digestive, Nervous, Skeletal, Muscular.",
+            "mapping": "The sentence tells the story in order: air and blood (R, C) carry food (D), the nervous system gives the command (N), and bones and muscles (S, M) do the moving.",
+            "scaffoldStarter": "R ____ C ____ D ____, N ____ S ____ M ____.",
+            "scaffoldSteps": [
+              "Write the six systems and circle the first letters.",
+              "Choose words that hint at each job.",
+              "Check that your sentence still names all six."
+            ],
+            "coachPrompts": [
+              "Which of your words shows that the nervous system is the coordinator, not just one worker?"
+            ],
+            "studentPrompt": "Write your own six-letter sentence, or reorder the example.",
+            "reasoningPrompt": "Explain how each word points to one system and its job.",
+            "hookFact": {
+              "text": "If you stretched all your blood vessels end to end, they would wrap around the Earth twice.",
+              "sourceTitle": "The Relay Race (this lesson)"
+            }
+          },
+          {
+            "id": "bs-ma-relay",
+            "target": "The oxygen relay: lungs to blood to cell",
+            "essentialFacts": [
+              "Air enters the lungs and oxygen crosses from tiny sacs called alveoli into the blood.",
+              "The heart pumps oxygen-rich blood out through arteries; veins bring blood back.",
+              "Inside a muscle cell, oxygen and nutrients combine to release energy so the cell can contract."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Four batons: Lungs → Blood → Heart pump → Muscle cell. Say it with your hands: breathe in, tap your chest, pump a fist, flex your arm.",
+            "mapping": "One motion per handoff keeps the order in your body, not just in words, and the flex at the end is the payoff: energy released in the cell.",
+            "scaffoldStarter": "____ → ____ → ____ → ____.",
+            "scaffoldSteps": [
+              "Write the four places oxygen goes, in order.",
+              "Add a hand motion for each.",
+              "Run the relay out loud three times."
+            ],
+            "coachPrompts": [
+              "Where in your sequence does the digestive system's delivery join the oxygen?"
+            ],
+            "studentPrompt": "Create your own four-step relay with motions.",
+            "reasoningPrompt": "How does each step of your relay match a system from the reading?",
+            "hookFact": {
+              "text": "The lungs are where the outside air meets the inside of your body.",
+              "sourceTitle": "The Relay Race (this lesson)"
+            }
+          },
+          {
+            "id": "bs-ma-handoffs",
+            "target": "Why systems speed up together: the handoffs are the point",
+            "essentialFacts": [
+              "During exercise, muscles demand more oxygen, so the respiratory and circulatory systems speed up together.",
+              "The nervous system notices the demand and triggers the change, often before you think about it.",
+              "No system works alone; the body is a system of systems."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "You sprint for the bus → muscles burn through oxygen → nerves notice → heart pounds faster AND breathing deepens → more oxygen reaches the muscles → you make the bus. Cut any link and the chain fails.",
+            "mapping": "Each arrow is a handoff between two systems. Reading it as a chain shows why breathing and heartbeat change at the same time: one demand, two responses, one coordinator.",
+            "scaffoldStarter": "I ____ → my muscles ____ → my nervous system ____ → my ____ and ____ speed up.",
+            "scaffoldSteps": [
+              "Start with something you did today that took effort.",
+              "Add the system that noticed and the two that responded.",
+              "End with what the muscles got."
+            ],
+            "coachPrompts": [
+              "Which link in your chain is the nervous system, and what would happen without it?"
+            ],
+            "studentPrompt": "Write your own handoff chain for something you did today.",
+            "reasoningPrompt": "How does your chain show that no system works alone?",
+            "hookFact": {
+              "text": "Get scared and your heart races before you decide anything, because your nervous system triggered it.",
+              "sourceTitle": "The Relay Race (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "bs-sort",
       "type": "concept-sort",
       "title": "Which System Handles This?",
@@ -282,9 +402,9 @@
             "type": "mcq",
             "question": "The circulatory system delivers two things to your cells. What are they?",
             "options": [
-              "Oxygen and bones",
-              "Nerve signals and muscles",
-              "Water and carbon dioxide only",
+              "Oxygen from the lungs and calcium from the bones",
+              "Nerve signals from the brain and movement from the muscles",
+              "Water from the digestive system and carbon dioxide from the lungs",
               "Oxygen from the lungs and nutrients from the digestive system"
             ],
             "correctAnswer": "Oxygen from the lungs and nutrients from the digestive system",
@@ -306,10 +426,10 @@
             "type": "mcq",
             "question": "Why is the body called 'a system of systems'?",
             "options": [
-              "Because each system works completely alone",
+              "Because each system works completely alone on its own separate job",
               "Because the systems constantly work together and hand materials to each other",
-              "Because there is one giant system with no parts",
-              "Because the systems compete with each other"
+              "Because there is really one giant system with no separate parts inside",
+              "Because the systems compete with each other for the body's limited energy"
             ],
             "correctAnswer": "Because the systems constantly work together and hand materials to each other",
             "conceptLabel": "systems interaction"
@@ -318,9 +438,9 @@
             "type": "mcq",
             "question": "When you sprint, your breathing AND your heartbeat both speed up. Why do BOTH change together?",
             "options": [
-              "The two systems are actually the same system",
-              "Only the heart changes; breathing stays the same",
-              "The skeletal system forces them to",
+              "The two systems are actually the same system with two different names",
+              "Only the heart really changes; breathing only seems faster because you notice it",
+              "The skeletal system forces them both to speed up when the bones move faster",
               "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together"
             ],
             "correctAnswer": "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together",
@@ -469,6 +589,89 @@
         }
       ],
       "meta": "6 questions • reinforces interdependence"
+    },
+    {
+      "id": "bs-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: What Changes When You Move?",
+      "timestamp": "2026-09-05T12:13:00.000Z",
+      "meta": "6th Grade • Investigation brief • measure two systems responding together",
+      "data": {
+        "schemaVersion": 6,
+        "title": "What Changes When You Move?",
+        "instructions": "Plan and run a safe investigation that shows two body systems responding to the same demand at the same time. Measure, do not guess, and explain the handoff with lesson facts.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The reading says breathing and heartbeat speed up together because muscles need more oxygen. Students can measure both in one minute and see the handoff instead of memorizing it.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has stopwatches, a hallway, and permission to do one minute of gentle exercise such as marching in place or walking fast. Some students prefer not to exercise and can be the recorders and timers.",
+          "role": "Student physiologists",
+          "audience": "Your class and a health teacher who will check your method",
+          "drivingQuestion": "When a person exercises gently for one minute, how do breathing rate and heart rate each change, and what does the timing of those changes tell us about how the systems hand off to each other?",
+          "seedDirection": "Measure both at rest first. Without the resting numbers you cannot say anything changed.",
+          "lockedLessonFacts": [
+            "The respiratory system takes in oxygen and releases carbon dioxide through the lungs.",
+            "The circulatory system delivers oxygen and nutrients to cells and carries waste away.",
+            "Inside a muscle cell, oxygen and nutrients combine to release energy.",
+            "During exercise, muscles need more oxygen, so respiratory and circulatory systems speed up together.",
+            "The nervous system coordinates the change, often before you notice."
+          ],
+          "openQuestions": [
+            "How do we count breaths and heartbeats accurately in 15 seconds?",
+            "How long after stopping do both rates return to resting?",
+            "Do the two rates change by the same amount, or does one change more?"
+          ],
+          "stakeholders": [
+            "Volunteers who exercise",
+            "Recorders and timers",
+            "Anyone with a health reason to sit out",
+            "The health teacher checking safety"
+          ],
+          "criteria": [
+            "Resting and after-exercise measurements for both rates, recorded in a table",
+            "At least three volunteers so one odd result does not decide the answer",
+            "The explanation names the demand, the coordinator, and both responding systems",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Gentle exercise only, one minute, anyone may stop at any time",
+            "No one is required to exercise or to share their numbers",
+            "Measurements in the same 15-second window for everyone",
+            "Finish in one class period"
+          ],
+          "deliverable": "A data table (rest, right after, two minutes after) for breathing rate and heart rate for each volunteer, a short written explanation of the handoff, and one question your data raised that you could not answer.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A coach wanted to know whether stair climbing or jogging made the team's hearts work harder.",
+            "move": "She had players measure resting pulse, do two minutes of each activity on different days, and measure pulse and breaths right after. Because everyone measured the same way for the same time, she could compare the two activities fairly.",
+            "whyItHelps": "Same method: rest first, same timing for everyone, two systems measured side by side, and a fair comparison because only one thing changed."
+          },
+          "frameStarter": "At rest, breathing was ____ and heart rate was ____. After one minute of ____, they were ____ and ____, because ____.",
+          "frameChoices": [
+            "Compare rest and after-exercise for both rates",
+            "Track how long recovery takes for each rate",
+            "Compare two gentle activities",
+            "Compare how much each rate changes as a percent"
+          ],
+          "coachPrompts": [
+            "Which system noticed the demand first, and can your data show that?",
+            "What would you expect if only the heart sped up and breathing did not?",
+            "How does a bigger heart rate change help a muscle cell?"
+          ]
+        },
+        "coachHint": "Resting numbers first, same timing for everyone, then look at the two rates side by side. The story is in how they move together.",
+        "sourceExcerpt": "Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed.",
+        "lessonRef": {
+          "resourceId": "bs-reading",
+          "title": "The Relay Race"
+        }
+      }
     }
   ]
 }

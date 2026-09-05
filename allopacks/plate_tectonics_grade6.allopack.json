@@ -18,7 +18,7 @@
       "title": "Solve the Earth Puzzle",
       "timestamp": "2026-07-21T05:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA scientist noticed that South America and Africa look like puzzle pieces. Everyone laughed at him for fifty years. He was right — but for a reason he never figured out.\n\n1. Read **The Man Who Was Laughed At** and watch how EVIDENCE piles up.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Follow **How We Figured It Out** — the timeline of the argument.\n4. Sort the evidence in **What Kind of Boundary?**\n5. Take the quiz — two questions ask what counts as EVIDENCE, not just what happened.\n6. Fill in the **Cornell Notes** in your own words.\n\nThe real lesson here is not about rocks. It is about how science changes its mind when the evidence finally forces it. 🌍",
+        "body": "**Due:** (your teacher will tell you)\n\nA scientist noticed that South America and Africa look like puzzle pieces. Everyone laughed at him for fifty years. He was right — but for a reason he never figured out.\n\n1. Read **The Man Who Was Laughed At** and watch how EVIDENCE piles up.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Follow **How We Figured It Out** — the timeline of the argument.\n4. Sort the evidence in **What Kind of Boundary?**\n5. Take the quiz — two questions ask what counts as EVIDENCE, not just what happened.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Earth Puzzle** — study the example aid, then make one your own.\n8. Finish with **Explore: Reading a Coastline Like Wegener** — use what you learned on a real problem, and mark every guess as a guess.\n\nThe real lesson here is not about rocks. It is about how science changes its mind when the evidence finally forces it. 🌍",
         "objectives": [
           {
             "id": "pt-goal-scramble",
@@ -126,6 +126,126 @@
         }
       ],
       "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "pt-memory",
+      "type": "memory-aid",
+      "title": "Remember the Earth Puzzle",
+      "timestamp": "2026-09-05T12:05:00.000Z",
+      "meta": "6th Grade • 3 memory aids • evidence, boundaries, mechanism",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Earth Puzzle",
+        "instructions": "Each card locks in facts from The Man Who Was Laughed At. Study the example, make it yours, and explain how it leads back to the geology.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "keyword-association",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "South America's east coast fits into Africa's west coast like puzzle pieces. Identical fossils show up on both continents. Matching rock layers line up across the Atlantic. Coal sits under the ice of Antarctica. Geologists rejected it because Wegener could not explain how. Plates pull apart at divergent boundaries, push together at convergent boundaries, and grind past each other at transform boundaries.",
+        "lessonRef": {
+          "resourceId": "pt-reading",
+          "title": "The Man Who Was Laughed At"
+        },
+        "cards": [
+          {
+            "id": "pt-ma-evidence",
+            "target": "Wegener's four kinds of evidence for continental drift",
+            "essentialFacts": [
+              "Coastlines: South America and Africa fit together like puzzle pieces.",
+              "Fossils: identical Mesosaurus fossils on both continents, from a freshwater reptile that could not cross an ocean.",
+              "Rocks: matching rock layers and mountain ranges line up across the Atlantic.",
+              "Climate: coal under Antarctic ice means Antarctica once sat in a warm swampy place."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "C-F-R-C: Coasts Fit, Rocks Connect. Coastlines, Fossils, Rocks, Climate.",
+            "mapping": "The four letters name the four kinds of evidence, and the sentence itself describes two of them, so it works as a checklist when you argue Wegener's case.",
+            "scaffoldStarter": "C ____ F ____ R ____ C ____.",
+            "scaffoldSteps": [
+              "Write the four evidence types and circle C, F, R, C.",
+              "Choose words that describe what each kind of evidence shows.",
+              "Say it back as a case for drift."
+            ],
+            "coachPrompts": [
+              "Which of the four would a geologist have found hardest to explain any other way?"
+            ],
+            "studentPrompt": "Write your own C-F-R-C line, or change the example.",
+            "reasoningPrompt": "Explain how each letter points to one kind of evidence and what it proves.",
+            "hookFact": {
+              "text": "Coal sits under the ice of Antarctica, and coal forms in warm swamps. So Antarctica was not always where it is now.",
+              "sourceTitle": "The Man Who Was Laughed At (this lesson)"
+            }
+          },
+          {
+            "id": "pt-ma-boundaries",
+            "target": "The three boundary types and one example of each",
+            "essentialFacts": [
+              "Divergent: plates pull apart, magma rises, new crust forms (the Mid-Atlantic Ridge, Iceland).",
+              "Convergent: plates push together, one dives under or both crumple upward (the Himalayas).",
+              "Transform: plates grind past each other, stick, build stress, and snap in earthquakes (the San Andreas Fault)."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "DIVerge = DIVide (Iceland splitting). CONverge = COME together (Himalayas rising). TRANSform = TRAIN tracks sliding side by side (San Andreas).",
+            "mapping": "Each boundary word hides a smaller word that shows the motion: divide, come together, tracks passing. Attaching one real place to each keeps them from blurring.",
+            "scaffoldStarter": "DIVergent sounds like ____. CONvergent sounds like ____. TRANSform sounds like ____.",
+            "scaffoldSteps": [
+              "Find a hidden or sound-alike word in each boundary name.",
+              "Match a hand motion to each: pull apart, push together, slide past.",
+              "Attach one place from the lesson to each."
+            ],
+            "coachPrompts": [
+              "Which boundary makes new crust, and does your keyword show that?"
+            ],
+            "studentPrompt": "Write your own three keyword links.",
+            "reasoningPrompt": "How does each keyword show what the plates are doing?",
+            "hookFact": {
+              "text": "Plates move about as fast as your fingernails grow, a few centimeters a year.",
+              "sourceTitle": "The Man Who Was Laughed At (this lesson)"
+            }
+          },
+          {
+            "id": "pt-ma-mechanism",
+            "target": "Why drift was rejected, and what finally supplied the mechanism",
+            "essentialFacts": [
+              "Geologists rejected Wegener in the 1920s because he could not explain what force could move a continent.",
+              "After World War II, ocean mapping found the Mid-Atlantic Ridge where new rock erupts and spreads outward.",
+              "Magnetic stripes in the sea floor mirror each other on both sides of the ridge, confirming sea-floor spreading.",
+              "Continents were not plowing through the ocean floor; they were riding on it."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "Good pattern, no engine → laughed at (1912–1920s). Ships map the sea floor → a ridge erupting new rock → stripes mirror each other → the sea floor spreads → the continents ride along → plate tectonics (1960s).",
+            "mapping": "The chain puts the missing piece where it belongs in time: the mechanism arrived from the ocean decades after the pattern, which is the whole point of the reading.",
+            "scaffoldStarter": "Pattern without a ____ → rejected. Then ____ → ____ → accepted.",
+            "scaffoldSteps": [
+              "Start with what Wegener had and what he lacked.",
+              "Add the sea-floor discoveries in order.",
+              "End with what the discoveries proved about continents."
+            ],
+            "coachPrompts": [
+              "Where in your chain does 'evidence' turn into 'mechanism'?"
+            ],
+            "studentPrompt": "Write your own chain from rejected idea to accepted theory.",
+            "reasoningPrompt": "How does your chain show why the mechanism mattered so much?",
+            "hookFact": {
+              "text": "Being right early is not the same as being believed. In science, you also have to show the mechanism.",
+              "sourceTitle": "The Man Who Was Laughed At (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "pt-timeline",
@@ -291,10 +411,10 @@
             "type": "mcq",
             "question": "What finally provided the MECHANISM Wegener was missing?",
             "options": [
-              "Better maps of the continents' coastlines",
+              "Better maps of the continents' coastlines drawn from satellite photographs",
               "Sea-floor spreading discovered by mapping the ocean bottom",
-              "Finding more matching fossils on land",
-              "Measuring the temperature of Earth's core"
+              "Finding more matching fossils on land on both sides of the Atlantic",
+              "Measuring the temperature of Earth's core with deep drilling"
             ],
             "correctAnswer": "Sea-floor spreading discovered by mapping the ocean bottom",
             "conceptLabel": "evidence needs mechanism"
@@ -454,6 +574,87 @@
         }
       ],
       "meta": "6 questions • includes honest prediction limits"
+    },
+    {
+      "id": "pt-challenge",
+      "type": "applied-challenge",
+      "title": "Explore: Reading a Coastline Like Wegener",
+      "timestamp": "2026-09-05T12:06:00.000Z",
+      "meta": "6th Grade • Exploration brief • an evidence case with a mechanism check",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Reading a Coastline Like Wegener",
+        "instructions": "Build the strongest evidence case you can that two coastlines were once joined, then do what Wegener could not: say what would have to be true about the sea floor between them for the case to hold.",
+        "selectionMode": "manual",
+        "family": "explore",
+        "fitReason": "The lesson is about how evidence and mechanism together make a scientific case. An exploration lets students assemble both halves for a real pair of coasts.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "explore",
+          "context": "Your class has a world map, a plate-boundary map, a list of where the same fossils and rock types are found, and a map of the age of the ocean floor (youngest rock along the mid-ocean ridges, oldest near the continents).",
+          "role": "Student geologists",
+          "audience": "A skeptical panel of classmates playing the 1920s geologists",
+          "drivingQuestion": "For one pair of coastlines that look like they fit, what evidence shows they were once joined, and what does the ocean floor between them have to look like if that is true?",
+          "seedDirection": "Start with the coast shapes, but do not stop there: Wegener had shapes too, and he lost the argument.",
+          "lockedLessonFacts": [
+            "Wegener's evidence: matching coastlines, identical fossils, matching rock layers, and climate clues such as coal under Antarctic ice.",
+            "Geologists rejected drift because no one could explain what force moves a continent.",
+            "At divergent boundaries, magma rises at a ridge and makes new crust that spreads outward.",
+            "Magnetic stripes in sea-floor rock mirror each other on both sides of the ridge.",
+            "Continents ride on plates; they do not plow through the ocean floor."
+          ],
+          "openQuestions": [
+            "Where is the ridge between your two coasts, and is the youngest sea floor along it?",
+            "Do the rock types on each coast actually match, or only the shapes?",
+            "If the coasts have been moving apart for millions of years, how far apart should they be now at a few centimeters per year?"
+          ],
+          "stakeholders": [
+            "The skeptical panel",
+            "Future students who will use your case as a model",
+            "The scientists whose evidence you are reusing"
+          ],
+          "criteria": [
+            "The case uses at least three different kinds of evidence, not only coastline shape",
+            "It names the mechanism and points to a feature on the ocean-floor map that shows it",
+            "Each piece of evidence is labeled as strong, supportive, or weak",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Only maps and data your class actually has",
+            "The panel may ask 'how do you know?' about any claim, so every claim needs a source line",
+            "Two pages including the annotated map"
+          ],
+          "deliverable": "An annotated map of your two coastlines with the evidence marked on it, plus a one-page written case that ends with the mechanism: what the sea floor between the coasts must be doing.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student noticed that the Red Sea looks like a crack opening between Africa and Arabia.",
+            "move": "Instead of just pointing at the shape, she found the ridge running down the middle of the Red Sea, checked that the sea floor was youngest there, and measured that the shores are still moving apart about a centimeter a year. Shape plus ridge plus rate made a case the class could not knock down.",
+            "whyItHelps": "It shows the upgrade from Wegener's pattern to a full case: the shape is the question, the ridge is the mechanism, and the rate is the check."
+          },
+          "frameStarter": "These coasts were once joined because ____, ____, and ____. The mechanism is ____, which we can see in ____.",
+          "frameChoices": [
+            "Match the coastline shapes and check rock types on each side",
+            "Trace a fossil found on both coasts and ask whether it could have crossed an ocean",
+            "Find the ridge and the youngest sea floor between the coasts",
+            "Estimate how long the separation took at a few centimeters per year"
+          ],
+          "coachPrompts": [
+            "Which of your evidence types would Wegener have had, and which one only arrived after 1947?",
+            "If the panel says 'coincidence,' which evidence answers them?",
+            "Does your mechanism explain the direction the coasts moved?"
+          ]
+        },
+        "coachHint": "Wegener had the what. Your case needs the how. Find the ridge.",
+        "sourceExcerpt": "Along that ridge, new rock was erupting and pushing outward. Even better, magnetic stripes frozen into that rock matched in mirror image on both sides. The sea floor was spreading.",
+        "lessonRef": {
+          "resourceId": "pt-reading",
+          "title": "The Man Who Was Laughed At"
+        }
+      }
     }
   ]
 }

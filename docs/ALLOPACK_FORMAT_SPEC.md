@@ -97,6 +97,32 @@ placement, generator prompt, and born-accessible alt text; the teacher generates
 produces correctly-shaped image resources) or drops files in. Packs stay small and
 license-clean.
 
+### `anchor-chart`
+`data`: `{ "chartType"?: "reference", "title", "sections": [{ "label", "bullets": [string], "iconPrompt"? }] }`. 3-5 sections, 1-3 bullets each.
+
+### `note-taking` (Cornell notes)
+`data`: `{ "templateType": "cornell-notes", "cues": [{ "id", "text" }], "notes": [{ "id", "text": "" }], "summary": "" }`. One blank note row per cue (4+ cues).
+
+### `timeline`
+`data`: `{ "progressionLabel": "AXIS: low -> high", "items": [{ "date", "event", "description"? }] }`. 4+ items; also used for process steps ("PROCESS: Step 1 -> Step 7").
+
+### `outline`
+`data`: `{ "main", "branches": [{ "title", "items": [string] }] }`. 2+ branches.
+
+### `math`
+`data`: `{ "problems": [{ "question", "answer", "steps": [{ "explanation" }] }] }`. 4+ problems; every step is a sentence a student could say.
+
+### `memory-aid` (Memory Aid Studio, added 2026-08-28; pack shape settled 2026-09-05)
+`data`: `{ "schemaVersion": 2, "title", "instructions", "selectionMode": "manual", "selectedTypes": [type], "authorshipMode": "scaffolded", "reflectionLevel": "quick", "reasoningRequired": false, "sourceExcerpt", "lessonRef": { "resourceId", "title" }, "cards": [card] }`.
+Card: `{ "id", "target", "essentialFacts": [2-10 strings], "factLocked": true, "factVerified": true, "type", "mode": "scaffolded", "aiExample", "mapping", "scaffoldStarter", "scaffoldSteps": [string], "coachPrompts": [string], "studentPrompt", "reasoningPrompt", "hookFact"?: { "text", "sourceTitle" } }`.
+`type` is one of acronym-acrostic | rhyme-rhythm | chunking | story-chain | keyword-association | visual-association | analogy-pattern | sequence-cue. 2-8 cards (3 is the sweet spot). `factVerified: true` records that the pack author checked the facts; the studio then shows "0 items to review". Quote `essentialFacts` from the pack's own reading so a fact-check can find them. The example aid must be one a student could have written; the mapping must say how each part leads back to a fact.
+
+### `applied-challenge` (Applied Challenge Studio, added 2026-08-28; pack shape settled 2026-09-05)
+`data`: `{ "schemaVersion": 6, "title", "instructions", "selectionMode": "manual", "family", "fitReason", "agencyMode": "co-framed", "scope": "compact"|"standard", "brief", "supports", "coachHint", "sourceExcerpt", "lessonRef": { "resourceId", "title" } }`.
+`family` is one of investigate | design | decide | propose | explore, and `brief.family` must match. Brief: `{ "family", "context", "role", "audience", "drivingQuestion", "seedDirection", "lockedLessonFacts": [3-12 strings], "openQuestions": [string], "stakeholders": [string], "criteria": [2+], "constraints": [1+], "deliverable", "factLocked": true, "factVerified": true }`. Supports: `{ "parallelExample": { "context", "move", "whyItHelps" }, "frameStarter", "frameChoices": [2+], "coachPrompts": [string] }`.
+Leave `workspace`, `evidenceLedger`, `validationCycles`, `feedback` and `teacherComment` out: the studio fills them as the student works. `lockedLessonFacts` are the only facts the brief may treat as established; everything else the student needs is an `openQuestion`. A good brief has a real audience, a deliverable a student can finish, and at least one criterion that requires the pack's vocabulary.
+
+Executable examples of every type above: any file in `allopacks/` (all 21 carry memory-aid and applied-challenge since 2026-09-05) and the per-type shape checks in `tests/allopack_catalog.test.js`.
 ## Authoring rules (the ones that bite)
 
 1. **Never** put student names, levels, accommodations, or grouping rationale anywhere in a pack.

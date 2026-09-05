@@ -18,7 +18,7 @@
       "title": "Pull One Thread",
       "timestamp": "2026-07-21T08:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nIn 1958, people tried to help a forest by removing one animal they thought was a pest. The forest fell apart. Today you learn why pulling one thread moves the whole web.\n\n1. Read **Pull One Thread** — the wolf story at the end is true.\n2. Learn the words in the **Glossary**, then win the **Bingo** round.\n3. Study the **Web Roles** chart — every living thing has a job.\n4. Sort the organisms in **What's Your Job?**\n5. Take the quiz — question 4 asks you to predict a chain reaction.\n6. Use the **Sentence Frames** to explain a food web in your own words.\n\nBig idea to carry: in an ecosystem there is no such thing as doing only one thing. 🐺🌲",
+        "body": "**Due:** (your teacher will tell you)\n\nA century ago, people removed one animal from Yellowstone because they saw it as a pest. The whole landscape changed in ways nobody expected. Today you learn why pulling one thread moves the whole web.\n\n1. Read **Pull One Thread** — the wolf story at the end is true.\n2. Learn the words in the **Glossary**, then win the **Bingo** round.\n3. Study the **Web Roles** chart — every living thing has a job.\n4. Sort the organisms in **What's Your Job?**\n5. Take the quiz — question 4 asks you to predict a chain reaction.\n6. Use the **Sentence Frames** to explain a food web in your own words.\n7. Lock the ideas in with **Remember the Web** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Would Happen If…?** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig idea to carry: in an ecosystem there is no such thing as doing only one thing. 🐺🌲",
         "objectives": [
           {
             "id": "ec-goal-bingo",
@@ -184,6 +184,124 @@
         ]
       },
       "meta": "5 sections • roles + the 10% rule"
+    },
+    {
+      "id": "ec-memory",
+      "type": "memory-aid",
+      "title": "Remember the Web",
+      "timestamp": "2026-09-05T12:01:00.000Z",
+      "meta": "5th Grade • 3 memory aids • roles, the 10% rule, the thread",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Web",
+        "instructions": "Three sets of facts from Pull One Thread. Study the example aid for each, then make your own and explain how it connects back to the science.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "chunking",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Producers make their own food. Consumers eat other living things. Decomposers break down dead plants, dead animals, and waste. Only about ten percent of the energy at one level makes it to the next. You cannot remove one species and change only one thing.",
+        "lessonRef": {
+          "resourceId": "ec-reading",
+          "title": "Pull One Thread"
+        },
+        "cards": [
+          {
+            "id": "ec-ma-roles",
+            "target": "The three roles: producer, consumer, decomposer",
+            "essentialFacts": [
+              "Producers (plants, algae, some bacteria) make their own food from sunlight.",
+              "Consumers eat other living things: herbivores eat plants, carnivores eat animals, omnivores eat both.",
+              "Decomposers (fungi, bacteria, worms) break down dead material and return nutrients to the soil."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "P-C-D: Plants Cook Dinner. Producers cook it from sunlight, Consumers eat it, Decomposers clean up.",
+            "mapping": "The three letters follow the order energy travels: it is made (P), eaten (C), and finally recycled (D). The kitchen picture keeps each job separate.",
+            "scaffoldStarter": "P ____, C ____, D ____.",
+            "scaffoldSteps": [
+              "Write the three roles and circle P, C, D.",
+              "Pick a verb for each letter that matches the job: make, eat, break down.",
+              "Check that your sentence keeps the order energy moves."
+            ],
+            "coachPrompts": [
+              "Which of your words shows that decomposers give nutrients BACK to producers?"
+            ],
+            "studentPrompt": "Write your own P-C-D sentence, or change the example so it sounds like you.",
+            "reasoningPrompt": "Explain how each word points back to what that role really does.",
+            "hookFact": {
+              "text": "Without decomposers, an ecosystem would bury itself in its own dead material and everything would starve.",
+              "sourceTitle": "Pull One Thread (this lesson)"
+            }
+          },
+          {
+            "id": "ec-ma-ten",
+            "target": "The 10% rule: only about a tenth of the energy moves up each level",
+            "essentialFacts": [
+              "Only about 10% of the energy at one level reaches the next level.",
+              "The rest is spent on moving, breathing, and staying warm, and much escapes as heat.",
+              "That is why a meadow supports thousands of grasshoppers, hundreds of mice, and only a few hawks."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "chunking",
+            "mode": "scaffolded",
+            "aiExample": "Chunk it as a shrinking stack: 1,000 grass units, 100 grasshopper units, 10 mouse units, 1 hawk unit. Each floor of the stack is one tenth of the floor below.",
+            "mapping": "Grouping the numbers into a stack of tens turns 'energy leaks' into a shape you can see: wide at the bottom, one hawk at the top.",
+            "scaffoldStarter": "1,000 ____, 100 ____, 10 ____, 1 ____.",
+            "scaffoldSteps": [
+              "Choose four organisms from one food chain, producer first.",
+              "Give the producer 1,000 units and divide by ten at each step.",
+              "Say why the top number is so small."
+            ],
+            "coachPrompts": [
+              "Where did the other 900 units go at each step?"
+            ],
+            "studentPrompt": "Build your own shrinking stack with organisms from a place you know.",
+            "reasoningPrompt": "How does your stack explain why big predators are rare?",
+            "hookFact": {
+              "text": "Big predators are rare because the energy math will not support more of them.",
+              "sourceTitle": "Pull One Thread (this lesson)"
+            }
+          },
+          {
+            "id": "ec-ma-thread",
+            "target": "Pull one thread and the whole web moves: the Yellowstone wolves",
+            "essentialFacts": [
+              "Wolves were hunted out of Yellowstone by the 1920s.",
+              "Without wolves, elk grazed heavily along rivers and stripped young willows and aspens; beavers and songbirds lost what they needed and riverbanks eroded.",
+              "Wolves returned in 1995 and much of this reversed, though scientists still debate how much the wolves alone caused."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "No wolves → more elk → bare riverbanks → no willow for beavers, no cover for songbirds → crumbling banks. Wolves back → fewer elk by the rivers → willows return → beavers and birds return → banks hold.",
+            "mapping": "Each arrow is one connection in the web. Reading the chain forward and backward shows the same species list moving in opposite directions, which is the lesson: no change happens alone.",
+            "scaffoldStarter": "No ____ → more ____ → ____ → ____.",
+            "scaffoldSteps": [
+              "Start with the species that was removed.",
+              "Add one arrow for each thing that changed because of it.",
+              "Rewrite the chain with the species put back."
+            ],
+            "coachPrompts": [
+              "Which link in your chain is the one scientists are least sure about?"
+            ],
+            "studentPrompt": "Write a thread-pull chain for a species near where you live.",
+            "reasoningPrompt": "How does your chain show that removing one species changes more than one thing?",
+            "hookFact": {
+              "text": "Scientists still argue about how much of the Yellowstone change the wolves caused directly; weather and bear populations mattered too.",
+              "sourceTitle": "Pull One Thread (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "ec-sort",
@@ -384,6 +502,120 @@
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Ecologist |\n|---|---|---|---|\n| Roles | Names organisms only | Uses producer/consumer/decomposer | Uses all roles precisely, including trophic levels |\n| Energy | Does not mention energy | Says energy moves | Explains energy loss and why predators are rare |\n| Systems thinking | One-step effect | Two-step chain | Traces effects through 3+ connections in a web |"
       },
       "meta": "6 frames • rubric • chain-reaction reasoning"
+    },
+    {
+      "id": "ec-faq",
+      "type": "faq",
+      "title": "Food Web Questions Kids Ask",
+      "timestamp": "2026-09-05T12:00:00.000Z",
+      "meta": "5th Grade • 6 questions",
+      "data": [
+        {
+          "question": "Do plants ever eat animals? 🪰",
+          "answer": "A few, like the Venus flytrap, trap insects — but not for energy. They make their own food from sunlight like every producer, and use the insects for nutrients their poor soil lacks. Producer first, snack second."
+        },
+        {
+          "question": "Where do humans fit in a food web?",
+          "answer": "We are omnivores, so we sit at more than one level: a salad puts us one step from producers, a burger two or three. Most of what we eat traces back to farmed plants, which are producers too."
+        },
+        {
+          "question": "What happens to all the energy that 'leaks'? ⚡",
+          "answer": "It is used up keeping animals moving, warm, and alive, and most of it leaves as heat. It is not destroyed — it just is not available as food for the next level."
+        },
+        {
+          "question": "Are decomposers the same as scavengers?",
+          "answer": "Close cousins. A vulture or a crab that eats a dead animal is a scavenger — a consumer. Decomposers like fungi and bacteria finish the job, breaking what is left all the way down into nutrients."
+        },
+        {
+          "question": "Could a food web survive without a top predator? 🐺",
+          "answer": "It would keep existing, but it would change. Yellowstone showed that when wolves left, elk numbers grew and rivers, willows, beavers, and songbirds all shifted. The web reorganizes rather than disappears."
+        },
+        {
+          "question": "Why draw webs instead of chains if webs are messier?",
+          "answer": "Because the mess is the truth. A chain hides the fact that a hawk has several foods, and that is exactly what lets it survive when one of them gets scarce. The web shows resilience; the chain hides it."
+        }
+      ]
+    },
+    {
+      "id": "ec-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: What Would Happen If…?",
+      "timestamp": "2026-09-05T12:02:00.000Z",
+      "meta": "5th Grade • Investigation brief • prediction with a web diagram",
+      "data": {
+        "schemaVersion": 6,
+        "title": "What Would Happen If…?",
+        "instructions": "Pick one species in a local food web and investigate what would most likely change if it disappeared. Use lesson facts as anchors, mark your guesses as guesses, and build a prediction others can check.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The lesson's core claim is that removing one species changes many things. An investigation asks students to make that claim testable for a web they can actually observe.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "A community group wants to remove a species from the park near your school because it is a nuisance: too many geese on the field, or too many deer eating the gardens, or the coyotes that have started appearing. Before anyone acts, they have asked for a student investigation of what else would change.",
+          "role": "Student ecology advisors",
+          "audience": "The park's community advisory group",
+          "drivingQuestion": "If this one species were removed from the park's food web, what would most likely happen to at least three other living things there, and how confident can we be about each prediction?",
+          "seedDirection": "Draw the web first. Every arrow that touches your species is a place something could change.",
+          "lockedLessonFacts": [
+            "Producers make their own food from sunlight; consumers eat other living things; decomposers return nutrients to the soil.",
+            "A food web shows all the feeding connections at once, and most animals eat more than one thing.",
+            "Only about 10% of energy passes from one level to the next, so predators are rare and depend on many prey.",
+            "Removing wolves from Yellowstone changed elk, willows, beavers, songbirds, and riverbanks; scientists still debate how much each change was due to wolves alone."
+          ],
+          "openQuestions": [
+            "What does the chosen species eat, and what eats it, in THIS park?",
+            "Is there another species that would take over its role?",
+            "How would we know a year later whether our prediction was right?"
+          ],
+          "stakeholders": [
+            "People who use the park",
+            "The gardeners whose plants are eaten",
+            "The other species connected to the one being removed",
+            "Park staff who would do the removing"
+          ],
+          "criteria": [
+            "The web diagram shows at least six living things and every arrow is labeled as eats or is eaten by",
+            "At least three predicted changes each trace back through the web with a chain of arrows",
+            "Each prediction is marked as strong, likely, or unsure with a reason",
+            "At least four glossary words are used correctly"
+          ],
+          "constraints": [
+            "Predictions must use species that actually live in or near the park",
+            "No prediction may skip a link: every change needs the arrow that causes it",
+            "One page plus the diagram"
+          ],
+          "deliverable": "A labeled food-web diagram of the park with the chosen species highlighted, plus a written prediction of three changes, each rated for confidence and each explained through the web.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "Fishers in one region removed most of the sea otters to protect shellfish.",
+            "move": "Ecologists drew the otter's web first: otters eat urchins, urchins eat kelp, kelp shelters fish. They predicted that fewer otters would mean more urchins and less kelp, then watched the coast to check. The kelp forests vanished where otters were gone and returned where otters came back.",
+            "whyItHelps": "The same move: draw the web, follow the arrows two steps past the removed species, and state a prediction you can check later."
+          },
+          "frameStarter": "If ____ disappeared from the park, then ____ would probably ____, because it ____.",
+          "frameChoices": [
+            "Its prey would increase, and the things its prey eats would decrease",
+            "Its predators would lose a food source and might leave or decline",
+            "Another species would take over its role",
+            "Decomposers would have less to break down, changing the soil"
+          ],
+          "coachPrompts": [
+            "Which arrow in your diagram are you most sure about, and which one is a guess?",
+            "What did Yellowstone teach you about how confident to sound?",
+            "How would you check your prediction without removing anything?"
+          ]
+        },
+        "coachHint": "Two steps past the removed species is where the surprising changes live. Do not stop at one arrow.",
+        "sourceExcerpt": "A hawk eats mice, snakes, and rabbits. A mouse eats seeds, insects, and berries. When you draw all those connections at once, you get a food web, and a web behaves very differently from a chain.",
+        "lessonRef": {
+          "resourceId": "ec-reading",
+          "title": "Pull One Thread"
+        }
+      }
     }
   ]
 }

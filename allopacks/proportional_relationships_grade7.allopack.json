@@ -18,7 +18,7 @@
       "title": "Spot the Straight Line",
       "timestamp": "2026-07-21T15:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned ratios and unit rates. This year those become a superpower: if you can spot a proportional relationship, you can predict any value in it and graph the whole thing from a single number.\n\n1. Read **When Doubling One Doubles the Other**.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Proportion Moves** chart open while you work.\n4. Do the **Practice Problems** — find the constant of proportionality FIRST every time.\n5. Sort the tables in **Proportional or Not?**\n6. Take the quiz — question 4 is a table that looks proportional but is not.\n\nThe one test that settles everything: is y divided by x the same for every pair? If yes, it is proportional, and that answer is your constant. 📈",
+        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned ratios and unit rates. This year those become a superpower: if you can spot a proportional relationship, you can predict any value in it and graph the whole thing from a single number.\n\n1. Read **When Doubling One Doubles the Other**.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Proportion Moves** chart open while you work.\n4. Do the **Practice Problems** — find the constant of proportionality FIRST every time.\n5. Sort the tables in **Proportional or Not?**\n6. Take the quiz — question 4 is a table that looks proportional but is not.\n7. Lock the ideas in with **Remember the Same-Answer Test** — study the example aid, then make one your own.\n8. Finish with **Investigation: Is It Really Proportional?** — use what you learned on a real problem, and mark every guess as a guess.\n\nThe one test that settles everything: is y divided by x the same for every pair? If yes, it is proportional, and that answer is your constant. 📈",
         "objectives": [
           {
             "id": "pr-goal-scramble",
@@ -103,9 +103,9 @@
           "tier": "Academic"
         },
         {
-          "term": "Origin",
-          "def": "The (0,0) point every proportional graph passes through.",
-          "tier": "Domain-Specific"
+          "term": "Predict",
+          "def": "To use a known constant or pattern to find a value you have not measured yet.",
+          "tier": "Academic"
         },
         {
           "term": "Factor",
@@ -168,6 +168,124 @@
         ]
       },
       "meta": "4 moves • table-equation-graph link"
+    },
+    {
+      "id": "pr-memory",
+      "type": "memory-aid",
+      "title": "Remember the Same-Answer Test",
+      "timestamp": "2026-09-05T12:46:00.000Z",
+      "meta": "7th Grade • 3 memory aids • the test, the zero rule, three forms",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Same-Answer Test",
+        "instructions": "Each card locks in a move from When Doubling One Doubles the Other. Study the example aid, make it yours, and explain how it leads back to proportionality.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "rhyme-rhythm",
+          "keyword-association",
+          "chunking"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. Proportional relationships must pass through zero. The same idea shows up three ways: a table where output over input is constant, an equation y = kx, and a straight line through the origin.",
+        "lessonRef": {
+          "resourceId": "pr-reading",
+          "title": "When Doubling One Doubles the Other"
+        },
+        "cards": [
+          {
+            "id": "pr-ma-test",
+            "target": "The test: output divided by input is the same for every pair",
+            "essentialFacts": [
+              "Divide output by input for each pair in the table.",
+              "If every answer is the same, the relationship is proportional and that answer is the constant of proportionality.",
+              "If the answers differ, it is not proportional, no matter how neat the numbers look."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Divide each pair, out over in; same number every time? Proportional wins.",
+            "mapping": "The rhyme is the test in order: the operation (out over in), the check (same every time), and the verdict. Saying it makes you actually divide instead of eyeballing.",
+            "scaffoldStarter": "Divide each pair, ____ over ____; same number every time? ____.",
+            "scaffoldSteps": [
+              "Write the operation in the right order: output over input.",
+              "Add the check and the verdict.",
+              "Run it on (1,5), (2,10), (3,15)."
+            ],
+            "coachPrompts": [
+              "Does your rhyme tell you which number goes on top?"
+            ],
+            "studentPrompt": "Write your own test rhyme.",
+            "reasoningPrompt": "How does your rhyme catch a table that rises steadily but is not proportional?",
+            "hookFact": {
+              "text": "That 3 is the constant, and it is really just the unit rate wearing a fancier name: 3 dollars per taco.",
+              "sourceTitle": "When Doubling One Doubles the Other (this lesson)"
+            }
+          },
+          {
+            "id": "pr-ma-zero",
+            "target": "Proportional relationships must pass through zero",
+            "essentialFacts": [
+              "Zero input must give zero output: zero tacos cost zero dollars.",
+              "A starting amount, like a pool that already had 10 gallons, breaks proportionality.",
+              "On a graph, a proportional relationship is a straight line through the origin (0, 0)."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "No head start. If one side starts with something before the other side does anything, it is not proportional. Zero in, zero out, or it is out.",
+            "mapping": "The keyword head start names the exact thing that breaks proportionality (a starting amount), and 'zero in, zero out' is the origin rule in four words.",
+            "scaffoldStarter": "No ____. Zero in, ____ out, or it is ____.",
+            "scaffoldSteps": [
+              "Name what a starting amount is in plain words.",
+              "Turn the origin rule into a short saying.",
+              "Test it on the pool that started with 10 gallons."
+            ],
+            "coachPrompts": [
+              "Using your keyword, why is y = 2x + 5 not proportional?"
+            ],
+            "studentPrompt": "Write your own zero-rule keyword.",
+            "reasoningPrompt": "How does your keyword connect the table, the equation, and the graph?",
+            "hookFact": {
+              "text": "Proportional relationships must pass through zero: zero input, zero output. Zero tacos cost zero dollars.",
+              "sourceTitle": "When Doubling One Doubles the Other (this lesson)"
+            }
+          },
+          {
+            "id": "pr-ma-three",
+            "target": "One idea, three forms: table, equation, graph",
+            "essentialFacts": [
+              "Table: output over input is the same in every row.",
+              "Equation: y = kx, where k is the constant of proportionality.",
+              "Graph: a straight line through the origin whose steepness is k."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "chunking",
+            "mode": "scaffolded",
+            "aiExample": "T-E-G, one k: Table (same ratio), Equation (y = kx), Graph (line through zero). Three views of one number.",
+            "mapping": "Chunking the three forms under one constant shows they are not three topics but three windows on the same k, which is the reading's closing point.",
+            "scaffoldStarter": "Table: ____. Equation: ____. Graph: ____. The one number is ____.",
+            "scaffoldSteps": [
+              "Write the three forms as a short list.",
+              "Put the constant k in each one.",
+              "Take one proportional relationship and write it all three ways."
+            ],
+            "coachPrompts": [
+              "Where does k appear in each of your three forms?"
+            ],
+            "studentPrompt": "Make your own three-form chunk for a real relationship.",
+            "reasoningPrompt": "How does your chunk show that the constant is the same in all three?",
+            "hookFact": {
+              "text": "Learn to move between those three and you have most of middle-school math in your hands.",
+              "sourceTitle": "When Doubling One Doubles the Other (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "pr-math",
@@ -474,8 +592,8 @@
           "answer": "The +b is a starting amount. y = kx is proportional (through the origin); y = kx + b is linear but NOT proportional. You will study the second kind, called linear relationships, very soon."
         },
         {
-          "question": "Can a relationship be proportional going down?",
-          "answer": "Yes. If the constant is a fraction like 0.5, then y is always half of x — still proportional, still a line through the origin, just a gentler slope."
+          "question": "Can the constant of proportionality be smaller than 1?",
+          "answer": "Yes. If the constant is a fraction like 0.5, then y is always half of x — still proportional, still a straight line through the origin, just a gentler slope. The line still rises; a constant below 1 only makes it climb more slowly."
         },
         {
           "question": "How do I quickly tell from a table? ⚡",
@@ -487,6 +605,89 @@
         }
       ],
       "meta": "6 questions • connects to linear relationships next"
+    },
+    {
+      "id": "pr-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: Is It Really Proportional?",
+      "timestamp": "2026-09-05T12:47:00.000Z",
+      "meta": "7th Grade • Investigation brief • test a real-world claim of proportionality",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Is It Really Proportional?",
+        "instructions": "Find a real relationship that people treat as proportional, collect at least five data pairs, run the same-answer test, and report whether it truly is, where it breaks, and what the constant means.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The reading warns that some relationships fool you. An investigation of real data makes students run the test on something they care about and discover where proportionality quietly fails.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class is making a bulletin board called 'Proportional or Fooled?' Each team picks one everyday relationship people assume is proportional: cost of a ride-share versus distance, calories versus servings on a label, height of a stack of books versus number of books, phone battery versus minutes of video, distance walked versus steps counted.",
+          "role": "Student data investigators",
+          "audience": "Classmates reading the board, and the math teacher who checks the test",
+          "drivingQuestion": "Is this relationship proportional across the whole range we measured, and if not, exactly where and why does it stop being proportional?",
+          "seedDirection": "Collect real pairs before deciding anything. Then divide output by input for every pair and look at the column of answers, not at the graph's shape.",
+          "lockedLessonFacts": [
+            "Two quantities are proportional when output divided by input is the same for every pair; that number is the constant of proportionality.",
+            "The constant equals the unit rate.",
+            "Proportional relationships must pass through zero; a starting amount breaks proportionality.",
+            "A proportional relationship graphs as a straight line through the origin.",
+            "A relationship can rise steadily and still not be proportional, like the pool that started with 10 gallons."
+          ],
+          "openQuestions": [
+            "Can we get a true zero data point, or do we have to reason about it?",
+            "How far apart should our inputs be to see whether the ratio drifts?",
+            "If the ratio changes slightly, is that measurement error or a real break in proportionality?",
+            "What hidden starting amount might be in our relationship (a base fare, a fixed weight, a standby drain)?"
+          ],
+          "stakeholders": [
+            "Classmates who will trust your verdict",
+            "People who rely on the assumption (a customer estimating a fare, a cook scaling a recipe)",
+            "The math teacher checking your division"
+          ],
+          "criteria": [
+            "At least five real data pairs, including inputs far apart",
+            "Output divided by input is computed for every pair and shown in a column",
+            "A clear verdict: proportional, not proportional, or proportional only within a range, with the break point named",
+            "The constant is stated with its units and its meaning in plain words",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Real measurements or real published numbers only, with the source noted",
+            "No data invented to make the test come out clean",
+            "One page plus the table and graph"
+          ],
+          "deliverable": "A table with an output-over-input column, a graph with the origin marked, a verdict with the reason, and a plain-language sentence saying what the constant means, if there is one.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student assumed a taxi fare was proportional to distance.",
+            "move": "He recorded five rides, divided fare by miles, and got 4.50, 3.25, 2.90, 2.70, 2.60. The answers were not the same, so he checked the receipt and found a $3 base fare. Fare minus the base fare divided by miles was constant at about $2.50 per mile.",
+            "whyItHelps": "It shows the test doing its job: the column of answers exposed a hidden starting amount, and removing it revealed the real constant."
+          },
+          "frameStarter": "We measured ____ versus ____. Output over input gave ____. So the relationship is ____ because ____.",
+          "frameChoices": [
+            "Test a relationship with a suspected hidden starting amount",
+            "Test a relationship that should be proportional and see how close it gets",
+            "Test where a relationship stops being proportional (a bulk discount, a full battery)",
+            "Compare two relationships and see which one has a constant"
+          ],
+          "coachPrompts": [
+            "What would the graph look like at zero input, and did you check?",
+            "If the ratio drifts a little, how would you tell measurement error from a real break?",
+            "What does your constant mean in the real situation?"
+          ]
+        },
+        "coachHint": "Do not trust the straight-looking line. Trust the column of divisions. Same number every time, or it is not proportional.",
+        "sourceExcerpt": "Here is the test that settles every question: divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. If the answers differ, it is not proportional, no matter how neat the numbers look.",
+        "lessonRef": {
+          "resourceId": "pr-reading",
+          "title": "When Doubling One Doubles the Other"
+        }
+      }
     }
   ]
 }

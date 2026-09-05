@@ -18,7 +18,7 @@
       "title": "Help a Seed Grow",
       "timestamp": "2026-07-21T18:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Take the quiz — say each answer out loud first.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
+        "body": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Take the quiz — say each answer out loud first.\n6. Lock the ideas in with **Remember What a Plant Needs** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Windowsill Test** — use what you learned on a real problem, and mark every guess as a guess.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
         "objectives": [
           {
             "id": "pl-goal-matching",
@@ -160,6 +160,94 @@
       "meta": "4 needs • simple picture reference"
     },
     {
+      "id": "pl-memory",
+      "type": "memory-aid",
+      "title": "Remember What a Plant Needs",
+      "timestamp": "2026-09-05T12:26:00.000Z",
+      "meta": "3rd Grade • 2 memory aids • the four needs, root then stem",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember What a Plant Needs",
+        "instructions": "Two cards lock in the big facts from The Quiet Life of a Seed. Look at the example, make your own, and tell how it helps you remember.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A seed needs water. It needs warmth. A growing plant needs sunlight. The fourth thing is air. When a seed wakes up, it sends a tiny root down into the soil. Then it pushes a small green stem up toward the light.",
+        "lessonRef": {
+          "resourceId": "pl-reading",
+          "title": "The Quiet Life of a Seed"
+        },
+        "cards": [
+          {
+            "id": "pl-ma-needs",
+            "target": "The four things a plant needs: water, warmth, sunlight, air",
+            "essentialFacts": [
+              "Water wakes the sleeping seed and is drunk up by the roots.",
+              "Warmth tells the seed it is a safe time to grow.",
+              "Sunlight lets leaves make the plant's food.",
+              "Air gives leaves carbon dioxide, and roots need air too."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "W-W-S-A: Wet, Warm, Sunny, Airy. A seed wants a wet, warm, sunny, airy home.",
+            "mapping": "Each word is one need turned into a describing word, so the sentence sounds like a place a seed would like to live.",
+            "scaffoldStarter": "A seed wants a ____, ____, ____, ____ home.",
+            "scaffoldSteps": [
+              "Say the four needs.",
+              "Turn each one into a describing word.",
+              "Say the sentence three times."
+            ],
+            "coachPrompts": [
+              "Which word in your sentence is about the roots, not just the leaves?"
+            ],
+            "studentPrompt": "Make your own four-word home for a seed.",
+            "reasoningPrompt": "Tell how each word helps you remember one need.",
+            "hookFact": {
+              "text": "A plant left in a dark closet will grow pale and weak, even with plenty of water, because it cannot make food in the dark.",
+              "sourceTitle": "The Quiet Life of a Seed (this lesson)"
+            }
+          },
+          {
+            "id": "pl-ma-rootstem",
+            "target": "First the root goes down, then the stem goes up",
+            "essentialFacts": [
+              "When a seed wakes up, it sends a tiny root down into the soil.",
+              "The root drinks water and holds the plant in place.",
+              "Then a small green stem pushes up toward the light."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Down, then up. Point your finger at the floor and say 'root,' then point at the ceiling and say 'stem.' Roots first, because a plant needs a drink before it needs a view.",
+            "mapping": "The two motions are the two directions, and doing 'down' first keeps the order right: the root comes before the stem.",
+            "scaffoldStarter": "Down: ____. Up: ____.",
+            "scaffoldSteps": [
+              "Point down and name the part.",
+              "Point up and name the part.",
+              "Say why down comes first."
+            ],
+            "coachPrompts": [
+              "What does the root do that the stem cannot?"
+            ],
+            "studentPrompt": "Make your own down-then-up motion with words.",
+            "reasoningPrompt": "How does your motion help you remember which part grows first?",
+            "hookFact": {
+              "text": "A seed feels like a tiny stone, but a seed is alive, and inside it a baby plant is asleep, waiting.",
+              "sourceTitle": "The Quiet Life of a Seed (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "pl-sort",
       "type": "concept-sort",
       "title": "Need or Not?",
@@ -210,7 +298,7 @@
           },
           {
             "id": "pl7",
-            "content": "Soil to hold its roots",
+            "content": "Space for its roots to spread",
             "categoryId": "pl-need"
           },
           {
@@ -350,6 +438,86 @@
         }
       ],
       "meta": "6 questions • gentle and wonder-filled"
+    },
+    {
+      "id": "pl-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Windowsill Test",
+      "timestamp": "2026-09-05T12:27:00.000Z",
+      "meta": "3rd Grade • Investigation brief • two cups, one change",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Windowsill Test",
+        "instructions": "Pick one thing a plant needs and test it with two cups of seeds: one cup gets it and one does not. Guess first, watch every day, and tell what happened.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The lesson lists four needs. A two-cup test lets third graders see one need matter, which is the standard's ask: plan an investigation of whether plants need sunlight and water.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has bean seeds, paper cups, soil, water, a sunny windowsill, and a dark cupboard. Everyone gets two cups.",
+          "role": "Plant scientists",
+          "audience": "The class next door, who will see your cups and read your report",
+          "drivingQuestion": "If we take away one thing a plant needs, what will happen to the seeds in that cup compared to the cup that has everything?",
+          "seedDirection": "Change only ONE thing between your two cups. If you change two, you will not know which one mattered.",
+          "lockedLessonFacts": [
+            "A plant needs water, warmth, sunlight, and air.",
+            "Water wakes a seed; without it the seed stays asleep.",
+            "A plant in the dark grows pale and weak because it cannot make food.",
+            "Roots need air, so a plant drowned in too much water can die."
+          ],
+          "openQuestions": [
+            "Which need will we take away: water, light, or air at the roots?",
+            "How will we make sure the two cups are the same in every other way?",
+            "What will we look at each day: height, color, or how many seeds sprout?"
+          ],
+          "stakeholders": [
+            "The class next door",
+            "Your team who waters the cups",
+            "The teacher who keeps the cupboard closed"
+          ],
+          "criteria": [
+            "Only one thing is different between the two cups",
+            "A guess is written down before the test starts",
+            "Something is measured or drawn every school day for a week",
+            "The report says what happened and uses at least two glossary words"
+          ],
+          "constraints": [
+            "Bean seeds only",
+            "One week",
+            "No plant is left to die for longer than the test needs"
+          ],
+          "deliverable": "A picture journal with a drawing of both cups each day, your guess at the top, and two sentences at the end: what happened, and why.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student wanted to know if seeds need warmth.",
+            "move": "She put one cup of wet seeds on the warm windowsill and one wet cup in the refrigerator, kept the water the same, and drew both cups every day. The warm cup sprouted; the cold cup slept.",
+            "whyItHelps": "She changed only one thing, warmth, so the sprouting told her something true."
+          },
+          "frameStarter": "We took away ____. We think the cup without it will ____. Everything else was the ____.",
+          "frameChoices": [
+            "Take away water from one cup",
+            "Put one cup in the dark cupboard",
+            "Keep one cup's soil soaking wet all the time",
+            "Put one cup in a cold spot"
+          ],
+          "coachPrompts": [
+            "Are your two cups the same in every way except one?",
+            "What did you see that the lesson said would happen?",
+            "What surprised you?"
+          ]
+        },
+        "coachHint": "One change. Two cups. Look every day.",
+        "sourceExcerpt": "So the four needs are water, warmth, sunlight, and air. Take away any one and the plant struggles.",
+        "lessonRef": {
+          "resourceId": "pl-reading",
+          "title": "The Quiet Life of a Seed"
+        }
+      }
     }
   ]
 }

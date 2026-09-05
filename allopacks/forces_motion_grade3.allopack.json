@@ -1,0 +1,528 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Forces and Motion — Pushes, Pulls, and Why Things Stop",
+    "author": "AlloFlow flagship (authored by Claude, reviewed against NGSS grade 3 physical science expectations; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd Grade",
+    "createdAt": "2026-09-05T13:20:00.000Z",
+    "imageShotList": "allopacks/forces_motion_grade3.IMAGES.md",
+    "standards": "NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 (make observations and measurements of an object's motion to provide evidence that a pattern can be used to predict future motion); CCSS.ELA-LITERACY.RI.3.3 (describe the relationship between a series of scientific ideas using language that pertains to cause and effect)"
+  },
+  "sourceTopic": "Forces and Motion",
+  "history": [
+    {
+      "id": "fm-directions",
+      "type": "directions",
+      "title": "Be a Force Detective",
+      "timestamp": "2026-09-05T13:20:00.000Z",
+      "meta": "3rd Grade • Homework mission • 3 auto-checking goals",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEvery time something starts moving, stops, or turns, a push or a pull did it. Today you learn to spot the push or pull every single time.\n\n1. Read **The Invisible Push**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **Push, Pull, Stop** chart.\n4. Sort the cards in **Balanced or Unbalanced?**\n5. Take the quiz. Question 3 is about a ball that rolls and stops.\n6. Lock the ideas in with **Remember the Invisible Push** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Ramp Race** — change one thing, and write down your guess first.\n\nThis week, catch one thing moving and say out loud what pushed or pulled it. 🛼",
+        "objectives": [
+          {
+            "id": "fm-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "fm-glossary"
+          },
+          {
+            "id": "fm-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "fm-goal-manual",
+            "label": "I watched something move and named the push or pull that did it",
+            "kind": "manual"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm-reading",
+      "type": "simplified",
+      "title": "The Invisible Push",
+      "timestamp": "2026-09-05T13:21:00.000Z",
+      "meta": "3rd Grade • Leveled reading • ~400 words",
+      "data": "## The Invisible Push\n\nRoll a ball across the floor. It goes, and goes, and then it slows down and stops. Why did it stop? Nothing touched it. Or did something?\n\nA **force** is a push or a pull. Every time something starts to move, speeds up, slows down, or changes direction, a force did it. You cannot see a force, but you can always see what it does.\n\nWhen you kick a ball, your foot pushes it. That push makes it move. A **push** moves things away from you. A **pull** brings things toward you, like when you tug a wagon. Both are forces.\n\nNow the mystery of the rolling ball. It stopped because of a force you did not notice: **friction**. Friction is the rubbing between the ball and the floor. It pushes against the ball's motion, a tiny bit with every roll, until the ball runs out of **motion**. On a smooth gym floor there is less friction, so the ball rolls farther. On thick carpet there is more friction, so it stops sooner.\n\nHere is another invisible force. Drop a pencil. It falls down, not up, not sideways. **Gravity** is the pull that brings things toward the ground. It is always pulling on you, even right now while you sit still.\n\nWait. If gravity is pulling on you right now, why are you not falling?\n\nBecause the chair is pushing up on you exactly as hard as gravity is pulling down. Two forces, the same size, in opposite directions. They cancel out. We call that **balanced**. When forces are balanced, nothing about the motion changes: a still thing stays still, and a moving thing keeps moving the same way.\n\nWhen one force is bigger than the other, the forces are **unbalanced**, and that is when motion changes. Two kids pull a rope with the same strength: balanced, nobody moves. One kid pulls harder: unbalanced, the rope moves toward the stronger pull. A parked bike is balanced. A bike you are pedaling is unbalanced, because your push is beating friction.\n\nSo here is your detective rule. See something start, stop, speed up, or turn? Look for the unbalanced force. See something sitting still or gliding steadily? The forces are balanced.\n\nOne more thing, and it is the part scientists love. Forces follow **patterns**. Roll the same ball down the same ramp the same way and it goes about the same distance every time. Roll it from higher up and it goes farther, every time. Because forces follow patterns, you can **predict** what will happen before it happens. That is not magic. That is science, and you can do it with a ball and a ramp this week."
+    },
+    {
+      "id": "fm-glossary",
+      "type": "glossary",
+      "title": "Force Words",
+      "timestamp": "2026-09-05T13:22:00.000Z",
+      "meta": "3rd Grade • 10 terms • Tiered",
+      "data": [
+        {
+          "term": "Force",
+          "def": "A push or a pull that can make something move, stop, or change direction.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Push",
+          "def": "A force that moves something away from you.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pull",
+          "def": "A force that brings something toward you.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Friction",
+          "def": "The rubbing force that slows things down when two surfaces touch.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Gravity",
+          "def": "The pull that brings things down toward the ground.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Motion",
+          "def": "Moving from one place to another.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Balanced",
+          "def": "Forces that are the same size in opposite directions, so the motion does not change.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Unbalanced",
+          "def": "One force is bigger than the other, so the motion changes.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pattern",
+          "def": "Something that happens the same way again and again.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Predict",
+          "def": "To say what will happen before it happens, using a pattern.",
+          "tier": "Academic"
+        }
+      ]
+    },
+    {
+      "id": "fm-anchor",
+      "type": "anchor-chart",
+      "title": "Push, Pull, Stop",
+      "timestamp": "2026-09-05T13:23:00.000Z",
+      "meta": "4 sections • classroom reference chart",
+      "data": {
+        "chartType": "reference",
+        "title": "EVERY CHANGE HAS A FORCE",
+        "sections": [
+          {
+            "label": "A FORCE IS",
+            "bullets": [
+              "A push (away from you)",
+              "A pull (toward you)",
+              "You see what it does, not the force itself"
+            ],
+            "iconPrompt": "two hands, one pushing a box and one pulling a wagon"
+          },
+          {
+            "label": "INVISIBLE FORCES",
+            "bullets": [
+              "Friction: rubbing that slows things down",
+              "Gravity: the pull toward the ground",
+              "Both are working right now"
+            ],
+            "iconPrompt": "a ball slowing on carpet and a pencil falling"
+          },
+          {
+            "label": "BALANCED vs UNBALANCED",
+            "bullets": [
+              "Balanced: same size, opposite ways, motion does NOT change",
+              "Unbalanced: one is bigger, motion CHANGES",
+              "Start, stop, speed up, turn = unbalanced"
+            ],
+            "iconPrompt": "a tug of war with even teams, then one team winning"
+          },
+          {
+            "label": "PATTERNS PREDICT",
+            "bullets": [
+              "Same push, same result",
+              "Higher ramp, farther roll",
+              "Use the pattern to guess before you test"
+            ],
+            "iconPrompt": "a ball on a ramp with a measuring line"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm-memory",
+      "type": "memory-aid",
+      "title": "Remember the Invisible Push",
+      "timestamp": "2026-09-05T13:24:00.000Z",
+      "meta": "3rd Grade • 2 memory aids • the two invisible forces, balanced vs unbalanced",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Invisible Push",
+        "instructions": "Two cards lock in the big ideas from The Invisible Push. Look at the example, make your own, and tell how it helps you remember.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Friction is the rubbing between the ball and the floor. Gravity is the pull that brings things toward the ground. When forces are balanced, nothing about the motion changes. When one force is bigger than the other, the forces are unbalanced, and that is when motion changes.",
+        "lessonRef": {
+          "resourceId": "fm-reading",
+          "title": "The Invisible Push"
+        },
+        "cards": [
+          {
+            "id": "fm-ma-invisible",
+            "target": "The two invisible forces: friction slows, gravity pulls down",
+            "essentialFacts": [
+              "Friction is the rubbing between two surfaces that slows things down.",
+              "More friction (carpet) stops a ball sooner; less friction (gym floor) lets it roll farther.",
+              "Gravity is the pull toward the ground and is always pulling, even when you sit still."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "FRICTION = FRRR, the sound of rubbing. GRAVITY = GROUND, the G pulls you to the ground.",
+            "mapping": "Each hard word gets a sound or a smaller word that says what the force does: rubbing for friction, ground for gravity.",
+            "scaffoldStarter": "Friction sounds like ____. Gravity has a G for ____.",
+            "scaffoldSteps": [
+              "Say each word slowly and listen to its start.",
+              "Match a sound or word to what the force does.",
+              "Test it: which force stops the ball, and which drops the pencil?"
+            ],
+            "coachPrompts": [
+              "Which of your two hooks explains the ball on the carpet?"
+            ],
+            "studentPrompt": "Make your own sound or word hooks for the two forces.",
+            "reasoningPrompt": "Tell how each hook helps you remember what that force does.",
+            "hookFact": {
+              "text": "Gravity is always pulling on you, even right now while you sit still.",
+              "sourceTitle": "The Invisible Push (this lesson)"
+            }
+          },
+          {
+            "id": "fm-ma-balanced",
+            "target": "Balanced forces keep motion the same; unbalanced forces change it",
+            "essentialFacts": [
+              "Balanced: two forces the same size in opposite directions; the motion does not change.",
+              "Unbalanced: one force is bigger; the motion changes.",
+              "Start, stop, speed up, or turn always means an unbalanced force."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a tug of war. Both teams pulling the same: the flag on the rope does not move (balanced). One team pulls harder: the flag slides toward them (unbalanced). The flag only moves when the pulls are not equal.",
+            "mapping": "The flag is the object, the two teams are the two forces, and 'the flag only moves when the pulls are not equal' is the rule in one picture.",
+            "scaffoldStarter": "Picture ____. When both sides are equal, ____. When one side is bigger, ____.",
+            "scaffoldSteps": [
+              "Pick a picture with two sides pushing or pulling.",
+              "Show the equal case and the unequal case.",
+              "Say which one changes the motion."
+            ],
+            "coachPrompts": [
+              "In your picture, what is the object that moves or stays still?"
+            ],
+            "studentPrompt": "Draw or describe your own balanced-and-unbalanced picture.",
+            "reasoningPrompt": "How does your picture show when motion changes?",
+            "hookFact": {
+              "text": "The chair is pushing up on you exactly as hard as gravity is pulling down. That is why you are not falling.",
+              "sourceTitle": "The Invisible Push (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm-sort",
+      "type": "concept-sort",
+      "title": "Balanced or Unbalanced?",
+      "timestamp": "2026-09-05T13:25:00.000Z",
+      "meta": "2 categories • 10 cards",
+      "data": {
+        "categories": [
+          {
+            "id": "fm-bal",
+            "label": "BALANCED (motion stays the same)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "fm-unbal",
+            "label": "UNBALANCED (motion changes)",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "fm-i1",
+            "content": "A book sitting still on a table",
+            "categoryId": "fm-bal"
+          },
+          {
+            "id": "fm-i2",
+            "content": "A soccer ball right after you kick it",
+            "categoryId": "fm-unbal"
+          },
+          {
+            "id": "fm-i3",
+            "content": "A tug of war where nobody is moving",
+            "categoryId": "fm-bal"
+          },
+          {
+            "id": "fm-i4",
+            "content": "A rolling ball slowing down on carpet",
+            "categoryId": "fm-unbal"
+          },
+          {
+            "id": "fm-i5",
+            "content": "A pencil falling off a desk",
+            "categoryId": "fm-unbal"
+          },
+          {
+            "id": "fm-i6",
+            "content": "You, sitting in your chair",
+            "categoryId": "fm-bal"
+          },
+          {
+            "id": "fm-i7",
+            "content": "A bike turning a corner",
+            "categoryId": "fm-unbal"
+          },
+          {
+            "id": "fm-i8",
+            "content": "A parked wagon on flat ground",
+            "categoryId": "fm-bal"
+          },
+          {
+            "id": "fm-i9",
+            "content": "A sled speeding up down a hill",
+            "categoryId": "fm-unbal"
+          },
+          {
+            "id": "fm-i10",
+            "content": "A hockey puck gliding at a steady speed on smooth ice",
+            "categoryId": "fm-bal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm-quiz",
+      "type": "quiz",
+      "title": "Force Detective Check",
+      "timestamp": "2026-09-05T13:26:00.000Z",
+      "meta": "5 multiple choice + 2 short answer",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is a force?",
+            "options": [
+              "A push or a pull",
+              "Anything that is moving",
+              "A kind of energy in batteries",
+              "The weight of an object"
+            ],
+            "correctAnswer": "A push or a pull",
+            "conceptLabel": "what a force is"
+          },
+          {
+            "type": "mcq",
+            "question": "You drop a pencil and it falls to the floor. Which force pulled it down?",
+            "options": [
+              "Friction",
+              "Gravity",
+              "Magnetism",
+              "Wind"
+            ],
+            "correctAnswer": "Gravity",
+            "conceptLabel": "gravity pulls down"
+          },
+          {
+            "type": "mcq",
+            "question": "A ball rolls across the floor and slowly stops, even though nobody touched it. Why?",
+            "options": [
+              "The ball ran out of energy and got tired",
+              "Gravity pulled it backward",
+              "Friction with the floor pushed against its motion",
+              "Balls always stop after a few seconds"
+            ],
+            "correctAnswer": "Friction with the floor pushed against its motion",
+            "conceptLabel": "friction slows motion"
+          },
+          {
+            "type": "mcq",
+            "question": "Two teams pull a rope with the same strength, and the rope does not move. What are the forces?",
+            "options": [
+              "Unbalanced, because both teams are pulling hard",
+              "There are no forces, because nothing is moving",
+              "Balanced, because the pulls are equal and opposite",
+              "Gravity, because the rope is heavy"
+            ],
+            "correctAnswer": "Balanced, because the pulls are equal and opposite",
+            "conceptLabel": "balanced forces"
+          },
+          {
+            "type": "mcq",
+            "question": "You roll a ball down a ramp three times from the same spot, and it stops near the same place each time. What can you do with that pattern?",
+            "options": [
+              "Nothing, because every roll is different",
+              "Prove that friction does not exist on ramps",
+              "Make the ball roll forever by trying again",
+              "Predict about where it will stop on the fourth roll"
+            ],
+            "correctAnswer": "Predict about where it will stop on the fourth roll",
+            "conceptLabel": "patterns predict motion"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "You are sitting still in a chair. Gravity is pulling you down. Explain why you are not falling, using the word balanced.",
+            "expectedAnswer": "The chair pushes up on me as hard as gravity pulls down. The two forces are the same size in opposite directions, so they are balanced and my motion does not change: I stay still.",
+            "conceptLabel": "balanced forces"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A ball rolls farther on the gym floor than on the carpet. Explain why, using the word friction.",
+            "expectedAnswer": "The carpet has more friction, so it pushes against the ball's motion more and stops it sooner. The smooth gym floor has less friction, so the ball keeps rolling farther.",
+            "conceptLabel": "friction slows motion"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Name one thing you saw move today. What pushed or pulled it?"
+          },
+          {
+            "text": "Where in your home is there a lot of friction? Where is there very little?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm-faq",
+      "type": "faq",
+      "title": "Force Questions Kids Ask",
+      "timestamp": "2026-09-05T13:27:00.000Z",
+      "meta": "6 questions",
+      "data": [
+        {
+          "question": "If friction stops everything, how does a bike keep going? 🚲",
+          "answer": "Because your legs keep pushing. As long as your push is bigger than friction, the forces are unbalanced and the bike keeps moving. Stop pedaling and friction wins, slowly."
+        },
+        {
+          "question": "Why does ice make you slip?",
+          "answer": "Ice has very little friction. Your shoes need friction to push against the ground, and without it your push slides away instead of moving you forward."
+        },
+        {
+          "question": "Does gravity work on the Moon? 🌙",
+          "answer": "Yes, but the Moon's gravity is weaker than Earth's, so astronauts could jump higher and fell more slowly. Gravity is everywhere; it is just stronger near bigger things."
+        },
+        {
+          "question": "Can a force happen without touching?",
+          "answer": "Yes! Gravity pulls the pencil without touching it, and a magnet can pull a paperclip across a gap. Most pushes and pulls you do use touching, but not all forces do."
+        },
+        {
+          "question": "If I push a wall and it does not move, did I use a force? 🧱",
+          "answer": "You did. The wall pushed back on you just as hard, so the forces were balanced and nothing moved. Balanced does not mean no forces; it means equal forces."
+        },
+        {
+          "question": "Why do heavy things not fall faster?",
+          "answer": "It surprises everyone. Gravity pulls harder on heavy things, but heavy things are also harder to get moving, and the two effects cancel. Drop a big and a small ball together and they land together, unless air slows the light one."
+        }
+      ]
+    },
+    {
+      "id": "fm-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Ramp Race",
+      "timestamp": "2026-09-05T13:28:00.000Z",
+      "meta": "3rd Grade • Investigation brief • one ramp, one change, a prediction",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Ramp Race",
+        "instructions": "Roll a ball down a ramp, measure how far it goes, and change one thing to see what happens. Guess first, then test, then use your pattern to predict a roll you have not done yet.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The standard asks third graders to observe motion, find a pattern, and predict. A ramp with one change at a time makes friction and unbalanced forces something they measure with a tape.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has a board for a ramp, some books to prop it up, a tennis ball, a measuring tape, and three floors to try: tile, carpet, and a rubber mat.",
+          "role": "Force detectives",
+          "audience": "Your class, and the class next door who will try to beat your prediction",
+          "drivingQuestion": "When we change one thing about the ramp or the floor, how does the distance the ball rolls change, and can we predict a roll before we make it?",
+          "seedDirection": "Change only ONE thing at a time: the height of the ramp OR the floor, not both. Then roll three times for each setup so one wobbly roll does not fool you.",
+          "lockedLessonFacts": [
+            "A force is a push or a pull; you see what it does, not the force itself.",
+            "Friction is the rubbing between two surfaces; more friction stops a ball sooner and less friction lets it roll farther.",
+            "Gravity pulls things down, so a ball on a ramp rolls toward the bottom.",
+            "Forces follow patterns, so you can predict what will happen before it happens."
+          ],
+          "openQuestions": [
+            "Which floor has the most friction, and how far will the ball go on it?",
+            "How much farther does the ball go when the ramp is one book higher?",
+            "How many rolls do we need before we trust our pattern?"
+          ],
+          "stakeholders": [
+            "Your team",
+            "The class next door",
+            "The teacher who lends the books"
+          ],
+          "criteria": [
+            "Only one thing changes between setups",
+            "Three rolls for every setup, measured with the tape and written in a table",
+            "A written guess before each new setup",
+            "A prediction for a setup you have not tried, using the pattern, and then a test of it",
+            "Uses the words friction and predict correctly"
+          ],
+          "constraints": [
+            "Tennis ball only",
+            "Ramp no taller than three books",
+            "Everyone stays out of the ball's path",
+            "Finish in one class period"
+          ],
+          "deliverable": "A data table (setup, roll 1, roll 2, roll 3), your guesses, your prediction for the untested setup and how close it was, and two sentences about what friction did.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A second grader wanted to know if a toy car goes farther on the kitchen floor or the rug.",
+            "move": "She used the same car, the same ramp, and the same push each time, rolled three times on each floor, and measured with a string. The kitchen floor won every time, so she predicted the hallway tile would also beat the rug, and it did.",
+            "whyItHelps": "She changed one thing, measured instead of guessed, and then used the pattern to predict a new floor."
+          },
+          "frameStarter": "We changed ____. We think the ball will go ____ because ____. It went ____.",
+          "frameChoices": [
+            "Change the floor: tile, carpet, rubber mat",
+            "Change the ramp height: one, two, three books",
+            "Change the ball: tennis ball versus a heavier ball",
+            "Predict the distance for a floor you have not tried"
+          ],
+          "coachPrompts": [
+            "Did you change only one thing? Say what stayed the same.",
+            "Which floor stopped the ball fastest? What force did that?",
+            "What is your guess for the next roll, and what pattern gave you that guess?"
+          ]
+        },
+        "coachHint": "One change, three rolls, then a guess. The pattern is only real if it keeps happening.",
+        "sourceExcerpt": "Roll the same ball down the same ramp the same way and it goes about the same distance every time. Roll it from higher up and it goes farther, every time. Because forces follow patterns, you can predict what will happen before it happens.",
+        "lessonRef": {
+          "resourceId": "fm-reading",
+          "title": "The Invisible Push"
+        }
+      }
+    }
+  ]
+}

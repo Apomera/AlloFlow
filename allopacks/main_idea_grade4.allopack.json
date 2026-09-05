@@ -18,7 +18,7 @@
       "title": "Find What It Is Really About",
       "timestamp": "2026-07-21T10:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nHere is a skill that shows up on every test you will ever take, and in every article you will ever read: figuring out what a text is *really* about.\n\n1. Read **The Suitcase Test** — it gives you a trick you can use forever.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Main Idea Moves** chart open while you work.\n4. Practice on **Which Detail Does Not Belong?**\n5. Take the quiz — it uses short paragraphs, so read each one twice.\n6. Use the **Sentence Frames** to write your own main-idea statements.\n7. Read **Reading Questions** if you are wondering how this works on videos, or what to do when you disagree with an author.\n\nWatch out for the most common trap: the topic is not the main idea. \"Dogs\" is a topic. \"Dogs can be trained to detect illness\" is a main idea. 🧳",
+        "body": "**Due:** (your teacher will tell you)\n\nHere is a skill that shows up on every test you will ever take, and in every article you will ever read: figuring out what a text is *really* about.\n\n1. Read **The Suitcase Test** — it gives you a trick you can use forever.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Main Idea Moves** chart open while you work.\n4. Practice on **Which Detail Does Not Belong?**\n5. Take the quiz — it uses short paragraphs, so read each one twice.\n6. Use the **Sentence Frames** to write your own main-idea statements.\n7. Read **Reading Questions** if you are wondering how this works on videos, or what to do when you disagree with an author.\n8. Lock the ideas in with **Remember the Suitcase Test** — study the example aid, then make one your own.\n9. Finish with **Design Challenge: A Main-Idea Poster for Younger Readers** — use what you learned on a real problem, and mark every guess as a guess.\n\nWatch out for the most common trap: the topic is not the main idea. \"Dogs\" is a topic. \"Dogs can be trained to detect illness\" is a main idea. 🧳",
         "objectives": [
           {
             "id": "mi-goal-scramble",
@@ -167,6 +167,124 @@
       "meta": "4 moves • strategy reference"
     },
     {
+      "id": "mi-memory",
+      "type": "memory-aid",
+      "title": "Remember the Suitcase Test",
+      "timestamp": "2026-09-05T12:32:00.000Z",
+      "meta": "4th-5th Grade • 3 memory aids • topic vs idea, the cover test, interesting vs important",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Suitcase Test",
+        "instructions": "Each card locks in a move from The Suitcase Test. Study the example aid, make it yours, and tell how it helps you find what a text is really about.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "analogy-pattern",
+          "sequence-cue",
+          "rhyme-rhythm"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The suitcase is the main idea. The clothes you pack inside are the supporting details. The topic is a word. The main idea is a sentence that says something about the topic. Read the whole paragraph, then cover it and ask, 'If I could only say one sentence about this, what would it be?' Interesting and important are different things.",
+        "lessonRef": {
+          "resourceId": "mi-reading",
+          "title": "The Suitcase Test"
+        },
+        "cards": [
+          {
+            "id": "mi-ma-suitcase",
+            "target": "Topic is a word; main idea is a sentence; details are what is packed inside",
+            "essentialFacts": [
+              "The topic is what a text is about in a word or phrase.",
+              "The main idea is a full sentence that says something about the topic.",
+              "Supporting details are the pieces that belong inside that one idea."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "The topic is the luggage tag (one word: 'Bees'). The main idea is the suitcase (a sentence: 'Bees matter to our food supply'). The details are the clothes packed inside, and every one must belong to the trip.",
+            "mapping": "Tag, suitcase, clothes: three sizes for three ideas. The tag is tiny like a topic word; the suitcase holds everything like the main idea; the clothes are the details that must fit.",
+            "scaffoldStarter": "The topic is the ____ (a word). The main idea is the ____ (a sentence). The details are the ____.",
+            "scaffoldSteps": [
+              "Pick your own container: a backpack, a lunchbox, a toy bin.",
+              "Match a label, the container, and the things inside to topic, main idea, and details.",
+              "Test it on the bee paragraph."
+            ],
+            "coachPrompts": [
+              "In your analogy, what happens to a detail that does not belong to the trip?"
+            ],
+            "studentPrompt": "Build your own container analogy.",
+            "reasoningPrompt": "How does your analogy show that a topic is not the same as a main idea?",
+            "hookFact": {
+              "text": "'Dogs' is a topic. 'Dogs can be trained to detect illness' is a main idea.",
+              "sourceTitle": "The Suitcase Test (this lesson)"
+            }
+          },
+          {
+            "id": "mi-ma-cover",
+            "target": "The cover test: read, cover, say one sentence, check the details",
+            "essentialFacts": [
+              "Read the whole paragraph first.",
+              "Cover it and ask: if I could only say one sentence about this, what would it be?",
+              "Check your sentence against the details: each one should support it, or your idea may be too narrow."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Read. Cover. Say. Check. Four beats, four hand motions: eyes on the page, hand over the page, hand to your mouth, finger down the details.",
+            "mapping": "The four beats are the four steps in order, and the motions make the order physical so you do not skip 'check,' which is the step most people forget.",
+            "scaffoldStarter": "____. ____. ____. ____.",
+            "scaffoldSteps": [
+              "Write the four steps as single words.",
+              "Add a motion for each.",
+              "Run the test on one paragraph today."
+            ],
+            "coachPrompts": [
+              "What would happen if you said your sentence before covering the page?"
+            ],
+            "studentPrompt": "Make your own four-beat version with motions.",
+            "reasoningPrompt": "How does your sequence keep you from stopping at the first sentence?",
+            "hookFact": {
+              "text": "Whatever you say out loud after covering the paragraph is usually very close to the main idea.",
+              "sourceTitle": "The Suitcase Test (this lesson)"
+            }
+          },
+          {
+            "id": "mi-ma-interesting",
+            "target": "Interesting is not the same as important",
+            "essentialFacts": [
+              "A detail can be true and fascinating and still not be the main idea.",
+              "'Bees have five eyes' is interesting, but a paragraph about pollination is not about bee eyes.",
+              "Ask whether the detail helps prove the main idea; if not, it does not belong in the suitcase."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Cool is not the same as key; does it prove the point to me?",
+            "mapping": "The first line names the trap (cool details feel key), and the second line is the test question from the reading, so the rhyme carries the fix along with the warning.",
+            "scaffoldStarter": "____ is not the same as ____; does it ____?",
+            "scaffoldSteps": [
+              "Choose two words for interesting and important that rhyme or bounce.",
+              "End with the test question.",
+              "Try it on the five-eyes detail."
+            ],
+            "coachPrompts": [
+              "Does your rhyme tell you what to DO with a cool detail, not just that it is a trap?"
+            ],
+            "studentPrompt": "Write your own two-line rhyme.",
+            "reasoningPrompt": "How does your rhyme help you decide which details go in the suitcase?",
+            "hookFact": {
+              "text": "Telling interesting from important is most of what good reading is.",
+              "sourceTitle": "The Suitcase Test (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "mi-sort",
       "type": "concept-sort",
       "title": "Which Detail Does Not Belong?",
@@ -253,9 +371,9 @@
             "question": "Read: 'Sea otters eat sea urchins. Urchins eat kelp. Where otters were hunted out, urchins multiplied and kelp forests vanished. Where otters returned, kelp grew back.' What is the main idea?",
             "options": [
               "Sea otters protect kelp forests by keeping urchin numbers down",
-              "Sea urchins eat kelp along the ocean floor",
-              "Sea otters were once hunted along the coast",
-              "Kelp forests are found in the ocean"
+              "Sea urchins eat kelp that grows along the rocky ocean floor",
+              "Sea otters were once hunted along the coast until they nearly vanished",
+              "Kelp forests are found in cold ocean water near the coast"
             ],
             "correctAnswer": "Sea otters protect kelp forests by keeping urchin numbers down",
             "conceptLabel": "identifying main idea"
@@ -383,6 +501,91 @@
         }
       ],
       "meta": "6 questions • transfer beyond print"
+    },
+    {
+      "id": "mi-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: A Main-Idea Poster for Younger Readers",
+      "timestamp": "2026-09-05T12:33:00.000Z",
+      "meta": "4th-5th Grade • Design brief • teach the suitcase test to second graders",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Main-Idea Poster for Younger Readers",
+        "instructions": "Design a one-page poster that teaches second graders how to find the main idea of a paragraph. Use a real paragraph, show the suitcase test working, and check that every detail on your poster belongs.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Teaching a skill is the strongest test of having it. A poster for younger readers makes students choose a clear paragraph, apply the cover test in public, and prove the topic-versus-idea difference.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "The second-grade teacher down the hall has asked your class for posters her students can use during reading time. Her students can read short paragraphs but often answer 'What is it about?' with one word.",
+          "role": "Student reading coaches",
+          "audience": "Second graders and their teacher",
+          "drivingQuestion": "How can one poster show a second grader the difference between a topic and a main idea, and walk them through finding the main idea of a real paragraph?",
+          "seedDirection": "Pick the paragraph first. If your example paragraph does not have one clear suitcase, no design will save the poster.",
+          "lockedLessonFacts": [
+            "The topic is a word; the main idea is a sentence that says something about the topic.",
+            "Supporting details are the pieces that help prove the main idea.",
+            "The main idea can be stated in the text or implied, and both are findable.",
+            "The cover test: read the whole paragraph, cover it, say one sentence, check it against the details.",
+            "A detail can be interesting and still not be important to the main idea."
+          ],
+          "openQuestions": [
+            "What paragraph is short enough and clear enough for a second grader?",
+            "How many words can a second grader read on a poster before they stop?",
+            "How do we show 'covering' the paragraph on paper?",
+            "Which detail on the poster is there because it is cool, not because it helps?"
+          ],
+          "stakeholders": [
+            "Second graders using the poster",
+            "Their teacher, who has to explain it once",
+            "Your classmates making other posters",
+            "The librarian who may hang it"
+          ],
+          "criteria": [
+            "Shows a real paragraph of 4 to 6 sentences with its topic (a word) and main idea (a sentence) clearly labeled",
+            "Shows the four steps of the cover test in order",
+            "Every word on the poster is one a second grader can read or a picture explains",
+            "Includes one 'cool but not important' detail and says why it does not belong",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "One page",
+            "Under 80 words total, not counting the example paragraph",
+            "No copyrighted characters",
+            "Must be readable from three feet away"
+          ],
+          "deliverable": "A finished one-page poster plus a five-sentence note to the second-grade teacher explaining how to use it and which detail is the trap.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fifth grader made a poster teaching kindergartners to tie shoes.",
+            "move": "She tried to include every tip she knew and the poster got crowded. She tested it on a kindergartner, watched where he got lost, cut the poster to four steps with one picture each, and it worked.",
+            "whyItHelps": "Same design lesson: the poster is for the reader, not the maker. Test it on the real audience and cut everything that does not help them do the skill."
+          },
+          "frameStarter": "Our paragraph is about ____ (topic). Its main idea is ____. The steps we show are ____. The trap detail is ____ because ____.",
+          "frameChoices": [
+            "A comic strip of a reader doing the four steps",
+            "A suitcase drawing with details packed inside and one left out",
+            "A before-and-after: one-word answer versus one-sentence answer",
+            "A fill-in poster where the second grader writes the main idea"
+          ],
+          "coachPrompts": [
+            "Test your poster on someone younger. Where did they stop?",
+            "Is your example paragraph's main idea stated or implied, and did you tell the reader which?",
+            "Which word on the poster would a second grader not know?"
+          ]
+        },
+        "coachHint": "Fewer words, one clear paragraph, four steps in order. If it looks empty to you, it probably looks right to a second grader.",
+        "sourceExcerpt": "A quick method that works: read the whole paragraph, then cover it and ask yourself, 'If I could only say one sentence about this, what would it be?'",
+        "lessonRef": {
+          "resourceId": "mi-reading",
+          "title": "The Suitcase Test"
+        }
+      }
     }
   ]
 }

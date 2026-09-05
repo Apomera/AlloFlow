@@ -18,7 +18,7 @@
       "title": "Design a Government That Cannot Be Trusted",
       "timestamp": "2026-07-21T04:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nThe framers had a strange design problem: build a government strong enough to work, but assume the people running it will eventually be selfish, ambitious, or wrong. Everything in the Constitution follows from that assumption.\n\n1. Read **Rules for the Rule-Makers** — look for the phrase \"what if the wrong person wins?\"\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Use the **Three Branches** chart as your map while you work.\n4. Walk the **Road to Ratification** timeline — the arguments are still being had today.\n5. Sort the powers in **Who Can Do That?**\n6. Take the quiz — it asks you to reason like a framer, not recite.\n7. Take a position in the **Sentence Frames**. Disagreeing with the framers is allowed if you can argue it.\n\nBig question to hold the whole time: is a slow government a broken one, or a safe one? ⚖️",
+        "body": "**Due:** (your teacher will tell you)\n\nThe framers had a strange design problem: build a government strong enough to work, but assume the people running it will eventually be selfish, ambitious, or wrong. Everything in the Constitution follows from that assumption.\n\n1. Read **Rules for the Rule-Makers** — look for the phrase \"what if the wrong person wins?\"\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Use the **Three Branches** chart as your map while you work.\n4. Walk the **Road to Ratification** timeline — the arguments are still being had today.\n5. Sort the powers in **Who Can Do That?**\n6. Take the quiz — it asks you to reason like a framer, not recite.\n7. Take a position in the **Sentence Frames**. Disagreeing with the framers is allowed if you can argue it.\n8. Lock the ideas in with **Remember the Machine** — study the example aid, then make one your own.\n9. Finish with **Proposal: Rules for Our Own Rule-Makers** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig question to hold the whole time: is a slow government a broken one, or a safe one? ⚖️",
         "objectives": [
           {
             "id": "ct-goal-crossword",
@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "Rules for the Rule-Makers",
       "timestamp": "2026-07-21T04:00:01.000Z",
-      "data": "## Rules for the Rule-Makers\n\nIn the summer of 1787, fifty-five men locked themselves in a hot Philadelphia room with the windows nailed shut so nobody could overhear. They had been sent to patch up the failing Articles of Confederation. Instead they threw them out and started over.\n\nTheir problem was not how to build a government. Their problem was how to build one that would still be safe when the wrong people were running it.\n\nThe Articles had produced a government too weak to function: no power to tax, no national court, no way to enforce anything. But the framers had just fought a war against a king, and a strong government sounded like the thing they had escaped. So they invented a machine designed to work while distrusting its own operators.\n\nFirst they split power three ways. The **legislative** branch — Congress — writes laws. The **executive** branch, headed by the President, carries them out. The **judicial** branch, the courts, decides what they mean. This is **separation of powers**. Its logic is simple: no single person or group ever holds the whole thing.\n\nThen they went further and gave each branch weapons against the others — **checks and balances**. Congress passes a bill; the President can veto it; Congress can override that veto with two-thirds. The President appoints judges; the Senate must confirm them. Courts can strike down laws as unconstitutional. Congress can impeach and remove a President or a judge.\n\nThey also split power a second way, between the national government and the states — **federalism** — so that even a captured national government does not control everything.\n\nAll of this makes government slow. That is not a bug. James Madison argued in Federalist No. 51 that \"ambition must be made to counteract ambition\" — that the safest system is one where powerful people are constantly blocked by other powerful people who want something different.\n\nIt is worth naming honestly what this document did not do. It counted enslaved people as three-fifths of a person for representation while denying them any rights at all. That was a **compromise** between delegates from states with and without slavery, and it treated human beings as a bargaining chip. The document left voting rules to states that limited them to white men with property. Women could not vote. The framers built a machine for limiting power that excluded most of the people living under it. The amendment process they included is how later generations forced it open.\n\nThat is the real inheritance: not a perfect document, but a repairable one, plus the argument about how to repair it. That argument is still running, and you are now in it.",
+      "data": "## Rules for the Rule-Makers\n\nIn the summer of 1787, fifty-five men locked themselves in a hot Philadelphia room with the windows kept shut so nobody could overhear. They had been sent to patch up the failing Articles of Confederation. Instead they threw them out and started over.\n\nTheir problem was not how to build a government. Their problem was how to build one that would still be safe when the wrong people were running it.\n\nThe Articles had produced a government too weak to function: no power to tax, no national court, no way to enforce anything. But the framers had just fought a war against a king, and a strong government sounded like the thing they had escaped. So they invented a machine designed to work while distrusting its own operators.\n\nFirst they split power three ways. The **legislative** branch — Congress — writes laws. The **executive** branch, headed by the President, carries them out. The **judicial** branch, the courts, decides what they mean. This is **separation of powers**. Its logic is simple: no single person or group ever holds the whole thing.\n\nThen they went further and gave each branch weapons against the others — **checks and balances**. Congress passes a bill; the President can veto it; Congress can override that veto with two-thirds. The President appoints judges; the Senate must confirm them. Courts can strike down laws as unconstitutional. Congress can impeach and remove a President or a judge.\n\nThey also split power a second way, between the national government and the states — **federalism** — so that even a captured national government does not control everything.\n\nAll of this makes government slow. That is not a bug. James Madison argued in Federalist No. 51 that \"ambition must be made to counteract ambition\" — that the safest system is one where powerful people are constantly blocked by other powerful people who want something different.\n\nIt is worth naming honestly what this document did not do. It counted enslaved people as three-fifths of a person for representation while denying them any rights at all. That was a **compromise** between delegates from states with and without slavery, and it treated human beings as a bargaining chip. The document left voting rules to states that limited them to white men with property. Women could not vote. The framers built a machine for limiting power that excluded most of the people living under it. The amendment process they included is how later generations forced it open.\n\nThat is the real inheritance: not a perfect document, but a repairable one, plus the argument about how to repair it. That argument is still running, and you are now in it.",
       "meta": "8th Grade • Leveled reading • ~440 words",
       "imageSlot": "ct-img-three-branches"
     },
@@ -177,6 +177,126 @@
         ]
       },
       "meta": "5 sections • branch-powers reference"
+    },
+    {
+      "id": "ct-memory",
+      "type": "memory-aid",
+      "title": "Remember the Machine",
+      "timestamp": "2026-09-05T12:20:00.000Z",
+      "meta": "8th Grade • 3 memory aids • branches, checks, the amendment door",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Machine",
+        "instructions": "Each card locks in facts from Rules for the Rule-Makers. Study the example aid, make it yours, and explain how it leads back to the design of the government.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "analogy-pattern",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The legislative branch writes laws. The executive branch carries them out. The judicial branch decides what they mean. Congress passes a bill; the President can veto it; Congress can override with two-thirds. The President appoints judges; the Senate must confirm them. Courts can strike down laws. The amendment process is how later generations forced it open.",
+        "lessonRef": {
+          "resourceId": "ct-reading",
+          "title": "Rules for the Rule-Makers"
+        },
+        "cards": [
+          {
+            "id": "ct-ma-branches",
+            "target": "Three branches and their jobs",
+            "essentialFacts": [
+              "Legislative (Congress: House and Senate) writes laws and controls spending.",
+              "Executive (the President and agencies) carries out laws and commands the military.",
+              "Judicial (the Supreme Court and lower courts) interprets laws and can rule them unconstitutional."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "L-E-J: Lawmakers Enforce? No — Lawmakers write, Executives Enforce, Judges Judge. 'Legislate, Execute, Judge' — the three verbs are the three branches.",
+            "mapping": "Each branch name is already a verb in disguise: legislate, execute, judge. Saying the verbs keeps the jobs from swapping.",
+            "scaffoldStarter": "L ____, E ____, J ____.",
+            "scaffoldSteps": [
+              "Turn each branch name into its verb.",
+              "Attach the main body: Congress, President, courts.",
+              "Say one power each has over another."
+            ],
+            "coachPrompts": [
+              "Does your aid show that the judicial branch decides meaning, not just punishment?"
+            ],
+            "studentPrompt": "Write your own L-E-J line.",
+            "reasoningPrompt": "How does each verb in your aid match a branch's job?",
+            "hookFact": {
+              "text": "In the summer of 1787, fifty-five men sent to patch up the Articles of Confederation threw them out and started over.",
+              "sourceTitle": "Rules for the Rule-Makers (this lesson)"
+            }
+          },
+          {
+            "id": "ct-ma-checks",
+            "target": "Checks and balances: each branch has weapons against the others",
+            "essentialFacts": [
+              "Congress passes a bill; the President can veto; Congress can override with a two-thirds vote.",
+              "The President appoints judges; the Senate must confirm them.",
+              "Courts can strike down laws as unconstitutional; Congress can impeach and remove a President or judge.",
+              "Madison: 'ambition must be made to counteract ambition.'"
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Rock, paper, scissors with three players who all want to win: nobody can beat both others at once. Veto beats bill, override beats veto, court ruling beats law, impeachment beats the President. Every move has a counter-move.",
+            "mapping": "The game maps to the design: three players, each with a move that stops another, and no move that stops everyone. That is Madison's ambition counteracting ambition.",
+            "scaffoldStarter": "The ____ can stop the ____ by ____, but the ____ can answer with ____.",
+            "scaffoldSteps": [
+              "List one power each branch has over another branch.",
+              "Find the counter-move to each power.",
+              "Pick a game or sport where every move has an answer and map the branches onto it."
+            ],
+            "coachPrompts": [
+              "Is there any move in your analogy with no counter? The framers tried not to leave one."
+            ],
+            "studentPrompt": "Build your own every-move-has-a-counter analogy.",
+            "reasoningPrompt": "How does your analogy show why the government is slow on purpose?",
+            "hookFact": {
+              "text": "Madison argued in Federalist No. 51 that 'ambition must be made to counteract ambition.'",
+              "sourceTitle": "Rules for the Rule-Makers (this lesson)"
+            }
+          },
+          {
+            "id": "ct-ma-amend",
+            "target": "The road to ratification and the amendment door",
+            "essentialFacts": [
+              "1781 Articles of Confederation: no power to tax, no national courts. 1787 Constitution written in Philadelphia.",
+              "1788 New Hampshire is the ninth state to ratify and the Constitution takes effect.",
+              "1791 Bill of Rights: ten amendments added because Anti-Federalists demanded explicit protections.",
+              "Amending requires two-thirds of both chambers plus three-quarters of the states; 27 amendments so far."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Articles fail (1781) → Philadelphia writes (1787) → ninth state ratifies (1788) → Bill of Rights repairs (1791) → the door stays open (27 amendments). Weak, Write, Ratify, Repair, Repeat.",
+            "mapping": "Five beats in order, and the last one is the point of the reading: the document is repairable, and the sequence shows the first repair happening within four years.",
+            "scaffoldStarter": "____ (1781) → ____ (1787) → ____ (1788) → ____ (1791) → ____.",
+            "scaffoldSteps": [
+              "Put the four dates in order with one word each.",
+              "Add a fifth beat for what the amendment process makes possible.",
+              "Name one later repair (13th, 15th, or 19th Amendment)."
+            ],
+            "coachPrompts": [
+              "Where in your sequence do the Anti-Federalists win something?"
+            ],
+            "studentPrompt": "Write your own five-beat sequence.",
+            "reasoningPrompt": "How does your sequence show that the Constitution was built to be repaired?",
+            "hookFact": {
+              "text": "The amendment process they included is how later generations forced the document open.",
+              "sourceTitle": "Rules for the Rule-Makers (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "ct-timeline",
@@ -315,10 +435,10 @@
             "type": "mcq",
             "question": "Why did the framers deliberately design a government that acts slowly?",
             "options": [
-              "Because communication in the 1780s was slow anyway",
+              "Because communication in the 1780s was slow anyway, so speed was impossible",
               "So that no single group could seize control quickly or act unchecked",
-              "To give states time to ignore federal laws",
-              "Because they expected the country to stay small"
+              "To give states enough time to ignore federal laws they disagreed with",
+              "Because they expected the country to stay small and rural for a long time"
             ],
             "correctAnswer": "So that no single group could seize control quickly or act unchecked",
             "conceptLabel": "purpose of checks"
@@ -339,9 +459,9 @@
             "type": "mcq",
             "question": "What was the main weakness of the Articles of Confederation?",
             "options": [
-              "It gave the President too much military power",
-              "It created too many federal courts",
-              "It required unanimous state elections",
+              "It gave the President too much military power over the individual states",
+              "It created too many federal courts, which argued with each other",
+              "It required every state to hold its elections on exactly the same day",
               "The national government could not tax or enforce its own laws"
             ],
             "correctAnswer": "The national government could not tax or enforce its own laws",
@@ -363,10 +483,10 @@
             "type": "mcq",
             "question": "Which statement about the original Constitution is accurate?",
             "options": [
-              "It guaranteed voting rights to all adult citizens",
-              "It immediately outlawed slavery in every state",
+              "It guaranteed voting rights to all adult citizens regardless of race, sex, or property",
+              "It immediately outlawed slavery in every state as soon as it was ratified",
               "It counted enslaved people as three-fifths of a person for representation while denying them rights",
-              "It gave women the same political rights as men"
+              "It gave women the same political rights as men, including the right to vote"
             ],
             "correctAnswer": "It counted enslaved people as three-fifths of a person for representation while denying them rights",
             "conceptLabel": "constitution limits and exclusions"
@@ -458,6 +578,92 @@
         }
       ],
       "meta": "6 questions • includes the Anti-Federalist case"
+    },
+    {
+      "id": "ct-challenge",
+      "type": "applied-challenge",
+      "title": "Proposal: Rules for Our Own Rule-Makers",
+      "timestamp": "2026-09-05T12:21:00.000Z",
+      "meta": "8th Grade • Proposal brief • a student-council constitution with checks",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Rules for Our Own Rule-Makers",
+        "instructions": "Draft a short constitution for a student council, designed the way the framers designed theirs: assume the people in charge will sometimes be selfish or wrong, and build in checks that keep working anyway.",
+        "selectionMode": "manual",
+        "family": "propose",
+        "fitReason": "The lesson's big idea is designing for distrust of your own operators. Writing rules for a real student body forces students to use separation of powers and checks instead of reciting them.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "propose",
+          "context": "Your school is starting a student council that will control a small activities budget, plan events, and hear complaints about school rules. The principal has asked students to propose how it should be organized so that no single person or group can run it for their friends.",
+          "role": "Student framers",
+          "audience": "The principal and the students who will vote on the proposal",
+          "drivingQuestion": "How should the student council divide its powers and check itself so that it still works fairly when the wrong people win an election?",
+          "seedDirection": "Start with the framers' question: what happens if the wrong person wins? Then give every power a counter-power.",
+          "lockedLessonFacts": [
+            "Separation of powers: legislative writes laws, executive carries them out, judicial decides what they mean; no one group holds the whole thing.",
+            "Checks and balances: veto and override, appointment and confirmation, judicial review, impeachment.",
+            "The framers designed a slow government on purpose so no single group could seize control quickly.",
+            "The Articles of Confederation failed because the national government could not tax or enforce its laws.",
+            "The original Constitution excluded most people living under it; the amendment process is how later generations repaired it."
+          ],
+          "openQuestions": [
+            "Who decides when a council member has broken the rules, and who checks that decider?",
+            "How do students who lost the election still get heard?",
+            "What happens when the council and the principal disagree?",
+            "How can the rules be changed later without one group rewriting them for itself?"
+          ],
+          "stakeholders": [
+            "Students who win council seats",
+            "Students who lose or never run",
+            "The principal and teachers",
+            "Clubs that depend on the budget",
+            "Next year's students who inherit the rules"
+          ],
+          "criteria": [
+            "Power is split among at least three roles or groups with different jobs",
+            "Every power has a check: name the counter-move for each",
+            "There is a way to change the rules that requires more than a simple majority",
+            "The proposal names one way it protects students who are not in the majority",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Under two pages",
+            "Nothing the principal cannot legally allow",
+            "Must work with 20 council members or with 8",
+            "Every rule must be explained with a reason, not just stated"
+          ],
+          "deliverable": "A two-page proposed constitution with sections for powers, checks, the amendment rule, and protections for the minority, plus a half-page 'what if the wrong person wins?' test showing how the rules would hold.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A robotics club kept losing its budget to whichever member was loudest.",
+            "move": "They split the roles: a treasurer who could spend, a two-member finance committee that had to approve any spending over $50, and an all-club vote that could reverse both. Spending got slower and the complaints stopped, because no single person could decide alone.",
+            "whyItHelps": "It is the framers' move at club scale: separate the power to spend from the power to approve, and give the whole group a final check."
+          },
+          "frameStarter": "If the wrong person became ____, they could ____. So we give the ____ the power to ____, and the ____ can answer by ____.",
+          "frameChoices": [
+            "Separate who proposes spending from who approves it",
+            "Give a rules committee the power to strike down a decision that breaks the constitution",
+            "Require a two-thirds vote to change the rules",
+            "Guarantee any group of ten students the right to put an item on the agenda"
+          ],
+          "coachPrompts": [
+            "Which of your checks could a clever council president get around, and how would you close that gap?",
+            "Is your council too slow to plan a dance in time, and is that a bug or a feature?",
+            "Who protects a student who is not popular?"
+          ]
+        },
+        "coachHint": "Test every rule against a bad actor, not a good one. The framers assumed selfish operators and built for them.",
+        "sourceExcerpt": "Their problem was not how to build a government. Their problem was how to build one that would still be safe when the wrong people were running it.",
+        "lessonRef": {
+          "resourceId": "ct-reading",
+          "title": "Rules for the Rule-Makers"
+        }
+      }
     }
   ]
 }

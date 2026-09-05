@@ -18,7 +18,7 @@
       "title": "Read Like a Detective",
       "timestamp": "2026-07-21T14:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nIn elementary school you found THE main idea. In middle school, texts get harder: they carry more than one central idea, and they build those ideas across paragraphs. You are moving from finding to tracing.\n\n1. Read **More Than One Thread** — it upgrades everything you already knew.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Evidence Moves** chart open while you work.\n4. Sort the statements in **Claim, Evidence, or Neither?**\n5. Take the quiz — it uses real passages and asks you to CITE, not just pick.\n6. Build an argument with the **Sentence Frames**.\n7. Read the FAQ if you are curious how this works on things designed to persuade you.\n\nThe upgrade this year: never say 'the text says' without pointing to WHERE. Evidence has an address. 🔎",
+        "body": "**Due:** (your teacher will tell you)\n\nIn elementary school you found THE main idea. In middle school, texts get harder: they carry more than one central idea, and they build those ideas across paragraphs. You are moving from finding to tracing.\n\n1. Read **More Than One Thread** — it upgrades everything you already knew.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Evidence Moves** chart open while you work.\n4. Sort the statements in **Claim, Evidence, or Neither?**\n5. Take the quiz — it uses real passages and asks you to CITE, not just pick.\n6. Build an argument with the **Sentence Frames**.\n7. Read the FAQ if you are curious how this works on things designed to persuade you.\n8. Lock the ideas in with **Remember the Evidence Moves** — study the example aid, then make one your own.\n9. Finish with **Investigation: Fact-Check One Persuasive Text** — use what you learned on a real problem, and mark every guess as a guess.\n\nThe upgrade this year: never say 'the text says' without pointing to WHERE. Evidence has an address. 🔎",
         "objectives": [
           {
             "id": "ci-goal-crossword",
@@ -177,6 +177,125 @@
       "meta": "4 moves • claim-evidence-reasoning"
     },
     {
+      "id": "ci-memory",
+      "type": "memory-aid",
+      "title": "Remember the Evidence Moves",
+      "timestamp": "2026-09-05T12:30:00.000Z",
+      "meta": "7th Grade • 3 memory aids • claim vs evidence, citing, relevance",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Evidence Moves",
+        "instructions": "Each card locks in a move from More Than One Thread. Study the example aid, make it yours, and explain how it leads back to reading like a detective.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "acronym-acrostic",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A claim is a statement someone wants you to accept. Evidence is the specific proof offered for it. Evidence has an address. Not 'the text says pollution went down.' Instead: 'In paragraph four, the author states that fish returned within two years, which shows the cleanup worked.' Relevance is not the same as relatedness.",
+        "lessonRef": {
+          "resourceId": "ci-reading",
+          "title": "More Than One Thread"
+        },
+        "cards": [
+          {
+            "id": "ci-ma-claim",
+            "target": "Claim versus evidence",
+            "essentialFacts": [
+              "A claim is a statement someone wants you to accept.",
+              "Evidence is the specific proof offered for it: a statistic, a study, an example, a quotation.",
+              "A claim without evidence is just an opinion wearing a confident voice."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "CLAIM = what they WANT. EVIDENCE = what they can SHOW. Want versus show: if it is only wanted, it is a claim; if it can be shown, it is evidence.",
+            "mapping": "Two verbs carry the two definitions. Asking 'want or show?' about any sentence sorts it, and the pairing reminds you a claim needs a show to back it.",
+            "scaffoldStarter": "A claim is what someone ____. Evidence is what someone can ____.",
+            "scaffoldSteps": [
+              "Pick one verb for claim and one for evidence.",
+              "Test the pair on a sentence from an ad.",
+              "Say what a claim with no evidence really is."
+            ],
+            "coachPrompts": [
+              "Does your keyword pair catch a statistic that sounds like proof but proves a different point?"
+            ],
+            "studentPrompt": "Write your own two-verb pair.",
+            "reasoningPrompt": "How does your pair help you sort claims from evidence in a real article?",
+            "hookFact": {
+              "text": "A detail can be true, on-topic, and still not prove the point.",
+              "sourceTitle": "More Than One Thread (this lesson)"
+            }
+          },
+          {
+            "id": "ci-ma-cite",
+            "target": "Citing evidence: where, what, why",
+            "essentialFacts": [
+              "Say WHERE: 'in paragraph four...'",
+              "Quote WHAT: the exact words.",
+              "Explain WHY: '...which shows...' connects the evidence to the claim.",
+              "Evidence without explanation is half an answer."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "W-W-W: Where, What, Why. Point to it, quote it, connect it. If your answer is missing a W, it is missing a wall of the house.",
+            "mapping": "Three W's are the three parts of a proper citation in the order you write them, and the house image makes a missing part feel like a hole rather than a detail.",
+            "scaffoldStarter": "Where: ____. What: '____.' Why: which shows ____.",
+            "scaffoldSteps": [
+              "Write the three W's in order.",
+              "Fill each from a passage you read this week.",
+              "Read it aloud and check that 'which shows' appears."
+            ],
+            "coachPrompts": [
+              "Which W do you usually skip, and what happens to your answer without it?"
+            ],
+            "studentPrompt": "Make your own three-part citing checklist.",
+            "reasoningPrompt": "How does each W match a move from the anchor chart?",
+            "hookFact": {
+              "text": "Never say 'the text says' without pointing to WHERE. Evidence has an address.",
+              "sourceTitle": "More Than One Thread (this lesson)"
+            }
+          },
+          {
+            "id": "ci-ma-relevant",
+            "target": "Relevance is not the same as relatedness",
+            "essentialFacts": [
+              "Evidence must actually support the claim, not just sit near it.",
+              "'The river is 30 miles long' is true and about the river but proves nothing about whether the cleanup worked.",
+              "Ask what evidence is offered, whether it is relevant, and what has been left out."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A key that fits the keyhole versus a key that is merely on the same ring. Related evidence is on the ring: same topic. Relevant evidence turns the lock: it actually opens the claim.",
+            "mapping": "The ring maps to shared topic and the lock maps to the claim. A key can be on the right ring and still not open the door, which is exactly the trap in the reading.",
+            "scaffoldStarter": "Related evidence is like ____. Relevant evidence is like ____, because it ____.",
+            "scaffoldSteps": [
+              "Pick a pair where 'nearby' is different from 'works' (keys, puzzle pieces, ingredients).",
+              "Map 'same topic' to nearby and 'proves the claim' to works.",
+              "Test it on the river example."
+            ],
+            "coachPrompts": [
+              "Using your analogy, why is 'the river is 30 miles long' on the ring but not in the lock?"
+            ],
+            "studentPrompt": "Write your own nearby-versus-works analogy.",
+            "reasoningPrompt": "How does your analogy help you check whether evidence proves the point?",
+            "hookFact": {
+              "text": "Writers of persuasion mix claims with loaded language and leave out inconvenient facts.",
+              "sourceTitle": "More Than One Thread (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "ci-sort",
       "type": "concept-sort",
       "title": "Claim, Evidence, or Neither?",
@@ -266,9 +385,9 @@
             "question": "How is a 7th-grade central-idea task different from a younger main-idea task?",
             "options": [
               "A text can have more than one central idea, and ideas develop across the text",
-              "There is no difference — it is the same skill renamed",
-              "You no longer need to use evidence",
-              "Central ideas are always stated in the first sentence"
+              "There is no difference — it is the same skill with a new name for middle school",
+              "You no longer need to use evidence, because older readers are trusted to know",
+              "Central ideas are always stated in the first sentence of each paragraph"
             ],
             "correctAnswer": "A text can have more than one central idea, and ideas develop across the text",
             "conceptLabel": "central idea vs main idea"
@@ -277,10 +396,10 @@
             "type": "mcq",
             "question": "What is the difference between a claim and evidence?",
             "options": [
-              "A claim is always false and evidence is always true",
+              "A claim is always an opinion that turns out false; evidence is always true",
               "A claim is what someone wants you to accept; evidence is the specific proof for it",
-              "A claim is longer than evidence",
-              "They are two words for the same thing"
+              "A claim is longer and more detailed than evidence, which is a short fact",
+              "They are two words for the same thing, used by different kinds of writers"
             ],
             "correctAnswer": "A claim is what someone wants you to accept; evidence is the specific proof for it",
             "conceptLabel": "claim vs evidence"
@@ -290,9 +409,9 @@
             "question": "Passage: 'The garden club planted 200 trees downtown. Within five years, summer street temperatures there dropped by three degrees.' Which sentence is the best EVIDENCE that the trees cooled the streets?",
             "options": [
               "'The garden club planted 200 trees downtown'",
-              "Neither sentence is evidence",
+              "Neither sentence is evidence, because a passage can only make claims",
               "'Within five years, summer street temperatures there dropped by three degrees'",
-              "Both sentences are claims"
+              "Both sentences are claims, so the passage offers no evidence at all"
             ],
             "correctAnswer": "'Within five years, summer street temperatures there dropped by three degrees'",
             "conceptLabel": "identifying evidence"
@@ -313,10 +432,10 @@
             "type": "mcq",
             "question": "Which answer CITES evidence properly?",
             "options": [
-              "The text basically says people liked it",
+              "The text basically says people liked it, so the program was clearly a success",
               "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
-              "I just feel like the program worked",
-              "Everyone knows programs like this are popular"
+              "I just feel like the program worked, based on reading the whole article carefully",
+              "Everyone knows programs like this are popular, so no quotation is needed"
             ],
             "correctAnswer": "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
             "conceptLabel": "citing evidence"
@@ -408,6 +527,90 @@
         }
       ],
       "meta": "6 questions • media-literacy transfer"
+    },
+    {
+      "id": "ci-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: Fact-Check One Persuasive Text",
+      "timestamp": "2026-09-05T12:31:00.000Z",
+      "meta": "7th Grade • Investigation brief • trace the claims and grade the evidence",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Fact-Check One Persuasive Text",
+        "instructions": "Choose one advertisement, opinion piece, or persuasive video made for people your age. Trace its central ideas, list every claim, grade the evidence for each, and report what it leaves out.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The reading ends by saying the detective questions protect you far beyond any test. An investigation of a real persuasive text is where those questions do their job.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class is building a 'Read It Like a Detective' guide for sixth graders. Each team takes one persuasive text aimed at kids or teens: a snack ad, a sneaker commercial, an app's 'why you need this' page, or an opinion piece from a student newspaper.",
+          "role": "Student fact-checkers",
+          "audience": "Sixth graders who will use your guide, and the teacher who checks your citations",
+          "drivingQuestion": "What does this text want us to accept, what evidence does it actually offer for each claim, how relevant is that evidence, and what has been left out?",
+          "seedDirection": "List the claims before you judge anything. You cannot grade evidence for a claim you have not written down.",
+          "lockedLessonFacts": [
+            "A longer text often has more than one central idea, and ideas develop across it.",
+            "A claim is what someone wants you to accept; evidence is the specific proof offered for it.",
+            "Citing evidence means saying where, quoting what, and explaining why it supports the claim.",
+            "Relevance is not relatedness: a detail can be true and on-topic and still not prove the point.",
+            "Persuasion mixes claims with loaded language and leaves out inconvenient facts."
+          ],
+          "openQuestions": [
+            "Who made this text, and what do they gain if we accept it?",
+            "Which sentences are claims and which are evidence?",
+            "For each piece of evidence, could it be checked by someone else?",
+            "What fact would weaken the text's case, and is it anywhere in the text?"
+          ],
+          "stakeholders": [
+            "Sixth graders reading the guide",
+            "The company or writer who made the text",
+            "Classmates checking your work",
+            "Teachers who may use the guide"
+          ],
+          "criteria": [
+            "Every claim is quoted with its location",
+            "Every piece of evidence is graded relevant, related-only, or missing, with a reason",
+            "At least one central idea is traced from beginning to end of the text",
+            "The report names one thing the text leaves out and explains why it matters",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Texts must be public and made for a general audience; no private messages",
+            "Be fair: quote exactly and do not exaggerate what the text says",
+            "Two pages including the claim table"
+          ],
+          "deliverable": "A claim-and-evidence table (claim, location, evidence, grade, reason), a paragraph tracing one central idea, and a short 'what it leaves out' section, written so a sixth grader can follow it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student examined a cereal box that said 'part of a complete breakfast' next to a picture of fruit and milk.",
+            "move": "She listed the claim, looked for evidence on the box, and found none about the cereal itself; the fruit and milk were doing the work. She graded the evidence 'related only' and noted the box left out the sugar amount, which was on the back in small print.",
+            "whyItHelps": "Same method: write the claim, look for evidence, check relevance, and look for what was left out. The box was not lying; it was letting related details stand in for proof."
+          },
+          "frameStarter": "The text claims ____ (location: ____). Its evidence is '____.' This evidence is ____ because ____. It leaves out ____.",
+          "frameChoices": [
+            "Grade each piece of evidence as relevant, related-only, or missing",
+            "Trace how one central idea develops from the first line to the last",
+            "Compare what the text says with one fact from a source it does not mention",
+            "Rewrite one claim as a fair version with the evidence it would need"
+          ],
+          "coachPrompts": [
+            "Which claim in your table has the weakest evidence, and does the text make it sound the strongest?",
+            "Where does loaded language do the work that evidence should do?",
+            "Could a sixth grader check any of the evidence on their own?"
+          ]
+        },
+        "coachHint": "Claims first, in their own words and yours. Then evidence. Then relevance. Then the missing piece. Do not skip the order.",
+        "sourceExcerpt": "Reading like a detective means asking not only 'what is the central idea?' but 'what evidence is offered, is it relevant, and what has been left out?' That question protects you far beyond any test.",
+        "lessonRef": {
+          "resourceId": "ci-reading",
+          "title": "More Than One Thread"
+        }
+      }
     }
   ]
 }

@@ -18,7 +18,7 @@
       "title": "Tour the Factory",
       "timestamp": "2026-07-21T01:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬",
+        "body": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬",
         "objectives": [
           {
             "id": "cl-goal-matching",
@@ -183,6 +183,125 @@
       "meta": "5 sections • structure-fits-function reference"
     },
     {
+      "id": "cl-memory",
+      "type": "memory-aid",
+      "title": "Remember the Factory Floor",
+      "timestamp": "2026-09-05T12:16:00.000Z",
+      "meta": "7th Grade • 3 memory aids • departments, plant-only parts, structure and function",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Factory Floor",
+        "instructions": "Each card locks in facts from The Factory You Are Made Of. Study the example aid, make it yours, and explain how it leads back to what each part does.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "analogy-pattern",
+          "acronym-acrostic",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The cell membrane is the security gate. The nucleus is the office where the instructions live. The mitochondria are the power plants. Ribosomes are the assembly machines. The Golgi apparatus is the shipping department. Plant cells have three parts animal cells lack: a cell wall, chloroplasts, and a large central vacuole.",
+        "lessonRef": {
+          "resourceId": "cl-reading",
+          "title": "The Factory You Are Made Of"
+        },
+        "cards": [
+          {
+            "id": "cl-ma-factory",
+            "target": "The main organelles and their jobs",
+            "essentialFacts": [
+              "Membrane: controls what enters and leaves (selectively permeable).",
+              "Nucleus: holds the DNA instructions.",
+              "Mitochondria: release usable energy from sugar and oxygen.",
+              "Ribosomes build proteins; the endoplasmic reticulum moves them; the Golgi apparatus packages and labels them."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A cell is a factory: the membrane is the security gate, the nucleus is the front office with the blueprints, the mitochondria are the power plant, the ribosomes are the assembly line, the ER is the hallway, and the Golgi is shipping and receiving.",
+            "mapping": "Each department maps to one organelle by its job, so if you can say what a department does, you can say what the organelle does, and the reverse.",
+            "scaffoldStarter": "A cell is like a ____: the membrane is the ____, the nucleus is the ____, the mitochondria are the ____.",
+            "scaffoldSteps": [
+              "Pick a place with departments: a school, a restaurant, a hospital.",
+              "Match each organelle to the department with the same job.",
+              "Say one thing that would go wrong if each department closed."
+            ],
+            "coachPrompts": [
+              "In your analogy, what does 'selectively permeable' look like at the door?"
+            ],
+            "studentPrompt": "Build your own place-with-departments analogy.",
+            "reasoningPrompt": "How does each part of your analogy match the organelle's real job?",
+            "hookFact": {
+              "text": "Muscle cells, which need enormous energy, are packed with mitochondria.",
+              "sourceTitle": "The Factory You Are Made Of (this lesson)"
+            }
+          },
+          {
+            "id": "cl-ma-plant",
+            "target": "The three plant-only parts",
+            "essentialFacts": [
+              "Cell wall: a rigid layer outside the membrane that gives structure (why celery snaps).",
+              "Chloroplasts: capture sunlight for photosynthesis.",
+              "Large central vacuole: stores water; when it empties the plant wilts."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "W-C-V: Walls Catch Vapor? No: Wall, Chloroplast, Vacuole. Try 'Wilting Celery Vanishes' — a wall keeps celery crisp, a chloroplast keeps it green, an empty vacuole makes it wilt.",
+            "mapping": "The three letters are the three plant-only parts, and the celery sentence hooks each letter to something you can see in a vegetable drawer.",
+            "scaffoldStarter": "W ____ C ____ V ____.",
+            "scaffoldSteps": [
+              "Write the three plant-only parts and circle W, C, V.",
+              "Choose words that hint at each job.",
+              "Test it: could an animal cell do any of these?"
+            ],
+            "coachPrompts": [
+              "Which of the three explains the drooping houseplant, and does your sentence show it?"
+            ],
+            "studentPrompt": "Write your own W-C-V sentence.",
+            "reasoningPrompt": "Explain how each letter points to a part only plant cells have and what it does.",
+            "hookFact": {
+              "text": "That wilted houseplant is a storage problem, not a broken stem.",
+              "sourceTitle": "The Factory You Are Made Of (this lesson)"
+            }
+          },
+          {
+            "id": "cl-ma-structure",
+            "target": "Structure fits function",
+            "essentialFacts": [
+              "The membrane is thin and flexible with openings, which fits letting some things through and blocking others.",
+              "Mitochondria have folded inner surfaces that give room for energy-releasing reactions.",
+              "The pattern holds at every level of biology, and it starts in the cell."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a mitochondrion as a crumpled sheet of paper stuffed in a bean. Crumpled means more surface in the same space, and more surface means more places to release energy. The shape IS the job.",
+            "mapping": "The crumpled sheet makes the fold-equals-surface idea visible, and the bean gives it the outline you see in diagrams, so the shape reminds you of the reason for the shape.",
+            "scaffoldStarter": "I picture ____ as ____, because its shape ____.",
+            "scaffoldSteps": [
+              "Pick an organelle and describe its shape in plain words.",
+              "Ask what that shape makes easier.",
+              "Draw or describe a picture that shows the shape doing its job."
+            ],
+            "coachPrompts": [
+              "What would happen to the mitochondrion's job if its inside were smooth?"
+            ],
+            "studentPrompt": "Make your own shape-equals-job picture for a different organelle.",
+            "reasoningPrompt": "How does your picture show that structure fits function?",
+            "hookFact": {
+              "text": "Structure fits function at every level of biology, and the cell is where that pattern starts.",
+              "sourceTitle": "The Factory You Are Made Of (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "cl-sort",
       "type": "concept-sort",
       "title": "Plant, Animal, or Both?",
@@ -284,9 +403,9 @@
             "question": "Do plant cells have mitochondria?",
             "options": [
               "Yes — they need to release energy from sugar just like animal cells",
-              "No — chloroplasts replace them entirely",
-              "Only at night when photosynthesis stops",
-              "Only in the roots, where there is no sunlight"
+              "No — chloroplasts replace them and make all the energy a plant needs",
+              "Only at night, when photosynthesis stops and the plant has to switch over",
+              "Only in the roots, where there is no sunlight for chloroplasts to use"
             ],
             "correctAnswer": "Yes — they need to release energy from sugar just like animal cells",
             "conceptLabel": "plant vs animal cells"
@@ -295,10 +414,10 @@
             "type": "mcq",
             "question": "A houseplant droops after a week without water. Which part best explains the drooping?",
             "options": [
-              "The cell walls dissolved without water",
+              "The cell walls dissolved without water, so the plant could not stand",
               "The central vacuole emptied, so the cells lost their firmness",
-              "The chloroplasts stopped making food",
-              "The nucleus shut down to save energy"
+              "The chloroplasts stopped making food, so the plant ran out of energy",
+              "The nucleus shut down to save energy until water returned"
             ],
             "correctAnswer": "The central vacuole emptied, so the cells lost their firmness",
             "conceptLabel": "vacuole function"
@@ -462,6 +581,90 @@
         }
       ],
       "meta": "6 questions • includes honest scientific debate"
+    },
+    {
+      "id": "cl-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Build a Cell That Could Live Somewhere Else",
+      "timestamp": "2026-09-05T12:17:00.000Z",
+      "meta": "7th Grade • Design brief • a model cell adapted to one environment",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Build a Cell That Could Live Somewhere Else",
+        "instructions": "Design a model of a single cell adapted to one demanding environment. Every change you make to a part must be explained by structure fits function, using the real organelles from the lesson.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading ends on 'structure fits function.' A design task that changes an environment forces students to reason from an organelle's job to its shape and number, instead of labeling a diagram.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "A science museum wants a display of imagined single cells, each built for a different place: a hot spring, deep ocean darkness, a dry desert crust, a fast-moving stream. Each model must be built from real cell parts, changed only in size, number, or shape, with a card explaining why.",
+          "role": "Student cell designers",
+          "audience": "Museum visitors aged 10 and up, and the museum educator who checks the science",
+          "drivingQuestion": "For one environment, which cell parts would you make bigger, smaller, more numerous, or shaped differently, and how does each change follow from that part's job?",
+          "seedDirection": "Start from the job each organelle already does in the lesson. Then ask what that job needs more or less of in your environment.",
+          "lockedLessonFacts": [
+            "The cell membrane is selectively permeable: it lets some substances through and blocks others.",
+            "The nucleus holds the DNA instructions.",
+            "Mitochondria release usable energy from sugar and oxygen; cells that need more energy have more of them.",
+            "Plant cells have a rigid cell wall, chloroplasts for photosynthesis, and a large central vacuole that stores water.",
+            "Structure fits function: a part's shape and number match its job."
+          ],
+          "openQuestions": [
+            "Does this environment have light? If not, what happens to chloroplasts?",
+            "Is water scarce or everywhere, and what does that mean for the vacuole?",
+            "Does the cell need to hold its shape against pressure or flow?",
+            "Where would energy come from if there is no sunlight?"
+          ],
+          "stakeholders": [
+            "Museum visitors who will read the card",
+            "The educator checking that every claim is grounded",
+            "Classmates building cells for other environments",
+            "The exhibit builders who need a clear drawing"
+          ],
+          "criteria": [
+            "Uses at least five real organelles from the lesson, each with its real job",
+            "Every change in size, number, or shape has a one-sentence structure-fits-function reason",
+            "Nothing is invented that a real cell part could not do",
+            "The card uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "One environment per team",
+            "Only changes in size, number, or shape; no new organelles",
+            "Model fits on one sheet or one shoebox",
+            "Card is under 150 words"
+          ],
+          "deliverable": "A labeled model or drawing of the adapted cell, plus a museum card that names the environment, lists each changed part, and gives the structure-fits-function reason for every change.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student compared a heart muscle cell with a skin cell.",
+            "move": "Instead of listing parts, she asked what each cell's job needed. The heart cell contracts nonstop, so she predicted far more mitochondria; the skin cell protects and is replaced often, so she predicted fewer. The real cells matched her reasoning.",
+            "whyItHelps": "It is the same move you are making, in reverse: she reasoned from the job to the number of parts. You will reason from the environment to the job, then to the parts."
+          },
+          "frameStarter": "In ____, a cell needs to ____. So I would make the ____ ____, because its job is ____.",
+          "frameChoices": [
+            "Change the number of mitochondria based on how much energy the environment demands",
+            "Change the vacuole based on how much water is available",
+            "Change the membrane or add a wall based on pressure or flow",
+            "Remove or keep chloroplasts based on whether light reaches the cell"
+          ],
+          "coachPrompts": [
+            "Which of your changes would a visitor question first, and what lesson fact answers them?",
+            "Did you change a part because it looks cool or because its job demands it?",
+            "What does your cell do for energy if there is no light?"
+          ]
+        },
+        "coachHint": "Every arrow on your drawing should be able to finish the sentence 'because its job is…'. If it cannot, the change is decoration.",
+        "sourceExcerpt": "Every one of those departments is running in you, right now, thirty trillion times over, with no supervision. Structure fits function at every level of biology, and the cell is where that pattern starts.",
+        "lessonRef": {
+          "resourceId": "cl-reading",
+          "title": "The Factory You Are Made Of"
+        }
+      }
     }
   ]
 }

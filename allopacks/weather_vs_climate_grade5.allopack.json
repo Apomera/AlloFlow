@@ -18,7 +18,7 @@
       "title": "Two Words People Mix Up Every Day",
       "timestamp": "2026-07-20T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
+        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n7. Lock the ideas in with **Remember Mood and Personality** — study the example aid, then make one your own.\n8. Finish with **Decision: Weather or Climate? Judge the Headline** — use what you learned on a real problem, and mark every guess as a guess.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
         "objectives": [
           {
             "id": "wx-goal-matching",
@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "Mood and Personality",
       "timestamp": "2026-07-20T02:00:01.000Z",
-      "data": "## Mood and Personality\n\nImagine describing your friend to someone who has never met them. You would not say \"she is grumpy\" just because she was grumpy this morning. You would say she is usually cheerful, even though today she is in a bad mood.\n\n**Weather is a mood. Climate is a personality.**\n\nWeather is what the air is doing right now, or today, or this week. Temperature, rain, wind, clouds, snow — if you can look out a window and check it, you are looking at weather. Weather changes hour by hour. It is famously hard to predict more than about a week ahead, because the atmosphere is chaotic: tiny differences today become big differences next week.\n\nClimate is the *pattern* of weather in a place, measured over a long time — usually thirty years or more. Climate is why you know roughly what to pack for a trip to Arizona in July even though you cannot know that specific Tuesday's forecast. Phoenix has a hot, dry climate. That is its personality. On any given day it might rain, and that day would be weather, not a change in climate.\n\nHere is the sentence that trips up even TV reporters: **a cold day does not disprove a warming climate**. One chilly morning tells you as much about Earth's climate as one grumpy morning tells you about your friend's whole personality — which is to say, almost nothing. Climate scientists look at averages across decades and across the entire planet, not at one place on one day.\n\nThe reverse mistake happens too. A single scorching heat wave is not, by itself, proof of climate change either. What scientists examine is whether heat waves are becoming *more frequent, more intense, and longer* over decades — a change in the pattern, not a single event.\n\nSo when you hear someone argue about weather and climate, listen for the time scale. Are they talking about a day, or about thirty years? That one question sorts out most of the confusion — and now you can ask it.",
+      "data": "## Mood and Personality\n\nImagine describing your friend to someone who has never met them. You would not say \"she is grumpy\" just because she was grumpy this morning. You would say she is usually cheerful, even though today she is in a bad mood.\n\n**Weather is a mood. Climate is a personality.**\n\nWeather is what the air is doing right now, or today, or this week. **Temperature**, **precipitation** (rain, snow, sleet, hail), wind, clouds — if you can look out a window and check it, you are looking at weather. Weather changes hour by hour. It is famously hard to **forecast** more than about a week ahead, because the **atmosphere** is chaotic: tiny differences today become big differences next week.\n\nClimate is the *pattern* of weather in a **region**, measured over a long time — usually thirty years or more. Climate is why you know roughly what to pack for a trip to Arizona in July even though you cannot know that specific Tuesday's forecast. Phoenix has a hot, dry climate. That is its personality. On any given day it might rain, and that day would be weather, not a change in climate.\n\nHere is the sentence that trips up even TV reporters: **a cold day does not disprove a warming climate**. One chilly morning tells you as much about Earth's climate as one grumpy morning tells you about your friend's whole personality — which is to say, almost nothing. Climate scientists look at **averages** across decades and across the entire planet, not at one place on one day.\n\nThe reverse mistake happens too. A single scorching heat wave is not, by itself, proof of climate change either. What scientists examine is whether heat waves are becoming *more frequent, more intense, and longer* over decades — a **trend** in the **pattern**, not a single event.\n\nSo when you hear someone argue about weather and climate, listen for the time scale. Are they talking about a day, or about thirty years? That one question sorts out most of the confusion — and now you can ask it.",
       "meta": "5th-6th Grade • Leveled reading • ~340 words",
       "imageSlot": "wx-img-mood-personality"
     },
@@ -79,7 +79,7 @@
         },
         {
           "term": "Average",
-          "def": "A middle value found by combining many measurements — the tool that turns weather into climate.",
+          "def": "A typical value found by combining many measurements — the tool that turns weather into climate.",
           "tier": "Academic"
         },
         {
@@ -109,6 +109,124 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "wx-memory",
+      "type": "memory-aid",
+      "title": "Remember Mood and Personality",
+      "timestamp": "2026-09-05T12:24:00.000Z",
+      "meta": "5th-6th Grade • 3 memory aids • the comparison, the time scale, the two mistakes",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Mood and Personality",
+        "instructions": "Each card locks in facts from Mood and Personality. Study the example aid, make it yours, and explain how it leads back to the difference between weather and climate.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "analogy-pattern",
+          "keyword-association",
+          "rhyme-rhythm"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Weather is a mood. Climate is a personality. Weather is what the air is doing right now, or today, or this week. Climate is the pattern of weather in a region, measured over thirty years or more. A cold day does not disprove a warming climate. A single heat wave is not proof of climate change either.",
+        "lessonRef": {
+          "resourceId": "wx-reading",
+          "title": "Mood and Personality"
+        },
+        "cards": [
+          {
+            "id": "wx-ma-mood",
+            "target": "Weather is a mood; climate is a personality",
+            "essentialFacts": [
+              "Weather is what the air is doing right now, today, or this week.",
+              "Climate is the usual pattern of weather in a region over thirty years or more.",
+              "A grumpy morning tells you almost nothing about a friend's personality, and one cold day tells you almost nothing about climate."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Your friend is usually cheerful but grumpy today. Today = mood = weather. Usually = personality = climate. To describe the friend, you need many days; to describe the climate, you need about thirty years.",
+            "mapping": "The analogy maps 'today' to weather and 'usually' to climate, and it makes the time scale the whole difference, which is the lesson's central claim.",
+            "scaffoldStarter": "Today my friend is ____ (mood = ____). Usually my friend is ____ (personality = ____).",
+            "scaffoldSteps": [
+              "Describe someone's mood today and their usual personality.",
+              "Label which is weather and which is climate.",
+              "Say how many days you would need to know the personality."
+            ],
+            "coachPrompts": [
+              "Where does 'thirty years' show up in your analogy?"
+            ],
+            "studentPrompt": "Write your own mood-and-personality analogy about a person or a pet.",
+            "reasoningPrompt": "How does your analogy show that the difference is about time?",
+            "hookFact": {
+              "text": "Phoenix has a hot, dry climate. On any given day it might rain, and that day would be weather, not a change in climate.",
+              "sourceTitle": "Mood and Personality (this lesson)"
+            }
+          },
+          {
+            "id": "wx-ma-time",
+            "target": "Listen for the time scale",
+            "essentialFacts": [
+              "Weather: hours to about a week; forecasts beyond a week are unreliable because the atmosphere is chaotic.",
+              "Climate: about thirty years or more, described with averages and trends.",
+              "The one question that sorts most confusion: are they talking about a day, or about thirty years?"
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "WEATHER has a W for Week: a week is about as far as weather goes. CLIMATE has a C for Century-ish: think decades, thirty years and up.",
+            "mapping": "The first letter of each word hooks to its time scale, so hearing either word pulls up the question that settles the argument: how long?",
+            "scaffoldStarter": "Weather = W for ____. Climate = C for ____.",
+            "scaffoldSteps": [
+              "Attach a time word to each first letter.",
+              "Say the settling question out loud.",
+              "Test it on one sentence from TV news."
+            ],
+            "coachPrompts": [
+              "Why does a forecast stop being useful after about a week, and does your aid remind you?"
+            ],
+            "studentPrompt": "Write your own letter hooks for the two time scales.",
+            "reasoningPrompt": "How does your aid help you catch someone mixing the words up?",
+            "hookFact": {
+              "text": "Predicting one specific day is like guessing one coin flip; predicting climate is like predicting that 1,000 flips will land near half heads.",
+              "sourceTitle": "Mood and Personality (this lesson)"
+            }
+          },
+          {
+            "id": "wx-ma-mistakes",
+            "target": "The two mistakes: a cold day and a heat wave prove nothing alone",
+            "essentialFacts": [
+              "A cold day does not disprove a warming climate.",
+              "A single heat wave is not proof of climate change either.",
+              "Scientists look for changes in frequency, intensity, and length over decades: a trend in the pattern, not a single event."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "One cold day or one hot week, it's the pattern that we seek.",
+            "mapping": "The rhyme names both mistakes in the first half and the correct move in the second, so it works in either direction of the argument.",
+            "scaffoldStarter": "One ____ or one ____, it's the ____ that we seek.",
+            "scaffoldSteps": [
+              "Name the two single events people misuse.",
+              "End with what scientists actually look for.",
+              "Clap the beat and fix any bumps."
+            ],
+            "coachPrompts": [
+              "Does your rhyme work against BOTH mistakes, not just one?"
+            ],
+            "studentPrompt": "Write your own two-line rhyme for the two mistakes.",
+            "reasoningPrompt": "How does your rhyme match what the reading says scientists examine?",
+            "hookFact": {
+              "text": "What scientists examine is whether heat waves are becoming more frequent, more intense, and longer over decades.",
+              "sourceTitle": "Mood and Personality (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "wx-sort",
@@ -230,9 +348,9 @@
             "type": "mcq",
             "question": "Someone says: 'It was freezing this morning, so global warming must be fake.' What is wrong with that reasoning?",
             "options": [
-              "Nothing is wrong — cold days do disprove warming",
-              "Mornings are always colder, so they never count",
-              "Global warming only affects summer temperatures",
+              "Nothing is wrong — one cold day is enough to disprove a warming climate",
+              "Mornings are always colder than afternoons, so they never count as evidence",
+              "Global warming only affects summer temperatures, never winter mornings",
               "One day of weather cannot describe a decades-long climate pattern"
             ],
             "correctAnswer": "One day of weather cannot describe a decades-long climate pattern",
@@ -416,6 +534,88 @@
         ]
       },
       "meta": "Cornell template • 8 cues • compare/contrast study page"
+    },
+    {
+      "id": "wx-challenge",
+      "type": "applied-challenge",
+      "title": "Decision: Weather or Climate? Judge the Headline",
+      "timestamp": "2026-09-05T12:25:00.000Z",
+      "meta": "5th-6th Grade • Decision brief • a fact-check with a time-scale test",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Judge the Headline",
+        "instructions": "Take a real claim about weather or climate that you find in the news or hear at home, decide whether it uses the words correctly, and write a kind, evidence-based verdict.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The lesson's skill is listening for the time scale. A decision brief on a real claim makes students apply that test and explain it to someone who got it wrong.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "Your class is starting a 'Weather or Climate?' corner on the school news board. Students bring in headlines, ads, and things adults said, and the class publishes a short verdict on each: does the claim confuse a single event with a long pattern, or does it get the time scale right?",
+          "role": "Student fact-checkers",
+          "audience": "Readers of the school news board, including the adults who made the claims",
+          "drivingQuestion": "Does this claim describe weather or climate correctly, and what would the speaker need to know about time scale to fix it?",
+          "seedDirection": "Ask the one question first: is this about a day, or about thirty years? Then look for whether the claim jumps from one to the other.",
+          "lockedLessonFacts": [
+            "Weather is what the air is doing over hours to about a week; climate is the pattern over thirty years or more.",
+            "Forecasts beyond about a week are unreliable because the atmosphere is chaotic.",
+            "A cold day does not disprove a warming climate, and a single heat wave does not prove climate change.",
+            "Scientists look at averages and trends across decades and across the planet.",
+            "Two places can have the same weather today and completely different climates."
+          ],
+          "openQuestions": [
+            "What exactly did the speaker claim, word for word?",
+            "What time scale is the evidence they used, and what time scale is the conclusion?",
+            "Is there a version of the claim that would be correct?"
+          ],
+          "stakeholders": [
+            "The person who made the claim, who deserves a fair reading",
+            "Students reading the board",
+            "Teachers who may use the verdicts in class"
+          ],
+          "criteria": [
+            "Quotes the claim exactly and names its source type (headline, ad, conversation)",
+            "States the time scale of the evidence and of the conclusion",
+            "Gives a verdict with one lesson fact as the reason",
+            "Offers a corrected version of the claim, written kindly",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "No names of people who said things in private; describe the source instead",
+            "Under 150 words per verdict",
+            "Every verdict must be one a scientist would agree with"
+          ],
+          "deliverable": "A news-board card: the quoted claim, the time-scale test, the verdict, the corrected version, and the lesson fact that decides it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student saw a snowstorm headline that said 'So much for global warming.'",
+            "move": "She wrote down the claim, marked its evidence as one storm (weather, a few days) and its conclusion as the planet's climate (decades), and gave the verdict 'mixed up.' Then she rewrote it: 'A huge snowstorm hit this week; scientists judge climate by thirty-year trends, not one storm.'",
+            "whyItHelps": "It is the exact move: separate the evidence's time scale from the conclusion's, then repair the sentence instead of mocking the writer."
+          },
+          "frameStarter": "The claim says ____. Its evidence is about ____ (time scale: ____). Its conclusion is about ____ (time scale: ____). Verdict: ____.",
+          "frameChoices": [
+            "Weather claim, correctly stated",
+            "Climate claim, correctly stated",
+            "Mixed up: a single event used to judge a long pattern",
+            "Mixed up: a long pattern used to predict one day"
+          ],
+          "coachPrompts": [
+            "Could the claim be right about weather and wrong about climate at the same time?",
+            "How would you say your verdict to the person's face?",
+            "What evidence would the speaker need to make a real climate claim?"
+          ]
+        },
+        "coachHint": "The verdict is not 'wrong.' The verdict is 'which time scale, and does the conclusion match it.'",
+        "sourceExcerpt": "So when you hear someone argue about weather and climate, listen for the time scale. Are they talking about a day, or about thirty years? That one question sorts out most of the confusion.",
+        "lessonRef": {
+          "resourceId": "wx-reading",
+          "title": "Mood and Personality"
+        }
+      }
     }
   ]
 }

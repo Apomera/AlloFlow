@@ -18,7 +18,7 @@
       "title": "Your Mission: Say It Sideways",
       "timestamp": "2026-07-20T03:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWriters almost never say things the plain way. \"I was nervous\" is true, but \"my stomach was a washing machine on spin cycle\" is *felt*. Today you learn the tools — then use them.\n\n1. Read **The Sideways Sentence** and watch for the five tools in action.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Say It Sideways** chart nearby — it holds all five tools with an example each.\n4. Sort the examples in **Name That Tool** — some are trickier than they look.\n5. Take the quiz — it asks you to explain MEANING, not just name types.\n6. Use the **Sentence Frames** to write your own. This is the real work.\n7. Read the FAQ if you are wondering where the weird idioms come from.\n\nChallenge: your last frame asks for an original metaphor about school. Make it one nobody has written before. ✍️🎭",
+        "body": "**Due:** (your teacher will tell you)\n\nWriters almost never say things the plain way. \"I was nervous\" is true, but \"my stomach was a washing machine on spin cycle\" is *felt*. Today you learn the tools — then use them.\n\n1. Read **The Sideways Sentence** and watch for the five tools in action.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Say It Sideways** chart nearby — it holds all five tools with an example each.\n4. Sort the examples in **Name That Tool** — some are trickier than they look.\n5. Take the quiz — it asks you to explain MEANING, not just name types.\n6. Use the **Sentence Frames** to write your own. This is the real work.\n7. Read the FAQ if you are wondering where the weird idioms come from.\n8. Lock the ideas in with **Remember the Five Tools** — study the example aid, then make one your own.\n9. Finish with **Design Challenge: Rewrite the Flat Announcement** — use what you learned on a real problem, and mark every guess as a guess.\n\nChallenge: your last frame asks for an original metaphor about school. Make it one nobody has written before. ✍️🎭",
         "objectives": [
           {
             "id": "fl-goal-crossword",
@@ -174,6 +174,127 @@
         ]
       },
       "meta": "5 tools • classroom reference chart"
+    },
+    {
+      "id": "fl-memory",
+      "type": "memory-aid",
+      "title": "Remember the Five Tools",
+      "timestamp": "2026-09-05T12:34:00.000Z",
+      "meta": "5th Grade • 3 memory aids • five tools, simile vs metaphor, idioms",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Five Tools",
+        "instructions": "Each card locks in a tool from The Sideways Sentence. Study the example aid, make it yours, and explain how it leads back to what the tool does.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "keyword-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A simile compares two unlike things using like or as. A metaphor does the same comparison without the warning label. Personification hands human abilities to things that do not have them. Hyperbole is exaggeration so extreme nobody could mistake it for fact. An idiom is a phrase whose meaning cannot be worked out from the words themselves.",
+        "lessonRef": {
+          "resourceId": "fl-reading",
+          "title": "The Sideways Sentence"
+        },
+        "cards": [
+          {
+            "id": "fl-ma-five",
+            "target": "The five tools: simile, metaphor, personification, hyperbole, idiom",
+            "essentialFacts": [
+              "Simile compares with like or as.",
+              "Metaphor says one thing is another.",
+              "Personification gives human actions to non-human things.",
+              "Hyperbole exaggerates so far nobody believes it.",
+              "Idiom is a phrase whose meaning you cannot build from its words."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "S-M-P-H-I: Some Metaphors Paint Huge Images. Simile, Metaphor, Personification, Hyperbole, Idiom.",
+            "mapping": "Five words, five tools, and the sentence is itself figurative (metaphors do not literally paint), which is a small reminder of what the tools do.",
+            "scaffoldStarter": "S ____ M ____ P ____ H ____ I ____.",
+            "scaffoldSteps": [
+              "Write the five tools and circle S, M, P, H, I.",
+              "Build a sentence; bonus if it uses one of the tools.",
+              "Attach one example from the reading to each letter."
+            ],
+            "coachPrompts": [
+              "Which letter is the tool you have to memorize rather than reason out, and does your sentence hint at that?"
+            ],
+            "studentPrompt": "Write your own five-letter sentence.",
+            "reasoningPrompt": "Explain how each word points to a tool and what it does.",
+            "hookFact": {
+              "text": "Figurative language says something untrue on purpose to deliver a truth faster.",
+              "sourceTitle": "The Sideways Sentence (this lesson)"
+            }
+          },
+          {
+            "id": "fl-ma-simile",
+            "target": "Simile versus metaphor: the warning label",
+            "essentialFacts": [
+              "A simile compares two unlike things using like or as: 'as loud as a stadium.'",
+              "A metaphor makes the same comparison without like or as: 'the hallway was a stadium.'",
+              "A metaphor is stronger because it does not apologize."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "SIMILE has an L in it, LIKE the L in LIKE. METAPHOR has no L: no like, no as, it just IS.",
+            "mapping": "The letter L is the hook: the tool with the L uses the word with the L. If the sentence has no like or as, it is the tool without the L.",
+            "scaffoldStarter": "Simile has ____, like the word ____. Metaphor has ____, so it just ____.",
+            "scaffoldSteps": [
+              "Find the letter or sound that links simile to like or as.",
+              "Say what a metaphor does instead.",
+              "Rewrite one simile from the reading as a metaphor."
+            ],
+            "coachPrompts": [
+              "Using your hook, which of the two is 'time is a thief'?"
+            ],
+            "studentPrompt": "Make your own letter or sound hook.",
+            "reasoningPrompt": "How does your hook show the only difference between the two tools?",
+            "hookFact": {
+              "text": "'The hallway was a stadium.' Stronger, because it does not apologize.",
+              "sourceTitle": "The Sideways Sentence (this lesson)"
+            }
+          },
+          {
+            "id": "fl-ma-idiom",
+            "target": "Idioms cannot be reasoned out; they must be learned",
+            "essentialFacts": [
+              "An idiom's meaning cannot be worked out from the words themselves.",
+              "'Bite the bullet' has no bullets and no biting.",
+              "Idioms are the hardest part of learning a new language because you simply have to learn them.",
+              "Other languages have different idioms for the same idea."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "An idiom is a locked box with a family combination. You cannot pick the lock by staring at the words; someone hands you the code, and after that you open it instantly.",
+            "mapping": "The box is the phrase, the code is the learned meaning, and the fact that staring does not help maps to the reading's point that you cannot reason your way to an idiom.",
+            "scaffoldStarter": "An idiom is like a ____ with a ____. You cannot ____ by looking; someone has to ____.",
+            "scaffoldSteps": [
+              "Pick something you can only use once someone tells you how (a password, a secret handshake).",
+              "Map the phrase and the meaning onto it.",
+              "Test it with 'raining cats and dogs.'"
+            ],
+            "coachPrompts": [
+              "Using your analogy, why are idioms so hard for someone learning English?"
+            ],
+            "studentPrompt": "Write your own learned-not-reasoned analogy.",
+            "reasoningPrompt": "How does your analogy separate idioms from the other four tools?",
+            "hookFact": {
+              "text": "Spanish speakers might say it is raining jugs; German speakers, that it is raining young dogs.",
+              "sourceTitle": "The Sideways Sentence (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "fl-sort",
@@ -425,6 +546,91 @@
         }
       ],
       "meta": "6 questions • etymology + honest uncertainty"
+    },
+    {
+      "id": "fl-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Rewrite the Flat Announcement",
+      "timestamp": "2026-09-05T12:35:00.000Z",
+      "meta": "5th Grade • Design brief • make a dull school notice felt, not just read",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Rewrite the Flat Announcement",
+        "instructions": "Take a real, dull school announcement and redesign it so readers feel it, using at least three of the five tools on purpose. Then test it on real readers and revise the line that did not land.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading's last paragraph tells writers when to say it sideways and when not to. A redesign of a real notice makes students choose tools for effect and notice when a tool exhausts the reader.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "The morning announcements are read aloud and nobody listens. The office has offered to read one student-written version of a real notice: the book fair, a recycling drive, a spirit day, or a reminder to return library books.",
+          "role": "Student announcement writers",
+          "audience": "The whole school, listening over the speaker, and the office staff who will read it",
+          "drivingQuestion": "How can we rewrite one flat announcement so listeners feel it and remember it, using figurative language that lands, without exhausting them?",
+          "seedDirection": "Find the feeling first. What should a listener feel about the book fair? Then choose the tool that delivers that feeling fastest.",
+          "lockedLessonFacts": [
+            "A simile compares two unlike things using like or as; a metaphor says one thing is another.",
+            "Personification gives human actions to non-human things; hyperbole exaggerates so far nobody believes it; an idiom's meaning cannot be built from its words.",
+            "Figurative language asks the reader to do a little work, and that leap is what makes the sentence stick.",
+            "Plain writing hands you the meaning; figurative writing makes you catch it.",
+            "Not every line should be figurative, or the reader gets exhausted."
+          ],
+          "openQuestions": [
+            "What is the one feeling this announcement should create?",
+            "Which tools work when heard aloud versus read on a page?",
+            "How many figurative lines can a 30-second announcement hold before it gets tiring?",
+            "Will everyone in the school understand the idiom we chose?"
+          ],
+          "stakeholders": [
+            "Students listening",
+            "Younger students who may not know an idiom",
+            "Office staff reading it aloud",
+            "The teacher or club whose event it is"
+          ],
+          "criteria": [
+            "Uses at least three different tools, each labeled in the design notes",
+            "Keeps every fact from the original notice (date, place, what to do)",
+            "Fits in 30 seconds read aloud",
+            "At least one line is deliberately plain, with a note explaining why",
+            "Tested on at least three listeners with one line revised afterward"
+          ],
+          "constraints": [
+            "Nothing that could confuse a listener about the date or place",
+            "No inside jokes only your class gets",
+            "Idioms must be ones younger students know, or explained by context",
+            "Original notice attached for comparison"
+          ],
+          "deliverable": "The original notice, your rewritten version with each tool labeled, a 30-second timing, and a short test report: what three listeners remembered and which line you changed because of them.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A library wanted more kids at its summer reading kickoff, and its flyer said 'Summer Reading Program begins June 15.'",
+            "move": "A student rewrote the headline as 'The library is about to wake up' (personification), kept the date and time exactly, and left the instructions plain so nobody missed how to sign up. Sign-ups doubled, and the librarian kept the plain instructions on purpose.",
+            "whyItHelps": "It shows the balance the reading asks for: one strong sideways line to make people feel it, and plain lines where the facts have to land."
+          },
+          "frameStarter": "The original says ____. We want listeners to feel ____. So we wrote '____' (tool: ____), and we kept '____' plain because ____.",
+          "frameChoices": [
+            "Open with a metaphor that names the feeling",
+            "Personify the event or the place",
+            "Use one hyperbole for humor, then get plain for the facts",
+            "Close with a simile listeners can picture"
+          ],
+          "coachPrompts": [
+            "Read it aloud. Where did your listeners' faces change?",
+            "Which line is figurative just because you could make it figurative?",
+            "Did anyone miss the date? Then a tool got in the way."
+          ]
+        },
+        "coachHint": "One or two sideways lines make people listen. Five make them stop. Keep the facts plain and let the feeling do the rest.",
+        "sourceExcerpt": "Try saying it sideways once in a while. Not on every line, or your reader gets exhausted. But when a feeling really matters, do not tell them she was nervous. Show them the washing machine.",
+        "lessonRef": {
+          "resourceId": "fl-reading",
+          "title": "The Sideways Sentence"
+        }
+      }
     }
   ]
 }

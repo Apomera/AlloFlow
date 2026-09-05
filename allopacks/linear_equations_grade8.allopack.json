@@ -18,7 +18,7 @@
       "title": "Every Line Tells a Story",
       "timestamp": "2026-07-21T16:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned proportional relationships — lines through the origin. This year lines get a starting point too, and once you can read the two numbers in y = mx + b, you can read the story any line is telling.\n\n1. Read **Slope and Start** — the phone-plan example unlocks the whole idea.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Reading a Line** chart open while you work.\n4. Do the **Practice Problems** — always name the slope AND the start.\n5. Sort the equations in **Same Slope, Different Start?**\n6. Take the quiz — question 5 asks you to translate a word problem into y = mx + b.\n\nThe two numbers that run everything: m is the rate of change (how fast), b is the initial value (where it begins). Find those two and you understand the line. 📉📈",
+        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned proportional relationships — lines through the origin. This year lines get a starting point too, and once you can read the two numbers in y = mx + b, you can read the story any line is telling.\n\n1. Read **Slope and Start** — the phone-plan example unlocks the whole idea.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Reading a Line** chart open while you work.\n4. Do the **Practice Problems** — always name the slope AND the start.\n5. Sort the equations in **Same Slope, Different Start?**\n6. Take the quiz — question 5 asks you to translate a word problem into y = mx + b.\n7. Lock the ideas in with **Remember Slope and Start** — study the example aid, then make one your own.\n8. Finish with **Decision: Which Plan Wins, and When?** — use what you learned on a real problem, and mark every guess as a guess.\n\nThe two numbers that run everything: m is the rate of change (how fast), b is the initial value (where it begins). Find those two and you understand the line. 📉📈",
         "objectives": [
           {
             "id": "le-goal-scramble",
@@ -175,6 +175,124 @@
         ]
       },
       "meta": "4 sections • slope-intercept reference"
+    },
+    {
+      "id": "le-memory",
+      "type": "memory-aid",
+      "title": "Remember Slope and Start",
+      "timestamp": "2026-09-05T12:48:00.000Z",
+      "meta": "8th Grade • 3 memory aids • m and b, the sign, proportional as a special case",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Slope and Start",
+        "instructions": "Each card locks in a move from Slope and Start. Study the example aid, make it yours, and explain how it leads back to reading a line.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Every straight line can be written as y = mx + b. The m is the slope, the rate of change: how much y changes every time x goes up by one. The b is the y-intercept, the starting point when x is zero. A positive slope rises to the right; a negative slope falls; a slope of zero is flat. Proportional relationships are the special case where b = 0.",
+        "lessonRef": {
+          "resourceId": "le-reading",
+          "title": "Slope and Start"
+        },
+        "cards": [
+          {
+            "id": "le-ma-mb",
+            "target": "m is the rate; b is the start",
+            "essentialFacts": [
+              "m is the slope, the rate of change: how much y changes for each step of one in x; rise over run.",
+              "b is the y-intercept, the initial value: where the line is when x is zero, where it crosses the y-axis.",
+              "Any value: multiply by m, then add b."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "m for MOVE: how much the line moves per step. b for BEGIN: where it begins when x is zero. Move times steps, plus begin.",
+            "mapping": "Two first letters, two verbs. Move is the rate, begin is the start, and the last phrase is the whole equation in words.",
+            "scaffoldStarter": "m for ____. b for ____. ____ times steps, plus ____.",
+            "scaffoldSteps": [
+              "Pick a word starting with m for the rate and a word starting with b for the start.",
+              "Say the equation in words using your two verbs.",
+              "Read Plan B's y = x + 10 aloud with your words."
+            ],
+            "coachPrompts": [
+              "In your words, what does a bigger m do to the line?"
+            ],
+            "studentPrompt": "Choose your own m and b words.",
+            "reasoningPrompt": "How do your two words match the two-step move for finding any value?",
+            "hookFact": {
+              "text": "Plan B charges a 10 dollar monthly fee plus 1 dollar per gigabyte: even with zero data you still owe 10 dollars.",
+              "sourceTitle": "Slope and Start (this lesson)"
+            }
+          },
+          {
+            "id": "le-ma-sign",
+            "target": "The sign of the slope is a direction",
+            "essentialFacts": [
+              "Positive slope rises to the right: savings growing, a plant getting taller.",
+              "Negative slope falls to the right: a battery draining, water leaving a tub.",
+              "Zero slope is a flat line: nothing changing."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Read the line like a hill you walk from left to right. Uphill is positive (you gain). Downhill is negative (you lose). Flat is zero (you coast). Your legs know the sign before your calculator does.",
+            "mapping": "Walking left to right matches how graphs are read, and the effort in your legs maps to the sign: climbing is positive, descending is negative, flat is zero.",
+            "scaffoldStarter": "Walking left to right, uphill means ____, downhill means ____, flat means ____.",
+            "scaffoldSteps": [
+              "Picture one real situation for each direction.",
+              "Assign a sign to each.",
+              "Sketch the three lines side by side."
+            ],
+            "coachPrompts": [
+              "Which of the sort's items is the flat road, and what is its slope?"
+            ],
+            "studentPrompt": "Describe your own three hills with real situations.",
+            "reasoningPrompt": "How does your picture connect the sign to a real story?",
+            "hookFact": {
+              "text": "Reading the sign is reading whether the story goes up, down, or holds steady.",
+              "sourceTitle": "Slope and Start (this lesson)"
+            }
+          },
+          {
+            "id": "le-ma-special",
+            "target": "Proportional is the special case where b equals zero",
+            "essentialFacts": [
+              "A proportional relationship is y = mx + b with b = 0: no starting amount.",
+              "Zero input gives zero output, so the line passes through the origin.",
+              "Plan A (2 dollars per gigabyte, nothing else) is proportional; Plan B with its 10 dollar fee is linear but not proportional."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Two runners on the same track at the same speed. One starts at the starting line (b = 0, proportional). The other got a head start of 10 meters (b = 10, linear but not proportional). Same speed, different start, parallel lines.",
+            "mapping": "Speed maps to m, the head start maps to b, and the runner who starts at the line is the proportional case. It also explains why lines with the same m are parallel.",
+            "scaffoldStarter": "Two ____ with the same ____. One starts at ____ (b = 0). The other has a head start of ____ (b = ____).",
+            "scaffoldSteps": [
+              "Pick two things moving at the same rate.",
+              "Give one a head start.",
+              "Write both equations and say which is proportional."
+            ],
+            "coachPrompts": [
+              "What in your analogy would make the two lines cross instead of stay parallel?"
+            ],
+            "studentPrompt": "Write your own same-rate, different-start analogy.",
+            "reasoningPrompt": "How does your analogy show why proportional is a special case of linear?",
+            "hookFact": {
+              "text": "Last year, proportional relationships gave you lines through the origin. This year lines get to start anywhere.",
+              "sourceTitle": "Slope and Start (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "le-math",
@@ -387,10 +505,10 @@
             "type": "mcq",
             "question": "In y = mx + b, what does m represent?",
             "options": [
-              "The starting value when x is zero",
+              "The starting value — where the line is when x is zero",
               "The slope — how fast y changes for each step in x",
-              "The point where the line ends",
-              "The number of solutions"
+              "The point where the line ends on the right side of the graph",
+              "The number of solutions the equation has for x"
             ],
             "correctAnswer": "The slope — how fast y changes for each step in x",
             "conceptLabel": "meaning of m"
@@ -499,6 +617,89 @@
         }
       ],
       "meta": "6 questions • connects back to proportions"
+    },
+    {
+      "id": "le-challenge",
+      "type": "applied-challenge",
+      "title": "Decision: Which Plan Wins, and When?",
+      "timestamp": "2026-09-05T12:49:00.000Z",
+      "meta": "8th Grade • Decision brief • compare two linear plans with a break-even point",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Which Plan Wins, and When?",
+        "instructions": "Compare two real pricing plans, each written as y = mx + b, and decide which is better for a specific person. Find the exact point where the answer flips, and show your reasoning on a graph.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The reading's phone plans are two lines with different slopes and starts. A decision brief makes students find the break-even point and explain what m and b mean for a real budget.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "decide",
+          "context": "A community center is choosing between two ways to pay for its after-school program's snack service. Vendor A charges $40 per week with no setup fee. Vendor B charges a one-time $300 setup fee plus $25 per week. The program runs for a different number of weeks each year, and the director has asked students to recommend a vendor for a 12-week session and for a 30-week session.",
+          "role": "Student budget analysts",
+          "audience": "The center's director and the parent advisory board",
+          "drivingQuestion": "Which vendor costs less for 12 weeks, which costs less for 30 weeks, at exactly how many weeks does the answer flip, and what should the center do if it is not sure how long the program will run?",
+          "seedDirection": "Write each vendor as y = mx + b first and say out loud what m and b mean in dollars. The break-even point is where the two lines meet.",
+          "lockedLessonFacts": [
+            "Every straight line can be written as y = mx + b.",
+            "m is the slope, the rate of change: how much y changes for each step of one in x.",
+            "b is the y-intercept, the initial value: the cost before any weeks are used.",
+            "To find any value, multiply by m and then add b.",
+            "A proportional relationship is the special case where b = 0."
+          ],
+          "openQuestions": [
+            "Is the $300 setup fee refundable if the program is cut short?",
+            "Are there other costs that change with weeks (delivery, storage) that would change the slope?",
+            "How likely is a 12-week year versus a 30-week year?"
+          ],
+          "stakeholders": [
+            "The director who signs the contract",
+            "Parents who pay program fees",
+            "Students who eat the snacks",
+            "The vendors"
+          ],
+          "criteria": [
+            "Both vendors written as y = mx + b with m and b explained in dollars",
+            "Costs computed for 12 and 30 weeks",
+            "The break-even week found by equation and shown on a graph where the lines cross",
+            "A recommendation that names the condition under which each vendor wins",
+            "Uses at least four glossary words correctly"
+          ],
+          "constraints": [
+            "Use only the given prices unless a new cost is clearly labeled as an assumption",
+            "One page plus one graph",
+            "The graph must show the y-intercepts and the crossing point"
+          ],
+          "deliverable": "A one-page recommendation with both equations, a table of costs at 12 and 30 weeks, a labeled graph of both lines with the break-even point, and a decision rule for the director.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A family compared a gym with a $50 sign-up fee and $20 per month against one with no fee and $30 per month.",
+            "move": "They wrote y = 20x + 50 and y = 30x, found the lines meet at x = 5 months, and concluded the no-fee gym wins for a short stay and the fee gym wins after five months. They chose based on how long they expected to stay.",
+            "whyItHelps": "It is your problem in miniature: two lines, one crossing point, and a decision that depends on where you expect to land on the x-axis."
+          },
+          "frameStarter": "Vendor A: y = ____x + ____. Vendor B: y = ____x + ____. The lines cross at ____ weeks. For fewer weeks, ____ wins; for more, ____ wins.",
+          "frameChoices": [
+            "Recommend one vendor for each session length",
+            "Recommend based on the most likely session length",
+            "Recommend Vendor A unless the program is guaranteed to exceed the break-even week",
+            "Negotiate a lower setup fee and recompute"
+          ],
+          "coachPrompts": [
+            "What does the y-intercept mean for Vendor B on the very first day?",
+            "Which vendor is the proportional one, and how do you know from the equation?",
+            "If the setup fee were refundable, how would your decision rule change?"
+          ]
+        },
+        "coachHint": "Two equations, one crossing point. Everything the director needs is which side of that point the program lands on.",
+        "sourceExcerpt": "When you can look at y = mx + b and say out loud what m and b mean in the real situation, you are not doing arithmetic anymore. You are reading the story the line is telling.",
+        "lessonRef": {
+          "resourceId": "le-reading",
+          "title": "Slope and Start"
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,598 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Point of View — Who Is Telling This Story?",
+    "author": "AlloFlow flagship (authored by Claude; all passages original; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "4th Grade",
+    "createdAt": "2026-09-05T13:40:00.000Z",
+    "imageShotList": "allopacks/point_of_view_grade4.IMAGES.md",
+    "standards": "CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-person narrations); CCSS.ELA-LITERACY.RL.4.3 (describe in depth a character, setting, or event, drawing on specific details in the text); CCSS.ELA-LITERACY.W.4.3 (write narratives using effective technique and descriptive details)"
+  },
+  "sourceTopic": "Point of View in Stories",
+  "history": [
+    {
+      "id": "pv-directions",
+      "type": "directions",
+      "title": "Find the Storyteller",
+      "timestamp": "2026-09-05T13:40:00.000Z",
+      "meta": "4th Grade • Homework mission • 4 auto-checking goals",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEvery story has someone telling it, and that someone decides what you get to know. Today you learn to spot the storyteller in the first two sentences.\n\n1. Read **The Same Puddle, Two Ways** — the two versions of one story are the whole lesson.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Who's Talking?** chart open while you work.\n4. Sort the sentences in **First Person or Third Person?** — the pronouns give it away.\n5. Take the quiz. Question 4 asks what the narrator CANNOT know.\n6. Use the **Sentence Frames** to rewrite a moment from the other side.\n7. Lock the ideas in with **Remember Who's Talking** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Retell It From the Other Side** — pick a scene and switch the storyteller.\n\nThis week, notice who is telling the story in something you read or watch, and ask what they might not know. 📖",
+        "objectives": [
+          {
+            "id": "pv-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "pv-glossary"
+          },
+          {
+            "id": "pv-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "pv-glossary"
+          },
+          {
+            "id": "pv-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "pv-goal-manual",
+            "label": "I found the narrator of something I read outside school and named one thing they could not know",
+            "kind": "manual"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pv-reading",
+      "type": "simplified",
+      "title": "The Same Puddle, Two Ways",
+      "timestamp": "2026-09-05T13:41:00.000Z",
+      "meta": "4th Grade • Leveled reading • ~470 words",
+      "data": "## The Same Puddle, Two Ways\n\nRead this.\n\n> I saw the puddle too late. My new shoes went straight in, and cold water filled both socks. I heard Dev laugh behind me. I wanted to disappear.\n\nNow read this.\n\n> Maya stepped into the puddle before she saw it. Water soaked through her new shoes. Behind her, Dev laughed, then stopped, worried he had hurt her feelings. Maya did not turn around.\n\nSame puddle. Same shoes. Same laugh. But the two stories feel different, and the difference is the **narrator**: the voice telling the **scene**. The **characters** are the same; the storyteller is not.\n\nIn the first version, Maya tells it herself. She uses **I**, **my**, and **me**. That is **first person**. You are inside her head. You feel the cold socks and the wish to disappear. But notice what you do *not* get: you never learn that Dev felt bad. Maya cannot see inside Dev, so a first-person narrator cannot tell you other characters' **thoughts**. You only know what the narrator knows.\n\nIn the second version, someone outside the story tells it and calls the characters **she** and **he**. That is **third person**. This narrator can float over the whole scene. It tells you Maya's shoes got wet *and* that Dev felt worried. It knows things Maya never finds out.\n\nSo which is better? Neither. They are tools. First person makes you feel close to one character, like a best friend whispering the story. Third person lets you see the whole picture, including things the characters hide from each other.\n\nHere is the detective move. Find the **pronouns** in the first two sentences. *I, me, my, we* means first person. *He, she, they, a name* means third person. You can usually tell before the end of the first paragraph.\n\nThen ask the second question, the one that makes you a strong reader: **what does this narrator not know?** Maya does not know Dev is sorry. If you only read her version, you might decide Dev is mean. The third-person narrator knows better. Every narrator has a **perspective**, a spot they are standing in, and every spot has something behind it that the narrator cannot see.\n\nOne more twist. Two first-person narrators can tell the same event and disagree completely. Ask Dev to tell the puddle story and his **dialogue** might be, \"I laughed because I had done the exact same thing yesterday, and I wanted to tell her. But she walked away before I could.\" Same puddle, third version, new truth.\n\nWhen you read, find the narrator and **compare** what each one knows. When you write, choose one on purpose, and **retell** a scene from the other side to see the **contrast**. And when two people tell you different stories about the same puddle, you now know what to ask: what could each of them see from where they stood?"
+    },
+    {
+      "id": "pv-glossary",
+      "type": "glossary",
+      "title": "Storyteller Words",
+      "timestamp": "2026-09-05T13:42:00.000Z",
+      "meta": "4th Grade • 10 terms • Tiered",
+      "data": [
+        {
+          "term": "Narrator",
+          "def": "The voice that tells the story.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Perspective",
+          "def": "The spot a narrator or character is standing in, which decides what they can and cannot know.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pronoun",
+          "def": "A small word that stands for a person, like I, she, he, we, or they.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Character",
+          "def": "A person or creature in a story.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Dialogue",
+          "def": "The words characters say out loud, shown with quotation marks.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Thoughts",
+          "def": "What a character thinks but does not say; only some narrators can share them.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Scene",
+          "def": "One event in a story, happening in one place at one time.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Retell",
+          "def": "To tell a story again in a new way, such as from a different narrator.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Compare",
+          "def": "To show how two things are alike.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Contrast",
+          "def": "To show how two things are different.",
+          "tier": "Academic"
+        }
+      ]
+    },
+    {
+      "id": "pv-anchor",
+      "type": "anchor-chart",
+      "title": "Who's Talking?",
+      "timestamp": "2026-09-05T13:43:00.000Z",
+      "meta": "4 sections • classroom reference chart",
+      "data": {
+        "chartType": "reference",
+        "title": "FIND THE NARRATOR",
+        "sections": [
+          {
+            "label": "FIRST PERSON",
+            "bullets": [
+              "Pronouns: I, me, my, we",
+              "A character tells their own story",
+              "You feel close, but you only know what they know"
+            ],
+            "iconPrompt": "a child speaking with a speech bubble containing an eye"
+          },
+          {
+            "label": "THIRD PERSON",
+            "bullets": [
+              "Pronouns: he, she, they, or names",
+              "A voice outside the story tells it",
+              "Can show what more than one character thinks"
+            ],
+            "iconPrompt": "a narrator floating above two characters"
+          },
+          {
+            "label": "THE DETECTIVE MOVE",
+            "bullets": [
+              "Check the pronouns in the first two sentences",
+              "Then ask: what does this narrator NOT know?",
+              "Every perspective has something behind it"
+            ],
+            "iconPrompt": "a magnifying glass over the word I"
+          },
+          {
+            "label": "SAME EVENT, DIFFERENT STORIES",
+            "bullets": [
+              "Two narrators can disagree and both be honest",
+              "Ask what each could see from where they stood",
+              "When you write, choose your narrator on purpose"
+            ],
+            "iconPrompt": "two children looking at one puddle from opposite sides"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pv-memory",
+      "type": "memory-aid",
+      "title": "Remember Who's Talking",
+      "timestamp": "2026-09-05T13:44:00.000Z",
+      "meta": "4th Grade • 3 memory aids • pronoun clue, what the narrator cannot know, two tellings",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Who's Talking",
+        "instructions": "Each card locks in a move from The Same Puddle, Two Ways. Look at the example aid, make it your own, and tell how it helps you find the narrator.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "analogy-pattern",
+          "story-chain"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "In the first version, Maya tells it herself. She uses I, my, and me. That is first person. A first-person narrator cannot tell you what other characters are thinking. In the second version, someone outside the story tells it and calls the characters she and he. That is third person. Two first-person narrators can tell the same event and disagree completely.",
+        "lessonRef": {
+          "resourceId": "pv-reading",
+          "title": "The Same Puddle, Two Ways"
+        },
+        "cards": [
+          {
+            "id": "pv-ma-pronoun",
+            "target": "The pronoun clue: I means first person; he, she, they means third",
+            "essentialFacts": [
+              "First person uses I, me, my, we: a character tells their own story.",
+              "Third person uses he, she, they, or names: a voice outside the story tells it.",
+              "Check the pronouns in the first two sentences to find the narrator."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "I = INSIDE. If the story says I, you are inside one character's head. She/he = SHOWN. If it says she or he, someone outside is showing you the characters.",
+            "mapping": "Each pronoun gets one word that says where the narrator is: inside for I, shown for she and he. Hearing the pronoun tells you the position.",
+            "scaffoldStarter": "I means ____. She or he means ____.",
+            "scaffoldSteps": [
+              "Write the first-person pronouns and the third-person pronouns.",
+              "Give each group one word for where the narrator stands.",
+              "Test it on the two puddle versions."
+            ],
+            "coachPrompts": [
+              "What if a story uses both 'I' and 'she'? Which one tells you who the narrator is?"
+            ],
+            "studentPrompt": "Make your own one-word hooks for the two pronoun groups.",
+            "reasoningPrompt": "How do your hooks help you find the narrator in the first two sentences?",
+            "hookFact": {
+              "text": "You can usually tell the point of view before the end of the first paragraph.",
+              "sourceTitle": "The Same Puddle, Two Ways (this lesson)"
+            }
+          },
+          {
+            "id": "pv-ma-cannot",
+            "target": "Every narrator has something they cannot know",
+            "essentialFacts": [
+              "A first-person narrator cannot tell you what other characters are thinking.",
+              "Maya never learns that Dev felt bad; a third-person narrator can tell you both.",
+              "Ask: what does this narrator not know?"
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A narrator is like a flashlight in a dark room. First person is one flashlight held by one character: bright on what they see, dark behind them. Third person is the room lights coming on: you can see everyone, including the kid in the corner who feels sorry.",
+            "mapping": "The flashlight beam is what the narrator knows; the dark behind them is what they cannot know. Room lights are the outside narrator who can see every character at once.",
+            "scaffoldStarter": "A first-person narrator is like ____: bright on ____, dark on ____. A third-person narrator is like ____.",
+            "scaffoldSteps": [
+              "Pick something that lights up only part of a place.",
+              "Match the lit part to what the narrator knows.",
+              "Say what is in the dark for Maya."
+            ],
+            "coachPrompts": [
+              "In your analogy, where is Dev's worried feeling when Maya tells the story?"
+            ],
+            "studentPrompt": "Make your own light-and-dark analogy for narrators.",
+            "reasoningPrompt": "How does your analogy help you ask what the narrator cannot know?",
+            "hookFact": {
+              "text": "If you only read Maya's version, you might decide Dev is mean. The third-person narrator knows better.",
+              "sourceTitle": "The Same Puddle, Two Ways (this lesson)"
+            }
+          },
+          {
+            "id": "pv-ma-two",
+            "target": "Two narrators can tell the same event and both be honest",
+            "essentialFacts": [
+              "Two first-person narrators can tell the same event and disagree completely.",
+              "Dev's version: he laughed because he had done the same thing yesterday and wanted to tell her.",
+              "Ask what each narrator could see from where they stood."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "story-chain",
+            "mode": "scaffolded",
+            "aiExample": "Maya's chain: puddle → wet socks → Dev laughs → I want to disappear. Dev's chain: puddle → Maya splashes → I remember yesterday → I laugh → she walks off before I can say so. Same first link, different last link.",
+            "mapping": "Laying the two chains side by side shows they start at the same event and end in different places, which is the lesson: each narrator's chain only includes what they could see.",
+            "scaffoldStarter": "Narrator 1: ____ → ____ → ____. Narrator 2: ____ → ____ → ____.",
+            "scaffoldSteps": [
+              "Pick a small event two people saw.",
+              "Write each person's chain of what they noticed and felt.",
+              "Circle the link that only one of them has."
+            ],
+            "coachPrompts": [
+              "Which link in Dev's chain could Maya never have known?"
+            ],
+            "studentPrompt": "Write two chains for one event you remember.",
+            "reasoningPrompt": "How do your two chains show that both narrators are telling the truth?",
+            "hookFact": {
+              "text": "Same puddle, third version, new truth.",
+              "sourceTitle": "The Same Puddle, Two Ways (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "pv-sort",
+      "type": "concept-sort",
+      "title": "First Person or Third Person?",
+      "timestamp": "2026-09-05T13:45:00.000Z",
+      "meta": "2 categories • 10 cards",
+      "data": {
+        "categories": [
+          {
+            "id": "pv-first",
+            "label": "FIRST PERSON (I, me, my, we)",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "pv-third",
+            "label": "THIRD PERSON (he, she, they, names)",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "pv-i1",
+            "content": "I could not find my library book anywhere.",
+            "categoryId": "pv-first"
+          },
+          {
+            "id": "pv-i2",
+            "content": "Jonah checked under the bed, but the book was not there.",
+            "categoryId": "pv-third"
+          },
+          {
+            "id": "pv-i3",
+            "content": "We ran for the bus and missed it by ten seconds.",
+            "categoryId": "pv-first"
+          },
+          {
+            "id": "pv-i4",
+            "content": "She pretended not to hear her brother calling.",
+            "categoryId": "pv-third"
+          },
+          {
+            "id": "pv-i5",
+            "content": "My hands shook when the teacher called my name.",
+            "categoryId": "pv-first"
+          },
+          {
+            "id": "pv-i6",
+            "content": "They did not know that the dog had already eaten the cake.",
+            "categoryId": "pv-third"
+          },
+          {
+            "id": "pv-i7",
+            "content": "I told my sister I was fine, which was not true.",
+            "categoryId": "pv-first"
+          },
+          {
+            "id": "pv-i8",
+            "content": "Priya smiled, but inside she was furious.",
+            "categoryId": "pv-third"
+          },
+          {
+            "id": "pv-i9",
+            "content": "\"Hand it over,\" I said, trying to sound brave.",
+            "categoryId": "pv-first"
+          },
+          {
+            "id": "pv-i10",
+            "content": "The twins looked at each other and burst out laughing.",
+            "categoryId": "pv-third"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pv-quiz",
+      "type": "quiz",
+      "title": "Who Is Telling This?",
+      "timestamp": "2026-09-05T13:46:00.000Z",
+      "meta": "5 multiple choice + 2 short answer • uses short original passages",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Read: 'I pressed my ear to the door and heard nothing. My heart pounded.' What is the point of view, and how do you know?",
+            "options": [
+              "Third person, because the narrator describes a door",
+              "First person, because the narrator uses I and my",
+              "Third person, because we do not know the narrator's name",
+              "First person, because the sentences are short"
+            ],
+            "correctAnswer": "First person, because the narrator uses I and my",
+            "conceptLabel": "pronoun clue"
+          },
+          {
+            "type": "mcq",
+            "question": "Read: 'Leo waved at the new kid, who looked away. Leo decided the new kid was rude. The new kid, who had forgotten his glasses, had not seen him at all.' Who could NOT know why the new kid looked away?",
+            "options": [
+              "The narrator, who only reports what people do",
+              "The new kid, who was not paying attention",
+              "Leo, who cannot see inside the new kid's head",
+              "Everyone knows, because the story explains it"
+            ],
+            "correctAnswer": "Leo, who cannot see inside the new kid's head",
+            "conceptLabel": "what the narrator cannot know"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is something a THIRD-person narrator can do that a first-person narrator usually cannot?",
+            "options": [
+              "Use the words I and my when characters speak",
+              "Describe the weather at the start of the story",
+              "Tell what two different characters are secretly thinking",
+              "Make the story feel exciting and full of action"
+            ],
+            "correctAnswer": "Tell what two different characters are secretly thinking",
+            "conceptLabel": "what the narrator cannot know"
+          },
+          {
+            "type": "mcq",
+            "question": "Maya says Dev laughed at her. Dev says he laughed because the same thing happened to him yesterday. Who is telling the truth?",
+            "options": [
+              "Only Maya, because she is the main character of the story",
+              "Only Dev, because he explains his reason for laughing",
+              "Neither, because two stories about one event cannot both be true",
+              "Both can be honest, because each saw the event from a different spot"
+            ],
+            "correctAnswer": "Both can be honest, because each saw the event from a different spot",
+            "conceptLabel": "two tellings"
+          },
+          {
+            "type": "mcq",
+            "question": "A writer wants readers to feel like a best friend is whispering the story to them. Which point of view fits best?",
+            "options": [
+              "First person, so the reader is inside one character's head",
+              "Third person, so the reader can see every character at once",
+              "No narrator at all, only dialogue between characters",
+              "Third person, because it uses the characters' names"
+            ],
+            "correctAnswer": "First person, so the reader is inside one character's head",
+            "conceptLabel": "choosing a point of view"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Rewrite this third-person sentence in first person from Priya's point of view: 'Priya smiled, but inside she was furious.'",
+            "expectedAnswer": "I smiled, but inside I was furious. (Uses I instead of Priya and she; keeps the smile and the anger.)",
+            "conceptLabel": "pronoun clue"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Pick a story you know. Name the narrator, tell whether it is first or third person, and name one thing that narrator cannot know.",
+            "expectedAnswer": "Example: In a story told by a girl about her first day at school (first person, uses I), the narrator cannot know what the teacher is thinking or what the other kids said about her after she left the room. Any story with a correct point of view and a reasonable thing the narrator cannot know earns credit.",
+            "conceptLabel": "what the narrator cannot know"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of a time you and someone else remembered the same event differently. What could each of you see from where you stood?"
+          },
+          {
+            "text": "Which do you like to read more, first person or third person? Why?"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pv-frames",
+      "type": "sentence-frames",
+      "title": "Switch the Storyteller",
+      "timestamp": "2026-09-05T13:47:00.000Z",
+      "meta": "6 frames • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "This story is told in ____ person. I know because the narrator uses ____."
+          },
+          {
+            "text": "The narrator is ____, and the narrator knows ____."
+          },
+          {
+            "text": "One thing the narrator cannot know is ____, because ____."
+          },
+          {
+            "text": "If ____ told this scene instead, we would learn ____, but we would lose ____."
+          },
+          {
+            "text": "In first person, the same moment would sound like: \"____.\""
+          },
+          {
+            "text": "I would choose ____ person for my own story because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Author |\n|---|---|---|---|\n| Naming the point of view | Guesses | Names it and gives one pronoun | Names it, gives pronouns, and identifies the narrator |\n| What the narrator cannot know | Not mentioned | Names one thing | Names one thing and explains why that narrator cannot know it |\n| Switching sides | Changes only the pronouns | Changes pronouns and one detail | Changes pronouns and adds something only the new narrator could know |"
+      }
+    },
+    {
+      "id": "pv-faq",
+      "type": "faq",
+      "title": "Storyteller Questions Kids Ask",
+      "timestamp": "2026-09-05T13:48:00.000Z",
+      "meta": "6 questions",
+      "data": [
+        {
+          "question": "Is the narrator the same as the author? ✍️",
+          "answer": "Almost never. The author is the real person who wrote the book. The narrator is a voice the author made up to tell it. A grown-up author can write a narrator who is nine years old, or a dog."
+        },
+        {
+          "question": "What is second person?",
+          "answer": "A story that calls the reader you: 'You open the door. You hear a creak.' It is rare in books but common in choose-your-own-adventure stories and video games."
+        },
+        {
+          "question": "Can a first-person narrator be wrong? 🤔",
+          "answer": "Yes, and good writers use that on purpose. Maya thinks Dev is mean; she is wrong, and the story is more interesting because we figure that out before she does."
+        },
+        {
+          "question": "Can a story switch narrators?",
+          "answer": "Sure. Some books give each chapter to a different character. Watch for the switch: the pronouns and the name at the top of the chapter usually tell you."
+        },
+        {
+          "question": "Why do so many books for kids use first person?",
+          "answer": "Because it feels close, like a friend talking to you. You know exactly one person's feelings very well, which makes it easy to care about them."
+        },
+        {
+          "question": "Does a third-person narrator know everything? 👁️",
+          "answer": "Not always. Some third-person narrators follow one character closely and only know what that character knows. Others can see into everyone. Ask the same question either way: what does this narrator not tell me?"
+        }
+      ]
+    },
+    {
+      "id": "pv-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Retell It From the Other Side",
+      "timestamp": "2026-09-05T13:49:00.000Z",
+      "meta": "4th Grade • Design brief • one scene, two narrators",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Retell It From the Other Side",
+        "instructions": "Take a scene from a story your class knows and retell it from a different narrator, on purpose, so that readers learn something they could not learn the first time. Then test it on a reader and revise the line that did not work.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The standard asks students to compare narrations and to write narratives with technique. Rewriting a known scene from another perspective makes them choose a narrator deliberately and prove what that narrator can and cannot know.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your class is making a 'Same Scene, New Side' wall in the library. Each team picks one scene from a book the class has read together and rewrites it from a character who was there but did not tell it the first time.",
+          "role": "Student authors",
+          "audience": "Other fourth graders visiting the library wall, and the librarian who hangs the pages",
+          "drivingQuestion": "How can we retell one scene from a new narrator so that readers learn at least one thing the original narrator could not know, while keeping everything that really happened the same?",
+          "seedDirection": "Before you write, list what your new narrator could see and could not see. The scene's facts do not change; only the window does.",
+          "lockedLessonFacts": [
+            "The narrator is the voice that tells the story; first person uses I, me, my, we, and third person uses he, she, they, or names.",
+            "A first-person narrator cannot tell you what other characters are thinking.",
+            "Two narrators can tell the same event and disagree while both being honest.",
+            "Every perspective has something behind it that the narrator cannot see."
+          ],
+          "openQuestions": [
+            "Which character in the scene has something to say that the original narrator never knew?",
+            "Which facts of the scene must stay exactly the same?",
+            "First person or third person for the retelling, and why?"
+          ],
+          "stakeholders": [
+            "Readers who know the original scene",
+            "The character whose side has not been told",
+            "The librarian",
+            "Classmates writing other scenes"
+          ],
+          "criteria": [
+            "The retelling keeps every event of the original scene the same",
+            "It includes at least one thought or reason the original narrator could not have known",
+            "The point of view is named and the pronouns match it throughout",
+            "A reader who knows the original can name what they learned that is new",
+            "Uses at least three glossary words correctly in the author's note"
+          ],
+          "constraints": [
+            "Under 200 words for the retelling",
+            "Use only characters who were actually in the scene",
+            "No changing what happened, only who tells it",
+            "Include a short author's note naming the narrator and the point of view"
+          ],
+          "deliverable": "A retold scene under 200 words, an author's note naming the narrator and point of view, and a test record: one classmate reads it and writes the new thing they learned.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student retold the puddle scene from Dev's side.",
+            "move": "She listed what Dev could see (Maya splashing, his own memory of yesterday) and could not see (Maya's cold socks, Maya's wish to disappear). She wrote it in first person as Dev, kept the puddle and the laugh exactly, and added the line about wanting to tell Maya it had happened to him too. Her reader said, 'Oh, so he was not being mean.'",
+            "whyItHelps": "It shows the whole move: list the new narrator's window first, keep the facts, add only what that narrator could know, and check that a reader learns something new."
+          },
+          "frameStarter": "The original narrator is ____. My new narrator is ____, who could see ____ but not ____. Readers will learn ____.",
+          "frameChoices": [
+            "Retell in first person as the character who was misunderstood",
+            "Retell in third person following a different character closely",
+            "Retell from a character who saw the scene from across the room",
+            "Retell the same scene twice, once from each side"
+          ],
+          "coachPrompts": [
+            "Did your new narrator say something they could not actually have known?",
+            "Which sentence changed the most, and why?",
+            "What did your test reader learn that the original never told them?"
+          ]
+        },
+        "coachHint": "The facts stay. The window moves. Everything new in your retelling must fit through your narrator's window.",
+        "sourceExcerpt": "When you read, find the narrator. When you write, choose one on purpose. And when two people tell you different stories about the same puddle, you now know what to ask: what could each of them see from where they stood?",
+        "lessonRef": {
+          "resourceId": "pv-reading",
+          "title": "The Same Puddle, Two Ways"
+        }
+      }
+    }
+  ]
+}

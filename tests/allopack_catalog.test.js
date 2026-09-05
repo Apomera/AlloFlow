@@ -18,7 +18,9 @@ const _e = anti.indexOf('let globalAudioCtx');
 const { normalize } = new Function(anti.slice(_s, _e) + '\nreturn { normalize: _alloNormalizeDirectionsData };')();
 
 const TEACHER_ONLY = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);
-const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart']);
+const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge']);
+const MEMORY_AID_TYPES = new Set(['acronym-acrostic', 'rhyme-rhythm', 'chunking', 'story-chain', 'keyword-association', 'visual-association', 'analogy-pattern', 'sequence-cue']);
+const CHALLENGE_FAMILIES = new Set(['investigate', 'design', 'decide', 'propose', 'explore']);
 const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 'bingo', 'timelineGame', 'conceptSortGame', 'syntaxScramble', 'vennDiagram', 'causeEffectSort']);
 
 const files = readdirSync(resolve(process.cwd(), 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
@@ -152,6 +154,44 @@ describe.each(files)('AlloPack: %s', (file) => {
           expect(Array.isArray(sec.bullets)).toBe(true);
           expect(sec.bullets.length).toBeGreaterThanOrEqual(1);
         }
+      }
+      if (r.type === 'memory-aid') {
+        // Shapes read by memory_aid_source.jsx normalizeMemoryAidData / normalizeMemoryAidCard.
+        expect(r.data.schemaVersion).toBe(2);
+        expect(typeof r.data.title).toBe('string');
+        expect(['progressive', 'generated', 'scaffolded', 'student-authored']).toContain(r.data.authorshipMode);
+        expect(r.data.cards.length).toBeGreaterThanOrEqual(2);
+        expect(r.data.cards.length).toBeLessThanOrEqual(8);
+        for (const c of r.data.cards) {
+          expect(typeof c.id).toBe('string');
+          expect(c.target.length).toBeGreaterThan(10);
+          expect(c.essentialFacts.length).toBeGreaterThanOrEqual(2);
+          expect(MEMORY_AID_TYPES.has(c.type), 'unknown memory-aid type ' + c.type).toBe(true);
+          expect(c.aiExample.length).toBeGreaterThan(20);
+          expect(c.mapping.length).toBeGreaterThan(20);
+          // a curated pack ships verified, locked facts so the studio shows 0 items to review
+          expect(c.factLocked).toBe(true);
+          expect(c.factVerified).toBe(true);
+          if (c.hookFact) expect(typeof c.hookFact.text).toBe('string');
+        }
+        if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'memory-aid lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();
+      }
+      if (r.type === 'applied-challenge') {
+        // Shapes read by applied_challenge_source.jsx normalizeAppliedChallengeData / normalizeAppliedChallengeBrief.
+        expect(r.data.schemaVersion).toBe(6);
+        expect(CHALLENGE_FAMILIES.has(r.data.family), 'unknown challenge family ' + r.data.family).toBe(true);
+        expect(r.data.brief.family).toBe(r.data.family);
+        expect(r.data.brief.context.length).toBeGreaterThan(40);
+        expect(r.data.brief.drivingQuestion.length).toBeGreaterThan(20);
+        expect(r.data.brief.lockedLessonFacts.length).toBeGreaterThanOrEqual(3);
+        expect(r.data.brief.criteria.length).toBeGreaterThanOrEqual(2);
+        expect(r.data.brief.constraints.length).toBeGreaterThanOrEqual(1);
+        expect(r.data.brief.deliverable.length).toBeGreaterThan(20);
+        expect(r.data.brief.factLocked).toBe(true);
+        expect(r.data.brief.factVerified).toBe(true);
+        expect(r.data.supports.parallelExample.move.length).toBeGreaterThan(20);
+        expect(r.data.supports.frameChoices.length).toBeGreaterThanOrEqual(2);
+        if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'challenge lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();
       }
       if (r.type === 'outline') {
         expect(typeof r.data.main).toBe('string');

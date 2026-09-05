@@ -1,0 +1,614 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Moon Phases and Eclipses — Why the Moon Changes Shape",
+    "author": "AlloFlow flagship (authored by Claude, reviewed against NASA and NGSS reference material; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "createdAt": "2026-09-05T13:00:00.000Z",
+    "imageShotList": "allopacks/moon_phases_grade6.IMAGES.md",
+    "standards": "NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)"
+  },
+  "sourceTopic": "Moon Phases and Eclipses",
+  "history": [
+    {
+      "id": "mp-directions",
+      "type": "directions",
+      "title": "Your Moon Mission",
+      "timestamp": "2026-09-05T13:00:00.000Z",
+      "meta": "6th Grade • Homework mission • 4 auto-checking goals",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nAlmost everyone believes the Moon changes shape because Earth's shadow falls on it. Almost everyone is wrong, and by the end of this mission you will be able to prove it with a lamp and a ball.\n\n1. Read **Half Lit, Always** — the whole lesson hangs on one sentence in the second paragraph.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **One Ball, One Lamp** chart open while you work.\n4. Sort the cards in **Phase or Eclipse?** — two of them fool most adults.\n5. Take the quiz. Question 3 is the shadow trap.\n6. Explain a phase to someone at home using the **Sentence Frames**.\n7. Lock the ideas in with **Remember Half Lit, Always** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: A Moon Model That Cannot Fool Anyone** — build the model, and mark every guess as a guess.\n\nBonus: look at the real Moon tonight and name its phase before you check. 🌙",
+        "objectives": [
+          {
+            "id": "mp-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "mp-glossary"
+          },
+          {
+            "id": "mp-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "mp-glossary"
+          },
+          {
+            "id": "mp-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "mp-goal-manual",
+            "label": "I looked at the real Moon and named its phase before checking",
+            "kind": "manual"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mp-reading",
+      "type": "simplified",
+      "title": "Half Lit, Always",
+      "timestamp": "2026-09-05T13:01:00.000Z",
+      "meta": "6th Grade • Leveled reading • ~460 words",
+      "data": "## Half Lit, Always\n\nHere is the fact that fixes almost every misunderstanding about the Moon: **the Moon is always half lit.** Right now, whatever shape you see in the sky, exactly half of the Moon is in sunlight and half is in darkness. It has to be. The Moon is a ball, and a ball near a lamp is always lit on the side facing the lamp.\n\nSo why does it look like a thin sliver one week and a full circle two weeks later?\n\nBecause the Moon **orbits** Earth, and as it moves, we see the lit half from different angles. When the Moon is between Earth and the Sun, its lit half faces away from us and we see almost nothing. That is a **new moon**. A week later the Moon has moved a quarter of the way around, and we see half of the lit half — a **first quarter** moon, which looks like a half circle. Another week and the Moon is on the far side of Earth from the Sun. Now its whole lit half faces us: a **full moon**. Another week: **third quarter**, the other half circle. In between those four, the Moon is a thin **crescent** or a fat **gibbous**. While the lit part grows toward full we call it **waxing**; while it shrinks toward new, **waning**. The whole cycle of **phases** takes about 29.5 days.\n\nNotice what did not appear in that explanation: Earth's shadow. The phases are not shadows at all. They are just the angle from which we look at a half-lit ball. You can prove it tonight with a lamp and a ball: hold the ball at arm's length, turn slowly, and watch the phases roll across it. Earth's shadow never touches the ball.\n\nSo when does Earth's shadow matter? During a **lunar eclipse**, when the full Moon passes through Earth's shadow and turns a dim copper red for an hour or two. That happens only a few times a year, not every month, because the Moon's orbit is tilted about five degrees. Most months the full Moon passes a little above or below the shadow and misses it.\n\nA **solar eclipse** is the reverse: the new Moon passes exactly between Earth and the Sun and casts its own small shadow onto Earth. Only people standing inside that shadow, a path a few hundred kilometers wide, see the Sun blocked. The Moon is about 400 times smaller than the Sun, but it is also about 400 times closer, which is the coincidence that lets it cover the Sun so neatly.\n\nOne more thing you have probably noticed without noticing. The Moon always shows us the same face. It **rotates** once for every orbit, so the same side stays pointed at Earth. Nobody saw the far side until a spacecraft photographed it in 1959.\n\nHalf lit, always. Hold onto that sentence and the rest of the sky falls into place."
+    },
+    {
+      "id": "mp-glossary",
+      "type": "glossary",
+      "title": "Moon Words",
+      "timestamp": "2026-09-05T13:02:00.000Z",
+      "meta": "6th Grade • 10 terms • Tiered",
+      "data": [
+        {
+          "term": "Orbit",
+          "def": "The path one object takes around another — the Moon orbits Earth about every 27 days.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Phase",
+          "def": "The shape of the lit part of the Moon that we can see from Earth.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Crescent",
+          "def": "A thin, curved sliver of lit Moon, seen soon before or after a new moon.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Gibbous",
+          "def": "A Moon that is more than half lit but not yet full, or no longer full.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Waxing",
+          "def": "Growing: the lit part gets bigger each night, from new moon toward full.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Waning",
+          "def": "Shrinking: the lit part gets smaller each night, from full moon toward new.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Eclipse",
+          "def": "When one object passes into another's shadow or blocks its light.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Shadow",
+          "def": "The dark region behind an object where its body blocks the light.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Rotate",
+          "def": "To spin around a center line inside the object itself, like a top.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Model",
+          "def": "A simpler stand-in for a real system, like a lamp and a ball standing in for the Sun and Moon.",
+          "tier": "Academic"
+        }
+      ]
+    },
+    {
+      "id": "mp-anchor",
+      "type": "anchor-chart",
+      "title": "One Ball, One Lamp",
+      "timestamp": "2026-09-05T13:03:00.000Z",
+      "meta": "5 sections • classroom reference chart",
+      "data": {
+        "chartType": "reference",
+        "title": "HALF LIT, ALWAYS",
+        "sections": [
+          {
+            "label": "THE ONE FACT",
+            "bullets": [
+              "The Moon is a ball near a lamp: always half lit",
+              "Phases = the angle we see that lit half from",
+              "Earth's shadow is NOT the cause of phases"
+            ],
+            "iconPrompt": "a ball next to a lamp, half lit"
+          },
+          {
+            "label": "THE CYCLE (~29.5 days)",
+            "bullets": [
+              "New moon: Moon between Earth and Sun, we see the dark half",
+              "First quarter: a week later, half circle",
+              "Full moon: Moon opposite the Sun, whole lit half faces us",
+              "Third quarter: the other half circle"
+            ],
+            "iconPrompt": "eight moon phases in a ring"
+          },
+          {
+            "label": "WAXING vs WANING",
+            "bullets": [
+              "Waxing = growing toward full",
+              "Waning = shrinking toward new",
+              "Crescent is thin; gibbous is more than half"
+            ],
+            "iconPrompt": "a crescent growing into a gibbous moon"
+          },
+          {
+            "label": "ECLIPSES (rare)",
+            "bullets": [
+              "Lunar: FULL Moon passes through Earth's shadow, turns red",
+              "Solar: NEW Moon casts its shadow on a small part of Earth",
+              "Rare because the Moon's orbit is tilted about 5 degrees"
+            ],
+            "iconPrompt": "Earth's shadow cone with the Moon passing through it"
+          },
+          {
+            "label": "SAME FACE",
+            "bullets": [
+              "The Moon rotates once per orbit",
+              "So the same side always faces Earth",
+              "The far side was first photographed in 1959"
+            ],
+            "iconPrompt": "the Moon orbiting Earth with the same side always inward"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mp-memory",
+      "type": "memory-aid",
+      "title": "Remember Half Lit, Always",
+      "timestamp": "2026-09-05T13:04:00.000Z",
+      "meta": "6th Grade • 3 memory aids • the one fact, the cycle, the eclipse rule",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Half Lit, Always",
+        "instructions": "Each card locks in facts from Half Lit, Always. Study the example aid, make it yours, and explain how it leads back to the lamp and the ball.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "rhyme-rhythm",
+          "sequence-cue",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The Moon is always half lit. Because the Moon orbits Earth, we see the lit half from different angles. The phases are not shadows at all. During a lunar eclipse, the full Moon passes through Earth's shadow. A solar eclipse is the reverse: the new Moon casts its own small shadow onto Earth.",
+        "lessonRef": {
+          "resourceId": "mp-reading",
+          "title": "Half Lit, Always"
+        },
+        "cards": [
+          {
+            "id": "mp-ma-halflit",
+            "target": "Phases are the angle we see a half-lit ball from, not Earth's shadow",
+            "essentialFacts": [
+              "The Moon is always half lit because it is a ball near the Sun.",
+              "As the Moon orbits Earth, we see the lit half from different angles; that is a phase.",
+              "Earth's shadow never touches the Moon during ordinary phases."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Half is always bright, half is always night; the shape you see depends on where you stand tonight.",
+            "mapping": "The first line is the one fact (half lit, always); the second line is the cause of phases (the viewing angle), and the word shadow never appears, which is the point.",
+            "scaffoldStarter": "Half is always ____, half is always ____; the shape you see depends on ____.",
+            "scaffoldSteps": [
+              "Say the one fact in your own words.",
+              "Add what changes as the Moon orbits: where we look from.",
+              "Check that your rhyme does not blame a shadow."
+            ],
+            "coachPrompts": [
+              "If someone says 'Earth's shadow makes the crescent,' which line of your rhyme answers them?"
+            ],
+            "studentPrompt": "Write your own two-line rhyme for the one fact.",
+            "reasoningPrompt": "How does your rhyme explain the lamp-and-ball model?",
+            "hookFact": {
+              "text": "You can prove it tonight with a lamp and a ball: turn slowly and watch the phases roll across it. Earth's shadow never touches the ball.",
+              "sourceTitle": "Half Lit, Always (this lesson)"
+            }
+          },
+          {
+            "id": "mp-ma-cycle",
+            "target": "The cycle in order: new, first quarter, full, third quarter, about 29.5 days",
+            "essentialFacts": [
+              "New moon: the Moon is between Earth and the Sun and we see the dark half.",
+              "First quarter about a week later; full moon about two weeks after new; third quarter about three weeks after new.",
+              "The whole cycle of phases takes about 29.5 days."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Four fists, four weeks. Fist closed (new), fist half open on the right (first quarter), hand fully open (full), fist half open on the left (third quarter). One week per hand shape, about a month around.",
+            "mapping": "Each hand shape is a phase in order, and 'one week per shape' carries the timing: four shapes make about 29.5 days.",
+            "scaffoldStarter": "Week 0: ____. Week 1: ____. Week 2: ____. Week 3: ____.",
+            "scaffoldSteps": [
+              "Write the four main phases in order.",
+              "Attach a hand shape or drawing to each.",
+              "Say how long the whole loop takes."
+            ],
+            "coachPrompts": [
+              "Between which two of your shapes is the Moon waxing gibbous?"
+            ],
+            "studentPrompt": "Make your own four-step sequence with motions or sketches.",
+            "reasoningPrompt": "How does your sequence show where the Moon is relative to the Sun at each step?",
+            "hookFact": {
+              "text": "The whole cycle of phases takes about 29.5 days.",
+              "sourceTitle": "Half Lit, Always (this lesson)"
+            }
+          },
+          {
+            "id": "mp-ma-eclipse",
+            "target": "Lunar eclipse at full moon, solar eclipse at new moon, and why they are rare",
+            "essentialFacts": [
+              "A lunar eclipse happens when the full Moon passes through Earth's shadow and turns dim red.",
+              "A solar eclipse happens when the new Moon casts its shadow on a small part of Earth.",
+              "Eclipses are rare because the Moon's orbit is tilted about five degrees, so most months it misses the shadow."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "LUNAR eclipse: the Moon is the one in the dark, so it must be FULL and behind Earth. SOLAR eclipse: the Sun is the one blocked, so the Moon must be NEW and in front. Lunar-full-behind; solar-new-in-front. And TILT is why it is rare.",
+            "mapping": "Each eclipse is hooked to the thing that goes dark: the Moon (lunar) or the Sun (solar). Knowing what goes dark tells you the phase and the position, and the keyword tilt carries the rarity rule.",
+            "scaffoldStarter": "Lunar: the ____ goes dark, so the Moon is ____ and ____ Earth. Solar: the ____ is blocked, so the Moon is ____ and ____ Earth. Rare because of ____.",
+            "scaffoldSteps": [
+              "Ask what goes dark in each eclipse.",
+              "Work out the phase from that.",
+              "Add the tilt as the reason it does not happen monthly."
+            ],
+            "coachPrompts": [
+              "Using your keywords, could a lunar eclipse ever happen at a crescent moon?"
+            ],
+            "studentPrompt": "Write your own what-goes-dark keywords.",
+            "reasoningPrompt": "How do your keywords connect each eclipse to a phase?",
+            "hookFact": {
+              "text": "The Moon is about 400 times smaller than the Sun but also about 400 times closer, the coincidence that lets it cover the Sun so neatly.",
+              "sourceTitle": "Half Lit, Always (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mp-sort",
+      "type": "concept-sort",
+      "title": "Phase or Eclipse?",
+      "timestamp": "2026-09-05T13:05:00.000Z",
+      "meta": "3 categories • 10 cards",
+      "data": {
+        "categories": [
+          {
+            "id": "mp-phase",
+            "label": "A PHASE (angle on a half-lit ball)",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "mp-lunar",
+            "label": "LUNAR ECLIPSE (Moon in Earth's shadow)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "mp-solar",
+            "label": "SOLAR ECLIPSE (Moon's shadow on Earth)",
+            "color": "bg-sky-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "mp-i1",
+            "content": "A thin crescent low in the west after sunset",
+            "categoryId": "mp-phase"
+          },
+          {
+            "id": "mp-i2",
+            "content": "The full Moon slowly turns copper red for an hour",
+            "categoryId": "mp-lunar"
+          },
+          {
+            "id": "mp-i3",
+            "content": "The Sun is blocked at midday along a narrow path on Earth",
+            "categoryId": "mp-solar"
+          },
+          {
+            "id": "mp-i4",
+            "content": "A half circle of Moon, lit on the right, in the evening sky",
+            "categoryId": "mp-phase"
+          },
+          {
+            "id": "mp-i5",
+            "content": "Only people in one region see it; everyone else sees a normal day",
+            "categoryId": "mp-solar"
+          },
+          {
+            "id": "mp-i6",
+            "content": "Happens at full moon, and everyone on the night side of Earth can watch",
+            "categoryId": "mp-lunar"
+          },
+          {
+            "id": "mp-i7",
+            "content": "The Moon looks bigger than half but not quite full",
+            "categoryId": "mp-phase"
+          },
+          {
+            "id": "mp-i8",
+            "content": "No Moon visible at all for a night or two",
+            "categoryId": "mp-phase"
+          },
+          {
+            "id": "mp-i9",
+            "content": "Happens at new moon and needs the Moon exactly between Earth and the Sun",
+            "categoryId": "mp-solar"
+          },
+          {
+            "id": "mp-i10",
+            "content": "Earth's shadow is the cause",
+            "categoryId": "mp-lunar"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mp-quiz",
+      "type": "quiz",
+      "title": "The Shadow Trap",
+      "timestamp": "2026-09-05T13:06:00.000Z",
+      "meta": "5 multiple choice + 2 short answer • misconception-focused",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "How much of the Moon is lit by the Sun at any moment?",
+            "options": [
+              "It depends on the phase: a sliver during a crescent, all of it when full",
+              "Exactly half, always, because it is a ball near the Sun",
+              "All of it, but Earth's shadow hides part of it from us",
+              "Only the side that faces Earth, since that side never changes"
+            ],
+            "correctAnswer": "Exactly half, always, because it is a ball near the Sun",
+            "conceptLabel": "half lit always"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the Moon look like a full circle one week and a half circle a week later?",
+            "options": [
+              "The Moon spins faster during some weeks than others",
+              "Clouds high in Earth's atmosphere cover part of the Moon",
+              "Earth's shadow slides across the Moon and back each month",
+              "The Moon moved along its orbit, so we see the lit half from a new angle"
+            ],
+            "correctAnswer": "The Moon moved along its orbit, so we see the lit half from a new angle",
+            "conceptLabel": "phases are angles"
+          },
+          {
+            "type": "mcq",
+            "question": "A friend says the crescent Moon is 'Earth's shadow covering most of the Moon.' What is wrong with that?",
+            "options": [
+              "Nothing is wrong; Earth's shadow makes every phase",
+              "Earth's shadow only reaches the Moon during a lunar eclipse, not during phases",
+              "Earth's shadow is too small to cover more than a sliver of the Moon",
+              "The crescent is caused by the Sun's shadow, not Earth's"
+            ],
+            "correctAnswer": "Earth's shadow only reaches the Moon during a lunar eclipse, not during phases",
+            "conceptLabel": "phases are angles"
+          },
+          {
+            "type": "mcq",
+            "question": "During which phase can a lunar eclipse happen, and why?",
+            "options": [
+              "New moon, because the Moon is closest to the Sun then",
+              "First quarter, because half the Moon is already dark",
+              "Full moon, because the Moon is on the far side of Earth from the Sun",
+              "Any phase, because eclipses depend on weather rather than position"
+            ],
+            "correctAnswer": "Full moon, because the Moon is on the far side of Earth from the Sun",
+            "conceptLabel": "eclipse geometry"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is there NOT a lunar eclipse every month at full moon?",
+            "options": [
+              "The Moon's orbit is tilted, so it usually passes above or below Earth's shadow",
+              "Earth's shadow is only long enough to reach the Moon a few times a year",
+              "The Moon moves too fast to stay in the shadow long enough to darken",
+              "Eclipses only happen in years when the Moon is closest to Earth"
+            ],
+            "correctAnswer": "The Moon's orbit is tilted, so it usually passes above or below Earth's shadow",
+            "conceptLabel": "eclipse geometry"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Describe how you would use a lamp and a ball to show a classmate why phases are not shadows. Say what they would see.",
+            "expectedAnswer": "Turn on a lamp (the Sun), hold a ball (the Moon) at arm's length, and turn slowly in place (Earth watching the Moon orbit). The ball is always half lit, but as it moves around you the lit part looks like a crescent, a half circle, then a full circle. Your own shadow never falls on the ball, so the shapes cannot be shadows.",
+            "conceptLabel": "phases are angles"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain the difference between a lunar eclipse and a solar eclipse: whose shadow, which phase, and who can see it.",
+            "expectedAnswer": "In a lunar eclipse the full Moon passes through Earth's shadow, and everyone on the night side of Earth can see the Moon turn dim red. In a solar eclipse the new Moon's shadow falls on Earth, and only people inside that narrow shadow path see the Sun blocked.",
+            "conceptLabel": "eclipse geometry"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What did you believe about the Moon's phases before this lesson? What changed your mind?"
+          },
+          {
+            "text": "The lamp-and-ball model leaves some things out. Name one thing about the real Moon that the model does not show."
+          }
+        ]
+      }
+    },
+    {
+      "id": "mp-frames",
+      "type": "sentence-frames",
+      "title": "Explain the Sky",
+      "timestamp": "2026-09-05T13:07:00.000Z",
+      "meta": "6 frames • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The Moon is always ____ lit because ____."
+          },
+          {
+            "text": "We see different phases because the Moon ____ Earth, so we see the lit half from ____."
+          },
+          {
+            "text": "Phases are not caused by Earth's shadow because ____."
+          },
+          {
+            "text": "A lunar eclipse happens at ____ moon when ____; a solar eclipse happens at ____ moon when ____."
+          },
+          {
+            "text": "Eclipses do not happen every month because ____."
+          },
+          {
+            "text": "When I looked at the real Moon, I saw ____, which means it was ____ (waxing or waning) because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Astronomer |\n|---|---|---|---|\n| The one fact | Does not mention half lit | States half lit | States half lit AND uses it to explain a phase |\n| Shadow trap | Blames Earth's shadow for phases | Avoids shadow for phases | Explains exactly when Earth's shadow does matter |\n| Vocabulary | Everyday words | 2-3 glossary words correct | Orbit, phase, eclipse, waxing or waning all used precisely |"
+      }
+    },
+    {
+      "id": "mp-faq",
+      "type": "faq",
+      "title": "Moon Questions Kids Actually Ask",
+      "timestamp": "2026-09-05T13:08:00.000Z",
+      "meta": "6 questions",
+      "data": [
+        {
+          "question": "Why can I sometimes see the Moon in the daytime? ☀️🌙",
+          "answer": "Because the Moon is up for about twelve hours out of every twenty-four, and half of that time is daylight. It is easiest to spot near first and third quarter, when it is high in the sky while the Sun is still up."
+        },
+        {
+          "question": "Is there really a dark side of the Moon?",
+          "answer": "There is a far side we never see from Earth, but it is not always dark. It gets just as much sunlight as the near side; it is simply pointed away from us. 'Dark side' is a great album title and a bad astronomy term."
+        },
+        {
+          "question": "Why does the Moon look orange or huge near the horizon? 🍊",
+          "answer": "Orange comes from looking through more air, which scatters away blue light, the same reason sunsets are orange. Huge is an illusion: measure it with your thumb at the horizon and again overhead and it is the same size."
+        },
+        {
+          "question": "Do phases look the same in Australia?",
+          "answer": "Same phase on the same night, but flipped. Someone in Australia sees the crescent lit on the opposite side from someone in Canada, because they are looking at the Moon while standing upside down relative to each other."
+        },
+        {
+          "question": "Why is a total solar eclipse such a big deal if it only lasts a few minutes? 🌑",
+          "answer": "Because the Moon's shadow is small and Earth is big, so any one spot sees totality only about once every few hundred years. People travel across the world for those few minutes of daytime darkness."
+        },
+        {
+          "question": "Does the Moon really pull the ocean?",
+          "answer": "Yes. The Moon's gravity tugs on Earth's oceans, and that pull is the main cause of tides. It is a different lesson, but it is the same Moon doing the work."
+        }
+      ]
+    },
+    {
+      "id": "mp-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: A Moon Model That Cannot Fool Anyone",
+      "timestamp": "2026-09-05T13:09:00.000Z",
+      "meta": "6th Grade • Design brief • a hands-on model that defeats the shadow misconception",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Moon Model That Cannot Fool Anyone",
+        "instructions": "Design and test a hands-on model of the Earth-Sun-Moon system that lets a younger student see for themselves that phases are not shadows, and that also shows when an eclipse can and cannot happen.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The lesson's core skill is using a model to explain a cyclic pattern, which is exactly the NGSS performance expectation. Designing the model for a skeptical younger audience forces students to make the geometry visible, not just described.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "A fourth-grade class has just learned, incorrectly, that Earth's shadow causes the phases. Their teacher has asked your class to bring a model to their room that fixes the idea in under ten minutes. You have lamps, foam balls of two sizes, skewers, string, a globe, cardboard, and a dark room.",
+          "role": "Student model designers",
+          "audience": "A fourth-grade class and their teacher",
+          "drivingQuestion": "How can we build and run a model that makes a fourth grader see, without being told, that phases come from viewing angle, and that eclipses need a special lineup that usually does not happen?",
+          "seedDirection": "Decide first who plays Earth. The person watching from Earth's position is the one who sees the phases, so the model has to be run from that viewpoint.",
+          "lockedLessonFacts": [
+            "The Moon is always half lit by the Sun.",
+            "Phases are the angle from which we see the lit half as the Moon orbits Earth; Earth's shadow is not the cause.",
+            "A lunar eclipse happens when the full Moon passes through Earth's shadow; a solar eclipse happens when the new Moon's shadow falls on Earth.",
+            "Eclipses are rare because the Moon's orbit is tilted about five degrees.",
+            "The Moon rotates once per orbit, so the same side always faces Earth."
+          ],
+          "openQuestions": [
+            "How far from the lamp does the ball need to be so the lit half is clearly half, not a glare?",
+            "How do we show the five-degree tilt in a model a fourth grader can hold?",
+            "What will fourth graders predict before we run it, and how do we let them test their prediction?",
+            "How big should the Moon ball be compared to the Earth globe for the shadows to work?"
+          ],
+          "stakeholders": [
+            "The fourth graders who currently believe the shadow idea",
+            "Their teacher, who needs the model to fit in ten minutes",
+            "Your classmates running the demonstration",
+            "Anyone with light sensitivity in a dark room"
+          ],
+          "criteria": [
+            "A fourth grader standing at Earth's position can name the phase they see at four points around the orbit",
+            "The model shows a full-moon position where Earth's shadow misses the Moon and one where it hits",
+            "Fourth graders write a prediction before the demo and check it after",
+            "The written script uses at least four glossary words correctly and never says 'shadow' when explaining phases"
+          ],
+          "constraints": [
+            "Runs in under ten minutes including setup",
+            "Nothing hot enough to burn; LED lamps only",
+            "Materials from the list only",
+            "Must work in a classroom that cannot be made fully dark"
+          ],
+          "deliverable": "A labeled diagram of the model, a ten-minute demonstration script with the prediction step marked, a test log from running it once with your own class, and a one-paragraph note on what your model cannot show.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A planetarium educator kept hearing visitors say the crescent is Earth's shadow.",
+            "move": "Instead of explaining, she handed each visitor a ball on a stick, stood them under one bright light, and had them turn in place while holding the ball up. Every visitor watched a crescent, then a half, then a full appear on their own ball while their own shadow pointed the other way. Nobody argued after that.",
+            "whyItHelps": "It shows the design principle you need: put the learner at Earth's position and let their own eyes do the convincing. The shadow disproves itself when it points away from the ball."
+          },
+          "frameStarter": "In our model, ____ is the Sun, ____ is the Moon, and ____ stands where Earth is. When the Moon ball is at ____, the person at Earth sees ____.",
+          "frameChoices": [
+            "Each fourth grader holds their own Moon ball and turns under one lamp",
+            "One large model at the front with a volunteer standing at Earth",
+            "A ring of eight balls fixed around a globe showing all phases at once",
+            "A tilted hoop for the orbit so the eclipse lineup is visible"
+          ],
+          "coachPrompts": [
+            "Where does the observer's own shadow fall during your demo, and how will you point that out?",
+            "Which criterion is hardest to meet in a room that is not dark?",
+            "What would a fourth grader still get wrong after your model, and can you fix that or only name it?"
+          ]
+        },
+        "coachHint": "The learner has to stand where Earth is. Everything else in the design follows from that one choice.",
+        "sourceExcerpt": "You can prove it tonight with a lamp and a ball: hold the ball at arm's length, turn slowly, and watch the phases roll across it. Earth's shadow never touches the ball.",
+        "lessonRef": {
+          "resourceId": "mp-reading",
+          "title": "Half Lit, Always"
+        }
+      }
+    }
+  ]
+}

@@ -18,7 +18,7 @@
       "title": "Your Fraction Quest",
       "timestamp": "2026-07-21T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n6. Read **Fraction Questions Kids Actually Ask** if something still feels strange.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
+        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n6. Read **Fraction Questions Kids Actually Ask** if something still feels strange.\n7. Lock the ideas in with **Remember the Space Between** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: A Number Line for the Hallway** — use what you learned on a real problem, and mark every guess as a guess.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
         "objectives": [
           {
             "id": "fr-goal-scramble",
@@ -59,7 +59,7 @@
       "data": [
         {
           "term": "Fraction",
-          "def": "A number that names a place between whole numbers.",
+          "def": "A number that names equal parts of a whole — it can sit between whole numbers or land right on one.",
           "tier": "Domain-Specific"
         },
         {
@@ -109,6 +109,124 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "fr-memory",
+      "type": "memory-aid",
+      "title": "Remember the Space Between",
+      "timestamp": "2026-09-05T12:40:00.000Z",
+      "meta": "3rd-4th Grade • 3 memory aids • top and bottom, more pieces smaller pieces, same spot two names",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Space Between",
+        "instructions": "Each card locks in one idea from The Space Between 0 and 1. Look at the example aid, make it your own, and tell how it helps you on the number line.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "rhyme-rhythm",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The bottom number, the denominator, tells you how many equal pieces the whole was cut into. The top number, the numerator, tells you how many of those pieces you counted from zero. 2/4 and 1/2 land on the exact same spot. More pieces means smaller pieces.",
+        "lessonRef": {
+          "resourceId": "fr-reading",
+          "title": "The Space Between 0 and 1"
+        },
+        "cards": [
+          {
+            "id": "fr-ma-topbottom",
+            "target": "Denominator on the bottom tells the pieces; numerator on top tells the count",
+            "essentialFacts": [
+              "The denominator (bottom) tells how many equal pieces the whole was cut into.",
+              "The numerator (top) tells how many pieces you counted from zero.",
+              "3/4 means walk three of the four steps from 0 toward 1."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "Denominator = Down = how many pieces. Numerator = Number you counted. D is down; N is the number of steps you took.",
+            "mapping": "Both hooks use the first letter of the word: D for down puts the denominator on the bottom, and N for number reminds you the numerator is the count.",
+            "scaffoldStarter": "D is for ____, so the denominator is on the ____. N is for ____, so the numerator tells ____.",
+            "scaffoldSteps": [
+              "Say each word and listen for its first letter.",
+              "Attach down to the bottom number and number to the top.",
+              "Read 3/4 out loud as steps."
+            ],
+            "coachPrompts": [
+              "Using your hook, which number changes when you cut the line into more pieces?"
+            ],
+            "studentPrompt": "Make your own D-and-N hook.",
+            "reasoningPrompt": "How does your hook stop you from mixing up the two numbers?",
+            "hookFact": {
+              "text": "3/4 is not a pizza. It is a location: walk three of the four steps from 0 toward 1 and stop.",
+              "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            }
+          },
+          {
+            "id": "fr-ma-pieces",
+            "target": "More pieces means smaller pieces: 1/8 is smaller than 1/4",
+            "essentialFacts": [
+              "Cutting the space from 0 to 1 into 8 pieces makes each piece smaller than cutting it into 4.",
+              "So 1/8 sits closer to 0, and 1/4 is bigger.",
+              "This fixes the most common fraction mistake: thinking 1/8 is bigger because 8 is bigger."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Bigger bottom, smaller bite: more pieces means each is slight.",
+            "mapping": "The rhyme puts the trap and the fix in one breath: a bigger denominator (bottom) means a smaller piece (bite), which is the opposite of what your whole-number brain expects.",
+            "scaffoldStarter": "Bigger ____, smaller ____: more pieces means ____.",
+            "scaffoldSteps": [
+              "Say the rule in plain words.",
+              "Find two words that rhyme for bottom and piece.",
+              "Test it on 1/3 and 1/6."
+            ],
+            "coachPrompts": [
+              "Does your rhyme work when the top numbers are the same but the bottoms are different?"
+            ],
+            "studentPrompt": "Write your own two-line rhyme for the pieces rule.",
+            "reasoningPrompt": "How does your rhyme help you when your brain says 8 is bigger than 4?",
+            "hookFact": {
+              "text": "Many people say 1/8 is bigger than 1/4 because 8 is bigger than 4. The number line shows you instantly that it is not, and it never lies.",
+              "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            }
+          },
+          {
+            "id": "fr-ma-same",
+            "target": "Equivalent fractions: same spot, two names",
+            "essentialFacts": [
+              "2/4 and 1/2 land on the exact same spot on the number line.",
+              "Equivalent fractions are different names for the same place.",
+              "4/8 and 3/6 are also names for that halfway spot."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture one friend standing exactly halfway down a hallway. Her name tag says 1/2 on one side and 2/4 on the other. Two tags, one person, one spot.",
+            "mapping": "The friend is the location, the tags are the names, and the single spot in the hallway is the number line, so equivalent means two tags on one person, not two people.",
+            "scaffoldStarter": "One person stands at ____. Her tags say ____ and ____.",
+            "scaffoldSteps": [
+              "Draw or picture a hallway from 0 to 1.",
+              "Put one person at the halfway spot with two name tags.",
+              "Add a third tag that also belongs there."
+            ],
+            "coachPrompts": [
+              "Could 3/4 be a tag on the same person? Why not?"
+            ],
+            "studentPrompt": "Make your own one-spot, two-names picture.",
+            "reasoningPrompt": "How does your picture show what equivalent means?",
+            "hookFact": {
+              "text": "Same location, two names, like a friend who goes by a nickname.",
+              "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            }
+          }
+        ]
+      }
     },
     {
       "id": "fr-math",
@@ -333,10 +451,10 @@
             "type": "mcq",
             "question": "On a number line from 0 to 1 cut into 8 equal pieces, where is 4/8?",
             "options": [
-              "Just before 1",
+              "Just before 1, near the right end",
               "Exactly halfway between 0 and 1",
-              "Just after 0",
-              "Past 1"
+              "Just after 0, near the left end",
+              "Past 1, to the right of the whole"
             ],
             "correctAnswer": "Exactly halfway between 0 and 1",
             "conceptLabel": "equivalent fractions"
@@ -357,9 +475,9 @@
             "type": "mcq",
             "question": "The reading says 3/4 is a location, not a pizza slice. What does that mean?",
             "options": [
-              "It only works for measuring distance",
-              "Pizza cannot be used to show fractions",
-              "It means 3/4 is not really a number",
+              "It only works when you are measuring distance along a road or a ruler",
+              "Pizza cannot be used to show fractions, because slices are never truly equal",
+              "It means 3/4 is not really a number, just a picture of a place",
               "It is a specific spot on the number line, three-fourths of the way from 0 to 1"
             ],
             "correctAnswer": "It is a specific spot on the number line, three-fourths of the way from 0 to 1",
@@ -464,6 +582,89 @@
         }
       ],
       "meta": "6 questions • includes the infinity surprise"
+    },
+    {
+      "id": "fr-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: A Number Line for the Hallway",
+      "timestamp": "2026-09-05T12:41:00.000Z",
+      "meta": "3rd-4th Grade • Design brief • a walkable fraction line",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Number Line for the Hallway",
+        "instructions": "Design a number line on the hallway floor that students can walk from 0 to 1 and beyond, with the fraction marks placed so they are truly equal. Then test it: do two names land on the same spot?",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The reading insists fractions are places. A number line big enough to walk makes equal pieces, equivalent names, and 5/4 into something students measure with their feet.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your teacher has painter's tape, a measuring tape, index cards, and permission to use a 4-meter stretch of hallway floor for a week. Younger classes will walk it too.",
+          "role": "Student line builders",
+          "audience": "Your class and a second-grade class that will walk the line",
+          "drivingQuestion": "How do we place the marks for fourths, halves, and eighths so every piece is truly equal, and how do we show that 1/2, 2/4, and 4/8 are one spot?",
+          "seedDirection": "Decide how long 0 to 1 will be first. Every other mark is that length divided into equal pieces, so measure, do not guess.",
+          "lockedLessonFacts": [
+            "The denominator tells how many equal pieces the whole was cut into; the numerator tells how many you counted from zero.",
+            "2/4 and 1/2 land on the exact same spot: equivalent fractions are two names for one place.",
+            "More pieces means smaller pieces: 1/8 is closer to 0 than 1/4.",
+            "Fractions do not stop at 1: 5/4 is one fourth past 1."
+          ],
+          "openQuestions": [
+            "How long should 0 to 1 be so that eighths are still far enough apart to stand on?",
+            "How do we make sure our pieces are equal, not just close?",
+            "Where do we put 5/4 if the hallway ends?",
+            "How will a second grader know that two cards at one spot are the same place?"
+          ],
+          "stakeholders": [
+            "Second graders who will walk the line",
+            "Teachers whose hallway it is",
+            "The custodian who removes the tape later",
+            "Students in wheelchairs who need the marks readable from the side"
+          ],
+          "criteria": [
+            "Every fourth is the same measured length, and every eighth is exactly half a fourth",
+            "1/2, 2/4, and 4/8 share one mark with all three cards",
+            "At least one mark past 1 is placed and labeled",
+            "A second grader can walk to 3/4 without help using your labels"
+          ],
+          "constraints": [
+            "Tape only, no marker on the floor",
+            "The line must leave room for people to pass",
+            "Cards must be readable from standing height",
+            "Built and tested in one class period"
+          ],
+          "deliverable": "A plan drawing with measured distances, the built line, a test record (three second graders asked to walk to 3/4, 1/2, and 5/4, and where they stopped), and one sentence about what you would change.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A class built a number line but put the halfway mark by eye.",
+            "move": "When they measured, 1/2 was 10 centimeters off, so 2/4 and 1/2 landed on different spots and the second graders thought they were different numbers. They remeasured, fixed the mark, and taped both cards to one spot.",
+            "whyItHelps": "It shows why measuring matters: equal pieces are what make equivalent fractions land together."
+          },
+          "frameStarter": "Our whole is ____ long. Each fourth is ____, each eighth is ____. The mark for 1/2 has cards for ____ and ____.",
+          "frameChoices": [
+            "Build fourths first, then split each into eighths",
+            "Build eighths first, then label every second one as a fourth",
+            "Add a second color of tape for marks past 1",
+            "Add thirds in a different color to compare piece sizes"
+          ],
+          "coachPrompts": [
+            "How do you know your fourths are equal without trusting your eyes?",
+            "What happens to a second grader's walk if one piece is longer than the others?",
+            "Where would 1/3 go, and why is it not on any of your marks?"
+          ]
+        },
+        "coachHint": "Measure the whole, divide, measure again. Equal pieces are the entire idea.",
+        "sourceExcerpt": "Fractions do not stop at 1. Keep going: 5/4 is one step past 1. Fractions are just numbers, and the number line goes on forever in both directions.",
+        "lessonRef": {
+          "resourceId": "fr-reading",
+          "title": "The Space Between 0 and 1"
+        }
+      }
     }
   ]
 }
