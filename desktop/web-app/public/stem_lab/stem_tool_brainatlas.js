@@ -7012,6 +7012,25 @@ var d = labToolData.brainAtlas || {};
               try { panel.focus({ preventScroll: true }); } catch (e) {}
             }, 20);
           }
+          function brainAtlasMythFor(currentViewKey, regionId) {
+            if (!regionId || currentViewKey === 'neuromyths') return null;
+            var mythView = VIEWS.neuromyths;
+            if (!mythView || !Array.isArray(mythView.regions)) return null;
+            return mythView.regions.filter(function (card) {
+              return card.seeView === currentViewKey && card.seeRegion === regionId;
+            })[0] || null;
+          }
+          function openBrainAtlasMythCard(card) {
+            if (!card) return;
+            upd('view', 'neuromyths');
+            upd('viewGroup', brainAtlasViewGroupFor('neuromyths'));
+            upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o.neuromyths = true; return o; })());
+            upd('selected3DStructure', '');
+            upd('selectedRegion', card.id);
+            upd('quizMode', false);
+            upd('search', '');
+            if (typeof announceToSR === 'function') announceToSR(card.name + ' ' + (t('stem.brainatlas.evidence_card_opened', 'evidence card opened.') || 'evidence card opened.'));
+          }
           function openBrainAtlasMythView(card) {
             if (!card || !card.seeView || !VIEWS[card.seeView]) return;
             upd('view', card.seeView);
@@ -12224,6 +12243,20 @@ var d = labToolData.brainAtlas || {};
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
 
                       ),
+                      (function () {
+                        var mythCard = brainAtlasMythFor(viewKey, sel.id);
+                        if (!mythCard) return null;
+                        return React.createElement("div", { "data-brainatlas-myth-backlink": mythCard.id },
+                          React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase mb-0.5" }, t('stem.brainatlas.honestly', 'The claim you may have heard')),
+                          React.createElement("button", {
+                            type: "button",
+                            "data-brainatlas-open-myth-card": mythCard.id,
+                            onClick: function () { openBrainAtlasMythCard(mythCard); },
+                            className: "transition-colors w-full text-left py-2 px-3 rounded-lg text-xs font-bold border-2 border-violet-300 text-violet-800 hover:bg-violet-50 active:scale-[0.97]"
+                          }, mythCard.name),
+                          React.createElement("p", { className: "text-[0.6875rem] text-slate-500 italic mt-1" }, t('stem.brainatlas.honestly_note', 'Opens the evidence card: what the claim says, what the research supports, and what to do instead.'))
+                        );
+                      })(),
 
 
 

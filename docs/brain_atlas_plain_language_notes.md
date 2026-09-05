@@ -119,3 +119,9 @@ September 5, 2026. Several myth cards point at another view in their own evidenc
 The jump sets the view, its group, and the region together, leaves quiz mode, clears a stale search, and announces the destination, matching the existing treatment and 3D jumps. A test asserts that each named region really belongs to the view it is paired with, so a card can never promise a destination that does not exist.
 
 The jump was clicked in a browser against the deployed host. Opening the ADHD card and pressing its button moved the reader to the EEG view with theta waves selected, where the associated-conditions text already carries the theta/beta caveat. That is the intended payoff: the myth card hands the reader to the place the evidence lives.
+
+## The return leg
+
+September 5, 2026. Four regions elsewhere in the atlas state a contested clinical association in their own text: theta waves and the theta/beta ADHD marker, synaptic pruning and the autism and schizophrenia findings, neuroplasticity and what brain training does not transfer to, and critical periods and the age-three claim. Those are the points where a reader can most easily over-read a finding, so each now offers the evidence card that gives the honest verdict, under the heading "The claim you may have heard".
+
+The pairing is derived from the myth cards' own view and region fields rather than kept as a second list, so the outbound jump and the return link cannot drift apart. The link appears only on those four regions, never inside the myths view, and never on a region with no paired card. A myth card cannot link to itself.
