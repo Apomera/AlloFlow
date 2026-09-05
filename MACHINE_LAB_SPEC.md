@@ -130,6 +130,20 @@ it the stone JUMPED to the end of its arc: a shot that looks like nothing happen
 - **Bests** (`siegeBests[preset] = {shots, work}`): recorded on a breach, fewest shots then
   least work; toast only when beating a previous best; shown in the Field tally.
 
+### Wave 4 (2026-09-05)
+
+- **Sound, synthesised** (`SCENE_AUDIO`): a ratcheting creak for the haul (saw → lowpass,
+  square tremolo on the gain), a bandpass noise sweep at release scaled by muzzle speed, a
+  sine thump plus a noise rattle at the landing (highpass rattle for the wall, lowpass for
+  earth, scaled by impact kJ). Opt-in (`sceneSound: false`), unlocked by the click that
+  enables it, latched per flight so a slow replay does not re-fire the release every frame,
+  and silent under reduced motion. Every voice is try-wrapped; no AudioContext = no sound.
+  The host's own `stemBeep` has no mute gate either, so there is nothing to defer to.
+- **The crew work the winch**: two figures lean and heave at the ratchet rate during the
+  haul, still otherwise.
+- **Work record** gains "Best sieges: keep 4 shots (181 kJ), …".
+- **Quest** `breach_two_targets` (🌄), keyed on `siegeBests`.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

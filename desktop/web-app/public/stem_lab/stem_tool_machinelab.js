@@ -3144,6 +3144,81 @@ window.StemLab = window.StemLab || {
   // Stable ref callbacks for the live HUD. The tick writes these nodes
   // directly (textContent, ~10 times a frame at most) instead of asking React
   // to re-render the whole tool sixty times a second for four numbers.
+  var SCENE_AUDIO = (function () {
+    var ctx = null, noiseBuf = null;
+    function ac() {
+      if (ctx) return ctx;
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; }
+      return ctx;
+    }
+    function noise() {
+      var a = ac(); if (!a) return null;
+      if (!noiseBuf) {
+        noiseBuf = a.createBuffer(1, a.sampleRate * 1.5, a.sampleRate);
+        var d = noiseBuf.getChannelData(0);
+        // Deterministic noise: the tool forbids Math.random (its rubble is
+        // reproducible by construction), and white noise does not need it.
+        var seed = 0x9e3779b9;
+        for (var i = 0; i < d.length; i++) {
+          seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+          d[i] = ((seed >>> 0) / 4294967296) * 2 - 1;
+        }
+      }
+      var s = a.createBufferSource(); s.buffer = noiseBuf; return s;
+    }
+    return {
+      unlock: function () { var a = ac(); if (a && a.state === 'suspended' && a.resume) { try { a.resume(); } catch (e) {} } },
+      // The winch: a low saw through a lowpass, chopped by a slow tremolo so it
+      // reads as ratchet clicks rather than a hum.
+      haul: function (secs) {
+        var a = ac(); if (!a) return;
+        try {
+          var t0 = a.currentTime, dur = Math.max(0.4, secs || 1.6);
+          var osc = a.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 52;
+          var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320; lp.Q.value = 4;
+          var g = a.createGain(); g.gain.value = 0;
+          var trem = a.createOscillator(); trem.type = 'square'; trem.frequency.value = 7;
+          var tg = a.createGain(); tg.gain.value = 0.05;
+          trem.connect(tg); tg.connect(g.gain);
+          osc.connect(lp); lp.connect(g); g.connect(a.destination);
+          g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.06, t0 + 0.15);
+          g.gain.setValueAtTime(0.06, t0 + dur - 0.2); g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+          osc.start(t0); trem.start(t0); osc.stop(t0 + dur); trem.stop(t0 + dur);
+        } catch (e) {}
+      },
+      // Release: a band of noise sweeping up and away, louder for a faster stone.
+      whoosh: function (speed) {
+        var a = ac(), n = noise(); if (!a || !n) return;
+        try {
+          var t0 = a.currentTime, vol = Math.min(0.14, 0.05 + (speed || 20) * 0.002);
+          var bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
+          bp.frequency.setValueAtTime(300, t0); bp.frequency.exponentialRampToValueAtTime(2400, t0 + 0.45);
+          var g = a.createGain();
+          g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.6);
+          n.connect(bp); bp.connect(g); g.connect(a.destination);
+          n.start(t0); n.stop(t0 + 0.65);
+        } catch (e) {}
+      },
+      // Landing: a low thump for earth, a thump plus a rattle of stone for the wall.
+      thud: function (hitWall, energyKJ) {
+        var a = ac(); if (!a) return;
+        try {
+          var t0 = a.currentTime, vol = Math.min(0.22, 0.08 + (energyKJ || 5) * 0.004);
+          var osc = a.createOscillator(); osc.type = 'sine';
+          osc.frequency.setValueAtTime(90, t0); osc.frequency.exponentialRampToValueAtTime(38, t0 + 0.35);
+          var g = a.createGain();
+          g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.4);
+          osc.connect(g); g.connect(a.destination); osc.start(t0); osc.stop(t0 + 0.42);
+          var n = noise(); if (!n) return;
+          var f = a.createBiquadFilter(); f.type = hitWall ? 'highpass' : 'lowpass'; f.frequency.value = hitWall ? 900 : 260;
+          var ng = a.createGain();
+          ng.gain.setValueAtTime(hitWall ? vol * 0.8 : vol * 0.35, t0); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + (hitWall ? 0.9 : 0.3));
+          n.connect(f); f.connect(ng); ng.connect(a.destination); n.start(t0); n.stop(t0 + 1);
+        } catch (e) {}
+      }
+    };
+  })();
+
   var SCENE_HUD = {};
   function sceneHudRef(name) {
     if (!SCENE_HUD['_ref_' + name]) {
@@ -3382,9 +3457,11 @@ window.StemLab = window.StemLab || {
     skinMachine(THREE, mg, contrast, tex);
     S.siegeGuest = guest;
     if (!contrast) {
-      addFigure(THREE, S.model, -3.6, -standoff - 2.4, 0x9c3b2e, 1.1);
-      addFigure(THREE, S.model, 3.4, -standoff - 3.0, 0x3b5f9c, -0.9);
-      addFigure(THREE, S.model, -4.4, -standoff + 3.2, 0x6b7b3a, 2.3);
+      S.crew = [
+        addFigure(THREE, S.model, -3.6, -standoff - 2.4, 0x9c3b2e, 1.1),
+        addFigure(THREE, S.model, 3.4, -standoff - 3.0, 0x3b5f9c, -0.9),
+        addFigure(THREE, S.model, -4.4, -standoff + 3.2, 0x6b7b3a, 2.3)
+      ];
       var tent = new THREE.Mesh(new THREE.ConeGeometry(2.4, 2.8, 8), mat(0xd9c9a2));
       tent.position.set(11.5, terrainHeight(11.5, -standoff + 1, standoff, laneHalf) + 1.4, -standoff + 1);
       tent.castShadow = true; tent.receiveShadow = true;
@@ -3584,6 +3661,8 @@ window.StemLab = window.StemLab || {
         if (S.flightId !== data.flight.id) {
           S.flightId = data.flight.id; S.flightT0 = now; S.trailHist = []; S.impactAt = null; S.burstT0 = null;
           S.strobePath = data.flight.path;
+          S.releasedId = null;
+          if (data.sound && !red && (Number(data.flight.windup) || 0) > 0) SCENE_AUDIO.haul(Number(data.flight.windup));
         }
         dur = Math.max(0.3, data.flight.seconds || 1.4);
         var raw = Math.max(0, (now - (S.flightT0 || now)) / 1000);
@@ -3644,6 +3723,13 @@ window.StemLab = window.StemLab || {
         // the slow, heavy part, as it is on a real winch.
         if (winding > 0 && typeof g.mlPose === 'function') { try { g.mlPose(winding * winding); } catch (e) {} }
       }
+      // The crew: two of them work the winch during the haul (a lean and a
+      // heave in time with the ratchet), and stand still otherwise.
+      if (S.crew) {
+        var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;
+        S.crew[0].rotation.x = heave * 0.22; S.crew[0].position.y = Math.max(0, heave) * 0.08;
+        S.crew[1].rotation.x = -heave * 0.18; S.crew[1].position.y = Math.max(0, -heave) * 0.08;
+      }
 
       // Ghost traces of the last flights, for comparing one change against
       // the shot before it. Persisted in state, so they survive a rebuild.
@@ -3703,6 +3789,10 @@ window.StemLab = window.StemLab || {
         downrange = a.x + (bb.x - a.x) * segf;
         realT = (a.t != null && bb.t != null) ? a.t + (bb.t - a.t) * segf : frac * dur;
         S.flyStone.visible = t > 0.02;
+        if (t > 0.02 && S.releasedId !== data.flight.id) {
+          S.releasedId = data.flight.id;
+          if (data.sound && !red) SCENE_AUDIO.whoosh(speed);
+        }
         S.flyStone.position.copy(stonePos);
         S.flyStone.rotation.x += dt * 6; S.flyStone.rotation.z += dt * 4;
         if (!red && t > 0.02) {
@@ -3715,6 +3805,7 @@ window.StemLab = window.StemLab || {
           S.impactAt = now;
           var last = pts[pts.length - 1];
           S.impactPos = new THREE.Vector3(last.z || 0, Math.max(0.3, last.y), -standoff + last.x);
+          if (data.sound && !red) SCENE_AUDIO.thud(data.outcomeKind === 'hit', (Number(data.impactKJ) || 0));
           if (!red) {
             S.burstT0 = now;
             S.burst.forEach(function (bm, k) {
@@ -4018,6 +4109,8 @@ window.StemLab = window.StemLab || {
       scenePath: true, sceneIntroDismissed: false, lastFlight: null,
       // Compact traces of the last three flights, and the best siege per target.
       sceneTraces: [], siegeBests: {},
+      // Sound is opt-in: a classroom default.
+      sceneSound: false,
       // auto = follow the OS reduce-motion setting; on/off override it. A
       // student whose laptop has animations off otherwise sees no shot at all.
       motionPref: 'auto',
@@ -4115,6 +4208,13 @@ window.StemLab = window.StemLab || {
           if (!d) return 'Not breached yet';
           return d.breached ? (d.shotsFired + ' shots') : 'Not breached yet';
         }
+      },
+      {
+        id: 'breach_two_targets',
+        label: 'Breach two different targets in the Siege Field',
+        icon: '🌄',
+        check: function (d) { return Object.keys((d && d.siegeBests) || {}).length >= 2; },
+        progress: function (d) { return Object.keys((d && d.siegeBests) || {}).length + '/2 targets'; }
       },
       {
         id: 'compare_machines',
@@ -7214,6 +7314,16 @@ window.StemLab = window.StemLab || {
             (_machineMath.isBreached(currentWall())
               ? __alloT('stem.machinelab.rec_breached', ', breached') : __alloT('stem.machinelab.rec_held', ', wall held')));
         }
+        // The Siege Field's bests are evidence of iteration: each one is a
+        // breach the student improved on, or at least achieved, per target.
+        var bestsObj = d.siegeBests || {};
+        var bestKeys = Object.keys(bestsObj);
+        if (bestKeys.length) {
+          lines.push(__alloT('stem.machinelab.rec_bests', 'Best sieges: ') + bestKeys.map(function (k) {
+            var bb = bestsObj[k];
+            return k + ' ' + bb.shots + __alloT('stem.machinelab.rec_bests_shots', ' shots (') + fmt((bb.work || 0) / 1000, 0) + ' kJ)';
+          }).join(', '));
+        }
         // Running the best-stone search is a real piece of investigation, and
         // the record showed no sign of it. Report what it found rather than
         // just that it happened, so the line is evidence and not a tick.
@@ -7679,6 +7789,8 @@ window.StemLab = window.StemLab || {
           wallPreset: d.wallPreset || 'curtain',
           time: timeId,
           windZ: d.windZ || 0,
+          sound: !!d.sceneSound,
+          impactKJ: d.lastImpact ? (d.lastImpact.ke || 0) / 1000 : 0,
           stored: preview ? preview.stored : 0,
           traces: d.sceneTraces || [],
           tracesSig: (d.sceneTraces || []).map(function (p) { return p.length + ':' + (p.length ? Math.round(p[p.length - 1].x) : 0); }).join('|'),
@@ -7886,7 +7998,17 @@ window.StemLab = window.StemLab || {
                   border: '1px solid ' + (d.scenePath !== false ? T.accent : T.border),
                   background: d.scenePath !== false ? T.accent : T.card, color: d.scenePath !== false ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
                 }
-              }, '📈 ' + __alloT('stem.machinelab.arc_toggle', 'Predicted arc'))
+              }, '📈 ' + __alloT('stem.machinelab.arc_toggle', 'Predicted arc')),
+              h('button', {
+                key: 'snd', type: 'button', 'aria-pressed': d.sceneSound ? 'true' : 'false',
+                onClick: function () { if (!d.sceneSound) SCENE_AUDIO.unlock(); upd('sceneSound', !d.sceneSound); },
+                title: __alloT('stem.machinelab.sound_t', 'Winch, release and impact sounds, made on the spot. Off by default.'),
+                style: {
+                  padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
+                  border: '1px solid ' + (d.sceneSound ? T.accent : T.border),
+                  background: d.sceneSound ? T.accent : T.card, color: d.sceneSound ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
+                }
+              }, (d.sceneSound ? '🔊 ' : '🔇 ') + __alloT('stem.machinelab.sound_toggle', 'Sound'))
             ]),
             camControls(sCam, __alloT('stem.machinelab.scene_label', 'siege field'), 'scene'),
             h('div', { key: 'fire', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [

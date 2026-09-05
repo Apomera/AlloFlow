@@ -343,3 +343,52 @@ describe('Siege Field wave 3: winding, energy bar, traces, bests', () => {
     expect(src).toContain("g2.fillText(sd + ' m', n2 / 2, n2 / 2);");
   });
 });
+
+describe('Siege Field wave 4: sound, crew, record, quest', () => {
+  it('sound is opt-in, a pressed toggle, and unlocked by the click that turns it on', () => {
+    const off = renderTool('machineLab', state());
+    expect(off).toMatch(/aria-pressed="false"[^>]*>[^<]*Sound/);
+    const on = renderTool('machineLab', state({ sceneSound: true }));
+    expect(on).toMatch(/aria-pressed="true"[^>]*>[^<]*Sound/);
+    const src = source();
+    expect(src).toMatch(/sceneSound: false,/);
+    expect(src).toContain("if (!d.sceneSound) SCENE_AUDIO.unlock(); upd('sceneSound', !d.sceneSound);");
+  });
+
+  it('cues fire on the three transitions only, and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (data.sound && !red && (Number(data.flight.windup) || 0) > 0) SCENE_AUDIO.haul(Number(data.flight.windup));");
+    expect(src).toContain("if (data.sound && !red) SCENE_AUDIO.whoosh(speed);");
+    expect(src).toContain("if (data.sound && !red) SCENE_AUDIO.thud(data.outcomeKind === 'hit', (Number(data.impactKJ) || 0));");
+    // The release cue is latched per flight, so a slow replay cannot re-trigger it every frame.
+    expect(src).toContain("if (t > 0.02 && S.releasedId !== data.flight.id) {");
+  });
+
+  it('every synthesised voice is wrapped so a missing AudioContext is silent, not fatal', () => {
+    const src = source();
+    const mod = src.slice(src.indexOf('var SCENE_AUDIO = (function () {'), src.indexOf('var SCENE_HUD = {};'));
+    expect((mod.match(/try \{/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect(mod).toContain("catch (e) { ctx = null; }");
+  });
+
+  it('puts the siege bests in the work record, and only when there are any', () => {
+    const none = renderTool('machineLab', state({ view: 'learn', manualTopic: 'record' }));
+    expect(none).not.toContain('Best sieges');
+    const some = renderTool('machineLab', state({ view: 'learn', manualTopic: 'record', siegeBests: { keep: { shots: 4, work: 181000 } } }));
+    expect(some).toContain('Best sieges: keep 4 shots (181 kJ)');
+  });
+
+  it('adds a quest for breaching two targets, keyed on the bests', () => {
+    const hooks = cfg.questHooks;
+    const q = hooks.filter((h) => h.id === 'breach_two_targets')[0];
+    expect(q).toBeTruthy();
+    expect(q.check({ siegeBests: { keep: { shots: 3, work: 1 } } })).toBe(false);
+    expect(q.check({ siegeBests: { keep: { shots: 3, work: 1 }, curtain: { shots: 5, work: 2 } } })).toBe(true);
+    expect(q.progress({})).toBe('0/2 targets');
+  });
+
+  it('the crew work the winch only during the haul', () => {
+    const src = source();
+    expect(src).toContain("var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;");
+  });
+});
