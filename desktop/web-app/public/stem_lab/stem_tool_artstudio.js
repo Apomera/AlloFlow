@@ -129,7 +129,7 @@ window.StemLab = window.StemLab || {
           try { request = action(transaction.objectStore(storeName)); }
           catch (_) { finish(null); return; }
           request.onsuccess = function () {
-            if (mode === 'readonly') finish(request.result === undefined ? null : request.result);
+            if (mode === 'readonly') finish(request.result);
           };
           request.onerror = function () { finish(null); };
           transaction.oncomplete = function () { if (mode !== 'readonly') finish(true); };
@@ -227,7 +227,7 @@ window.StemLab = window.StemLab || {
         return _artStudioDatabase.transact(workflowStoreName, 'readonly', function (store) {
           return store.get(storageKey(safeScope, 'workflow'));
         }).then(function (row) {
-          return row && row.scope === safeScope && row.workflow ? row.workflow : null;
+          return row === null ? null : (row && row.scope === safeScope && row.workflow ? row.workflow : undefined);
         });
       },
       saveWorkflow: function (scope, workflow) {
@@ -276,50 +276,62 @@ window.StemLab = window.StemLab || {
   // they are not image-generation style presets. Living artists and culturally
   // specific practices retain an explicit respect note.
   var ARTIST_EXPLORER_PROFILES = [
-    { id: 'el-anatsui', name: 'El Anatsui', life: 'born 1944', region: 'Africa', places: 'Ghana and Nigeria', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#9b6b28','#d7b96a','#3b5368'], overview: 'Transforms discarded bottle caps and metal into vast, flexible fields that change with every installation.', lookFor: 'Repetition, material history, changing surfaces, and the tension between precious appearance and discarded matter.', context: 'His works connect trade, consumption, colonial histories, labor, and the ability of a material to carry memory.', tryThis: 'Build a repeated unit from safe reused material, then test three arrangements instead of treating the first layout as final.', respect: 'Study transformation and systems; do not reduce West African histories to a decorative metallic effect.', labs: ['tessellation','sculpt3d','gradient'] },
-    { id: 'ibrahim-el-salahi', name: 'Ibrahim El-Salahi', life: 'born 1930', region: 'Africa', places: 'Sudan and the United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#1f2937','#a16207','#e7e5e4'], overview: 'A foundational figure in African modernism whose drawings and paintings join calligraphic energy, memory, landscape, and abstraction.', lookFor: 'Branching lines, compressed figures, black-and-white rhythm, and forms that hover between writing and image.', context: 'His work emerged through Sudanese, African, Arab, Islamic, and international modernist conversations rather than a single inherited category.', tryThis: 'Let one continuous line grow into an image, then identify where it reads as symbol, body, landscape, or writing.', respect: 'Explore the relationship between mark and meaning without copying sacred or unfamiliar scripts as decoration.', labs: ['symmetry','generative','stringArt'] },
-    { id: 'esther-mahlangu', name: 'Esther Mahlangu', life: 'born 1935', region: 'Africa', places: 'South Africa; Ndebele', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#111827','#f8fafc','#ef4444','#2563eb','#facc15'], overview: 'Extends Ndebele mural painting through architecture, canvas, vehicles, and public commissions while asserting the knowledge of women artists.', lookFor: 'Bold boundaries, geometric sequencing, high-contrast color, scale, and the adaptation of a living mural practice.', context: 'Ndebele house painting is a living cultural practice tied to community, identity, and women’s knowledge—not a generic pattern library.', tryThis: 'Create a geometric rhythm from shapes drawn from your own environment and explain what your repeated choices mean.', respect: 'Credit Ndebele artists and context. Do not claim Ndebele identity or reproduce culturally meaningful motifs as anonymous décor.', labs: ['tessellation','contrast','colorWheel'] },
-    { id: 'skunder-boghossian', name: 'Skunder Boghossian', life: '1937–2003', region: 'Africa', places: 'Ethiopia, France, and the United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#7c2d12','#d97706','#312e81','#0f172a'], overview: 'Built dense, layered paintings from Ethiopian visual histories, personal symbols, jazz-like rhythm, and international modernism.', lookFor: 'Layering, icon-like forms, luminous color, improvisation, and figures emerging from complex grounds.', context: 'His work challenges accounts of modernism that place innovation only in Europe and North America.', tryThis: 'Layer three translucent systems—marks, shapes, and a limited palette—then decide which layer should lead.', respect: 'Study how multiple histories coexist in a work rather than extracting Ethiopian symbols from their meanings.', labs: ['watercolor','generative','gradient'] },
-    { id: 'hokusai', name: 'Katsushika Hokusai', life: '1760–1849', region: 'Asia', places: 'Japan', era: 'Early modern', medium: 'Printmaking', colors: ['#164e63','#e0f2fe','#d6b98c','#1e293b'], overview: 'Used woodblock design, dramatic cropping, repeated series, and close observation to make everyday labor and landscape feel monumental.', lookFor: 'Strong silhouettes, compressed depth, directional movement, foreground cropping, and recurring viewpoints.', context: 'Ukiyo-e prints were collaborative works involving designer, carver, printer, and publisher—not the product of one isolated hand.', tryThis: 'Compose the same place from three viewpoints using only flat shapes and a four-color palette.', respect: 'Name the collaborative print process and avoid treating Japanese design as a timeless exotic aesthetic.', labs: ['pixel','gradient','tessellation'], sourceUrl: 'https://www.metmuseum.org/art/collection/search/55286' },
-    { id: 'amrita-sher-gil', name: 'Amrita Sher-Gil', life: '1913–1941', region: 'Asia', places: 'India and Hungary', era: 'Modern', medium: 'Painting & drawing', colors: ['#7f1d1d','#ca8a04','#334155','#d6d3d1'], overview: 'Joined European painting study with sustained attention to people, color, and social life in India, refusing an easy division between East and West.', lookFor: 'Weighted figures, quiet group psychology, earthy color, simplified volume, and carefully held space.', context: 'Her work belongs to histories of Indian modernism, migration, gender, and the unequal conditions through which art histories are written.', tryThis: 'Arrange three simplified figures so posture and spacing communicate a relationship without facial detail.', respect: 'Study composition and social attention rather than using clothing or identity as costume.', labs: ['colorWheel','sculpt3d','contrast'] },
-    { id: 'pacita-abad', name: 'Pacita Abad', life: '1946–2004', region: 'Asia', places: 'The Philippines and a global studio practice', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#db2777','#f97316','#14b8a6','#7c3aed'], overview: 'Created exuberant trapunto paintings by stitching, stuffing, painting, and attaching materials to build color into physical relief.', lookFor: 'Quilted depth, accumulated surfaces, portable materials, intense color, and the movement between abstraction and social witness.', context: 'Her global practice grew through travel and relationships; it should not be flattened into a collection of interchangeable cultural motifs.', tryThis: 'Design a relief surface in three layers: base shape, stitched or repeated boundary, and attached texture.', respect: 'Credit specific material traditions when using them and avoid presenting cultural borrowing as placeless “world pattern.”', labs: ['sculpt3d','tessellation','colorWheel'] },
-    { id: 'yayoi-kusama', name: 'Yayoi Kusama', life: 'born 1929', region: 'Asia', places: 'Japan and the United States', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#dc2626','#f8fafc','#facc15','#111827'], overview: 'Uses repetition, mirrored space, accumulation, performance, painting, and sculpture to alter how a viewer experiences body and environment.', lookFor: 'Accumulation, serial marks, scale shifts, reflection, immersion, and the point where repetition changes perception.', context: 'Her long practice cannot be reduced to polka dots; it includes painting, political performance, publishing, fashion, sculpture, and installation.', tryThis: 'Choose one simple mark and vary density and scale until the surrounding space—not the mark itself—becomes the subject.', respect: 'Kusama is a living artist. Study repetition and perception; do not ask an image model to imitate her signature works.', labs: ['opArt','tessellation','sculpt3d'] },
-    { id: 'artemisia-gentileschi', name: 'Artemisia Gentileschi', life: '1593–c.1654', region: 'Europe', places: 'Italy', era: 'Early modern', medium: 'Painting & drawing', colors: ['#422006','#9f1239','#d6b98c','#0f172a'], overview: 'Built large narrative paintings through forceful gesture, directional light, compressed action, and protagonists with physical presence.', lookFor: 'Chiaroscuro, diagonals, weight, hands at work, and the moment in a story selected for maximum consequence.', context: 'Her biography matters, but reducing every painting to personal trauma can erase her professional ambition, learning, patrons, and invention.', tryThis: 'Stage a three-shape scene where light and diagonal movement identify the decisive moment without adding text.', respect: 'Do not treat an artist’s suffering as the only explanation for artistic intelligence.', labs: ['contrast','gradient','sculpt3d'] },
-    { id: 'kathe-kollwitz', name: 'Käthe Kollwitz', life: '1867–1945', region: 'Europe', places: 'Germany', era: 'Modern', medium: 'Printmaking', colors: ['#111827','#57534e','#d6d3d1'], overview: 'Used drawing, etching, lithography, woodcut, and sculpture to address grief, labor, poverty, war, care, and resistance.', lookFor: 'Compressed value, expressive hands, repeated figures, carved silhouettes, and empathy without sentimentality.', context: 'Printmaking allowed images to circulate beyond a single painting, joining formal decisions to public witness.', tryThis: 'Tell a social story using only black, paper color, and three values; remove every mark that does not carry meaning.', respect: 'Approach represented suffering with specificity and dignity, not as visual drama detached from people’s lives.', labs: ['contrast','pixel','stringArt'] },
-    { id: 'hilma-af-klint', name: 'Hilma af Klint', life: '1862–1944', region: 'Europe', places: 'Sweden', era: 'Modern', medium: 'Painting & drawing', colors: ['#f9a8d4','#93c5fd','#fef3c7','#7c3aed'], overview: 'Developed large abstract systems of color, geometry, notation, and organic form years before abstraction entered the standard modernist story.', lookFor: 'Paired forms, spirals, diagrams, botanical growth, letter-like signs, scale, and sequences across groups of works.', context: 'Her practice joined artistic experiment, spiritual inquiry, scientific curiosity, collaboration, and careful systems of documentation.', tryThis: 'Invent five nonverbal forms for growth, tension, balance, change, and return; arrange them as a visual argument.', respect: 'Distinguish studying symbolic systems from claiming that unfamiliar spiritual signs have meanings you invented.', labs: ['symmetry','spirograph','colorWheel'] },
-    { id: 'bridget-riley', name: 'Bridget Riley', life: 'born 1931', region: 'Europe', places: 'United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#111827','#f8fafc','#2563eb','#f97316'], overview: 'Builds precise arrangements of line, interval, contrast, and color that make perception feel unstable and active.', lookFor: 'Rhythm, optical vibration, repeated intervals, figure-ground reversal, and movement produced without animation.', context: 'Op art is not merely an illusion trick; it asks how seeing unfolds over time in an embodied viewer.', tryThis: 'Change one interval across a repeated grid and record where still pattern begins to appear mobile.', respect: 'Riley is a living artist. Investigate perceptual variables rather than copying a recognizable composition.', labs: ['opArt','contrast','gradient'] },
-    { id: 'tarsila-do-amaral', name: 'Tarsila do Amaral', life: '1886–1973', region: 'Latin America & Caribbean', places: 'Brazil', era: 'Modern', medium: 'Painting & drawing', colors: ['#65a30d','#facc15','#f97316','#38bdf8'], overview: 'Combined vivid color, transformed bodies and landscapes, industrial change, and Brazilian modernist debates into an unmistakable visual language.', lookFor: 'Elastic scale, simplified volume, saturated local color, landscape-body relationships, and tension between city and countryside.', context: 'Brazilian modernism wrestled with colonial inheritance and national identity; cultural cannibalism was a critical strategy, not a decorative theme.', tryThis: 'Exaggerate the scale of one ordinary form to show how power or attention operates in a place you know.', respect: 'Study transformation and national self-definition without turning Brazilian identity into tropical shorthand.', labs: ['sculpt3d','colorWheel','gradient'] },
-    { id: 'wifredo-lam', name: 'Wifredo Lam', life: '1902–1982', region: 'Latin America & Caribbean', places: 'Cuba, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#14532d','#713f12','#1e293b','#a3a3a3'], overview: 'Created hybrid, compressed figures amid cane-like vegetation while confronting colonialism and the European appetite for primitivism.', lookFor: 'Mask-like heads, blade forms, unstable bodies, dense vertical space, and figures that resist easy reading.', context: 'Lam engaged Afro-Cuban histories and modernism while rejecting the treatment of African and Caribbean culture as raw material for Europe.', tryThis: 'Construct a figure from plant, tool, and body shapes so no single category fully explains it.', respect: 'Do not call unfamiliar sacred or cultural forms “primitive,” and do not detach Afro-Cuban references from colonial history.', labs: ['symmetry','generative','sculpt3d'] },
-    { id: 'frida-kahlo', name: 'Frida Kahlo', life: '1907–1954', region: 'Latin America & Caribbean', places: 'Mexico', era: 'Modern', medium: 'Painting & drawing', colors: ['#166534','#b91c1c','#facc15','#0f172a'], overview: 'Made tightly constructed paintings in which body, disability, clothing, plants, politics, place, and self-representation carry layered meanings.', lookFor: 'Direct gaze, compressed symbols, doubled selves, bodily specificity, staged space, and objects functioning as evidence.', context: 'Her work exceeds the simplified label “pain transformed into art”; it also involves humor, politics, national identity, intimacy, and deliberate self-fashioning.', tryThis: 'Create a symbolic self-portrait without drawing a face: choose five objects and explain what relationship each one carries.', respect: 'Do not romanticize disability or reduce a complex artist to trauma and inspirational perseverance.', labs: ['symmetry','colorWheel','sculpt3d'] },
-    { id: 'joaquin-torres-garcia', name: 'Joaquín Torres-García', life: '1874–1949', region: 'Latin America & Caribbean', places: 'Uruguay, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#eab308','#2563eb','#111827'], overview: 'Organized grids, pictographic signs, proportion, and a School of the South that reoriented modern art away from Europe as the automatic center.', lookFor: 'Modular grids, unequal rectangles, compact signs, primary colors, and relationships between universal systems and local place.', context: 'His inverted map of South America made orientation itself an argument: north need not determine cultural authority.', tryThis: 'Design a grid-map of your community using only ten personal symbols, then rotate it and ask what the new orientation changes.', respect: 'Invent symbols from your own life instead of borrowing Indigenous signs as supposedly universal marks.', labs: ['pixel','tessellation','contrast'] },
-    { id: 'etel-adnan', name: 'Etel Adnan', life: '1925–2021', region: 'Middle East & North Africa', places: 'Lebanon, France, and the United States', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#f97316','#eab308','#2563eb','#7c2d12'], overview: 'Moved among poetry, painting, tapestry, leporello books, journalism, and philosophy, often returning to compact landscapes and the changing presence of a mountain.', lookFor: 'Small fields of strong color, horizon, sun, folded sequence, repeated place, and the exchange between writing and image.', context: 'Her multilingual, diasporic practice resists being assigned to one nation, language, medium, or identity.', tryThis: 'Observe the same view at three times and reduce each version to five color shapes; bind them into a sequence.', respect: 'Treat migration and multilingual identity as lived complexity, not as an exotic source of visual hybridity.', labs: ['gradient','colorWheel','pixel'] },
-    { id: 'shirin-neshat', name: 'Shirin Neshat', life: 'born 1957', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Photography & video', colors: ['#111827','#f8fafc','#991b1b'], overview: 'Uses photography, film, sound, performance, and divided installations to examine power, gender, exile, collective voice, and representation.', lookFor: 'Black-white contrast, opposing screens, gaze, calligraphic overlay, sound across space, and individuals positioned within groups.', context: 'Her work addresses Iranian and diasporic histories while also questioning Western expectations about Muslim women.', tryThis: 'Storyboard two simultaneous viewpoints on the same event and decide what each frame allows or withholds.', respect: 'Neshat is a living artist. Do not imitate her signature imagery or use pseudo-calligraphy; study viewpoint, opposition, and spectatorship.', labs: ['contrast','stereogram','gradient'] },
-    { id: 'monir-farmanfarmaian', name: 'Monir Shahroudy Farmanfarmaian', life: '1922–2019', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Sculpture', colors: ['#e2e8f0','#67e8f9','#f9a8d4','#facc15'], overview: 'Joined mirror mosaic, reverse-glass painting, geometry, craft collaboration, and modern abstraction in radiant constructed works.', lookFor: 'Reflection, polygon systems, cut modules, changing light, symmetry, and the viewer becoming part of the surface.', context: 'Her work grew through Iranian architectural and craft traditions as well as international abstraction; neither side is a decorative footnote.', tryThis: 'Build a symmetric polygon system whose appearance changes when a light source or viewer position moves.', respect: 'Credit mirror-work traditions and workshop collaboration rather than describing the work as geometry discovered by modernism alone.', labs: ['symmetry','tessellation','sculpt3d'] },
-    { id: 'laila-shawa', name: 'Laila Shawa', life: '1940–2022', region: 'Middle East & North Africa', places: 'Palestine and the United Kingdom', era: 'Contemporary', medium: 'Printmaking', colors: ['#ec4899','#22c55e','#111827','#f8fafc'], overview: 'Combined screenprint, photography, painting, text, pattern, and pop color to confront occupation, gender, violence, propaganda, and mass media.', lookFor: 'Repetition, photographic fragments, bright color against difficult content, fences or grids, and images transformed through printing.', context: 'Surface attraction and political critique operate together; brightness does not make the subject uncomplicated.', tryThis: 'Repeat one news-derived shape, changing scale and color to reveal how repetition can normalize or challenge a message.', respect: 'Keep political images connected to real histories and people; do not aestheticize violence into an empty pattern.', labs: ['pixel','contrast','tessellation'] },
-    { id: 'alma-thomas', name: 'Alma Thomas', life: '1891–1978', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#2563eb','#16a34a','#facc15'], overview: 'Developed luminous abstractions from gardens, music, light, and space exploration after a long career as a public-school art teacher.', lookFor: 'Broken color marks, white intervals, vertical and circular rhythm, optical mixing, and movement built from small variation.', context: 'Thomas became Howard University’s first fine-arts graduate and produced her best-known work after retiring from thirty-five years of teaching.', tryThis: 'Build a rhythm from separated color marks, leaving the ground active; vary one interval so the pattern breathes rather than becoming mechanical.', respect: 'Study rhythm, nature, and late-life experimentation rather than copying a signature mosaic surface.', labs: ['colorWheel','tessellation','gradient'], sourceUrl: 'https://americanart.si.edu/artist/alma-thomas-4778' },
-    { id: 'ruth-asawa', name: 'Ruth Asawa', life: '1926–2013', region: 'North America', places: 'United States; Japanese American', era: 'Contemporary', medium: 'Sculpture', colors: ['#475569','#cbd5e1','#f8fafc'], overview: 'Created suspended looped-wire forms whose interior and exterior remain visible, while also building arts education and public-making programs.', lookFor: 'Continuous line in space, nested volume, transparency, shadow, hand process, and structures that hold air rather than conceal it.', context: 'Her work connects craft knowledge, experimental education, unjust wartime incarceration, family, public art, and sustained community organizing.', tryThis: 'Model a volume using only a continuous line or mesh; make its shadow a second composition.', respect: 'Do not use incarceration as an inspirational prelude; recognize it as state violence within a larger life and practice.', labs: ['sculpt3d','stringArt','symmetry'] },
-    { id: 'jacob-lawrence', name: 'Jacob Lawrence', life: '1917–2000', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#b91c1c','#1d4ed8','#eab308','#111827'], overview: 'Built narrative series from repeated colors, angular figures, research, text, and scenes of migration, labor, resistance, and everyday life.', lookFor: 'Series structure, recurring palette, diagonals, compressed rooms, repeated figures, and the relation between caption and image.', context: 'The Migration Series treats history through many connected panels, making movement and collective experience structural rather than incidental.', tryThis: 'Tell one community change in four panels using a fixed six-color palette and one recurring shape.', respect: 'Research the people and history represented; do not turn collective struggle into a generic heroic storyline.', labs: ['pixel','contrast','colorWheel'] },
-    { id: 'maria-martinez', name: 'Maria Poveka Martinez', life: 'c.1887–1980', region: 'North America', places: 'San Ildefonso Pueblo, United States', era: 'Modern', medium: 'Ceramics', colors: ['#111827','#44403c','#a8a29e'], overview: 'Worked with family and community collaborators to refine celebrated black-on-black pottery grounded in Pueblo knowledge and material practice.', lookFor: 'Form, burnished and matte contrast, firing knowledge, surface-light relationships, and the precision of a vessel as a whole.', context: 'Maria Martinez’s pottery is inseparable from San Ildefonso Pueblo, family collaboration, clay knowledge, firing, and the pressures of an outside art market.', tryThis: 'Design a vessel through silhouette and two surface finishes; explain how light—not borrowed motif—creates contrast.', respect: 'Pueblo designs are not a pattern pack. Credit Maria, Julian Martinez, family collaborators, San Ildefonso Pueblo, and living pottery traditions.', labs: ['sculpt3d','contrast','gradient'] },
-    { id: 'emily-kame-kngwarreye', name: 'Emily Kam Kngwarray', life: 'c.1910–1996', region: 'Oceania', places: 'Anmatyerr Country, Australia', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#7c2d12','#f59e0b','#f8fafc','#1e3a8a'], overview: 'Began painting on canvas late in life after decades of cultural and artistic work, creating varied paintings grounded in Alhalker Country and Anmatyerr knowledge.', lookFor: 'Gesture, seasonal change, layered mark, scale, Country, and dramatic shifts between dense fields and spare lines.', context: 'The work is not generic abstraction: it arises from Country, kinship, plants, ceremony, and knowledge that viewers do not automatically possess.', tryThis: 'Map change in a place you personally know through gesture, density, and season rather than copying dots or cultural symbols.', respect: 'Do not copy Anmatyerr marks or claim their meanings. Learn from sustained attention to your own relationship with place.', labs: ['watercolor','generative','colorWheel'], sourceUrl: 'https://nga.gov.au/learn/learning-resources/emily-kam-kngwarray/' },
-    { id: 'lisa-reihana', name: 'Lisa Reihana', life: 'born 1964', region: 'Oceania', places: 'Aotearoa New Zealand; Māori', era: 'Contemporary', medium: 'Photography & video', colors: ['#0f172a','#0f766e','#d6b98c','#be123c'], overview: 'Uses photography, moving image, sound, performance, costume, and digital compositing to question colonial representation and reactivate histories.', lookFor: 'Panoramic sequence, staged encounter, gaze, costume, sound, quotation, and the difference between being pictured and representing oneself.', context: 'Her work often speaks back to European images of the Pacific rather than simply illustrating the historical record they created.', tryThis: 'Take one historical image and storyboard what occurs immediately outside its frame from another participant’s viewpoint.', respect: 'Reihana is a living Māori artist. Study counter-narrative and framing; do not imitate culturally specific imagery or performance.', labs: ['stereogram','gradient','contrast'] },
-    { id: 'yuki-kihara', name: 'Yuki Kihara', life: 'born 1975', region: 'Oceania', places: 'Sāmoa and Aotearoa New Zealand', era: 'Contemporary', medium: 'Photography & video', colors: ['#7f1d1d','#f8fafc','#0f172a','#0e7490'], overview: 'Works across photography, performance, video, dance, and curating to examine colonial imagery, climate, gender, labor, and Sāmoan histories.', lookFor: 'Re-enactment, serial photographs, pose, archival quotation, costume, absence, and who controls the camera.', context: 'Kihara’s perspective as a faʻafafine artist is specific; it should not be translated into a generic Western category or spectacle.', tryThis: 'Restage the composition—not the identity or costume—of an archival image and change who has agency in the frame.', respect: 'Kihara is a living artist. Use the work to study power in representation, not to imitate Sāmoan or faʻafafine identity.', labs: ['contrast','stereogram','pixel'] },
-    { id: 'fiona-foley', name: 'Fiona Foley', life: 'born 1964', region: 'Oceania', places: 'Badtjala Country, Australia', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#7c2d12','#e7e5e4','#1e3a8a','#111827'], overview: 'Uses sculpture, photography, public art, text, and research to expose colonial violence, contested language, memory, and Badtjala histories.', lookFor: 'Encoded text, archival evidence, public placement, material symbolism, withheld information, and work that changes as history is uncovered.', context: 'Her projects demonstrate that public monuments and official archives are active political forms, not neutral containers of facts.', tryThis: 'Identify a phrase or omission in a local public record and design a nonliteral memorial that asks viewers to investigate it.', respect: 'Foley is a living Badtjala artist. Research local Indigenous authority and history rather than borrowing her symbols or speaking for her community.', labs: ['sculpt3d','contrast','tessellation'] }
+    { id: 'el-anatsui', name: 'El Anatsui', life: 'born 1944', region: 'Africa', places: 'Ghana and Nigeria', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#9b6b28','#d7b96a','#3b5368'], overview: 'Transforms discarded bottle caps and metal into vast, flexible fields that change with every installation.', lookFor: 'Repetition, material history, changing surfaces, and the tension between precious appearance and discarded matter.', context: 'His works connect trade, consumption, colonial histories, labor, and the ability of a material to carry memory.', tryThis: 'Build a repeated unit from safe reused material, then test three arrangements instead of treating the first layout as final.', respect: 'Study transformation and systems; do not reduce West African histories to a decorative metallic effect.', labs: ['tessellation','sculpt3d','gradient'] , sourceUrl: "https://www.metmuseum.org/art/collection/search/319872" },
+    { id: 'ibrahim-el-salahi', name: 'Ibrahim El-Salahi', life: 'born 1930', region: 'Africa', places: 'Sudan and the United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#1f2937','#a16207','#e7e5e4'], overview: 'A foundational figure in African modernism whose drawings and paintings join calligraphic energy, memory, landscape, and abstraction.', lookFor: 'Branching lines, compressed figures, black-and-white rhythm, and forms that hover between writing and image.', context: 'His work emerged through Sudanese, African, Arab, Islamic, and international modernist conversations rather than a single inherited category.', tryThis: 'Let one continuous line grow into an image, then identify where it reads as symbol, body, landscape, or writing.', respect: 'Explore the relationship between mark and meaning without copying sacred or unfamiliar scripts as decoration.', labs: ['symmetry','generative','stringArt'] , sourceUrl: "https://www.moma.org/artists/5121-ibrahim-el-salahi" },
+    { id: 'esther-mahlangu', name: 'Esther Mahlangu', life: 'born 1935', region: 'Africa', places: 'South Africa; Ndebele', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#111827','#f8fafc','#ef4444','#2563eb','#facc15'], overview: 'Extends Ndebele mural painting through architecture, canvas, vehicles, and public commissions while asserting the knowledge of women artists.', lookFor: 'Bold boundaries, geometric sequencing, high-contrast color, scale, and the adaptation of a living mural practice.', context: 'Ndebele house painting is a living cultural practice tied to community, identity, and women’s knowledge—not a generic pattern library.', tryThis: 'Create a geometric rhythm from shapes drawn from your own environment and explain what your repeated choices mean.', respect: 'Credit Ndebele artists and context. Do not claim Ndebele identity or reproduce culturally meaningful motifs as anonymous décor.', labs: ['tessellation','contrast','colorWheel'] , sourceUrl: "https://www.esthermahlangu.com/early-life" },
+    { id: 'skunder-boghossian', name: 'Skunder Boghossian', life: '1937–2003', region: 'Africa', places: 'Ethiopia, France, and the United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#7c2d12','#d97706','#312e81','#0f172a'], overview: 'Built dense, layered paintings from Ethiopian visual histories, personal symbols, jazz-like rhythm, and international modernism.', lookFor: 'Layering, icon-like forms, luminous color, improvisation, and figures emerging from complex grounds.', context: 'His work challenges accounts of modernism that place innovation only in Europe and North America.', tryThis: 'Layer three translucent systems—marks, shapes, and a limited palette—then decide which layer should lead.', respect: 'Study how multiple histories coexist in a work rather than extracting Ethiopian symbols from their meanings.', labs: ['watercolor','generative','gradient'] , sourceUrl: "https://africa.si.edu/collection/selected-artwork/1093" },
+    { id: 'hokusai', name: 'Katsushika Hokusai', life: '1760–1849', region: 'Asia', places: 'Japan', era: 'Early modern', medium: 'Printmaking', colors: ['#164e63','#e0f2fe','#d6b98c','#1e293b'], overview: 'Used woodblock design, dramatic cropping, repeated series, and close observation to make everyday labor and landscape feel monumental.', lookFor: 'Strong silhouettes, compressed depth, directional movement, foreground cropping, and recurring viewpoints.', context: 'Ukiyo-e prints were collaborative works involving designer, carver, printer, and publisher—not the product of one isolated hand.', tryThis: 'Compose the same place from three viewpoints using only flat shapes and a four-color palette.', respect: 'Name the collaborative print process and avoid treating Japanese design as a timeless exotic aesthetic.', labs: ['pixel','gradient','tessellation'], sourceUrl: "https://www.metmuseum.org/art/collection/search/55286" },
+    { id: 'amrita-sher-gil', name: 'Amrita Sher-Gil', life: '1913–1941', region: 'Asia', places: 'India and Hungary', era: 'Modern', medium: 'Painting & drawing', colors: ['#7f1d1d','#ca8a04','#334155','#d6d3d1'], overview: 'Joined European painting study with sustained attention to people, color, and social life in India, refusing an easy division between East and West.', lookFor: 'Weighted figures, quiet group psychology, earthy color, simplified volume, and carefully held space.', context: 'Her work belongs to histories of Indian modernism, migration, gender, and the unequal conditions through which art histories are written.', tryThis: 'Arrange three simplified figures so posture and spacing communicate a relationship without facial detail.', respect: 'Study composition and social attention rather than using clothing or identity as costume.', labs: ['colorWheel','sculpt3d','contrast'] , sourceUrl: "https://ngmaindia.gov.in/virtual-tour-of-amrita-sher-gil.asp" },
+    { id: 'pacita-abad', name: 'Pacita Abad', life: '1946–2004', region: 'Asia', places: 'The Philippines and a global studio practice', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#db2777','#f97316','#14b8a6','#7c3aed'], overview: 'Created exuberant trapunto paintings by stitching, stuffing, painting, and attaching materials to build color into physical relief.', lookFor: 'Quilted depth, accumulated surfaces, portable materials, intense color, and the movement between abstraction and social witness.', context: 'Her global practice grew through travel and relationships; it should not be flattened into a collection of interchangeable cultural motifs.', tryThis: 'Design a relief surface in three layers: base shape, stitched or repeated boundary, and attached texture.', respect: 'Credit specific material traditions when using them and avoid presenting cultural borrowing as placeless “world pattern.”', labs: ['sculpt3d','tessellation','colorWheel'] , sourceUrl: "https://americanart.si.edu/artist/pacita-abad-7121" },
+    { id: 'yayoi-kusama', name: 'Yayoi Kusama', life: "1929–2026", region: 'Asia', places: 'Japan and the United States', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#dc2626','#f8fafc','#facc15','#111827'], overview: 'Uses repetition, mirrored space, accumulation, performance, painting, and sculpture to alter how a viewer experiences body and environment.', lookFor: 'Accumulation, serial marks, scale shifts, reflection, immersion, and the point where repetition changes perception.', context: 'Her long practice cannot be reduced to polka dots; it includes painting, political performance, publishing, fashion, sculpture, and installation.', tryThis: 'Choose one simple mark and vary density and scale until the surrounding space—not the mark itself—becomes the subject.', respect: "Study repetition and perception in Kusama’s work; develop your own visual decisions instead of copying a signature composition.", labs: ['opArt','tessellation','sculpt3d'] , sourceUrl: "https://www.moma.org/artists/3315-yayoi-kusama" },
+    { id: 'artemisia-gentileschi', name: 'Artemisia Gentileschi', life: '1593–c.1654', region: 'Europe', places: 'Italy', era: 'Early modern', medium: 'Painting & drawing', colors: ['#422006','#9f1239','#d6b98c','#0f172a'], overview: 'Built large narrative paintings through forceful gesture, directional light, compressed action, and protagonists with physical presence.', lookFor: 'Chiaroscuro, diagonals, weight, hands at work, and the moment in a story selected for maximum consequence.', context: 'Her biography matters, but reducing every painting to personal trauma can erase her professional ambition, learning, patrons, and invention.', tryThis: 'Stage a three-shape scene where light and diagonal movement identify the decisive moment without adding text.', respect: 'Do not treat an artist’s suffering as the only explanation for artistic intelligence.', labs: ['contrast','gradient','sculpt3d'] , sourceUrl: "https://www.nationalgallery.org.uk/artists/artemisia-gentileschi" },
+    { id: 'kathe-kollwitz', name: 'Käthe Kollwitz', life: '1867–1945', region: 'Europe', places: 'Germany', era: 'Modern', medium: 'Printmaking', colors: ['#111827','#57534e','#d6d3d1'], overview: 'Used drawing, etching, lithography, woodcut, and sculpture to address grief, labor, poverty, war, care, and resistance.', lookFor: 'Compressed value, expressive hands, repeated figures, carved silhouettes, and empathy without sentimentality.', context: 'Printmaking allowed images to circulate beyond a single painting, joining formal decisions to public witness.', tryThis: 'Tell a social story using only black, paper color, and three values; remove every mark that does not carry meaning.', respect: 'Approach represented suffering with specificity and dignity, not as visual drama detached from people’s lives.', labs: ['contrast','pixel','stringArt'] , sourceUrl: "https://www.moma.org/collection/artists/3201" },
+    { id: 'hilma-af-klint', name: 'Hilma af Klint', life: '1862–1944', region: 'Europe', places: 'Sweden', era: 'Modern', medium: 'Painting & drawing', colors: ['#f9a8d4','#93c5fd','#fef3c7','#7c3aed'], overview: 'Developed large abstract systems of color, geometry, notation, and organic form years before abstraction entered the standard modernist story.', lookFor: 'Paired forms, spirals, diagrams, botanical growth, letter-like signs, scale, and sequences across groups of works.', context: 'Her practice joined artistic experiment, spiritual inquiry, scientific curiosity, collaboration, and careful systems of documentation.', tryThis: 'Invent five nonverbal forms for growth, tension, balance, change, and return; arrange them as a visual argument.', respect: 'Distinguish studying symbolic systems from claiming that unfamiliar spiritual signs have meanings you invented.', labs: ['symmetry','spirograph','colorWheel'] , sourceUrl: "https://www.moma.org/collection/artists/71905" },
+    { id: 'bridget-riley', name: 'Bridget Riley', life: 'born 1931', region: 'Europe', places: 'United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#111827','#f8fafc','#2563eb','#f97316'], overview: 'Builds precise arrangements of line, interval, contrast, and color that make perception feel unstable and active.', lookFor: 'Rhythm, optical vibration, repeated intervals, figure-ground reversal, and movement produced without animation.', context: 'Op art is not merely an illusion trick; it asks how seeing unfolds over time in an embodied viewer.', tryThis: 'Change one interval across a repeated grid and record where still pattern begins to appear mobile.', respect: 'Riley is a living artist. Investigate perceptual variables rather than copying a recognizable composition.', labs: ['opArt','contrast','gradient'] , sourceUrl: "https://nmwa.org/art/artists/bridget-riley/" },
+    { id: 'tarsila-do-amaral', name: 'Tarsila do Amaral', life: '1886–1973', region: 'Latin America & Caribbean', places: 'Brazil', era: 'Modern', medium: 'Painting & drawing', colors: ['#65a30d','#facc15','#f97316','#38bdf8'], overview: 'Combined vivid color, transformed bodies and landscapes, industrial change, and Brazilian modernist debates into an unmistakable visual language.', lookFor: 'Elastic scale, simplified volume, saturated local color, landscape-body relationships, and tension between city and countryside.', context: 'Brazilian modernism wrestled with colonial inheritance and national identity; cultural cannibalism was a critical strategy, not a decorative theme.', tryThis: 'Exaggerate the scale of one ordinary form to show how power or attention operates in a place you know.', respect: 'Study transformation and national self-definition without turning Brazilian identity into tropical shorthand.', labs: ['sculpt3d','colorWheel','gradient'] , sourceUrl: "https://www.moma.org/collection/artists/49158" },
+    { id: 'wifredo-lam', name: 'Wifredo Lam', life: '1902–1982', region: 'Latin America & Caribbean', places: 'Cuba, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#14532d','#713f12','#1e293b','#a3a3a3'], overview: 'Created hybrid, compressed figures amid cane-like vegetation while confronting colonialism and the European appetite for primitivism.', lookFor: 'Mask-like heads, blade forms, unstable bodies, dense vertical space, and figures that resist easy reading.', context: 'Lam engaged Afro-Cuban histories and modernism while rejecting the treatment of African and Caribbean culture as raw material for Europe.', tryThis: 'Construct a figure from plant, tool, and body shapes so no single category fully explains it.', respect: 'Do not call unfamiliar sacred or cultural forms “primitive,” and do not detach Afro-Cuban references from colonial history.', labs: ['symmetry','generative','sculpt3d'] , sourceUrl: "https://www.nga.gov/artists/9698-wifredo-lam" },
+    { id: 'frida-kahlo', name: 'Frida Kahlo', life: '1907–1954', region: 'Latin America & Caribbean', places: 'Mexico', era: 'Modern', medium: 'Painting & drawing', colors: ['#166534','#b91c1c','#facc15','#0f172a'], overview: 'Made tightly constructed paintings in which body, disability, clothing, plants, politics, place, and self-representation carry layered meanings.', lookFor: 'Direct gaze, compressed symbols, doubled selves, bodily specificity, staged space, and objects functioning as evidence.', context: 'Her work exceeds the simplified label “pain transformed into art”; it also involves humor, politics, national identity, intimacy, and deliberate self-fashioning.', tryThis: 'Create a symbolic self-portrait without drawing a face: choose five objects and explain what relationship each one carries.', respect: 'Do not romanticize disability or reduce a complex artist to trauma and inspirational perseverance.', labs: ['symmetry','colorWheel','sculpt3d'] , sourceUrl: "https://www.moma.org/collection/artists/2963" },
+    { id: 'joaquin-torres-garcia', name: 'Joaquín Torres-García', life: '1874–1949', region: 'Latin America & Caribbean', places: 'Uruguay, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#eab308','#2563eb','#111827'], overview: 'Organized grids, pictographic signs, proportion, and a School of the South that reoriented modern art away from Europe as the automatic center.', lookFor: 'Modular grids, unequal rectangles, compact signs, primary colors, and relationships between universal systems and local place.', context: 'His inverted map of South America made orientation itself an argument: north need not determine cultural authority.', tryThis: 'Design a grid-map of your community using only ten personal symbols, then rotate it and ask what the new orientation changes.', respect: 'Invent symbols from your own life instead of borrowing Indigenous signs as supposedly universal marks.', labs: ['pixel','tessellation','contrast'] , sourceUrl: "https://www.moma.org/collection/artists/5907" },
+    { id: 'etel-adnan', name: 'Etel Adnan', life: '1925–2021', region: 'Middle East & North Africa', places: 'Lebanon, France, and the United States', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#f97316','#eab308','#2563eb','#7c2d12'], overview: 'Moved among poetry, painting, tapestry, leporello books, journalism, and philosophy, often returning to compact landscapes and the changing presence of a mountain.', lookFor: 'Small fields of strong color, horizon, sun, folded sequence, repeated place, and the exchange between writing and image.', context: 'Her multilingual, diasporic practice resists being assigned to one nation, language, medium, or identity.', tryThis: 'Observe the same view at three times and reduce each version to five color shapes; bind them into a sequence.', respect: 'Treat migration and multilingual identity as lived complexity, not as an exotic source of visual hybridity.', labs: ['gradient','colorWheel','pixel'] , sourceUrl: "https://www.sfmoma.org/artist/Etel_Adnan/" },
+    { id: 'shirin-neshat', name: 'Shirin Neshat', life: 'born 1957', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Photography & video', colors: ['#111827','#f8fafc','#991b1b'], overview: 'Uses photography, film, sound, performance, and divided installations to examine power, gender, exile, collective voice, and representation.', lookFor: 'Black-white contrast, opposing screens, gaze, calligraphic overlay, sound across space, and individuals positioned within groups.', context: 'Her work addresses Iranian and diasporic histories while also questioning Western expectations about Muslim women.', tryThis: 'Storyboard two simultaneous viewpoints on the same event and decide what each frame allows or withholds.', respect: 'Neshat is a living artist. Do not imitate her signature imagery or use pseudo-calligraphy; study viewpoint, opposition, and spectatorship.', labs: ['contrast','stereogram','gradient'] , sourceUrl: "https://www.guggenheim.org/exhibition/shirin-neshat-rapture" },
+    { id: 'monir-farmanfarmaian', name: 'Monir Shahroudy Farmanfarmaian', life: '1922–2019', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Sculpture', colors: ['#e2e8f0','#67e8f9','#f9a8d4','#facc15'], overview: 'Joined mirror mosaic, reverse-glass painting, geometry, craft collaboration, and modern abstraction in radiant constructed works.', lookFor: 'Reflection, polygon systems, cut modules, changing light, symmetry, and the viewer becoming part of the surface.', context: 'Her work grew through Iranian architectural and craft traditions as well as international abstraction; neither side is a decorative footnote.', tryThis: 'Build a symmetric polygon system whose appearance changes when a light source or viewer position moves.', respect: 'Credit mirror-work traditions and workshop collaboration rather than describing the work as geometry discovered by modernism alone.', labs: ['symmetry','tessellation','sculpt3d'] , sourceUrl: "https://www.metmuseum.org/art/collection/search/497677" },
+    { id: 'laila-shawa', name: 'Laila Shawa', life: '1940–2022', region: 'Middle East & North Africa', places: 'Palestine and the United Kingdom', era: 'Contemporary', medium: 'Printmaking', colors: ['#ec4899','#22c55e','#111827','#f8fafc'], overview: 'Combined screenprint, photography, painting, text, pattern, and pop color to confront occupation, gender, violence, propaganda, and mass media.', lookFor: 'Repetition, photographic fragments, bright color against difficult content, fences or grids, and images transformed through printing.', context: 'Surface attraction and political critique operate together; brightness does not make the subject uncomplicated.', tryThis: 'Repeat one news-derived shape, changing scale and color to reveal how repetition can normalize or challenge a message.', respect: 'Keep political images connected to real histories and people; do not aestheticize violence into an empty pattern.', labs: ['pixel','contrast','tessellation'] , sourceUrl: "https://www.barjeelartfoundation.org/artist/palestine/laila-shawa/" },
+    { id: 'alma-thomas', name: 'Alma Thomas', life: '1891–1978', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#2563eb','#16a34a','#facc15'], overview: 'Developed luminous abstractions from gardens, music, light, and space exploration after a long career as a public-school art teacher.', lookFor: 'Broken color marks, white intervals, vertical and circular rhythm, optical mixing, and movement built from small variation.', context: 'Thomas became Howard University’s first fine-arts graduate and produced her best-known work after retiring from thirty-five years of teaching.', tryThis: 'Build a rhythm from separated color marks, leaving the ground active; vary one interval so the pattern breathes rather than becoming mechanical.', respect: 'Study rhythm, nature, and late-life experimentation rather than copying a signature mosaic surface.', labs: ['colorWheel','tessellation','gradient'], sourceUrl: "https://americanart.si.edu/artist/alma-thomas-4778" },
+    { id: 'ruth-asawa', name: 'Ruth Asawa', life: '1926–2013', region: 'North America', places: 'United States; Japanese American', era: 'Contemporary', medium: 'Sculpture', colors: ['#475569','#cbd5e1','#f8fafc'], overview: 'Created suspended looped-wire forms whose interior and exterior remain visible, while also building arts education and public-making programs.', lookFor: 'Continuous line in space, nested volume, transparency, shadow, hand process, and structures that hold air rather than conceal it.', context: 'Her work connects craft knowledge, experimental education, unjust wartime incarceration, family, public art, and sustained community organizing.', tryThis: 'Model a volume using only a continuous line or mesh; make its shadow a second composition.', respect: 'Do not use incarceration as an inspirational prelude; recognize it as state violence within a larger life and practice.', labs: ['sculpt3d','stringArt','symmetry'] , sourceUrl: "https://www.arts.gov/honors/medals/ruth-asawa" },
+    { id: 'jacob-lawrence', name: 'Jacob Lawrence', life: '1917–2000', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#b91c1c','#1d4ed8','#eab308','#111827'], overview: 'Built narrative series from repeated colors, angular figures, research, text, and scenes of migration, labor, resistance, and everyday life.', lookFor: 'Series structure, recurring palette, diagonals, compressed rooms, repeated figures, and the relation between caption and image.', context: 'The Migration Series treats history through many connected panels, making movement and collective experience structural rather than incidental.', tryThis: 'Tell one community change in four panels using a fixed six-color palette and one recurring shape.', respect: 'Research the people and history represented; do not turn collective struggle into a generic heroic storyline.', labs: ['pixel','contrast','colorWheel'] , sourceUrl: "https://americanart.si.edu/artist/jacob-lawrence-2828" },
+    { id: 'maria-martinez', name: 'Maria Poveka Martinez', life: 'c.1887–1980', region: 'North America', places: 'San Ildefonso Pueblo, United States', era: 'Modern', medium: 'Ceramics', colors: ['#111827','#44403c','#a8a29e'], overview: 'Worked with family and community collaborators to refine celebrated black-on-black pottery grounded in Pueblo knowledge and material practice.', lookFor: 'Form, burnished and matte contrast, firing knowledge, surface-light relationships, and the precision of a vessel as a whole.', context: 'Maria Martinez’s pottery is inseparable from San Ildefonso Pueblo, family collaboration, clay knowledge, firing, and the pressures of an outside art market.', tryThis: 'Design a vessel through silhouette and two surface finishes; explain how light—not borrowed motif—creates contrast.', respect: 'Pueblo designs are not a pattern pack. Credit Maria, Julian Martinez, family collaborators, San Ildefonso Pueblo, and living pottery traditions.', labs: ['sculpt3d','contrast','gradient'] , sourceUrl: "https://americanart.si.edu/artist/maria-martinez-3142" },
+    { id: 'emily-kame-kngwarreye', name: 'Emily Kam Kngwarray', life: 'c.1910–1996', region: 'Oceania', places: 'Anmatyerr Country, Australia', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#7c2d12','#f59e0b','#f8fafc','#1e3a8a'], overview: 'Began painting on canvas late in life after decades of cultural and artistic work, creating varied paintings grounded in Alhalker Country and Anmatyerr knowledge.', lookFor: 'Gesture, seasonal change, layered mark, scale, Country, and dramatic shifts between dense fields and spare lines.', context: 'The work is not generic abstraction: it arises from Country, kinship, plants, ceremony, and knowledge that viewers do not automatically possess.', tryThis: 'Map change in a place you personally know through gesture, density, and season rather than copying dots or cultural symbols.', respect: 'Do not copy Anmatyerr marks or claim their meanings. Learn from sustained attention to your own relationship with place.', labs: ['watercolor','generative','colorWheel'], sourceUrl: "https://nga.gov.au/learn/learning-resources/emily-kam-kngwarray/" },
+    { id: 'lisa-reihana', name: 'Lisa Reihana', life: 'born 1964', region: 'Oceania', places: 'Aotearoa New Zealand; Māori', era: 'Contemporary', medium: 'Photography & video', colors: ['#0f172a','#0f766e','#d6b98c','#be123c'], overview: 'Uses photography, moving image, sound, performance, costume, and digital compositing to question colonial representation and reactivate histories.', lookFor: 'Panoramic sequence, staged encounter, gaze, costume, sound, quotation, and the difference between being pictured and representing oneself.', context: 'Her work often speaks back to European images of the Pacific rather than simply illustrating the historical record they created.', tryThis: 'Take one historical image and storyboard what occurs immediately outside its frame from another participant’s viewpoint.', respect: 'Reihana is a living Māori artist. Study counter-narrative and framing; do not imitate culturally specific imagery or performance.', labs: ['stereogram','gradient','contrast'] , sourceUrl: "https://nga.gov.au/learn/learning-resources/appropriation-and-reclamation/lisa-reihana/" },
+    { id: 'yuki-kihara', name: 'Yuki Kihara', life: 'born 1975', region: 'Oceania', places: 'Sāmoa and Aotearoa New Zealand', era: 'Contemporary', medium: 'Photography & video', colors: ['#7f1d1d','#f8fafc','#0f172a','#0e7490'], overview: 'Works across photography, performance, video, dance, and curating to examine colonial imagery, climate, gender, labor, and Sāmoan histories.', lookFor: 'Re-enactment, serial photographs, pose, archival quotation, costume, absence, and who controls the camera.', context: 'Kihara’s perspective as a faʻafafine artist is specific; it should not be translated into a generic Western category or spectacle.', tryThis: 'Restage the composition—not the identity or costume—of an archival image and change who has agency in the frame.', respect: 'Kihara is a living artist. Use the work to study power in representation, not to imitate Sāmoan or faʻafafine identity.', labs: ['contrast','stereogram','pixel'] , sourceUrl: "https://collections.tepapa.govt.nz/agent/6015" },
+    { id: 'fiona-foley', name: 'Fiona Foley', life: 'born 1964', region: 'Oceania', places: 'Badtjala Country, Australia', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#7c2d12','#e7e5e4','#1e3a8a','#111827'], overview: 'Uses sculpture, photography, public art, text, and research to expose colonial violence, contested language, memory, and Badtjala histories.', lookFor: 'Encoded text, archival evidence, public placement, material symbolism, withheld information, and work that changes as history is uncovered.', context: 'Her projects demonstrate that public monuments and official archives are active political forms, not neutral containers of facts.', tryThis: 'Identify a phrase or omission in a local public record and design a nonliteral memorial that asks viewers to investigate it.', respect: 'Foley is a living Badtjala artist. Research local Indigenous authority and history rather than borrowing her symbols or speaking for her community.', labs: ['sculpt3d','contrast','tessellation'] , sourceUrl: "https://collection.qagoma.qld.gov.au/creators/foley-fiona" }
   ];
 
   function artistExplorerSourceUrl(profile) {
     return profile.sourceUrl || ('https://www.si.edu/search?edan_q=' + encodeURIComponent(profile.name));
   }
 
-  function filterArtistExplorerProfiles(filters) {
+  function normalizeArtistExplorerSearch(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function filterArtistExplorerProfiles(filters, profileText, categoryText) {
     var opts = filters || {};
-    var query = String(opts.query || '').toLowerCase().trim();
+    var query = normalizeArtistExplorerSearch(opts.query);
+    var terms = query ? query.split(/\s+/) : [];
     return ARTIST_EXPLORER_PROFILES.filter(function (profile) {
       if (opts.region && opts.region !== 'All regions' && profile.region !== opts.region) return false;
       if (opts.era && opts.era !== 'All eras' && profile.era !== opts.era) return false;
       if (opts.medium && opts.medium !== 'All media' && profile.medium !== opts.medium) return false;
       if (!query) return true;
-      return [profile.name, profile.life, profile.region, profile.places, profile.era, profile.medium, profile.overview, profile.lookFor, profile.context]
-        .join(' ').toLowerCase().indexOf(query) !== -1;
+      var searchable = [profile.id, profile.name, profile.life, profile.region, profile.places, profile.era, profile.medium, profile.overview, profile.lookFor, profile.context, profile.tryThis, profile.respect];
+      if (typeof profileText === 'function') {
+        ['life', 'places', 'overview', 'lookFor', 'context', 'tryThis', 'respect'].forEach(function (field) { searchable.push(profileText(profile, field)); });
+      }
+      if (typeof categoryText === 'function') {
+        ['region', 'era', 'medium'].forEach(function (field) { searchable.push(categoryText(profile[field])); });
+      }
+      var haystack = normalizeArtistExplorerSearch(searchable.join(' '));
+      return terms.every(function (term) { return haystack.indexOf(term) !== -1; });
     });
   }
 
@@ -459,6 +471,16 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Learning copy uses the shared translator with safe English fallbacks.
+      function formatArtStudioLearningText(template, values) {
+        return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (match, key) { return Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match; });
+      }
+      function artStudioProfileText(profile, field) {
+        return __alloT('stem.artstudio.learning_artist_' + profile.id.replace(/-/g, '_') + '_' + field, profile[field]);
+      }
+      function artStudioCategoryText(value) {
+        return __alloT('stem.artstudio.learning_category_' + String(value).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''), value);
+      }
       var isDark = ctx.isDark || false;
       var isContrast = ctx.isContrast || false;
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -558,13 +580,15 @@ const d = labToolData.artStudio || {};
               }).concat([safeEntry]).slice(-64)
             };
           };
-          const mergeStudioThreadKitStores = function (persisted, current, fallbackRunId) {
-            var persistedStore = sanitizeStudioThreadKitStore(persisted, fallbackRunId);
-            var currentStore = sanitizeStudioThreadKitStore(current, fallbackRunId);
+          const mergeStudioThreadKitStores = function (persisted, current, persistedRunId, currentRunId) {
+            // Legacy kits may omit their run ID. Bind each store to its own
+            // workflow before merging so delayed hydration cannot move a palette.
+            var persistedStore = sanitizeStudioThreadKitStore(persisted, persistedRunId);
+            var currentStore = sanitizeStudioThreadKitStore(current, currentRunId);
             return sanitizeStudioThreadKitStore({
               schemaVersion: 2,
               runs: persistedStore.runs.concat(currentStore.runs)
-            }, fallbackRunId);
+            }, '');
           };
           const copyArtStudioPixels = function (source) {
             var pixels = source && source.data ? source.data : source;
@@ -599,6 +623,53 @@ const d = labToolData.artStudio || {};
           const _studioInspectorTabState = React.useState(d.showTour ? 'guide' : 'make');
           const studioInspectorTab = _studioInspectorTabState[0];
           const setStudioInspectorTab = _studioInspectorTabState[1];
+          const compactStudioQuery = '(max-width: 1279px)';
+          const [isCompactStudio, setIsCompactStudio] = React.useState(function () {
+            return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(compactStudioQuery).matches;
+          });
+          const [studioMobileInspectorOpen, setStudioMobileInspectorOpen] = React.useState(false);
+          const studioGuideVisible = !!d.showTour && (!isCompactStudio || studioMobileInspectorOpen);
+          const studioProcessVisible = studioProcessOpen && (!isCompactStudio || studioMobileInspectorOpen);
+          const studioInspectorDialogRef = React.useRef(null);
+          const studioInspectorReturnRef = React.useRef(null);
+          React.useEffect(function () {
+            if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+            var query = window.matchMedia(compactStudioQuery);
+            var update = function () { setIsCompactStudio(query.matches); };
+            update();
+            if (query.addEventListener) query.addEventListener('change', update);
+            else if (query.addListener) query.addListener(update);
+            return function () {
+              if (query.removeEventListener) query.removeEventListener('change', update);
+              else if (query.removeListener) query.removeListener(update);
+            };
+          }, []);
+          const openCompactStudioInspector = function () {
+            if (!isCompactStudio || studioMobileInspectorOpen) return;
+            studioInspectorReturnRef.current = document.activeElement;
+            setStudioMobileInspectorOpen(true);
+          };
+          const closeCompactStudioInspector = function () {
+            setStudioMobileInspectorOpen(false);
+            if (isCompactStudio) {
+              setStudioProcessOpen(false);
+              setStudioInspectorTab('make');
+              if (d.showTour) upd('showTour', false);
+            }
+            var trigger = studioInspectorReturnRef.current;
+            if (trigger && trigger.isConnected) window.setTimeout(function () { trigger.focus(); }, 0);
+          };
+          React.useEffect(function () {
+            var dialog = studioInspectorDialogRef.current;
+            if (!isCompactStudio || !dialog) return;
+            if (studioMobileInspectorOpen && !dialog.open) {
+              if (typeof dialog.showModal === 'function') dialog.showModal();
+              else dialog.setAttribute('open', '');
+            } else if (!studioMobileInspectorOpen && dialog.open) {
+              if (typeof dialog.close === 'function') dialog.close();
+              else dialog.removeAttribute('open');
+            }
+          }, [isCompactStudio, studioMobileInspectorOpen]);
           const _studioReflectionKindState = React.useState('keep');
           const studioReflectionKind = _studioReflectionKindState[0];
           const setStudioReflectionKind = _studioReflectionKindState[1];
@@ -614,10 +685,18 @@ const d = labToolData.artStudio || {};
           const _studioProcessScopeState = React.useState('current');
           const studioProcessScope = _studioProcessScopeState[0];
           const setStudioProcessScope = _studioProcessScopeState[1];
+          const [studioProcessQuery, setStudioProcessQuery] = React.useState('');
+          const [studioProcessSort, setStudioProcessSort] = React.useState('project');
           const _studioArchiveUndoState = React.useState(null);
           const studioArchiveUndo = _studioArchiveUndoState[0];
           const setStudioArchiveUndo = _studioArchiveUndoState[1];
           const studioPersistenceScope = resolveArtStudioPersistenceScope(ctx);
+          // A queued capture belongs to one uninterrupted learner session. Object
+          // identity also invalidates A -> B -> A changes before an image decodes.
+          const studioCaptureOwnerRef = React.useRef({ scope: studioPersistenceScope });
+          if (studioCaptureOwnerRef.current.scope !== studioPersistenceScope) {
+            studioCaptureOwnerRef.current = { scope: studioPersistenceScope };
+          }
           const _studioPersistenceStatusState = React.useState('loading');
           const studioPersistenceStatus = _studioPersistenceStatusState[0];
           const setStudioPersistenceStatus = _studioPersistenceStatusState[1];
@@ -635,6 +714,10 @@ const d = labToolData.artStudio || {};
           studioPersistenceSnapshotsRef.current = toolSnapshots;
           React.useEffect(function () {
             setStudioArchiveUndo(null);
+            setStudioProcessQuery('');
+            setStudioProcessSort('project');
+            setStudioReflectionKind('keep');
+            setStudioReflectionNote('');
           }, [studioPersistenceScope]);
           React.useEffect(function () {
             var cancelled = false;
@@ -642,6 +725,18 @@ const d = labToolData.artStudio || {};
             var generation = (Number(previousHydration.generation) || 0) + 1;
             var ownerScope = String(d.studioPersistenceOwnerScope || '');
             var replacingScopedWorkflow = !!ownerScope && ownerScope !== studioPersistenceScope;
+            // Navigation is one coherent choice. Loading an older run must not
+            // undo a thread the learner starts or leaves while storage is opening.
+            var workflowNavigationKeys = ['studioFreeProjectId', 'studioCurrentProjectRunId', 'studioThreadId',
+              'studioThreadRunId', 'studioThreadStep', 'studioThreadCompletedSteps'];
+            var workflowAtHydrationStart = Object.assign({}, d, replacingScopedWorkflow ? {
+              studioFreeProjectId: '', studioCurrentProjectRunId: '', studioThreadId: '', studioThreadRunId: '',
+              studioThreadStep: 0, studioThreadCompletedSteps: [], studioGuideWording: undefined,
+              studioLastCompletedThreadRunId: '', studioLastCompletedThreadId: ''
+            } : {});
+            var workflowNavigationAtStart = JSON.stringify(workflowNavigationKeys.map(function (key) {
+              return workflowAtHydrationStart[key];
+            }));
             var canAdoptLegacyStudies = !ownerScope || ownerScope === studioPersistenceScope;
             var snapshotsAtScopeChange = Array.isArray(studioPersistenceSnapshotsRef.current)
               ? studioPersistenceSnapshotsRef.current
@@ -673,6 +768,8 @@ const d = labToolData.artStudio || {};
                   nextArtState.studioLastCompletedThreadRunId = '';
                   nextArtState.studioLastCompletedThreadId = '';
                   nextArtState.studioThreadKit = sanitizeStudioThreadKitStore(null, '');
+                  nextArtState.studioStudyDrafts = {};
+                  delete nextArtState.studioGuideWording;
                   nextArtState.studioVariationParentStudyId = '';
                   nextArtState.studioVariationRootStudyId = '';
                   nextArtState.studioVariationDepth = 0;
@@ -729,7 +826,7 @@ const d = labToolData.artStudio || {};
               var persistedStudies = results[0];
               var persistedWorkflow = results[1];
               if (!Array.isArray(persistedStudies)) {
-                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, generation: generation };
+                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, workflowReady: false, generation: generation };
                 setStudioPersistenceStatus('session-only');
                 return;
               }
@@ -737,7 +834,7 @@ const d = labToolData.artStudio || {};
                 return _artStudioStudyStore.upsertStudy(studioPersistenceScope, snapshot);
               })).then(function (migrationResults) {
                 if (cancelled || studioPersistenceHydrationRef.current.generation !== generation) return;
-                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, generation: generation };
+                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, workflowReady: persistedWorkflow !== null, generation: generation };
                 var hydratedSetters = studioPersistenceSettersRef.current;
                 if (typeof hydratedSetters.setToolSnapshots === 'function') {
                   hydratedSetters.setToolSnapshots(function (previous) {
@@ -764,6 +861,14 @@ const d = labToolData.artStudio || {};
                   var artState = previous.artStudio || {};
                   if (String(artState.studioPersistenceOwnerScope || '') !== studioPersistenceScope) return previous;
                   var workflowPatch = {};
+                  var workflowNavigationChanged = JSON.stringify(workflowNavigationKeys.map(function (key) {
+                    return artState[key];
+                  })) !== workflowNavigationAtStart;
+                  if (artState.studioGuideWording === workflowAtHydrationStart.studioGuideWording &&
+                      (replacingScopedWorkflow || ['simple', 'detailed'].indexOf(artState.studioGuideWording) === -1)) {
+                    workflowPatch.studioGuideWording = persistedWorkflow.studioGuideWording === 'simple' ? 'simple' : 'detailed';
+                  }
+                  if (!workflowNavigationChanged) {
                   if (replacingScopedWorkflow) {
                     workflowPatch.studioFreeProjectId = String(persistedWorkflow.studioFreeProjectId || '');
                     workflowPatch.studioCurrentProjectRunId = String(persistedWorkflow.studioCurrentProjectRunId || '');
@@ -775,10 +880,6 @@ const d = labToolData.artStudio || {};
                           return Number.isInteger(step) && step >= 0 && values.indexOf(step) === index;
                         }).slice(0, 20)
                       : [];
-                    workflowPatch.studioLastCompletedThreadRunId = String(persistedWorkflow.studioLastCompletedThreadRunId || '');
-                    workflowPatch.studioLastCompletedThreadId = String(persistedWorkflow.studioLastCompletedThreadId || '');
-                    var persistedKitRunId = String(persistedWorkflow.studioThreadRunId || persistedWorkflow.studioCurrentProjectRunId || persistedWorkflow.studioFreeProjectId || '');
-                    workflowPatch.studioThreadKit = sanitizeStudioThreadKitStore(persistedWorkflow.studioThreadKit, persistedKitRunId);
                   } else if (!artState.studioFreeProjectId && persistedWorkflow.studioFreeProjectId) {
                     workflowPatch.studioFreeProjectId = String(persistedWorkflow.studioFreeProjectId);
                   }
@@ -795,17 +896,21 @@ const d = labToolData.artStudio || {};
                         }).slice(0, 20)
                       : [];
                   }
-                  if (!artState.studioLastCompletedThreadRunId && persistedWorkflow.studioLastCompletedThreadRunId) {
+                  }
+                  if (artState.studioLastCompletedThreadRunId === workflowAtHydrationStart.studioLastCompletedThreadRunId &&
+                      artState.studioLastCompletedThreadId === workflowAtHydrationStart.studioLastCompletedThreadId &&
+                      (replacingScopedWorkflow || !artState.studioLastCompletedThreadRunId) && persistedWorkflow.studioLastCompletedThreadRunId) {
                     workflowPatch.studioLastCompletedThreadRunId = String(persistedWorkflow.studioLastCompletedThreadRunId);
                     workflowPatch.studioLastCompletedThreadId = String(persistedWorkflow.studioLastCompletedThreadId || '');
                   }
-                  if (!replacingScopedWorkflow && persistedWorkflow.studioThreadKit) {
-                    var mergeKitRunId = String(artState.studioThreadRunId || artState.studioCurrentProjectRunId || artState.studioFreeProjectId ||
-                      persistedWorkflow.studioThreadRunId || persistedWorkflow.studioCurrentProjectRunId || persistedWorkflow.studioFreeProjectId || '');
+                  if (persistedWorkflow.studioThreadKit) {
+                    var persistedKitRunId = String(persistedWorkflow.studioThreadRunId || persistedWorkflow.studioCurrentProjectRunId || persistedWorkflow.studioFreeProjectId || '');
+                    var currentKitRunId = String(artState.studioThreadRunId || artState.studioCurrentProjectRunId || artState.studioFreeProjectId || persistedKitRunId);
                     workflowPatch.studioThreadKit = mergeStudioThreadKitStores(
                       persistedWorkflow.studioThreadKit,
                       artState.studioThreadKit,
-                      mergeKitRunId
+                      persistedKitRunId,
+                      currentKitRunId
                     );
                   }
                   return Object.keys(workflowPatch).length
@@ -814,11 +919,11 @@ const d = labToolData.artStudio || {};
                   });
                 }
                 var migrationFailed = migrationResults.some(function (saved) { return saved === null; });
-                setStudioPersistenceStatus(migrationFailed ? 'session-only' : 'ready');
+                setStudioPersistenceStatus(migrationFailed || persistedWorkflow === null ? 'session-only' : 'ready');
               });
             }).catch(function () {
               if (!cancelled && studioPersistenceHydrationRef.current.generation === generation) {
-                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, generation: generation };
+                studioPersistenceHydrationRef.current = { scope: studioPersistenceScope, ready: true, workflowReady: false, generation: generation };
                 setStudioPersistenceStatus('session-only');
               }
             });
@@ -826,10 +931,11 @@ const d = labToolData.artStudio || {};
           }, [studioPersistenceScope]);
           React.useEffect(function () {
             var hydration = studioPersistenceHydrationRef.current;
-            if (!hydration.ready || hydration.scope !== studioPersistenceScope ||
+            if (!hydration.ready || !hydration.workflowReady || hydration.scope !== studioPersistenceScope ||
                 (studioPersistenceStatus !== 'ready' && studioPersistenceStatus !== 'saved')) return;
             var workflow = {
               schemaVersion: 3,
+              studioGuideWording: d.studioGuideWording === 'simple' ? 'simple' : 'detailed',
               studioFreeProjectId: String(d.studioFreeProjectId || ''),
               studioCurrentProjectRunId: String(d.studioCurrentProjectRunId || ''),
               studioThreadId: String(d.studioThreadId || ''),
@@ -861,6 +967,7 @@ const d = labToolData.artStudio || {};
           }, [
             studioPersistenceScope,
             studioPersistenceStatus,
+            d.studioGuideWording,
             d.studioFreeProjectId,
             d.studioCurrentProjectRunId,
             d.studioThreadId,
@@ -878,10 +985,7 @@ const d = labToolData.artStudio || {};
           const _reducedMotionState = React.useState(readReducedMotionPreference);
           const reducedMotion = _reducedMotionState[0];
           const setReducedMotion = _reducedMotionState[1];
-          React.useEffect(function () {
-            var pendingProfileId = pendingArtistDetailFocusRef.current;
-            if (!pendingProfileId || pendingProfileId !== d.artistProfileId) return;
-            pendingArtistDetailFocusRef.current = '';
+          function focusArtistStudyDetails() {
             var detail = artistDetailRef.current;
             if (!detail) return;
             if (typeof detail.focus === 'function') {
@@ -889,6 +993,12 @@ const d = labToolData.artStudio || {};
               catch (_) { detail.focus(); }
             }
             if (typeof detail.scrollIntoView === 'function') detail.scrollIntoView({ block: 'nearest' });
+          }
+          React.useEffect(function () {
+            var pendingProfileId = pendingArtistDetailFocusRef.current;
+            if (!pendingProfileId || pendingProfileId !== d.artistProfileId) return;
+            pendingArtistDetailFocusRef.current = '';
+            focusArtistStudyDetails();
           }, [d.artistProfileId]);
           React.useEffect(function () {
             if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -935,7 +1045,8 @@ const d = labToolData.artStudio || {};
                 artStudio: {
                   ...(prev.artStudio || {}),
                   watercolorSnapshot: snapshot || '',
-                  watercolorStateKey: stateKey || ''
+                  watercolorStateKey: stateKey || '',
+                  watercolorStateIsCheckpoint: false
                 }
               };
             });
@@ -944,12 +1055,24 @@ const d = labToolData.artStudio || {};
           const ART_STUDIO_TAB_ORDER = ['artistExplorer', 'colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
           const requestedArtStudioTab = d.tab || 'colorWheel';
           const tab = ART_STUDIO_TAB_ORDER.indexOf(requestedArtStudioTab) !== -1 ? requestedArtStudioTab : 'colorWheel';
+          const studioStudyDraft = (d.studioStudyDrafts || {})[tab] || {};
+          const freeStudyReflection = ['keep', 'change', 'wonder'].indexOf(studioStudyDraft.reflection) !== -1 ? studioStudyDraft.reflection : 'keep';
+          const freeStudyNote = String(studioStudyDraft.note || '').slice(0, 160);
+          const updateStudioStudyDraft = function (key, value) {
+            setLabToolData(function (prev) {
+              var art = prev.artStudio || {}, drafts = art.studioStudyDrafts || {};
+              return { ...prev, artStudio: { ...art, studioStudyDrafts: {
+                ...drafts, [tab]: { ...(drafts[tab] || {}), [key]: value }
+              } } };
+            });
+          };
+          React.useEffect(function () { setStudioMobileInspectorOpen(false); }, [tab]);
           const ART_STUDIO_TAB_LABELS = {
-            artistExplorer: 'Artists & Traditions',
-            colorWheel: 'Color Wheel', mixer: 'Color Mixer', watercolor: 'Watercolor', pixel: 'Pixel Art',
-            symmetry: 'Symmetry', spirograph: 'Spirograph', generative: 'Generative Art', spinArt: 'Spin Art',
-            stringArt: 'String Art', opArt: 'Op Art', tessellation: 'Tessellation', fractal: 'Fractal',
-            gradient: 'Gradient', stereogram: 'Stereogram', sculpt3d: '3D Sculpture', contrast: 'Contrast', harmonyHunt: 'Harmony'
+            artistExplorer: __alloT("stem.artstudio.learning_artists_traditions_9c00979", "Artists & Traditions"),
+            colorWheel: __alloT("stem.artstudio.learning_color_wheel_f3ff339", "Color Wheel"), mixer: __alloT("stem.artstudio.learning_color_mixer_2448ebb", "Color Mixer"), watercolor: __alloT("stem.artstudio.learning_watercolor_150fcde", "Watercolor"), pixel: __alloT("stem.artstudio.learning_pixel_art_1110e84", "Pixel Art"),
+            symmetry: __alloT("stem.artstudio.learning_symmetry_cc14de6", "Symmetry"), spirograph: __alloT("stem.artstudio.learning_spirograph_fd81fd4", "Spirograph"), generative: __alloT("stem.artstudio.learning_generative_art_f6c5978", "Generative Art"), spinArt: __alloT("stem.artstudio.learning_spin_art_aff2d28", "Spin Art"),
+            stringArt: __alloT("stem.artstudio.learning_string_art_56c43ff", "String Art"), opArt: __alloT("stem.artstudio.learning_op_art_4f90eb0", "Op Art"), tessellation: __alloT("stem.artstudio.learning_tessellation_6e05511", "Tessellation"), fractal: __alloT("stem.artstudio.learning_fractal_f014553", "Fractal"),
+            gradient: __alloT("stem.artstudio.learning_gradient_2523561", "Gradient"), stereogram: __alloT("stem.artstudio.learning_stereogram_b92dd79", "Stereogram"), sculpt3d: __alloT("stem.artstudio.learning_3d_sculpture_6d697c8", "3D Sculpture"), contrast: __alloT("stem.artstudio.learning_contrast_08795ba", "Contrast"), harmonyHunt: __alloT("stem.artstudio.learning_harmony_ccfe55d", "Harmony")
           };
           const ART_STUDIO_TAB_ITEMS = [
             { id: 'artistExplorer', icon: '\uD83C\uDF0D', label: __alloT('stem.artstudio.artists_traditions', 'Artists & Traditions') },
@@ -972,82 +1095,104 @@ const d = labToolData.artStudio || {};
             { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }
           ];
           const ART_STUDIO_GROUPS = [
-            { id: 'explore', icon: '\uD83C\uDF0D', label: 'Explore', tabs: ['artistExplorer'] },
-            { id: 'paint', icon: '\uD83C\uDFA8', label: 'Paint & color', tabs: ['colorWheel', 'mixer', 'watercolor', 'gradient'] },
-            { id: 'pattern', icon: '\u25C8', label: 'Pattern & mathematics', tabs: ['symmetry', 'spirograph', 'stringArt', 'tessellation', 'fractal'] },
-            { id: 'digital', icon: '\u2726', label: 'Digital & generative', tabs: ['pixel', 'generative', 'spinArt', 'stereogram'] },
-            { id: 'space', icon: '\uD83D\uDDFF', label: 'Space & sculpture', tabs: ['sculpt3d'] },
-            { id: 'perception', icon: '\u25C9', label: 'Perception & access', tabs: ['opArt', 'contrast', 'harmonyHunt'] }
+            { id: 'explore', icon: '\uD83C\uDF0D', label: __alloT("stem.artstudio.learning_explore_3b73900", "Explore"), tabs: ['artistExplorer'] },
+            { id: 'paint', icon: '\uD83C\uDFA8', label: __alloT("stem.artstudio.learning_paint_color_0cfeba8", "Paint & color"), tabs: ['colorWheel', 'mixer', 'watercolor', 'gradient'] },
+            { id: 'pattern', icon: '\u25C8', label: __alloT("stem.artstudio.learning_pattern_mathematics_b2fb534", "Pattern & mathematics"), tabs: ['symmetry', 'spirograph', 'stringArt', 'tessellation', 'fractal'] },
+            { id: 'digital', icon: '\u2726', label: __alloT("stem.artstudio.learning_digital_generative_102373f", "Digital & generative"), tabs: ['pixel', 'generative', 'spinArt', 'stereogram'] },
+            { id: 'space', icon: '\uD83D\uDDFF', label: __alloT("stem.artstudio.learning_space_sculpture_8be160a", "Space & sculpture"), tabs: ['sculpt3d'] },
+            { id: 'perception', icon: '\u25C9', label: __alloT("stem.artstudio.learning_perception_access_5e1f966", "Perception & access"), tabs: ['opArt', 'contrast', 'harmonyHunt'] }
           ];
           const STUDIO_START_PATHS = [
-            { id: 'paint', tab: 'watercolor', icon: '\uD83C\uDFA8', eyebrow: 'Paint', title: 'Paint something', description: 'Start with a responsive watercolor canvas, then explore pigment and paper when you are ready.', accent: 'border-teal-300 hover:border-teal-500 hover:bg-teal-50' },
-            { id: 'digital', tab: 'pixel', icon: '\uD83D\uDDBC', eyebrow: 'Digital', title: 'Make pixel art', description: 'Build a sprite or icon one deliberate cell at a time.', accent: 'border-blue-300 hover:border-blue-500 hover:bg-blue-50' },
-            { id: 'pattern', tab: 'symmetry', icon: '\u2728', eyebrow: 'Pattern', title: 'Create a pattern', description: 'Draw once and let reflection, rotation, and repetition transform the mark.', accent: 'border-violet-300 hover:border-violet-500 hover:bg-violet-50' },
-            { id: 'sculpt', tab: 'sculpt3d', icon: '\uD83D\uDDFF', eyebrow: 'Space', title: 'Build in 3D', description: 'Combine simple forms into a sculpture you can orbit and photograph.', accent: 'border-amber-300 hover:border-amber-500 hover:bg-amber-50' },
-            { id: 'artists', tab: 'artistExplorer', icon: '\uD83C\uDF0D', eyebrow: 'Learn', title: 'Explore an artist', description: 'Study a creative decision and carry the question, not a copied style, into your own work.', accent: 'border-rose-300 hover:border-rose-500 hover:bg-rose-50' },
-            { id: 'access', tab: 'contrast', icon: '\u25C9', eyebrow: 'Inspect', title: 'Design accessible color', description: 'Test color choices and understand how contrast changes who can use a design.', accent: 'border-cyan-300 hover:border-cyan-500 hover:bg-cyan-50' }
+            { id: 'paint', tab: 'watercolor', icon: '\uD83C\uDFA8', eyebrow: __alloT("stem.artstudio.learning_paint_50d0cce", "Paint"), title: __alloT("stem.artstudio.learning_paint_something_df20e35", "Paint something"), description: __alloT("stem.artstudio.learning_start_with_a_responsive_watercolor_canvas_then_e_f3e07d5", "Start with a responsive watercolor canvas, then explore pigment and paper when you are ready."), accent: 'border-teal-300 hover:border-teal-500 hover:bg-teal-50' },
+            { id: 'digital', tab: 'pixel', icon: '\uD83D\uDDBC', eyebrow: __alloT("stem.artstudio.learning_digital_42be1f5", "Digital"), title: __alloT("stem.artstudio.learning_make_pixel_art_e52999f", "Make pixel art"), description: __alloT("stem.artstudio.learning_build_a_sprite_or_icon_one_deliberate_cell_at_a__4a186e3", "Build a sprite or icon one deliberate cell at a time."), accent: 'border-blue-300 hover:border-blue-500 hover:bg-blue-50' },
+            { id: 'pattern', tab: 'symmetry', icon: '\u2728', eyebrow: __alloT("stem.artstudio.learning_pattern_4288ade", "Pattern"), title: __alloT("stem.artstudio.learning_create_a_pattern_24735f3", "Create a pattern"), description: __alloT("stem.artstudio.learning_draw_once_and_let_reflection_rotation_and_repeti_fd16a42", "Draw once and let reflection, rotation, and repetition transform the mark."), accent: 'border-violet-300 hover:border-violet-500 hover:bg-violet-50' },
+            { id: 'sculpt', tab: 'sculpt3d', icon: '\uD83D\uDDFF', eyebrow: __alloT("stem.artstudio.learning_space_20eac5a", "Space"), title: __alloT("stem.artstudio.learning_build_in_3d_8c535dc", "Build in 3D"), description: __alloT("stem.artstudio.learning_combine_simple_forms_into_a_sculpture_you_can_or_5283a61", "Combine simple forms into a sculpture you can orbit and photograph."), accent: 'border-amber-300 hover:border-amber-500 hover:bg-amber-50' },
+            { id: 'artists', tab: 'artistExplorer', icon: '\uD83C\uDF0D', eyebrow: __alloT("stem.artstudio.learning_learn_ce78afd", "Learn"), title: __alloT("stem.artstudio.learning_explore_an_artist_b7fa9a5", "Explore an artist"), description: __alloT("stem.artstudio.learning_study_a_creative_decision_and_carry_the_question_c5cf038", "Study a creative decision and carry the question, not a copied style, into your own work."), accent: 'border-rose-300 hover:border-rose-500 hover:bg-rose-50' },
+            { id: 'access', tab: 'contrast', icon: '\u25C9', eyebrow: __alloT("stem.artstudio.learning_inspect_e0723a8", "Inspect"), title: __alloT("stem.artstudio.learning_design_accessible_color_e403379", "Design accessible color"), description: __alloT("stem.artstudio.learning_test_color_choices_and_understand_how_contrast_c_efa861e", "Test color choices and understand how contrast changes who can use a design."), accent: 'border-cyan-300 hover:border-cyan-500 hover:bg-cyan-50' }
           ];
           const CREATIVE_THREAD_TEMPLATES = [
             {
               id: 'tiny-night-world',
               icon: '\uD83C\uDF19',
-              title: 'Tiny night world',
-              description: 'Shape a small evening scene that remains readable at a glance.',
-              constraint: 'Use three related hues and one bright focal point.',
+              title: __alloT("stem.artstudio.learning_tiny_night_world_47920ff", "Tiny night world"),
+              description: __alloT("stem.artstudio.learning_shape_a_small_evening_scene_that_remains_readabl_01319b1", "Shape a small evening scene that remains readable at a glance."),
+              constraint: __alloT("stem.artstudio.learning_use_three_related_hues_and_one_bright_focal_poin_790bca0", "Use three related hues and one bright focal point."),
               accent: 'border-blue-300 bg-blue-50/70',
               steps: [
-                { tab: 'colorWheel', label: 'Choose the atmosphere', prompt: 'Build a three-hue night palette with one deliberately brighter accent.' },
-                { tab: 'pixel', label: 'Reduce it to a silhouette', prompt: 'Make a tiny scene whose largest shapes still read when you squint.' },
-                { tab: 'contrast', label: 'Check the focal point', prompt: 'Test whether the accent and essential details remain distinguishable.' }
+                { tab: 'colorWheel', label: __alloT("stem.artstudio.learning_choose_the_atmosphere_41085f4", "Choose the atmosphere"), prompt: __alloT("stem.artstudio.learning_build_a_three_hue_night_palette_with_one_deliber_40634f5", "Build a three-hue night palette with one deliberately brighter accent.") },
+                { tab: 'pixel', label: __alloT("stem.artstudio.learning_reduce_it_to_a_silhouette_2a2cf73", "Reduce it to a silhouette"), prompt: __alloT("stem.artstudio.learning_make_a_tiny_scene_whose_largest_shapes_still_rea_a71086b", "Make a tiny scene whose largest shapes still read when you squint.") },
+                { tab: 'contrast', label: __alloT("stem.artstudio.learning_check_the_focal_point_4aec05e", "Check the focal point"), prompt: __alloT("stem.artstudio.learning_test_whether_the_accent_and_essential_details_re_44aa700", "Test whether the accent and essential details remain distinguishable.") }
               ]
             },
             {
               id: 'pattern-with-a-pulse',
               icon: '\u25C8',
-              title: 'Pattern with a pulse',
-              description: 'Turn one mark into rhythm, then decide where the rhythm should break.',
-              constraint: 'Repeat one unit and change only one interval.',
+              title: __alloT("stem.artstudio.learning_pattern_with_a_pulse_de9d99b", "Pattern with a pulse"),
+              description: __alloT("stem.artstudio.learning_turn_one_mark_into_rhythm_then_decide_where_the__aaf64d5", "Turn one mark into rhythm, then decide where the rhythm should break."),
+              constraint: __alloT("stem.artstudio.learning_repeat_one_unit_and_change_only_one_interval_ad64261", "Repeat one unit and change only one interval."),
               accent: 'border-violet-300 bg-violet-50/70',
               steps: [
-                { tab: 'symmetry', label: 'Invent the unit', prompt: 'Draw one off-center mark and choose how reflection or rotation transforms it.' },
-                { tab: 'tessellation', label: 'Build the rhythm', prompt: 'Repeat the unit until the negative space becomes part of the pattern.' },
-                { tab: 'opArt', label: 'Introduce tension', prompt: 'Change one interval and notice where still pattern begins to feel active.' }
+                { tab: 'symmetry', label: __alloT("stem.artstudio.learning_invent_the_unit_8b7cea0", "Invent the unit"), prompt: __alloT("stem.artstudio.learning_draw_one_off_center_mark_and_choose_how_reflecti_073e644", "Draw one off-center mark and choose how reflection or rotation transforms it.") },
+                { tab: 'tessellation', label: __alloT("stem.artstudio.learning_build_the_rhythm_2f1e148", "Build the rhythm"), prompt: __alloT("stem.artstudio.learning_repeat_the_unit_until_the_negative_space_becomes_ab37abc", "Repeat the unit until the negative space becomes part of the pattern.") },
+                { tab: 'opArt', label: __alloT("stem.artstudio.learning_introduce_tension_b80668e", "Introduce tension"), prompt: __alloT("stem.artstudio.learning_change_one_interval_and_notice_where_still_patte_bc706ae", "Change one interval and notice where still pattern begins to feel active.") }
               ]
             },
             {
               id: 'rule-to-wonder',
               icon: '\u2726',
-              title: 'Rule to wonder',
-              description: 'Begin with a creative question and let a repeatable rule surprise you.',
-              constraint: 'Change one variable at a time and keep the most interesting result.',
+              title: __alloT("stem.artstudio.learning_rule_to_wonder_f6656e3", "Rule to wonder"),
+              description: __alloT("stem.artstudio.learning_begin_with_a_creative_question_and_let_a_repeata_01db883", "Begin with a creative question and let a repeatable rule surprise you."),
+              constraint: __alloT("stem.artstudio.learning_change_one_variable_at_a_time_and_keep_the_most__158bbc3", "Change one variable at a time and keep the most interesting result."),
               accent: 'border-rose-300 bg-rose-50/70',
               steps: [
-                { tab: 'artistExplorer', label: 'Find a question', prompt: 'Choose an artist and name the decision beneath the surface, not a signature style.' },
-                { tab: 'generative', label: 'Write the visual rule', prompt: 'Translate that question into one repeatable rule, then run a variation.' },
-                { tab: 'fractal', label: 'Look across scales', prompt: 'Inspect what the rule preserves and what changes as scale or iteration shifts.' }
+                { tab: 'artistExplorer', label: __alloT("stem.artstudio.learning_find_a_question_aa45746", "Find a question"), prompt: __alloT("stem.artstudio.learning_choose_an_artist_and_name_the_decision_beneath_t_78f08c0", "Choose an artist and name the decision beneath the surface, not a signature style.") },
+                { tab: 'generative', label: __alloT("stem.artstudio.learning_write_the_visual_rule_0aced0a", "Write the visual rule"), prompt: __alloT("stem.artstudio.learning_translate_that_question_into_one_repeatable_rule_816344d", "Translate that question into one repeatable rule, then run a variation.") },
+                { tab: 'fractal', label: __alloT("stem.artstudio.learning_look_across_scales_9cc7d8a", "Look across scales"), prompt: __alloT("stem.artstudio.learning_inspect_what_the_rule_preserves_and_what_changes_56e65b1", "Inspect what the rule preserves and what changes as scale or iteration shifts.") }
               ]
             }
           ];
           const STUDIO_COACH = {
-            artistExplorer: { try: 'Choose one profile and name a decision the artist keeps making.', notice: 'Look for how material, place, history, and audience change the meaning of that decision.', stretch: 'Carry the underlying question into a lab without copying a signature style.', next: ['generative', 'contrast'] },
-            colorWheel: { try: 'Choose one hue, then make a three-color family by changing saturation and lightness.', notice: 'The same hue can feel vivid, muted, near, or distant as those two values move.', stretch: 'Reserve one contrasting color for the part that must be noticed first.', next: ['mixer', 'contrast'] },
-            mixer: { try: 'Mix the same two colors as pigment and as light.', notice: 'Subtractive mixtures absorb wavelengths while additive mixtures combine emitted light.', stretch: 'Predict the result before moving the ratio, then explain any surprise.', next: ['watercolor', 'colorWheel'] },
-            watercolor: { try: 'Place one wet wash beside one dry-brush mark using the same pigment.', notice: 'Water movement, paper texture, and drying edges redistribute pigment after the brush leaves.', stretch: 'Make depth using only one pigment and three water levels.', next: ['colorWheel', 'contrast'] },
-            pixel: { try: 'Begin at 16 by 16 and block only the silhouette before adding details.', notice: 'Every pixel changes an edge, so clusters usually read more clearly than isolated dots.', stretch: 'Use four colors and make the image readable at both canvas size and thumbnail size.', next: ['colorWheel', 'contrast'] },
-            symmetry: { try: 'Draw one off-center mark and compare reflection with rotation.', notice: 'The same source mark creates different visual weight depending on the transformation.', stretch: 'Break the symmetry once, exactly where attention should land.', next: ['tessellation', 'spirograph'] },
-            spirograph: { try: 'Change one radius ratio while keeping the pen offset fixed.', notice: 'Small ratio changes can alter petal count, closure, and the density of crossings.', stretch: 'Find two different settings that create related silhouettes.', next: ['symmetry', 'stringArt'] },
-            generative: { try: 'Choose one rule, run it twice, and compare what stays stable.', notice: 'The artist designs the system; controlled randomness designs each result.', stretch: 'Change only one variable and decide which version better serves your intention.', next: ['fractal', 'gradient'] },
-            spinArt: { try: 'Place paint near the center, then repeat near the edge at the same speed.', notice: 'Distance from the center changes how strongly the spinning motion spreads a mark.', stretch: 'Build a calm area and an energetic area without changing the palette.', next: ['generative', 'colorWheel'] },
-            stringArt: { try: 'Connect every third peg, then compare every fifth peg.', notice: 'Straight segments create the envelope of a curve through accumulation.', stretch: 'Use two step sizes to make one curve interrupt another.', next: ['spirograph', 'symmetry'] },
-            opArt: { try: 'Repeat one interval, then gradually compress it across the field.', notice: 'Your visual system reads contrast and spacing as motion even when nothing moves.', stretch: 'Create strong energy without relying on maximum black-and-white contrast.', next: ['contrast', 'tessellation'] },
-            tessellation: { try: 'Repeat one tile until both the shape and the gap around it become visible.', notice: 'A successful tiling organizes negative space as carefully as positive form.', stretch: 'Introduce a color rhythm that crosses the tile boundaries.', next: ['symmetry', 'opArt'] },
-            fractal: { try: 'Change one parameter slightly, then zoom into the boundary rather than the center.', notice: 'Self-similarity preserves relationships while producing new detail at different scales.', stretch: 'Save two views that feel related but not identical.', next: ['generative', 'gradient'] },
-            gradient: { try: 'Use three stops and move the middle stop away from the exact center.', notice: 'Stop position changes perceived emphasis as much as the colors themselves.', stretch: 'Make a transition that communicates depth without adding an object.', next: ['colorWheel', 'contrast'] },
-            stereogram: { try: 'Start with a simple depth shape and a pattern with clear small-scale texture.', notice: 'Depth appears when each eye matches repeated information at a slightly different position.', stretch: 'Reduce depth until the hidden form is discoverable but not immediately obvious.', next: ['contrast', 'gradient'] },
-            sculpt3d: { try: 'Combine three forms and orbit before adding a fourth.', notice: 'Silhouette, balance, and negative space change with every viewpoint.', stretch: 'Make the sculpture feel stable from one view and precarious from another.', next: ['contrast', 'gradient'] },
-            contrast: { try: 'Test one color pair, then change only the foreground lightness.', notice: 'Readable contrast depends on relative luminance, text size, and visual context.', stretch: 'Keep the relationship expressive while meeting the intended accessibility target.', next: ['colorWheel', 'gradient'] },
-            harmonyHunt: { try: 'Compare a simple frequency ratio with a more complex one.', notice: 'Small whole-number relationships often feel more stable in sound and pattern.', stretch: 'Translate one interval into spacing, scale, or color rather than illustrating a note.', next: ['spirograph', 'generative'] }
+            artistExplorer: { try: __alloT("stem.artstudio.learning_choose_one_profile_and_name_a_decision_the_artis_0a01894", "Choose one profile and name a decision the artist keeps making."), notice: __alloT("stem.artstudio.learning_look_for_how_material_place_history_and_audience_0843962", "Look for how material, place, history, and audience change the meaning of that decision."), stretch: __alloT("stem.artstudio.learning_carry_the_underlying_question_into_a_lab_without_69e9e7f", "Carry the underlying question into a lab without copying a signature style."), next: ['generative', 'contrast'] },
+            colorWheel: { try: __alloT("stem.artstudio.learning_choose_one_hue_then_make_a_three_color_family_by_9188f27", "Choose one hue, then make a three-color family by changing saturation and lightness."), notice: __alloT("stem.artstudio.learning_the_same_hue_can_feel_vivid_muted_near_or_distan_a0b29f5", "The same hue can feel vivid, muted, near, or distant as those two values move."), stretch: __alloT("stem.artstudio.learning_reserve_one_contrasting_color_for_the_part_that__4f6e91b", "Reserve one contrasting color for the part that must be noticed first."), next: ['mixer', 'contrast'] },
+            mixer: { try: __alloT("stem.artstudio.learning_mix_the_same_two_colors_as_pigment_and_as_light_2da9c52", "Mix the same two colors as pigment and as light."), notice: __alloT("stem.artstudio.learning_subtractive_mixtures_absorb_wavelengths_while_ad_8e316b5", "Subtractive mixtures absorb wavelengths while additive mixtures combine emitted light."), stretch: __alloT("stem.artstudio.learning_predict_the_result_before_moving_the_ratio_then__ef40c59", "Predict the result before moving the ratio, then explain any surprise."), next: ['watercolor', 'colorWheel'] },
+            watercolor: { try: __alloT("stem.artstudio.learning_place_one_wet_wash_beside_one_dry_brush_mark_usi_dc6d780", "Place one wet wash beside one dry-brush mark using the same pigment."), notice: __alloT("stem.artstudio.learning_water_movement_paper_texture_and_drying_edges_re_9bbc08d", "Water movement, paper texture, and drying edges redistribute pigment after the brush leaves."), stretch: __alloT("stem.artstudio.learning_make_depth_using_only_one_pigment_and_three_wate_e070101", "Make depth using only one pigment and three water levels."), next: ['colorWheel', 'contrast'] },
+            pixel: { try: __alloT("stem.artstudio.learning_begin_at_16_by_16_and_block_only_the_silhouette__2aabb56", "Begin at 16 by 16 and block only the silhouette before adding details."), notice: __alloT("stem.artstudio.learning_every_pixel_changes_an_edge_so_clusters_usually__53c745d", "Every pixel changes an edge, so clusters usually read more clearly than isolated dots."), stretch: __alloT("stem.artstudio.learning_use_four_colors_and_make_the_image_readable_at_b_190fdb1", "Use four colors and make the image readable at both canvas size and thumbnail size."), next: ['colorWheel', 'contrast'] },
+            symmetry: { try: __alloT("stem.artstudio.learning_draw_one_off_center_mark_and_compare_reflection__c334db0", "Draw one off-center mark and compare reflection with rotation."), notice: __alloT("stem.artstudio.learning_the_same_source_mark_creates_different_visual_we_86eb3ae", "The same source mark creates different visual weight depending on the transformation."), stretch: __alloT("stem.artstudio.learning_break_the_symmetry_once_exactly_where_attention__4141f5f", "Break the symmetry once, exactly where attention should land."), next: ['tessellation', 'spirograph'] },
+            spirograph: { try: __alloT("stem.artstudio.learning_change_one_radius_ratio_while_keeping_the_pen_of_338a03e", "Change one radius ratio while keeping the pen offset fixed."), notice: __alloT("stem.artstudio.learning_small_ratio_changes_can_alter_petal_count_closur_de638e2", "Small ratio changes can alter petal count, closure, and the density of crossings."), stretch: __alloT("stem.artstudio.learning_find_two_different_settings_that_create_related__e73c03c", "Find two different settings that create related silhouettes."), next: ['symmetry', 'stringArt'] },
+            generative: { try: __alloT("stem.artstudio.learning_choose_one_rule_run_it_twice_and_compare_what_st_3ec4c4e", "Choose one rule, run it twice, and compare what stays stable."), notice: __alloT("stem.artstudio.learning_the_artist_designs_the_system_controlled_randomn_c1f2fe2", "The artist designs the system; controlled randomness designs each result."), stretch: __alloT("stem.artstudio.learning_change_only_one_variable_and_decide_which_versio_ed7e1f5", "Change only one variable and decide which version better serves your intention."), next: ['fractal', 'gradient'] },
+            spinArt: { try: __alloT("stem.artstudio.learning_place_paint_near_the_center_then_repeat_near_the_a8bc6a1", "Place paint near the center, then repeat near the edge at the same speed."), notice: __alloT("stem.artstudio.learning_distance_from_the_center_changes_how_strongly_th_46b508a", "Distance from the center changes how strongly the spinning motion spreads a mark."), stretch: __alloT("stem.artstudio.learning_build_a_calm_area_and_an_energetic_area_without__f481f5e", "Build a calm area and an energetic area without changing the palette."), next: ['generative', 'colorWheel'] },
+            stringArt: { try: __alloT("stem.artstudio.learning_connect_every_third_peg_then_compare_every_fifth_bfb8c9e", "Connect every third peg, then compare every fifth peg."), notice: __alloT("stem.artstudio.learning_straight_segments_create_the_envelope_of_a_curve_bf94302", "Straight segments create the envelope of a curve through accumulation."), stretch: __alloT("stem.artstudio.learning_use_two_step_sizes_to_make_one_curve_interrupt_a_50c8355", "Use two step sizes to make one curve interrupt another."), next: ['spirograph', 'symmetry'] },
+            opArt: { try: __alloT("stem.artstudio.learning_repeat_one_interval_then_gradually_compress_it_a_cdb9ece", "Repeat one interval, then gradually compress it across the field."), notice: __alloT("stem.artstudio.learning_your_visual_system_reads_contrast_and_spacing_as_d70dc1f", "Your visual system reads contrast and spacing as motion even when nothing moves."), stretch: __alloT("stem.artstudio.learning_create_strong_energy_without_relying_on_maximum__8a3167c", "Create strong energy without relying on maximum black-and-white contrast."), next: ['contrast', 'tessellation'] },
+            tessellation: { try: __alloT("stem.artstudio.learning_repeat_one_tile_until_both_the_shape_and_the_gap_eaa8f35", "Repeat one tile until both the shape and the gap around it become visible."), notice: __alloT("stem.artstudio.learning_a_successful_tiling_organizes_negative_space_as__bcd7471", "A successful tiling organizes negative space as carefully as positive form."), stretch: __alloT("stem.artstudio.learning_introduce_a_color_rhythm_that_crosses_the_tile_b_105a6ac", "Introduce a color rhythm that crosses the tile boundaries."), next: ['symmetry', 'opArt'] },
+            fractal: { try: __alloT("stem.artstudio.learning_change_one_parameter_slightly_then_zoom_into_the_b94cf98", "Change one parameter slightly, then zoom into the boundary rather than the center."), notice: __alloT("stem.artstudio.learning_self_similarity_preserves_relationships_while_pr_25f795f", "Self-similarity preserves relationships while producing new detail at different scales."), stretch: __alloT("stem.artstudio.learning_save_two_views_that_feel_related_but_not_identic_d06caea", "Save two views that feel related but not identical."), next: ['generative', 'gradient'] },
+            gradient: { try: __alloT("stem.artstudio.learning_use_three_stops_and_move_the_middle_stop_away_fr_462b3e0", "Use three stops and move the middle stop away from the exact center."), notice: __alloT("stem.artstudio.learning_stop_position_changes_perceived_emphasis_as_much_9d63d4e", "Stop position changes perceived emphasis as much as the colors themselves."), stretch: __alloT("stem.artstudio.learning_make_a_transition_that_communicates_depth_withou_4cec66d", "Make a transition that communicates depth without adding an object."), next: ['colorWheel', 'contrast'] },
+            stereogram: { try: __alloT("stem.artstudio.learning_start_with_a_simple_depth_shape_and_a_pattern_wi_1a98fa7", "Start with a simple depth shape and a pattern with clear small-scale texture."), notice: __alloT("stem.artstudio.learning_depth_appears_when_each_eye_matches_repeated_inf_d9bb94c", "Depth appears when each eye matches repeated information at a slightly different position."), stretch: __alloT("stem.artstudio.learning_reduce_depth_until_the_hidden_form_is_discoverab_e700f4a", "Reduce depth until the hidden form is discoverable but not immediately obvious."), next: ['contrast', 'gradient'] },
+            sculpt3d: { try: __alloT("stem.artstudio.learning_combine_three_forms_and_orbit_before_adding_a_fo_7e94b4d", "Combine three forms and orbit before adding a fourth."), notice: __alloT("stem.artstudio.learning_silhouette_balance_and_negative_space_change_wit_cd72e27", "Silhouette, balance, and negative space change with every viewpoint."), stretch: __alloT("stem.artstudio.learning_make_the_sculpture_feel_stable_from_one_view_and_8e2fff9", "Make the sculpture feel stable from one view and precarious from another."), next: ['contrast', 'gradient'] },
+            contrast: { try: __alloT("stem.artstudio.learning_test_one_color_pair_then_change_only_the_foregro_f990a46", "Test one color pair, then change only the foreground lightness."), notice: __alloT("stem.artstudio.learning_readable_contrast_depends_on_relative_luminance__64b8ca8", "Readable contrast depends on relative luminance, text size, and visual context."), stretch: __alloT("stem.artstudio.learning_keep_the_relationship_expressive_while_meeting_t_c663445", "Keep the relationship expressive while meeting the intended accessibility target."), next: ['colorWheel', 'gradient'] },
+            harmonyHunt: { try: __alloT("stem.artstudio.learning_compare_a_simple_frequency_ratio_with_a_more_com_0ca2eeb", "Compare a simple frequency ratio with a more complex one."), notice: __alloT("stem.artstudio.learning_small_whole_number_relationships_often_feel_more_e776ebe", "Small whole-number relationships often feel more stable in sound and pattern."), stretch: __alloT("stem.artstudio.learning_translate_one_interval_into_spacing_scale_or_col_5576f8a", "Translate one interval into spacing, scale, or color rather than illustrating a note."), next: ['spirograph', 'generative'] }
           };
+          const STUDIO_SIMPLE_COACH = {
+            artistExplorer: { try: __alloT("stem.artstudio.guide_simple_artistExplorer_try", "Choose one artist. Find a color, shape, or material they use."), notice: __alloT("stem.artstudio.guide_simple_artistExplorer_notice", "How does that choice help tell a story?"), stretch: __alloT("stem.artstudio.guide_simple_artistExplorer_stretch", "Use a related idea to make something of your own."), term: __alloT("stem.artstudio.guide_simple_artistExplorer_term", "Artistic choice"), definition: __alloT("stem.artstudio.guide_simple_artistExplorer_definition", "A decision about color, shape, material, or meaning.") },
+            colorWheel: { try: __alloT("stem.artstudio.guide_simple_colorWheel_try", "Pick a color. Make a bright version and a dull version."), notice: __alloT("stem.artstudio.guide_simple_colorWheel_notice", "What changes when you move lightness?"), stretch: __alloT("stem.artstudio.guide_simple_colorWheel_stretch", "Choose one color to stand out."), term: __alloT("stem.artstudio.guide_simple_colorWheel_term", "Hue"), definition: __alloT("stem.artstudio.guide_simple_colorWheel_definition", "The color family, such as red, green, or blue.") },
+            mixer: { try: __alloT("stem.artstudio.guide_simple_mixer_try", "Choose two colors. Try mixing them as paint and as light."), notice: __alloT("stem.artstudio.guide_simple_mixer_notice", "Do both mixtures look the same?"), stretch: __alloT("stem.artstudio.guide_simple_mixer_stretch", "Guess the next mixture before changing the amounts."), term: __alloT("stem.artstudio.guide_simple_mixer_term", "Pigment"), definition: __alloT("stem.artstudio.guide_simple_mixer_definition", "The material that gives paint its color.") },
+            watercolor: { try: __alloT("stem.artstudio.guide_simple_watercolor_try", "Use one paint color. Try one wet mark and one dry mark."), notice: __alloT("stem.artstudio.guide_simple_watercolor_notice", "Watch the edges as the paint moves."), stretch: __alloT("stem.artstudio.guide_simple_watercolor_stretch", "Make three marks with different amounts of water."), term: __alloT("stem.artstudio.guide_simple_watercolor_term", "Wash"), definition: __alloT("stem.artstudio.guide_simple_watercolor_definition", "A layer of paint spread with water.") },
+            pixel: { try: __alloT("stem.artstudio.guide_simple_pixel_try", "Start with a small grid. Draw the outside shape first."), notice: __alloT("stem.artstudio.guide_simple_pixel_notice", "Which squares make the shape easy to recognize?"), stretch: __alloT("stem.artstudio.guide_simple_pixel_stretch", "Use only four colors. Look at the small preview."), term: __alloT("stem.artstudio.guide_simple_pixel_term", "Silhouette"), definition: __alloT("stem.artstudio.guide_simple_pixel_definition", "The outside shape of an object, without its inside details.") },
+            symmetry: { try: __alloT("stem.artstudio.guide_simple_symmetry_try", "Draw one mark away from the center."), notice: __alloT("stem.artstudio.guide_simple_symmetry_notice", "Watch how the tool repeats your mark."), stretch: __alloT("stem.artstudio.guide_simple_symmetry_stretch", "Try another symmetry mode. Compare the patterns."), term: __alloT("stem.artstudio.guide_simple_symmetry_term", "Symmetry"), definition: __alloT("stem.artstudio.guide_simple_symmetry_definition", "A match between parts of a shape after a flip or turn.") },
+            spirograph: { try: __alloT("stem.artstudio.guide_simple_spirograph_try", "Change one circle size. Keep the other settings the same."), notice: __alloT("stem.artstudio.guide_simple_spirograph_notice", "How does the loop pattern change?"), stretch: __alloT("stem.artstudio.guide_simple_spirograph_stretch", "Find two settings that make similar shapes."), term: __alloT("stem.artstudio.guide_simple_spirograph_term", "Ratio"), definition: __alloT("stem.artstudio.guide_simple_spirograph_definition", "A way to compare two amounts, such as two circle sizes.") },
+            generative: { try: __alloT("stem.artstudio.guide_simple_generative_try", "Choose Same seed. Press +100 steps."), notice: __alloT("stem.artstudio.guide_simple_generative_notice", "Look at where the particles gather."), stretch: __alloT("stem.artstudio.guide_simple_generative_stretch", "Keep the seed. Change one setting and compare at the same step."), term: __alloT("stem.artstudio.guide_simple_generative_term", "Seed"), definition: __alloT("stem.artstudio.guide_simple_generative_definition", "A starting number that lets the tool repeat its random choices.") },
+            spinArt: { try: __alloT("stem.artstudio.guide_simple_spinArt_try", "Put paint near the center, then near the edge."), notice: __alloT("stem.artstudio.guide_simple_spinArt_notice", "How does the paint spread in each place?"), stretch: __alloT("stem.artstudio.guide_simple_spinArt_stretch", "Use the same colors to make a calm area and a busy area."), term: __alloT("stem.artstudio.guide_simple_spinArt_term", "Rotation"), definition: __alloT("stem.artstudio.guide_simple_spinArt_definition", "Turning around a center point.") },
+            stringArt: { try: __alloT("stem.artstudio.guide_simple_stringArt_try", "Connect every third point. Then try every fifth point."), notice: __alloT("stem.artstudio.guide_simple_stringArt_notice", "Where do the straight lines seem to make a curve?"), stretch: __alloT("stem.artstudio.guide_simple_stringArt_stretch", "Compare two different patterns."), term: __alloT("stem.artstudio.guide_simple_stringArt_term", "Curve"), definition: __alloT("stem.artstudio.guide_simple_stringArt_definition", "A line that bends instead of staying straight.") },
+            opArt: { try: __alloT("stem.artstudio.guide_simple_opArt_try", "Repeat a pattern. Change the spaces between its parts."), notice: __alloT("stem.artstudio.guide_simple_opArt_notice", "Does any part look as if it is moving?"), stretch: __alloT("stem.artstudio.guide_simple_opArt_stretch", "Try softer color differences. Compare what you notice."), term: __alloT("stem.artstudio.guide_simple_opArt_term", "Contrast"), definition: __alloT("stem.artstudio.guide_simple_opArt_definition", "A visible difference between nearby colors or shapes.") },
+            tessellation: { try: __alloT("stem.artstudio.guide_simple_tessellation_try", "Repeat one tile to fill the space."), notice: __alloT("stem.artstudio.guide_simple_tessellation_notice", "Look for the shapes between the tiles."), stretch: __alloT("stem.artstudio.guide_simple_tessellation_stretch", "Repeat colors in a new order."), term: __alloT("stem.artstudio.guide_simple_tessellation_term", "Tile"), definition: __alloT("stem.artstudio.guide_simple_tessellation_definition", "One shape used again and again to make a pattern.") },
+            fractal: { try: __alloT("stem.artstudio.guide_simple_fractal_try", "Make a small change to one setting. Zoom toward an edge."), notice: __alloT("stem.artstudio.guide_simple_fractal_notice", "What details appear as you zoom?"), stretch: __alloT("stem.artstudio.guide_simple_fractal_stretch", "Save two views. Find a shape they have in common."), term: __alloT("stem.artstudio.guide_simple_fractal_term", "Scale"), definition: __alloT("stem.artstudio.guide_simple_fractal_definition", "How large or small something is shown.") },
+            gradient: { try: __alloT("stem.artstudio.guide_simple_gradient_try", "Choose three color stops. Move the middle one."), notice: __alloT("stem.artstudio.guide_simple_gradient_notice", "Which color takes up more space now?"), stretch: __alloT("stem.artstudio.guide_simple_gradient_stretch", "Make one part of the blend stand out."), term: __alloT("stem.artstudio.guide_simple_gradient_term", "Color stop"), definition: __alloT("stem.artstudio.guide_simple_gradient_definition", "A chosen color at one position in a blend.") },
+            stereogram: { try: __alloT("stem.artstudio.guide_simple_stereogram_try", "Choose a simple depth shape and a repeating pattern."), notice: __alloT("stem.artstudio.guide_simple_stereogram_notice", "Look for the hidden shape, or explore the depth map."), stretch: __alloT("stem.artstudio.guide_simple_stereogram_stretch", "Try a smaller depth difference. Compare both versions."), term: __alloT("stem.artstudio.guide_simple_stereogram_term", "Depth"), definition: __alloT("stem.artstudio.guide_simple_stereogram_definition", "How near or far a part of a picture seems to be.") },
+            sculpt3d: { try: __alloT("stem.artstudio.guide_simple_sculpt3d_try", "Put three shapes together. Turn the view."), notice: __alloT("stem.artstudio.guide_simple_sculpt3d_notice", "How does the outside shape change as you turn?"), stretch: __alloT("stem.artstudio.guide_simple_sculpt3d_stretch", "Choose a different view. Adjust one shape."), term: __alloT("stem.artstudio.guide_simple_sculpt3d_term", "Viewpoint"), definition: __alloT("stem.artstudio.guide_simple_sculpt3d_definition", "The position from which you look at something.") },
+            contrast: { try: __alloT("stem.artstudio.guide_simple_contrast_try", "Choose a text color and a background color."), notice: __alloT("stem.artstudio.guide_simple_contrast_notice", "Check the result. Change just the text color."), stretch: __alloT("stem.artstudio.guide_simple_contrast_stretch", "Keep a pair that meets the target and suits your artwork."), term: __alloT("stem.artstudio.guide_simple_contrast_term", "Contrast ratio"), definition: __alloT("stem.artstudio.guide_simple_contrast_definition", "A number comparing how light or dark two colors are.") },
+            harmonyHunt: { try: __alloT("stem.artstudio.guide_simple_harmonyHunt_try", "Compare two sound or color combinations."), notice: __alloT("stem.artstudio.guide_simple_harmonyHunt_notice", "Which parts seem to fit together?"), stretch: __alloT("stem.artstudio.guide_simple_harmonyHunt_stretch", "Use one combination to inspire a visual pattern."), term: __alloT("stem.artstudio.guide_simple_harmonyHunt_term", "Frequency"), definition: __alloT("stem.artstudio.guide_simple_harmonyHunt_definition", "How many times something repeats in one second.") }
+          };
+          const simpleStudioGuide = d.studioGuideWording === 'simple';
+          const simpleStudioCoach = STUDIO_SIMPLE_COACH[tab];
           const artStudioGroupForTab = function (tabId) {
             return ART_STUDIO_GROUPS.filter(function (group) { return group.tabs.indexOf(tabId) !== -1; })[0] || ART_STUDIO_GROUPS[0];
           };
@@ -1116,6 +1261,15 @@ const d = labToolData.artStudio || {};
           const symmetryColor = readStudioScopedColor('sym');
           const spiroColor = readStudioScopedColor('spiro');
           const generativeColor = readStudioScopedColor('gen');
+          const resetGenerativeRun = function (changes) {
+            updMany(Object.assign({
+              genSeed: typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1,
+              genFrame: 0,
+              genState: null,
+              genSnapshot: '',
+              genReset: (Number(d.genReset) || 0) + 1
+            }, changes || {}));
+          };
           const spinColor = readStudioScopedColor('spin');
           const stringColor = readStudioScopedColor('str');
           React.useEffect(function () {
@@ -1230,7 +1384,7 @@ const d = labToolData.artStudio || {};
             return (a.timestamp || 0) - (b.timestamp || 0);
           });
           const recentArtStudioStudies = chronologicalArtStudioStudies.slice(-12);
-          const visibleProcessStudies = studioProcessScope === 'archived'
+          const scopedProcessStudies = studioProcessScope === 'archived'
             ? archivedArtStudioStudies
             : studioProcessScope === 'free'
             ? freeArtStudioStudies
@@ -1239,6 +1393,24 @@ const d = labToolData.artStudio || {};
               : studioProcessScope === 'all'
                 ? chronologicalArtStudioStudies
                 : processRunStudies;
+          function normalizeStudioStudySearch(value) {
+            return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+          }
+          const studioProcessSearchTerms = normalizeStudioStudySearch(studioProcessQuery).trim().split(/\s+/).filter(Boolean);
+          const visibleProcessStudies = scopedProcessStudies.filter(function (snapshot) {
+            if (!studioProcessSearchTerms.length) return true;
+            var study = snapshot.artStudioStudy;
+            var searchable = normalizeStudioStudySearch([
+              artStudioStudyDisplayTitle(snapshot), study.note, study.intention, study.description,
+              study.summary, study.stepLabel, ART_STUDIO_TAB_LABELS[study.sourceTab]
+            ].join(' '));
+            return studioProcessSearchTerms.every(function (term) { return searchable.indexOf(term) !== -1; });
+          }).sort(function (a, b) {
+            if (studioProcessSort === 'title') return artStudioStudyDisplayTitle(a).localeCompare(artStudioStudyDisplayTitle(b), undefined, { sensitivity: 'base', numeric: true });
+            if (studioProcessSort === 'newest') return (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0);
+            if (studioProcessSort === 'oldest') return (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0);
+            return 0; // Keep the existing project step order unless the learner chooses another sort.
+          });
           const studioProcessScopeCounts = {
             current: processRunStudies.length,
             free: freeArtStudioStudies.length,
@@ -1285,7 +1457,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
                 React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
               ),
-              React.createElement("p", { id: opts.helpId, className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, mode === 'draw'
+              React.createElement("p", { id: opts.helpId, 'data-studio-touch-description': 'true', className: "mt-1 text-xs leading-relaxed text-slate-600" }, mode === 'draw'
                 ? (opts.activeHelp || "One-finger interaction is active. Choose Scroll page when you want to move past this canvas.")
                 : (opts.scrollHelp || "One-finger scrolling is active. A stylus and mouse can still interact; choose the second option for finger input."))
             );
@@ -1299,6 +1471,11 @@ const d = labToolData.artStudio || {};
               patch[opts.prefix + 'Sat'] = Math.max(0, Math.min(100, Math.round(Number(nextColor.s) || 0)));
               patch[opts.prefix + 'Lit'] = Math.max(0, Math.min(100, Math.round(Number(nextColor.l) || 0)));
               if (opts.resetKey) patch[opts.resetKey] = (Number(d[opts.resetKey]) || 0) + 1;
+              if (opts.prefix === 'gen') {
+                patch.genFrame = 0;
+                patch.genState = null;
+                patch.genSnapshot = '';
+              }
               updMany(patch);
             };
             var controls = [
@@ -1439,24 +1616,19 @@ const d = labToolData.artStudio || {};
             });
             return { color: mixedColor, values: mixedValues, firstWeight: firstWeight, secondWeight: secondWeight };
           };
-          const persistWatercolorBeforeLeave = function () {
-            if (tab !== 'watercolor' || typeof document === 'undefined') return;
-            var watercolorCanvas = document.getElementById('watercolorCanvas');
-            if (!watercolorCanvas || !watercolorCanvas._watercolorEngine || !watercolorCanvas._watercolorEngine.captureSnapshot) return;
-            var watercolorEngine = watercolorCanvas._watercolorEngine;
-            if (watercolorEngine.persistState) watercolorEngine.persistState();
-            else {
-              var flatSnapshot = watercolorEngine.captureSnapshot();
-              if (watercolorEngine.captureState) {
-                var liveState = watercolorEngine.captureState();
-                liveState.flatSnapshot = flatSnapshot;
-                _artStudioWatercolorCache.state = liveState;
-              }
-              upd('watercolorSnapshot', flatSnapshot);
+          const persistArtworkBeforeLeave = function () {
+            if (typeof document === 'undefined') return;
+            var canvas = findCurrentArtworkCanvas();
+            if (!canvas) return;
+            if (canvas._watercolorEngine && canvas._watercolorEngine.persistState) {
+              canvas._watercolorEngine.persistState();
+            } else if (typeof canvas._captureArtStudioState === 'function') {
+              var checkpoint = canvas._captureArtStudioState();
+              if (checkpoint) updMany(checkpoint);
             }
           };
           const openStudioHome = function () {
-            persistWatercolorBeforeLeave();
+            persistArtworkBeforeLeave();
             var nextState = { studioHome: true };
             if (tab === 'stereogram') {
               _cancelStereoAnimWork(false);
@@ -1469,7 +1641,7 @@ const d = labToolData.artStudio || {};
             focusArtStudioTarget('artstudio-home-title');
           };
           const closeArtStudio = function (nextTool) {
-            persistWatercolorBeforeLeave();
+            persistArtworkBeforeLeave();
             if (tab === 'stereogram') {
               _cancelStereoAnimWork(true);
               updMany({
@@ -1498,8 +1670,21 @@ const d = labToolData.artStudio || {};
             }
             return canvas || null;
           };
+          const artStudioPaperColor = function (tabId, state) {
+            var values = state || {};
+            if (tabId === 'spinArt') return values.spinDark ? '#0f172a' : '#fefefe';
+            if (tabId === 'symmetry') return values.symBackgroundMode === 'transparent' ? null
+              : values.symBackgroundMode === 'light' ? '#f8fafc' : '#0f172a';
+            return null;
+          };
           const captureArtStudioPreview = function (canvas) {
             if (!canvas || typeof document === 'undefined') return '';
+            // A restored generative canvas is blank until its saved trails decode.
+            // Reuse that existing PNG for the thumbnail during this short interval.
+            if (canvas._genExportAction) {
+              var pendingGenSnapshot = canvas._genExportAction(true);
+              if (pendingGenSnapshot) return pendingGenSnapshot;
+            }
             try {
               var sourceWidth = Math.max(1, canvas.width || canvas.clientWidth || 1);
               var sourceHeight = Math.max(1, canvas.height || canvas.clientHeight || 1);
@@ -1509,6 +1694,8 @@ const d = labToolData.artStudio || {};
               preview.width = Math.max(1, Math.round(sourceWidth * scale));
               preview.height = Math.max(1, Math.round(sourceHeight * scale));
               var previewContext = preview.getContext('2d');
+              var paperColor = artStudioPaperColor(tab, d);
+              if (paperColor) { previewContext.fillStyle = paperColor; previewContext.fillRect(0, 0, preview.width, preview.height); }
               previewContext.drawImage(canvas, 0, 0, preview.width, preview.height);
               var webp = preview.toDataURL('image/webp', 0.76);
               return webp && webp !== 'data:,' ? webp : preview.toDataURL('image/png');
@@ -1535,7 +1722,13 @@ const d = labToolData.artStudio || {};
             }
             if (tab === 'mixer') return (d.mixMode || 'subtractive') + ' mix at ' + (d.mixRatio || 50) + ' percent';
             if (tab === 'spirograph') return 'R ' + (d.spiroR || 120) + ', r ' + (d.spiror || 45) + ', pen offset ' + (d.spirop || 55);
-            if (tab === 'generative') return (d.genStyle || 'flow') + ' system with ' + (d.genDensity || 100) + ' particles';
+            if (tab === 'generative') {
+              var genCanvas = typeof document !== 'undefined' ? document.getElementById('genCanvas') : null;
+              var genFrame = genCanvas ? Number(genCanvas.getAttribute('data-gen-frame')) || 0 : Number(d.genFrame) || 0;
+              var genBursts = genCanvas ? Number(genCanvas.getAttribute('data-gen-bursts')) || 0 : Number(d.genState && d.genState.burstCount) || 0;
+              return (d.genStyle || 'flow') + ' system with ' + (d.genDensity || 100) + ' particles; seed ' +
+                (typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1) + ', step ' + genFrame + ', ' + genBursts + ' bursts';
+            }
             if (tab === 'spinArt') return (d.spinRPM || 120) + ' RPM with a ' + (d.spinBrush || 6) + '-pixel brush';
             if (tab === 'stringArt') return (d.strNails || 80) + ' nails, multiplier ' + (d.strMult || 2) + ', ' + (d.strShape || 'circle') + ' frame';
             if (tab === 'opArt') return (d.opStyle || 'waves') + ' pattern at density ' + (d.opDensity || 12);
@@ -1620,18 +1813,28 @@ const d = labToolData.artStudio || {};
           const captureCurrentArtwork = function () {
             var canvas = findCurrentArtworkCanvas();
             if (!canvas) return null;
+            if (canvas._artStudioRestoring && canvas._artStudioReady) {
+              var requestedRevision = canvas._artStudioRestoreRevision;
+              var requestedOwner = studioCaptureOwnerRef.current;
+              return canvas._artStudioReady.then(function () {
+                if (studioCaptureOwnerRef.current !== requestedOwner || !canvas.isConnected || findCurrentArtworkCanvas() !== canvas || canvas._artStudioRestoreRevision !== requestedRevision) return null;
+                return captureCurrentArtwork();
+              });
+            }
             var src = '';
             try {
               src = canvas._watercolorEngine && canvas._watercolorEngine.captureSnapshot
                 ? canvas._watercolorEngine.captureSnapshot()
-                : canvas.toDataURL('image/png');
+                : canvas._symExportAction ? canvas._symExportAction()
+                  : canvas._spinExportAction ? canvas._spinExportAction()
+                    : canvas._genExportAction ? canvas._genExportAction() : canvas.toDataURL('image/png');
             } catch (_) { return null; }
             if (!src || src === 'data:,') return null;
             var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
-            var altText = canvas.getAttribute('aria-label') || label + ' artwork created in Art Studio.';
+            var altText = String(studioStudyDraft.description || '').trim() || canvas.getAttribute('aria-label') || label + ' artwork created in Art Studio.';
             return {
               src: src,
-              title: 'Art Studio — ' + label,
+              title: String(studioStudyDraft.title || '').trim().slice(0, 80) || 'Art Studio — ' + label,
               altText: String(altText).replace(/\s+/g, ' ').trim().slice(0, 300),
               sourceTool: 'artStudio',
               sourceTab: tab,
@@ -1639,17 +1842,22 @@ const d = labToolData.artStudio || {};
             };
           };
           const sendArtworkTo = function (destination) {
-            persistWatercolorBeforeLeave();
+            var requestedOwner = studioCaptureOwnerRef.current;
+            persistArtworkBeforeLeave();
             var artwork = captureCurrentArtwork();
-            if (!artwork) {
-              if (typeof addToast === 'function') addToast('Finish or open an artwork canvas on this tab before sending it.', 'info');
-              return;
+            function deliverArtwork(captured) {
+              if (studioCaptureOwnerRef.current !== requestedOwner) return;
+              if (!captured) {
+                if (typeof addToast === 'function') addToast('Finish or open an artwork canvas on this tab before sending it.', 'info');
+                return;
+              }
+              if (typeof onUseArtwork !== 'function') {
+                if (typeof addToast === 'function') addToast('Artwork handoff is not available in this version of AlloFlow.', 'info');
+                return;
+              }
+              onUseArtwork(captured, destination);
             }
-            if (typeof onUseArtwork !== 'function') {
-              if (typeof addToast === 'function') addToast('Artwork handoff is not available in this version of AlloFlow.', 'info');
-              return;
-            }
-            onUseArtwork(artwork, destination);
+            return artwork && typeof artwork.then === 'function' ? artwork.then(deliverArtwork) : deliverArtwork(artwork);
           };
           const artStudioTabKeyDown = function (e, index, tabOrder) {
             var order = Array.isArray(tabOrder) && tabOrder.length ? tabOrder : ART_STUDIO_TAB_ORDER;
@@ -1675,7 +1883,7 @@ const d = labToolData.artStudio || {};
           };
           const selectArtStudioTab = function (nextTab, label, options) {
             var opts = options || {};
-            if (nextTab !== 'watercolor') persistWatercolorBeforeLeave();
+            if (nextTab !== tab) persistArtworkBeforeLeave();
             var nextState = {
               tab: nextTab,
               artNavGroup: artStudioGroupForTab(nextTab).id,
@@ -1808,6 +2016,7 @@ const d = labToolData.artStudio || {};
             focusArtStudioTarget('artstudio-panel-' + tab);
           };
           const selectStudioInspector = function (nextTab) {
+            openCompactStudioInspector();
             var safeTab = ['make', 'guide', 'process'].indexOf(nextTab) !== -1 ? nextTab : 'make';
             setStudioInspectorTab(safeTab);
             setStudioProcessOpen(safeTab === 'process');
@@ -1818,7 +2027,9 @@ const d = labToolData.artStudio || {};
             }
           };
           const toggleStudioCoach = function (forceOpen) {
-            var nextOpen = typeof forceOpen === 'boolean' ? forceOpen : !d.showTour;
+            var nextOpen = typeof forceOpen === 'boolean' ? forceOpen : !studioGuideVisible;
+            if (nextOpen) openCompactStudioInspector();
+            else closeCompactStudioInspector();
             upd('showTour', nextOpen);
             setStudioInspectorTab(nextOpen ? 'guide' : 'make');
             setStudioProcessOpen(false);
@@ -1845,8 +2056,17 @@ const d = labToolData.artStudio || {};
             return snapshot;
           };
           const saveArtStudioSnapshot = function (options) {
+            var requestedCanvas = findCurrentArtworkCanvas();
+            if (requestedCanvas && requestedCanvas._artStudioRestoring && requestedCanvas._artStudioReady) {
+              var requestedRevision = requestedCanvas._artStudioRestoreRevision;
+              var requestedOwner = studioCaptureOwnerRef.current;
+              return requestedCanvas._artStudioReady.then(function () {
+                if (studioCaptureOwnerRef.current !== requestedOwner || !requestedCanvas.isConnected || findCurrentArtworkCanvas() !== requestedCanvas || requestedCanvas._artStudioRestoreRevision !== requestedRevision) return null;
+                return saveArtStudioSnapshot(options);
+              });
+            }
             var opts = options || {};
-            persistWatercolorBeforeLeave();
+            persistArtworkBeforeLeave();
             if (typeof setToolSnapshots !== 'function') {
               if (typeof addToast === 'function') addToast('Snapshot saving is not available here.', 'warning');
               return null;
@@ -1867,12 +2087,15 @@ const d = labToolData.artStudio || {};
             }
             var stepIndex = savingThreadStep ? activeCreativeThreadStep : null;
             var canvas = findCurrentArtworkCanvas();
-            var snapshotOverrides = {};
+            var snapshotOverrides = canvas && typeof canvas._captureArtStudioState === 'function'
+              ? canvas._captureArtStudioState() || {}
+              : {};
             if (tab === 'watercolor' && canvas && canvas._watercolorEngine && canvas._watercolorEngine.captureStudyState) {
               var watercolorStudyState = canvas._watercolorEngine.captureStudyState();
               if (watercolorStudyState) {
                 snapshotOverrides.watercolorSnapshot = watercolorStudyState.snapshot || '';
                 snapshotOverrides.watercolorStateKey = watercolorStudyState.stateKey || '';
+                snapshotOverrides.watercolorStateIsCheckpoint = true;
               }
             }
             var previewSrc = captureArtStudioPreview(canvas);
@@ -1888,12 +2111,13 @@ const d = labToolData.artStudio || {};
               stepLabel: threadStep ? threadStep.label : sourceLabel,
               prompt: threadStep ? threadStep.prompt : '',
               constraint: savingThreadStep ? activeCreativeThread.constraint : '',
-              reflection: savingThreadStep ? (opts.reflection || studioReflectionKind || 'keep') : 'keep',
-              note: savingThreadStep
-                ? String(opts.note !== undefined ? opts.note : studioReflectionNote || '').trim().slice(0, 160)
-                : '',
+              reflection: opts.reflection || (savingThreadStep ? studioReflectionKind : freeStudyReflection) || 'keep',
+              note: String(opts.note !== undefined ? opts.note : (savingThreadStep ? studioReflectionNote : freeStudyNote) || '').trim().slice(0, 160),
+              title: String(studioStudyDraft.title || '').trim().slice(0, 80),
+              intention: String(studioStudyDraft.intention || '').trim().slice(0, 160),
+              description: String(studioStudyDraft.description || '').trim().slice(0, 300),
               previewSrc: previewSrc,
-              previewAlt: previewAlt,
+              previewAlt: String(studioStudyDraft.description || '').trim().slice(0, 300) || previewAlt,
               sourceTab: tab,
               summary: describeCurrentArtStudioStudy()
             };
@@ -1968,7 +2192,7 @@ const d = labToolData.artStudio || {};
             _artStudioStudyStore.upsertStudy(studioPersistenceScope, record).then(function (saved) {
               var currentHydration = studioPersistenceHydrationRef.current;
               if (currentHydration.scope !== studioPersistenceScope || currentHydration.generation !== studySaveGeneration) return;
-              setStudioPersistenceStatus(saved === null ? 'session-only' : 'saved');
+              setStudioPersistenceStatus(saved === null || !currentHydration.workflowReady ? 'session-only' : 'saved');
             }).catch(function () {
               var currentHydration = studioPersistenceHydrationRef.current;
               if (currentHydration.scope === studioPersistenceScope && currentHydration.generation === studySaveGeneration) {
@@ -1981,12 +2205,14 @@ const d = labToolData.artStudio || {};
             return record;
           };
           const openStudioProcess = function () {
+            openCompactStudioInspector();
             setStudioProcessOpen(true);
             setStudioInspectorTab('process');
             if (d.showTour) upd('showTour', false);
             focusArtStudioTarget('artstudio-process-title');
           };
           const closeStudioProcess = function () {
+            closeCompactStudioInspector();
             setStudioProcessOpen(false);
             setStudioInspectorTab('make');
             focusArtStudioTarget('artstudio-process-button');
@@ -1995,7 +2221,7 @@ const d = labToolData.artStudio || {};
             var nextScope = ['current', 'free', 'recent', 'all', 'archived'].indexOf(scope) !== -1 ? scope : 'current';
             setStudioProcessScope(nextScope);
             setStudioCompareIds([]);
-            setStudioProcessStatus('Showing ' + nextScope + ' Art Studio studies.');
+            setStudioProcessStatus(formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_status", "Showing {scope} Art Studio studies."), { scope: artStudioProcessScopeDisplayLabel(nextScope) }));
           };
           const toggleStudioCompareStudy = function (studyId) {
             setStudioCompareIds(function (previous) {
@@ -2009,7 +2235,7 @@ const d = labToolData.artStudio || {};
             _artStudioStudyStore.upsertStudy(studioPersistenceScope, record).then(function (saved) {
               var currentHydration = studioPersistenceHydrationRef.current;
               if (currentHydration.scope !== studioPersistenceScope || currentHydration.generation !== studyUpdateGeneration) return;
-              setStudioPersistenceStatus(saved === null ? 'session-only' : 'saved');
+              setStudioPersistenceStatus(saved === null || !currentHydration.workflowReady ? 'session-only' : 'saved');
             }).catch(function () {
               var currentHydration = studioPersistenceHydrationRef.current;
               if (currentHydration.scope === studioPersistenceScope && currentHydration.generation === studyUpdateGeneration) {
@@ -2034,11 +2260,11 @@ const d = labToolData.artStudio || {};
             setStudioArchiveUndo({
               scope: studioPersistenceScope,
               record: snapshot,
-              label: snapshot.artStudioStudy.stepLabel || snapshot.label || 'study'
+              label: artStudioStudyDisplayTitle(snapshot)
             });
-            setStudioProcessStatus('Archived ' + (snapshot.artStudioStudy.stepLabel || snapshot.label || 'study') + '. It remains recoverable.');
+            setStudioProcessStatus(formatArtStudioLearningText(__alloT("stem.artstudio.process_archived_status", "Archived {title}. It remains recoverable."), { title: artStudioStudyDisplayTitle(snapshot) }));
             persistUpdatedArtStudioStudy(archivedRecord);
-            if (typeof addToast === 'function') addToast('Study archived. You can undo or restore it later.', 'info');
+            if (typeof addToast === 'function') addToast(__alloT("stem.artstudio.process_archive_toast", "Study archived. You can undo or restore it later."), 'info');
             focusArtStudioTarget('artstudio-archive-undo-button');
           };
           const restoreArchivedArtStudioStudy = function (snapshot) {
@@ -2052,14 +2278,14 @@ const d = labToolData.artStudio || {};
               });
             });
             setStudioArchiveUndo(null);
-            setStudioProcessStatus('Restored ' + (restoredStudy.stepLabel || snapshot.label || 'study') + ' to the Process Shelf.');
+            setStudioProcessStatus(formatArtStudioLearningText(__alloT("stem.artstudio.process_restored_status", "Restored {title} to the Process Shelf."), { title: artStudioStudyDisplayTitle(snapshot) }));
             persistUpdatedArtStudioStudy(restoredRecord);
-            if (typeof addToast === 'function') addToast('Study restored to the Process Shelf.', 'success');
+            if (typeof addToast === 'function') addToast(__alloT("stem.artstudio.process_restore_toast", "Study restored to the Process Shelf."), 'success');
             focusArtStudioTarget('artstudio-process-title');
           };
           const restoreArtStudioStudy = function (snapshot) {
             if (!snapshot || !snapshot.data) return;
-            persistWatercolorBeforeLeave();
+            persistArtworkBeforeLeave();
             if (tab === 'stereogram') _cancelStereoAnimWork(true);
             var savedTab = ART_STUDIO_TAB_ORDER.indexOf(snapshot.data.tab) !== -1
               ? snapshot.data.tab
@@ -2067,7 +2293,32 @@ const d = labToolData.artStudio || {};
                 ? snapshot.artStudioStudy.sourceTab
                 : tab;
             var scopedPayload = createArtStudioLabPayload(savedTab, snapshot.data);
+            // A fork has a new artwork identity even when the saved PNG is unchanged.
+            var restoreToken = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+            if (savedTab === 'watercolor') {
+              scopedPayload.watercolorRestoreToken = restoreToken;
+              scopedPayload.watercolorStateIsCheckpoint = true;
+            }
+            if (savedTab === 'symmetry') scopedPayload.symmetryRestoreToken = restoreToken;
+            if (savedTab === 'spinArt') scopedPayload.spinReset = restoreToken;
+            if (savedTab === 'generative') {
+              scopedPayload.genPaused = true;
+              scopedPayload.genReset = restoreToken;
+            }
             var sourceStudy = snapshot.artStudioStudy || {};
+            setStudioMobileInspectorOpen(false);
+            setStudioReflectionKind(sourceStudy.reflection || 'keep');
+            setStudioReflectionNote(sourceStudy.note || '');
+            setLabToolData(function (prev) {
+              var art = prev.artStudio || {};
+              return { ...prev, artStudio: { ...art, studioStudyDrafts: {
+                ...(art.studioStudyDrafts || {}), [savedTab]: {
+                  title: sourceStudy.title || '', intention: sourceStudy.intention || '',
+                  description: sourceStudy.description || '',
+                  reflection: sourceStudy.reflection || 'keep', note: sourceStudy.note || ''
+                }
+              } } };
+            });
             var sourceDepth = Math.max(0, Math.floor(Number(sourceStudy.branchDepth) || 0));
             var touchModeKey = {
               watercolor: 'watercolorTouchMode', pixel: 'pixelTouchMode', symmetry: 'symmetryTouchMode',
@@ -2384,7 +2635,9 @@ const d = labToolData.artStudio || {};
             if (existing) {
               var nextParams = readParams();
               canvas.style.touchAction = nextParams.touchMode === 'draw' ? 'none' : 'pan-y';
-              existing.configure(nextParams, d.watercolorSnapshot || '');
+              existing.configure(nextParams);
+              existing.restoreArtworkIfChanged(d.watercolorSnapshot || '', d.watercolorStateKey || '',
+                d.watercolorRestoreToken || '', !!d.watercolorStateIsCheckpoint);
               return;
             }
 
@@ -2546,6 +2799,12 @@ const d = labToolData.artStudio || {};
             var durableStateKey = d.watercolorStateKey || '';
             var persistenceTimer = 0;
             var localRevision = 0;
+            var incomingArtwork = null;
+            var snapshotLoadGeneration = 0;
+            var snapshotReady = Promise.resolve();
+            var artworkRestoreGeneration = 0;
+            var restoringArtwork = false;
+            var persistAfterRestore = false;
             var STEP = 1 / 30;
 
             function updateA11y() {
@@ -2577,11 +2836,20 @@ const d = labToolData.artStudio || {};
               if (url === loadedSnapshot) return;
               loadedSnapshot = url;
               baseImage = null;
-              if (!url) { render(); return; }
-              var image = new Image();
-              image.onload = function () { baseImage = image; render(); };
-              image.onerror = function () { loadedSnapshot = ''; baseImage = null; render(); };
-              image.src = url;
+              var generation = ++snapshotLoadGeneration;
+              if (!url) { snapshotReady = Promise.resolve(); render(); return; }
+              snapshotReady = new Promise(function (resolve) {
+                var image = new Image();
+                image.onload = function () {
+                  if (generation === snapshotLoadGeneration && loadedSnapshot === url) { baseImage = image; render(); }
+                  resolve();
+                };
+                image.onerror = function () {
+                  if (generation === snapshotLoadGeneration && loadedSnapshot === url) { loadedSnapshot = ''; baseImage = null; render(); }
+                  resolve();
+                };
+                image.src = url;
+              });
             }
 
             function updateStatus() {
@@ -2804,7 +3072,48 @@ const d = labToolData.artStudio || {};
               return true;
             }
 
+            function restoreArtworkIfChanged(snapshot, stateKey, token, isCheckpoint) {
+              snapshot = snapshot || ''; stateKey = stateKey || ''; token = token || '';
+              if (incomingArtwork && incomingArtwork.snapshot === snapshot && incomingArtwork.key === stateKey && incomingArtwork.token === token) return;
+              incomingArtwork = { snapshot: snapshot, key: stateKey, token: token };
+              var restoreGeneration = ++artworkRestoreGeneration;
+              canvas._artStudioRestoreRevision = restoreGeneration;
+              restoringArtwork = true;
+              canvas._artStudioRestoring = true;
+              persistAfterRestore = false;
+              if (persistenceTimer) clearTimeout(persistenceTimer);
+              persistenceTimer = 0;
+              localRevision += 1;
+              var revisionAtLoad = localRevision;
+              var cached = _artStudioWatercolorCache.state;
+              var canReuseCache = !isCheckpoint && cached && cached.flatSnapshot === snapshot && cached.stateKey === stateKey;
+              durableStateKey = isCheckpoint ? _artStudioWatercolorStateStore.createKey() : stateKey;
+              ignoredFlatSnapshot = snapshot;
+              var restoreWork = Promise.resolve();
+              if (canReuseCache) {
+                restoreState(cached);
+              } else {
+                _artStudioWatercolorCache.state = null;
+                _artStudioWatercolorCache.undo.length = 0;
+                _artStudioWatercolorCache.redo.length = 0;
+                restoreState({ simWidth: SIM_W, simHeight: SIM_H, water: new Float32Array(COUNT),
+                  baseSnapshot: snapshot, paused: paused, reservoirWater: 1, reservoirPigment: 1 });
+                if (stateKey && snapshot) restoreWork = _artStudioWatercolorStateStore.load(stateKey).then(function (record) {
+                  if (!record || !record.state || record.state.flatSnapshot !== snapshot) return;
+                  if (canvas._watercolorEngine !== engine || localRevision !== revisionAtLoad || !canvas.isConnected) return;
+                  if (restoreState(record.state)) _artStudioWatercolorCache.state = Object.assign({}, record.state, { stateKey: durableStateKey });
+                }).catch(function () {});
+              }
+              canvas._artStudioReady = restoreWork.then(function () { return snapshotReady; }).then(function () {
+                if (artworkRestoreGeneration !== restoreGeneration) return;
+                restoringArtwork = false;
+                canvas._artStudioRestoring = false;
+                if (persistAfterRestore && canvas.isConnected) { persistAfterRestore = false; persistStateNow(); }
+              });
+            }
+
             function persistStateNow() {
+              if (restoringArtwork) { persistAfterRestore = true; return incomingArtwork ? incomingArtwork.snapshot : ''; }
               if (persistenceTimer) clearTimeout(persistenceTimer);
               persistenceTimer = 0;
               if (drawing) {
@@ -2815,15 +3124,18 @@ const d = labToolData.artStudio || {};
               if (!flatSnapshot || flatSnapshot === 'data:,') return '';
               var durableState = captureState(true);
               durableState.flatSnapshot = flatSnapshot;
-              _artStudioWatercolorCache.state = durableState;
               ignoredFlatSnapshot = flatSnapshot;
               if (!durableStateKey) durableStateKey = _artStudioWatercolorStateStore.createKey();
+              durableState.stateKey = durableStateKey;
+              _artStudioWatercolorCache.state = durableState;
+              incomingArtwork = { snapshot: flatSnapshot, key: durableStateKey, token: incomingArtwork ? incomingArtwork.token : '' };
               saveWatercolorMetadata(flatSnapshot, durableStateKey);
               _artStudioWatercolorStateStore.save(durableStateKey, durableState);
               return flatSnapshot;
             }
 
             function captureStudyState() {
+              if (restoringArtwork) return null;
               var flatSnapshot = captureCleanSnapshot();
               if (!flatSnapshot || flatSnapshot === 'data:,') return null;
               var studyState = captureState(true);
@@ -2848,6 +3160,10 @@ const d = labToolData.artStudio || {};
               var discardedKey = durableStateKey;
               durableStateKey = '';
               _artStudioWatercolorCache.state = null;
+              incomingArtwork = { snapshot: '', key: '', token: incomingArtwork ? incomingArtwork.token : '' };
+              artworkRestoreGeneration += 1;
+              canvas._artStudioRestoreRevision = artworkRestoreGeneration;
+              restoringArtwork = false; canvas._artStudioRestoring = false; persistAfterRestore = false;
               if (discardedKey) _artStudioWatercolorStateStore.remove(discardedKey);
               saveWatercolorMetadata('', '');
             }
@@ -3017,6 +3333,7 @@ const d = labToolData.artStudio || {};
             }
 
             function captureCleanSnapshot() {
+              if (restoringArtwork && incomingArtwork) return incomingArtwork.snapshot || '';
               var snapshot = '';
               render(false);
               // Snapshots stay at the logical size: they are stored in tool data and
@@ -3448,7 +3765,7 @@ const d = labToolData.artStudio || {};
                   reservoirPigment = 1;
                 }
                 updateA11y();
-                snapshotUrl = snapshotUrl || '';
+                if (typeof snapshotUrl !== 'string') { render(); return; }
                 if (snapshotUrl !== ignoredFlatSnapshot) {
                   ignoredFlatSnapshot = '';
                   loadSnapshot(snapshotUrl);
@@ -3540,6 +3857,7 @@ const d = labToolData.artStudio || {};
                 return count;
               },
               persistState: persistStateNow,
+              restoreArtworkIfChanged: restoreArtworkIfChanged,
               discardPersistedState: discardDurableState
             };
             canvas._watercolorEngine = engine;
@@ -3624,10 +3942,19 @@ const d = labToolData.artStudio || {};
               event.preventDefault();
               paintPointerSamples(event);
             };
-            canvas.onpointerup = canvas.onpointercancel = function () {
+            function finishWatercolorPointer(event, cancelled) {
+              // A fast release can contain a point never delivered by pointermove.
+              // Complete the existing stroke, without creating another history entry
+              // or depositing an extra dab when that endpoint was already painted.
+              if (drawing && !cancelled && event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+                var releasePoint = pointFor(event);
+                if (releasePoint.x !== lastX || releasePoint.y !== lastY) paintPointerSamples(event);
+              }
               drawing = false; lastX = null; lastY = null; lastStrokeTime = 0;
               scheduleDurablePersistence(650);
-            };
+            }
+            canvas.onpointerup = function (event) { finishWatercolorPointer(event, false); };
+            canvas.onpointercancel = function (event) { finishWatercolorPointer(event, true); };
             canvas.onkeydown = function (event) {
               var historyKey = String(event.key || '').toLowerCase();
               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
@@ -3668,35 +3995,8 @@ const d = labToolData.artStudio || {};
               }
             };
 
-            var incomingSnapshot = d.watercolorSnapshot || '';
-            var incomingStateKey = d.watercolorStateKey || '';
-            var cachedState = _artStudioWatercolorCache.state;
-            if (cachedState && cachedState.flatSnapshot === incomingSnapshot) {
-              ignoredFlatSnapshot = incomingSnapshot;
-              params = readParams();
-              updateA11y();
-              restoreState(cachedState);
-              setTimeout(function () { updateStatus(); updateHistoryControls(); updatePauseControl(); }, 0);
-            } else {
-              _artStudioWatercolorCache.state = null;
-              _artStudioWatercolorCache.undo.length = 0;
-              _artStudioWatercolorCache.redo.length = 0;
-              engine.configure(readParams(), incomingSnapshot);
-              if (incomingStateKey && incomingSnapshot) {
-                var revisionAtLoad = localRevision;
-                _artStudioWatercolorStateStore.load(incomingStateKey).then(function (record) {
-                  if (!record || !record.state || record.state.flatSnapshot !== incomingSnapshot) return;
-                  if (canvas._watercolorEngine !== engine || localRevision !== revisionAtLoad) return;
-                  if (typeof canvas.isConnected === 'boolean' && !canvas.isConnected) return;
-                  ignoredFlatSnapshot = incomingSnapshot;
-                  durableStateKey = incomingStateKey;
-                  if (restoreState(record.state)) {
-                    _artStudioWatercolorCache.state = record.state;
-                    setTimeout(function () { updateStatus(); updateHistoryControls(); updatePauseControl(); }, 0);
-                  }
-                });
-              }
-            }
+            restoreArtworkIfChanged(d.watercolorSnapshot || '', d.watercolorStateKey || '',
+              d.watercolorRestoreToken || '', !!d.watercolorStateIsCheckpoint);
           };
 
 
@@ -4007,10 +4307,27 @@ const d = labToolData.artStudio || {};
               try { ctx.putImageData(snapshot, 0, 0); return true; } catch (e) { return false; }
             }
 
+            function persistSymmetryArtwork() {
+              if (canvas._symRestoring) return;
+              var checkpoint = canvas._captureArtStudioState();
+              if (checkpoint) updMany(checkpoint);
+            }
+
+            canvas._captureArtStudioState = function () {
+              if (canvas._symRestoring) return { symmetrySnapshot: canvas._symSnapshot || '' };
+              try {
+                var snapshot = canvas.toDataURL('image/png');
+                if (!snapshot || snapshot === 'data:,') return null;
+                canvas._symSnapshot = snapshot;
+                return { symmetrySnapshot: snapshot };
+              } catch (_) { return null; }
+            };
+
             function recordSymmetryChange(before) {
               if (!before) return;
               canvas._symUndo = (canvas._symUndo || []).concat([before]).slice(-20);
               canvas._symRedo = [];
+              persistSymmetryArtwork();
             }
 
             function undoSymmetry() {
@@ -4024,6 +4341,7 @@ const d = labToolData.artStudio || {};
               if (!restoreSymmetryCanvas(previous)) return;
               canvas._symUndo = history.slice(0, -1);
               if (current) canvas._symRedo = (canvas._symRedo || []).concat([current]).slice(-20);
+              persistSymmetryArtwork();
               if (typeof announceToSR === 'function') announceToSR('Undid the last symmetry change.');
             }
 
@@ -4038,14 +4356,28 @@ const d = labToolData.artStudio || {};
               if (!restoreSymmetryCanvas(next)) return;
               if (current) canvas._symUndo = (canvas._symUndo || []).concat([current]).slice(-20);
               canvas._symRedo = future.slice(0, -1);
+              persistSymmetryArtwork();
               if (typeof announceToSR === 'function') announceToSR('Redid the symmetry change.');
             }
 
             function clearSymmetry() {
-              var before = captureSymmetryCanvas();
+              var before = canvas._symRestoring ? null : captureSymmetryCanvas();
+              if (canvas._symRestoring) {
+                // Clear cancels the import itself, not just the temporary blank
+                // canvas. Settle waiting captures immediately and reject late pixels.
+                canvas._symRestoreGeneration = (canvas._symRestoreGeneration || 0) + 1;
+                canvas._artStudioRestoreRevision = canvas._symRestoreGeneration;
+                canvas._symRestoring = false;
+                canvas._artStudioRestoring = false;
+                if (canvas._symFinishRestore) canvas._symFinishRestore();
+                canvas._symFinishRestore = null;
+                canvas._artStudioReady = Promise.resolve();
+                canvas._symUndo = []; canvas._symRedo = [];
+              }
               paintSymmetryBackground();
               canvas._prevX = null; canvas._prevY = null;
-              recordSymmetryChange(before);
+              if (before) recordSymmetryChange(before);
+              else persistSymmetryArtwork();
               if (typeof announceToSR === 'function') announceToSR('Cleared the symmetry artwork.');
             }
 
@@ -4053,6 +4385,13 @@ const d = labToolData.artStudio || {};
             canvas._symRedoAction = redoSymmetry;
             canvas._symClearAction = clearSymmetry;
             canvas._symExportAction = function() {
+              if (canvas._symRestoring && canvas._artStudioReady) {
+                var requestedRevision = canvas._artStudioRestoreRevision;
+                return canvas._artStudioReady.then(function () {
+                  if (canvas._artStudioRestoreRevision !== requestedRevision) return '';
+                  return canvas._symExportAction();
+                });
+              }
               try {
                 if (symBackgroundMode === 'transparent') return canvas.toDataURL('image/png');
                 var exportCanvas = document.createElement('canvas');
@@ -4076,11 +4415,45 @@ const d = labToolData.artStudio || {};
               if (!Array.isArray(canvas._symRedo)) canvas._symRedo = [];
             }
 
+            var incomingSymmetrySnapshot = d.symmetrySnapshot || '';
+            var symmetryRestoreToken = d.symmetryRestoreToken || '';
+            if (canvas._symSnapshot !== incomingSymmetrySnapshot || canvas._symRestoreToken !== symmetryRestoreToken) {
+              canvas._symSnapshot = incomingSymmetrySnapshot;
+              canvas._symRestoreToken = symmetryRestoreToken;
+              canvas._symUndo = []; canvas._symRedo = [];
+              canvas._symDrawing = false;
+              paintSymmetryBackground();
+              var symmetryGeneration = (canvas._symRestoreGeneration || 0) + 1;
+              canvas._symRestoreGeneration = symmetryGeneration;
+              canvas._artStudioRestoreRevision = symmetryGeneration;
+              canvas._symRestoring = !!incomingSymmetrySnapshot;
+              canvas._artStudioRestoring = canvas._symRestoring;
+              if (canvas._symFinishRestore) canvas._symFinishRestore();
+              var finishSymmetryRestore;
+              canvas._artStudioReady = new Promise(function (resolve) { finishSymmetryRestore = resolve; });
+              canvas._symFinishRestore = finishSymmetryRestore;
+              if (!incomingSymmetrySnapshot) finishSymmetryRestore();
+              if (incomingSymmetrySnapshot) {
+                var symmetryImage = new Image();
+                symmetryImage.onload = function () {
+                  if (canvas._symRestoreGeneration !== symmetryGeneration) { finishSymmetryRestore(); return; }
+                  paintSymmetryBackground();
+                  try { ctx.drawImage(symmetryImage, 0, 0, W, H); } finally { canvas._symRestoring = false; canvas._artStudioRestoring = false; finishSymmetryRestore(); }
+                };
+                symmetryImage.onerror = function () {
+                  if (canvas._symRestoreGeneration === symmetryGeneration) { canvas._symRestoring = false; canvas._artStudioRestoring = false; }
+                  finishSymmetryRestore();
+                };
+                symmetryImage.src = incomingSymmetrySnapshot;
+              }
+            }
+
             // In rainbow mode, pick a color based on distance from center or time; otherwise use selected
 
 
 
             function drawSymmetric(ex, ey, isStart, forceLine, pressure) {
+              if (canvas._symRestoring) return;
 
               var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx * dx + dy * dy);
 
@@ -4298,7 +4671,9 @@ const d = labToolData.artStudio || {};
             };
             canvas.onpointerup = function (e) { finishPointer(e, false); };
             canvas.onpointercancel = function (e) { finishPointer(e, true); };
-            canvas.onlostpointercapture = function (e) { finishPointer(e, false); };
+            // Capture loss is an interruption, not a pointer-up position. Keep
+            // finished freehand marks, and discard a provisional straight line.
+            canvas.onlostpointercapture = function (e) { finishPointer(e, true); };
             // Remove the legacy mouse/touch property handlers so a pointer gesture
             // cannot be delivered twice on browsers that synthesize mouse events.
             canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = canvas.onmouseleave = null;
@@ -5142,13 +5517,21 @@ const d = labToolData.artStudio || {};
 
             }
 
+          function artStudioStudyDisplayTitle(snapshot) {
+            var study = snapshot && snapshot.artStudioStudy || {};
+            var title = String(study.title || '').trim() || String(study.stepLabel || '').trim() || String(snapshot && snapshot.label || '').trim();
+            return title || __alloT("stem.artstudio.process_untitled_study", "Untitled study");
+          }
+          function artStudioProcessScopeDisplayLabel(scope) {
+            return ({ current: __alloT("stem.artstudio.process_scope_current", "Current project"), free: __alloT("stem.artstudio.process_scope_free", "Free studies"), recent: __alloT("stem.artstudio.process_scope_recent", "Recent"), all: __alloT("stem.artstudio.process_scope_all", "All studies"), archived: __alloT("stem.artstudio.process_scope_archived", "Archived") })[scope] || __alloT("stem.artstudio.process_scope_current", "Current project");
+          }
           const describeVariationDifference = function (snapshot, parentSnapshot) {
-            if (!snapshot || !parentSnapshot) return 'Starting point for this branch.';
+            if (!snapshot || !parentSnapshot) return __alloT("stem.artstudio.process_branch_start", "Starting point for this branch.");
             var currentData = snapshot.data || {};
             var parentData = parentSnapshot.data || {};
             var opaqueKeyPattern = /(?:preview|snapshot|image|bitmap|pixelData|depthData|keyframes|uploaded|stateKey|dataUrl|src)$/i;
             var changedKeys = Object.keys(Object.assign({}, parentData, currentData)).filter(function (key) {
-              if (key === 'tab') return false;
+              if (key === 'tab' || key === 'watercolorStateIsCheckpoint' || /(?:Reset|Paused|TouchMode|Restore(?:Id|Token))$/.test(key)) return false;
               if (opaqueKeyPattern.test(key)) return false;
               var before = parentData[key], after = currentData[key];
               var beforeSimple = before == null || ['string', 'number', 'boolean'].indexOf(typeof before) !== -1;
@@ -5158,37 +5541,37 @@ const d = labToolData.artStudio || {};
                   (typeof after === 'string' && (after.length > 80 || /^data:/i.test(after)))) return false;
               return true;
             });
-            var keys = changedKeys.slice(0, 3);
+            var keys = changedKeys.slice(0, 8);
             if (!keys.length) {
               var beforeSummary = parentSnapshot.artStudioStudy && parentSnapshot.artStudioStudy.summary;
               var afterSummary = snapshot.artStudioStudy && snapshot.artStudioStudy.summary;
               return beforeSummary !== afterSummary && afterSummary
-                ? 'The visible setup changed: ' + afterSummary + '.'
-                : 'Saved settings match; the marks or composition may be the meaningful change.';
+                ? formatArtStudioLearningText(__alloT("stem.artstudio.process_visible_setup_changed", "The visible setup changed: {summary}."), { summary: afterSummary })
+                : __alloT("stem.artstudio.process_same_settings", "Saved settings match; the marks or composition may be the meaningful change.");
             }
             var difference = keys.map(function (key) {
-              var readable = key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^pixel/i, '').trim().toLowerCase();
+              var readable = ({ genSeed: __alloT('stem.artstudio.compare_seed', 'seed'), genFrame: __alloT('stem.artstudio.compare_step', 'step'), genDensity: __alloT('stem.artstudio.compare_particles', 'particle count'), genStyle: __alloT('stem.artstudio.compare_rule', 'rule') })[key] || key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^(pixel|gen)/i, '').trim().toLowerCase();
               return readable + ' ' + String(parentData[key]) + ' \u2192 ' + String(currentData[key]);
             }).join(' \u00B7 ');
             if (changedKeys.length > keys.length) {
-              difference += ' \u00B7 ' + (changedKeys.length - keys.length) + ' more ' + (changedKeys.length - keys.length === 1 ? 'setting' : 'settings') + ' changed';
+              difference += (changedKeys.length - keys.length === 1 ? formatArtStudioLearningText(__alloT("stem.artstudio.process_one_more_setting", " · {count} more setting changed"), { count: changedKeys.length - keys.length }) : formatArtStudioLearningText(__alloT("stem.artstudio.process_more_settings", " · {count} more settings changed"), { count: changedKeys.length - keys.length }));
             }
             return difference;
           };
 
           const renderVariationLineage = function () {
-            if (!visibleProcessStudies.length) return null;
+            if (!scopedProcessStudies.length) return null;
             var visibleById = {};
             var childrenByParent = {};
             var renderedStudyIds = {};
-            visibleProcessStudies.forEach(function (snapshot) {
+            scopedProcessStudies.forEach(function (snapshot) {
               visibleById[snapshot.id] = snapshot;
               var parentId = String(snapshot.artStudioStudy.parentStudyId || '');
               if (!parentId) return;
               if (!childrenByParent[parentId]) childrenByParent[parentId] = [];
               childrenByParent[parentId].push(snapshot);
             });
-            var roots = visibleProcessStudies.filter(function (snapshot) {
+            var roots = scopedProcessStudies.filter(function (snapshot) {
               var parentId = String(snapshot.artStudioStudy.parentStudyId || '');
               return !parentId || !visibleById[parentId];
             });
@@ -5205,8 +5588,8 @@ const d = labToolData.artStudio || {};
               });
               var depth = Math.max(0, Math.floor(Number(study.branchDepth) || 0));
               var relationship = parent
-                ? (study.stepLabel || snapshot.label) + ' from ' + (parent.artStudioStudy.stepLabel || parent.label)
-                : (study.stepLabel || snapshot.label) + ' starting point';
+                ? formatArtStudioLearningText(__alloT("stem.artstudio.process_branch_from", "{title} from {parent}"), { title: artStudioStudyDisplayTitle(snapshot), parent: artStudioStudyDisplayTitle(parent) })
+                : formatArtStudioLearningText(__alloT("stem.artstudio.process_title_start", "{title} starting point"), { title: artStudioStudyDisplayTitle(snapshot) });
               return React.createElement("li", {
                 key: snapshot.id,
                 'data-study-id': snapshot.id,
@@ -5222,27 +5605,22 @@ const d = labToolData.artStudio || {};
                     type: "button",
                     onClick: function () { setStudioCompareIds([parent.id, snapshot.id]); },
                     className: "min-h-[36px] shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-2 text-[10px] font-black text-indigo-800",
-                    'aria-label': "Compare " + (study.stepLabel || snapshot.label) + " with parent " + (parent.artStudioStudy.stepLabel || parent.label)
-                  }, "Compare")
+                    'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_compare_parent", "Compare {title} with parent {parent}"), { title: artStudioStudyDisplayTitle(snapshot), parent: artStudioStudyDisplayTitle(parent) })
+                  }, __alloT("stem.artstudio.process_compare_button", "Compare"))
                 ),
                 children.length > 0 && React.createElement("ol", {
                   className: "mt-2 ml-3 space-y-2 border-l-2 border-violet-200 pl-3",
-                  'aria-label': "Variations from " + (study.stepLabel || snapshot.label)
+                  'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_variations_from", "Variations from {title}"), { title: artStudioStudyDisplayTitle(snapshot) })
                 }, children.map(function (child) { return renderBranch(child, ancestors.concat([snapshot.id])); }))
               );
             };
             var renderedRoots = roots.map(function (root) { return renderBranch(root, []); });
-            visibleProcessStudies.forEach(function (snapshot) {
+            scopedProcessStudies.forEach(function (snapshot) {
               if (!renderedStudyIds[snapshot.id]) renderedRoots.push(renderBranch(snapshot, []));
             });
-            return React.createElement("section", { className: "mt-4 rounded-2xl border-2 border-violet-200 bg-violet-50/70 p-3", 'aria-labelledby': "artstudio-variation-garden-title" },
-              React.createElement("div", { className: "flex items-start gap-3" },
-                React.createElement("span", { className: "text-xl", 'aria-hidden': "true" }, "\uD83C\uDF31"),
-                React.createElement("div", null,
-                  React.createElement("h4", { id: "artstudio-variation-garden-title", className: "text-sm font-black text-violet-950" }, "Variation Garden"),
-                  React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-violet-900" }, "Each indentation shows where an idea branched. Compare a variation with its parent to isolate what changed.")
-                )
-              ),
+            return React.createElement("details", { open: !isCompactStudio, className: "mt-4 rounded-2xl border-2 border-violet-200 bg-violet-50/70 p-3" },
+              React.createElement("summary", { id: "artstudio-variation-garden-title", className: "min-h-[44px] cursor-pointer py-3 text-sm font-black text-violet-950" }, __alloT("stem.artstudio.process_lineage_title", "Variation Garden")),
+              React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-violet-900" }, __alloT("stem.artstudio.process_lineage_help", "Each indentation shows where an idea branched. Compare a variation with its parent to isolate what changed.")),
               React.createElement("ol", {
                 'data-artstudio-variation-lineage': "true",
                 'aria-labelledby': "artstudio-variation-garden-title",
@@ -5252,6 +5630,13 @@ const d = labToolData.artStudio || {};
           };
 
           const renderStudioProcessShelf = function () {
+            var processScopes = [
+                    { id: 'current', label: __alloT("stem.artstudio.process_scope_current", "Current project") },
+                    { id: 'free', label: __alloT("stem.artstudio.process_scope_free", "Free studies") },
+                    { id: 'recent', label: __alloT("stem.artstudio.process_scope_recent", "Recent") },
+                    { id: 'all', label: __alloT("stem.artstudio.process_scope_all", "All studies") },
+                    { id: 'archived', label: __alloT("stem.artstudio.process_scope_archived", "Archived") }
+                  ];
             var comparisonStudies = studioCompareIds.map(function (studyId) {
               return artStudioStudies.filter(function (study) { return study.id === studyId; })[0] || null;
             }).filter(Boolean).slice(0, 2);
@@ -5265,9 +5650,9 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("div", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-2xl", 'aria-hidden': "true" }, "\uD83C\uDF9E"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-800" }, "Process Shelf"),
-                  React.createElement("h3", { id: "artstudio-process-title", tabIndex: -1, className: "text-lg font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2" }, studioProcessScope === 'archived' ? "Recover archived studies" : visibleProcessStudies.length ? "See how the idea changed" : "Save the work between decisions"),
-                  React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, studioProcessScope === 'archived' ? "Archived work stays intact until you choose to restore it." : visibleProcessStudies.length ? "Compare checkpoints, fork a setup, and notice what you carried forward." : "Save a study from any lab. A small preview and the editable setup will appear here."),
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-800" }, __alloT("stem.artstudio.process_shelf_title", "Process Shelf")),
+                  React.createElement("h3", { id: "artstudio-process-title", tabIndex: -1, className: "text-lg font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_recover_title", "Recover archived studies") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_title", "See how the idea changed") : __alloT("stem.artstudio.process_empty_title", "Save the work between decisions")),
+                  React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_archive_help", "Archived work stays intact until you choose to restore it.") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_help", "Compare checkpoints, fork a setup, and notice what you carried forward.") : __alloT("stem.artstudio.process_empty_help", "Save a study from any lab. A small preview and the editable setup will appear here.")),
                   React.createElement("p", {
                     role: "status",
                     'aria-live': "polite",
@@ -5280,95 +5665,143 @@ const d = labToolData.artStudio || {};
                         : "border-emerald-200 bg-emerald-50 text-emerald-800")
                   }, studioPersistenceLabel)
                 ),
-                React.createElement("button", { type: "button", onClick: closeStudioProcess, className: "min-h-[40px] rounded-xl border border-amber-300 bg-white px-3 text-xs font-black text-amber-900 hover:bg-amber-50", 'aria-label': "Close Process Shelf" }, "Close")
+                React.createElement("button", { type: "button", onClick: closeStudioProcess, className: "min-h-[40px] rounded-xl border border-amber-300 bg-white px-3 text-xs font-black text-amber-900 hover:bg-amber-50", 'aria-label': __alloT("stem.artstudio.process_close_label", "Close Process Shelf") }, __alloT("stem.artstudio.process_close", "Close"))
               ),
               React.createElement("p", { id: "artstudio-process-status", 'aria-live': "polite", className: "sr-only" }, studioProcessStatus),
               studioArchiveUndo && studioArchiveUndo.scope === studioPersistenceScope && React.createElement("div", {
                 className: "mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2",
                 'data-artstudio-archive-undo': "true"
               },
-                React.createElement("p", { className: "text-xs font-bold text-sky-950" }, "Archived " + studioArchiveUndo.label + ". It stays recoverable."),
+                React.createElement("p", { className: "text-xs font-bold text-sky-950" }, formatArtStudioLearningText(__alloT("stem.artstudio.process_archive_undo_message", "Archived {title}. It stays recoverable."), { title: studioArchiveUndo.label })),
                 React.createElement("button", {
                   id: "artstudio-archive-undo-button",
                   type: "button",
                   onClick: function () { restoreArchivedArtStudioStudy(studioArchiveUndo.record); },
                   className: "min-h-[40px] rounded-lg bg-sky-800 px-3 text-xs font-black text-white hover:bg-sky-900"
-                }, "Undo archive")
+                }, __alloT("stem.artstudio.process_undo_archive", "Undo archive"))
               ),
               allArtStudioStudies.length > 0 && React.createElement("div", { className: "mt-4 rounded-2xl border border-amber-200 bg-white/90 p-2" },
-                React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-3 xl:grid-cols-2", role: "group", 'aria-label': "Choose which Art Studio studies to show" },
-                  [
-                    { id: 'current', label: 'Current project' },
-                    { id: 'free', label: 'Free studies' },
-                    { id: 'recent', label: 'Recent' },
-                    { id: 'all', label: 'All studies' },
-                    { id: 'archived', label: 'Archived' }
-                  ].map(function (scope) {
+                isCompactStudio ? React.createElement("label", { htmlFor: "artstudio-study-scope", className: "flex items-center gap-2 px-1 text-xs font-bold text-amber-950" },
+                  React.createElement("span", null, __alloT('stem.artstudio.process_scope_picker', 'View')),
+                  React.createElement("select", { id: "artstudio-study-scope", value: studioProcessScope, onChange: function (event) { selectStudioProcessScope(event.target.value); }, 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show"), className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-amber-300 bg-white px-2 text-xs text-amber-950" },
+                    processScopes.map(function (scope) { return React.createElement("option", { key: scope.id, value: scope.id }, formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_count", "{label} ({count})"), { label: scope.label, count: studioProcessScopeCounts[scope.id] })); })
+                  )
+                ) : React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-3 xl:grid-cols-2", role: "group", 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show") },
+                  processScopes.map(function (scope) {
                     var selected = studioProcessScope === scope.id;
-                    return React.createElement("button", { type: "button", key: scope.id, 'aria-pressed': selected, onClick: function () { selectStudioProcessScope(scope.id); }, className: "min-h-[42px] rounded-xl px-2 text-[11px] font-black " + (selected ? "bg-amber-800 text-white" : "bg-amber-50 text-amber-950 hover:bg-amber-100") }, scope.label + " (" + studioProcessScopeCounts[scope.id] + ")");
+                    return React.createElement("button", { type: "button", key: scope.id, 'aria-pressed': selected, onClick: function () { selectStudioProcessScope(scope.id); }, className: "min-h-[42px] rounded-xl px-2 text-[11px] font-black " + (selected ? "bg-amber-800 text-white" : "bg-amber-50 text-amber-950 hover:bg-amber-100") }, formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_count", "{label} ({count})"), { label: scope.label, count: studioProcessScopeCounts[scope.id] }));
                   })
                 ),
-                React.createElement("p", { className: "mt-2 px-1 text-[10px] font-semibold text-slate-600" }, studioProcessScope === 'archived'
-                  ? "Showing " + visibleProcessStudies.length + " archived " + (visibleProcessStudies.length === 1 ? "study." : "studies.")
-                  : "Showing " + visibleProcessStudies.length + " of " + artStudioStudies.length + " active saved studies. Comparisons reset when you change views.")
+                !isCompactStudio && React.createElement("p", { className: "mt-2 px-1 text-[10px] font-semibold text-slate-600" }, studioProcessScope === 'archived'
+                  ? (visibleProcessStudies.length === 1 ? formatArtStudioLearningText(__alloT("stem.artstudio.process_archived_count_one", "Showing {count} archived study."), { count: visibleProcessStudies.length }) : formatArtStudioLearningText(__alloT("stem.artstudio.process_archived_count_many", "Showing {count} archived studies."), { count: visibleProcessStudies.length }))
+                  : formatArtStudioLearningText(__alloT("stem.artstudio.process_active_count", "Showing {shown} of {total} active saved studies. Comparisons reset when you change views."), { shown: visibleProcessStudies.length, total: artStudioStudies.length }))
+              ),
+              allArtStudioStudies.length > 0 && React.createElement("div", { className: "mt-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-3", 'data-artstudio-study-filters': "true" },
+                React.createElement("div", null,
+                  React.createElement("label", { htmlFor: "artstudio-study-search", className: "block text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_search_label', 'Search saved studies')),
+                  React.createElement("div", { className: "mt-1 flex gap-2" },
+                    React.createElement("input", { id: "artstudio-study-search", type: "search", maxLength: 200, value: studioProcessQuery, 'aria-describedby': "artstudio-study-search-help artstudio-study-results", onChange: function (event) { setStudioProcessQuery(event.target.value.slice(0, 200)); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-900" }),
+                    studioProcessQuery && React.createElement("button", { type: "button", onClick: function () { setStudioProcessQuery(''); focusArtStudioTarget('artstudio-study-search'); }, 'aria-label': __alloT('stem.artstudio.process_search_clear', 'Clear study search'), className: "min-h-[44px] rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_search_clear_button', 'Clear'))
+                  ),
+                  React.createElement("p", { id: "artstudio-study-search-help", className: "mt-1 text-[11px] text-slate-600" }, __alloT('stem.artstudio.process_search_help', 'Find titles, notes, intentions, or labs in this view.'))
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("label", { htmlFor: "artstudio-study-sort", className: "text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_sort_label', 'Sort studies')),
+                  React.createElement("select", { id: "artstudio-study-sort", value: studioProcessSort, onChange: function (event) { setStudioProcessSort(event.target.value); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-900" },
+                    React.createElement("option", { value: "project" }, __alloT('stem.artstudio.process_sort_project', 'Project order')),
+                    React.createElement("option", { value: "newest" }, __alloT('stem.artstudio.process_sort_newest', 'Newest first')),
+                    React.createElement("option", { value: "oldest" }, __alloT('stem.artstudio.process_sort_oldest', 'Oldest first')),
+                    React.createElement("option", { value: "title" }, __alloT('stem.artstudio.process_sort_title', 'Title A–Z'))
+                  )
+                ),
+                React.createElement("p", { id: "artstudio-study-results", role: "status", 'aria-live': "polite", 'aria-atomic': "true", className: "text-xs font-semibold text-slate-700" }, formatArtStudioLearningText(__alloT('stem.artstudio.process_search_results', '{shown} of {total} studies in {scope}'), { shown: visibleProcessStudies.length, total: scopedProcessStudies.length, scope: artStudioProcessScopeDisplayLabel(studioProcessScope) }))
+              ),
+              comparisonStudies.length > 0 && React.createElement("div", { 'data-artstudio-comparison-selection': "true", className: "mt-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3" },
+                React.createElement("p", { className: "text-xs font-bold text-indigo-950" }, comparisonStudies.length === 1 ? __alloT('stem.artstudio.process_compare_choose_second', 'Choose one more study to compare.') : __alloT('stem.artstudio.process_compare_ready', 'Two studies ready to compare.')),
+                React.createElement("ul", { className: "mt-2 space-y-1" }, comparisonStudies.map(function (snapshot, index) {
+                  var slot = index === 0 ? 'A' : 'B';
+                  return React.createElement("li", { key: snapshot.id, className: "flex items-center justify-between gap-2" },
+                    React.createElement("span", { className: "min-w-0 break-words text-xs text-indigo-950" }, slot + ': ' + artStudioStudyDisplayTitle(snapshot)),
+                    React.createElement("button", { type: "button", onClick: function () { toggleStudioCompareStudy(snapshot.id); }, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.process_remove_comparison_label', 'Remove {title} from comparison slot {slot}'), { title: artStudioStudyDisplayTitle(snapshot), slot: slot }), className: "min-h-[44px] shrink-0 rounded-lg px-2 text-xs font-bold text-indigo-800" }, __alloT('stem.artstudio.process_compare_remove', 'Remove'))
+                  );
+                })),
+                comparisonStudies.length === 2 && React.createElement("button", { type: "button", onClick: function () { focusArtStudioTarget('artstudio-process-compare-title'); }, className: "mt-2 min-h-[44px] w-full rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white" }, __alloT('stem.artstudio.process_compare_view', 'View comparison'))
               ),
               visibleProcessStudies.length === 0
                 ? React.createElement("div", { className: "mt-4 rounded-2xl border border-dashed border-amber-300 bg-white/80 p-5 text-center" },
-                    React.createElement("p", { className: "text-sm font-black text-slate-800" }, studioProcessScope === 'archived' ? "No archived studies." : artStudioStudies.length ? "No studies are in this view yet." : "Your first study will become a checkpoint."),
-                    React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, studioProcessScope === 'archived' ? "Archive an active study when you want to clear space without losing it." : artStudioStudies.length ? "Choose another view above, or save a new checkpoint for this project." : "Close this shelf, make one deliberate change, then choose Save study.")
+                    React.createElement("p", { className: "text-sm font-black text-slate-800" }, studioProcessSearchTerms.length ? __alloT('stem.artstudio.process_search_empty', 'No studies match this search.') : studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_no_archived", "No archived studies.") : artStudioStudies.length ? __alloT("stem.artstudio.process_no_view_studies", "No studies are in this view yet.") : __alloT("stem.artstudio.process_first_study", "Your first study will become a checkpoint.")),
+                    React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, studioProcessSearchTerms.length ? __alloT('stem.artstudio.process_search_empty_help', 'Try another word, clear the search, or choose another view.') : studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_archive_empty_help", "Archive an active study when you want to clear space without losing it.") : artStudioStudies.length ? __alloT("stem.artstudio.process_choose_view_help", "Choose another view above, or save a new checkpoint for this project.") : __alloT("stem.artstudio.process_save_first_help", "Close this shelf, make one deliberate change, then choose Save study."))
                   )
-                : studioProcessScope !== 'archived' && renderVariationLineage(),
-              visibleProcessStudies.length > 0 && React.createElement("ol", { 'data-artstudio-study-cards': "true", className: "mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible xl:grid-cols-1", 'aria-label': "Saved Art Studio studies in the selected view" },
+                : null,
+              studioProcessScope !== 'archived' && scopedProcessStudies.length > 0 && renderVariationLineage(),
+              visibleProcessStudies.length > 0 && React.createElement("ol", { 'data-artstudio-study-cards': "true", className: "mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible xl:grid-cols-1", 'aria-label': __alloT("stem.artstudio.process_studies_label", "Saved Art Studio studies in the selected view") },
                     visibleProcessStudies.map(function (snapshot) {
                       var study = snapshot.artStudioStudy;
                       var isArchived = !!study.archivedAt;
                       var selectedIndex = studioCompareIds.indexOf(snapshot.id);
-                      var reflectionLabel = study.reflection === 'change' ? 'Change' : study.reflection === 'wonder' ? 'Wonder' : 'Keep';
+                      var reflectionLabel = study.reflection === 'change' ? __alloT("stem.artstudio.process_reflection_change", "Change") : study.reflection === 'wonder' ? __alloT("stem.artstudio.process_reflection_wonder", "Wonder") : __alloT("stem.artstudio.process_reflection_keep", "Keep");
                       return React.createElement("li", { key: snapshot.id, className: "min-w-[82vw] snap-center rounded-2xl border p-3 shadow-sm sm:min-w-0 " + (isArchived ? "border-slate-300 bg-slate-50" : "border-slate-300 bg-white") },
                         study.previewSrc
-                          ? React.createElement("img", { src: study.previewSrc, alt: study.previewAlt || '', className: "h-32 w-full rounded-xl border border-slate-200 bg-slate-950 object-contain" })
+                          ? React.createElement("img", { src: study.previewSrc, alt: study.previewAlt || '', style: { backgroundColor: artStudioPaperColor((snapshot.data || {}).tab, snapshot.data) }, className: "h-32 w-full rounded-xl border border-slate-200 bg-slate-950 object-contain" })
                           : React.createElement("div", { className: "grid h-32 place-items-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center" },
-                              React.createElement("span", { className: "px-3 text-xs font-bold text-slate-600" }, "Visual preview unavailable — the saved setup is still here.")),
+                              React.createElement("span", { className: "px-3 text-xs font-bold text-slate-600" }, __alloT("stem.artstudio.process_preview_missing", "Visual preview unavailable — the saved setup is still here."))),
                         React.createElement("div", { className: "mt-3 flex items-start gap-2" },
                           React.createElement("div", { className: "min-w-0 flex-1" },
-                            React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-amber-800" }, Number.isInteger(study.stepIndex) ? "Step " + (study.stepIndex + 1) + " · " + (ART_STUDIO_TAB_LABELS[study.sourceTab] || study.sourceTab) : (ART_STUDIO_TAB_LABELS[study.sourceTab] || 'Art Studio')),
-                            React.createElement("h4", { className: "mt-0.5 text-sm font-black text-slate-900" }, study.stepLabel || snapshot.label),
-                            isArchived && React.createElement("p", { className: "mt-1 inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-700" }, "Archived"),
+                            React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-amber-800" }, Number.isInteger(study.stepIndex) ? formatArtStudioLearningText(__alloT("stem.artstudio.process_study_step", "Step {step} · {lab}"), { step: study.stepIndex + 1, lab: ART_STUDIO_TAB_LABELS[study.sourceTab] || study.sourceTab }) : (ART_STUDIO_TAB_LABELS[study.sourceTab] || 'Art Studio')),
+                            React.createElement("h4", { className: "mt-0.5 text-sm font-black text-slate-900" }, artStudioStudyDisplayTitle(snapshot)),
+                            isArchived && React.createElement("p", { className: "mt-1 inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-700" }, __alloT("stem.artstudio.process_scope_archived", "Archived")),
                             React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, study.summary)
                           ),
                           React.createElement("time", { dateTime: new Date(snapshot.timestamp || 0).toISOString(), className: "shrink-0 text-[9px] font-bold text-slate-500" }, new Date(snapshot.timestamp || 0).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))
                         ),
                         React.createElement("p", { className: "mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-950" },
-                          React.createElement("strong", null, reflectionLabel + ": "), study.note || (reflectionLabel === 'Keep' ? "A decision worth carrying forward." : reflectionLabel === 'Change' ? "A decision to revise next." : "A question to keep exploring.")),
+                          React.createElement("strong", null, reflectionLabel + ": "), study.note || ((study.reflection !== 'change' && study.reflection !== 'wonder') ? __alloT("stem.artstudio.process_keep_default", "A decision worth carrying forward.") : study.reflection === 'change' ? __alloT("stem.artstudio.process_change_default", "A decision to revise next.") : __alloT("stem.artstudio.process_wonder_default", "A question to keep exploring."))),
+                        study.intention && React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.artstudio.study_intention_label', 'Intention') + ': ' + study.intention),
                         isArchived
-                          ? React.createElement("button", { type: "button", 'aria-label': "Restore " + (study.stepLabel || snapshot.label) + " to the Process Shelf", onClick: function () { restoreArchivedArtStudioStudy(snapshot); }, className: "mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-3 text-xs font-black text-white hover:bg-emerald-800" }, "Restore to shelf")
+                          ? React.createElement("button", { type: "button", 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_restore_label", "Restore {title} to the Process Shelf"), { title: artStudioStudyDisplayTitle(snapshot) }), onClick: function () { restoreArchivedArtStudioStudy(snapshot); }, className: "mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-3 text-xs font-black text-white hover:bg-emerald-800" }, __alloT("stem.artstudio.process_restore_button", "Restore to shelf"))
                           : React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2" },
-                              React.createElement("button", { type: "button", 'aria-pressed': selectedIndex !== -1, 'aria-label': selectedIndex !== -1 ? "Remove " + (study.stepLabel || snapshot.label) + " from comparison slot " + (selectedIndex === 0 ? 'A' : 'B') : "Select " + (study.stepLabel || snapshot.label) + " for comparison", onClick: function () { toggleStudioCompareStudy(snapshot.id); }, className: "min-h-[44px] rounded-xl px-3 text-xs font-black " + (selectedIndex !== -1 ? "bg-indigo-700 text-white" : "border border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100") }, selectedIndex !== -1 ? "Comparison " + (selectedIndex === 0 ? 'A' : 'B') : "Compare"),
-                              React.createElement("button", { type: "button", 'aria-label': "Fork " + (study.stepLabel || snapshot.label) + " as a new variation", onClick: function () { restoreArtStudioStudy(snapshot); }, className: "min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 text-xs font-black text-slate-800 hover:bg-slate-50" }, "Fork variation"),
-                              React.createElement("button", { type: "button", 'aria-label': "Archive " + (study.stepLabel || snapshot.label), onClick: function () { archiveArtStudioStudy(snapshot); }, className: "col-span-2 min-h-[40px] rounded-xl border border-slate-300 bg-slate-50 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100" }, "Archive study")
+                              React.createElement("button", { type: "button", 'aria-pressed': selectedIndex !== -1, 'aria-label': selectedIndex !== -1 ? formatArtStudioLearningText(__alloT("stem.artstudio.process_remove_comparison_label", "Remove {title} from comparison slot {slot}"), { title: artStudioStudyDisplayTitle(snapshot), slot: selectedIndex === 0 ? 'A' : 'B' }) : formatArtStudioLearningText(__alloT("stem.artstudio.process_select_comparison_label", "Select {title} for comparison"), { title: artStudioStudyDisplayTitle(snapshot) }), onClick: function () { toggleStudioCompareStudy(snapshot.id); }, className: "min-h-[44px] rounded-xl px-3 text-xs font-black " + (selectedIndex !== -1 ? "bg-indigo-700 text-white" : "border border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100") }, selectedIndex !== -1 ? formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_slot", "Comparison {slot}"), { slot: selectedIndex === 0 ? 'A' : 'B' }) : __alloT("stem.artstudio.process_compare_button", "Compare")),
+                              React.createElement("button", { type: "button", 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_fork_label", "Fork {title} as a new variation"), { title: artStudioStudyDisplayTitle(snapshot) }), onClick: function () { restoreArtStudioStudy(snapshot); }, className: "min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 text-xs font-black text-slate-800 hover:bg-slate-50" }, __alloT("stem.artstudio.process_fork_button", "Fork variation")),
+                              React.createElement("button", { type: "button", 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_archive_label", "Archive {title}"), { title: artStudioStudyDisplayTitle(snapshot) }), onClick: function () { archiveArtStudioStudy(snapshot); }, className: "col-span-2 min-h-[40px] rounded-xl border border-slate-300 bg-slate-50 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100" }, __alloT("stem.artstudio.process_archive_button", "Archive study"))
                             )
                       );
                     })
                   ),
               comparisonStudies.length === 2 && React.createElement("section", { className: "mt-4 rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3", 'aria-labelledby': "artstudio-process-compare-title" },
-                React.createElement("h4", { id: "artstudio-process-compare-title", className: "text-sm font-black text-indigo-950" }, "Branch comparison"),
-                React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-indigo-900" }, "What stayed consistent? What became clearer? Which decision better serves your intention?"),
+                React.createElement("h4", { id: "artstudio-process-compare-title", tabIndex: -1, className: "text-sm font-black text-indigo-950" }, __alloT("stem.artstudio.process_comparison_title", "Branch comparison")),
+                React.createElement("p", { 'data-artstudio-comparison-changes': 'true', className: "mt-2 rounded-lg border border-indigo-200 bg-white p-3 text-xs leading-relaxed text-indigo-950" },
+                  (comparisonStudies[0].data || {}).tab === (comparisonStudies[1].data || {}).tab
+                    ? describeVariationDifference(comparisonStudies[1], comparisonStudies[0])
+                    : __alloT('stem.artstudio.compare_different_labs', 'These studies use different labs. Compare their intention and visual decisions.')),
+                (comparisonStudies[0].data || {}).tab === 'generative' && (comparisonStudies[1].data || {}).tab === 'generative' &&
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-indigo-950" },
+                    !comparisonStudies.every(function (snapshot) {
+                      var seed = snapshot.data.genSeed, frame = snapshot.data.genFrame;
+                      return Number.isInteger(seed) && seed >= 0 && seed <= 4294967295 && Number.isSafeInteger(frame) && frame >= 0;
+                    })
+                      ? __alloT('stem.artstudio.compare_seed_unknown', 'The seed or step was not saved for one of these studies. Save new studies to make a controlled comparison.')
+                      : comparisonStudies[0].data.genSeed === comparisonStudies[1].data.genSeed && comparisonStudies[0].data.genFrame === comparisonStudies[1].data.genFrame
+                      ? __alloT('stem.artstudio.compare_seed_match', 'Same seed and step. Check the other settings and any added bursts to identify what changed.')
+                      : __alloT('stem.artstudio.compare_seed_mismatch', 'The seed or step differs. For a controlled experiment, use the same seed and compare at the same step.')),
+                React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-indigo-900" }, __alloT("stem.artstudio.process_comparison_prompt", "What stayed consistent? What became clearer? Which decision better serves your intention?")),
                 React.createElement("div", { className: "mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1" },
                   comparisonStudies.map(function (snapshot, index) {
                     var study = snapshot.artStudioStudy;
                     var slot = index === 0 ? 'A' : 'B';
-                    return React.createElement("article", { key: snapshot.id, 'aria-label': "Comparison " + slot + ": " + study.stepLabel, className: "rounded-xl border border-indigo-200 bg-white p-3" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-indigo-700" }, "Comparison " + slot),
-                      study.previewSrc && React.createElement("img", { src: study.previewSrc, alt: study.previewAlt || '', className: "mt-2 h-36 w-full rounded-lg bg-slate-950 object-contain" }),
-                      React.createElement("h5", { className: "mt-2 text-sm font-black text-slate-900" }, study.stepLabel),
-                      React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, study.summary)
+                    return React.createElement("article", { key: snapshot.id, 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_study_label", "Comparison {slot}: {title}"), { slot: slot, title: artStudioStudyDisplayTitle(snapshot) }), className: "rounded-xl border border-indigo-200 bg-white p-3" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_slot", "Comparison {slot}"), { slot: slot })),
+                      study.previewSrc && React.createElement("img", { src: study.previewSrc, alt: study.previewAlt || '', style: { backgroundColor: artStudioPaperColor((snapshot.data || {}).tab, snapshot.data) }, className: "mt-2 h-36 w-full rounded-lg bg-slate-950 object-contain" }),
+                      React.createElement("h5", { className: "mt-2 text-sm font-black text-slate-900" }, artStudioStudyDisplayTitle(snapshot)),
+                      React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, study.summary),
+                      study.intention && React.createElement("p", { className: "mt-2 text-xs text-indigo-950" }, __alloT('stem.artstudio.study_intention_label', 'Intention') + ': ' + study.intention),
+                      study.note && React.createElement("p", { className: "mt-2 text-xs text-slate-800" }, study.note)
                     );
                   })
                 )
               ),
               studioProcessScope !== 'archived' && activeCreativeThread && activeCreativeThreadStep === activeCreativeThread.steps.length - 1 && React.createElement("div", { className: "mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-emerald-50 p-3" },
-                React.createElement("p", { className: "text-xs font-bold text-emerald-950" }, "You carried one idea through " + activeCreativeThread.steps.length + " different tools."),
-                React.createElement("button", { type: "button", onClick: function () { leaveCreativeThread(true); }, className: "min-h-[44px] rounded-xl bg-emerald-700 px-4 text-xs font-black text-white hover:bg-emerald-800" }, "\u2713 Finish thread")
+                React.createElement("p", { className: "text-xs font-bold text-emerald-950" }, formatArtStudioLearningText(__alloT("stem.artstudio.process_thread_finished", "You carried one idea through {count} different tools."), { count: activeCreativeThread.steps.length })),
+                React.createElement("button", { type: "button", onClick: function () { leaveCreativeThread(true); }, className: "min-h-[44px] rounded-xl bg-emerald-700 px-4 text-xs font-black text-white hover:bg-emerald-800" }, __alloT("stem.artstudio.process_finish_thread", "✓ Finish thread"))
               )
             );
           };
@@ -5385,13 +5818,13 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, activeCreativeThread.icon),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, "Creative Thread"),
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_creative_thread_41cdd22", "Creative Thread")),
                   React.createElement("h3", { id: "artstudio-thread-title", className: "text-sm font-black text-slate-950" }, activeCreativeThread.title),
-                  React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, "Constraint: " + activeCreativeThread.constraint)
+                  React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (activeCreativeThread.constraint) }))
                 ),
-                React.createElement("p", { className: "rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black text-indigo-800" }, "Step " + (activeCreativeThreadStep + 1) + " of " + activeCreativeThread.steps.length)
+                React.createElement("p", { className: "rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black text-indigo-800" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_of_value2_196d3db", "Step {value1} of {value2}"), { value1: (activeCreativeThreadStep + 1), value2: (activeCreativeThread.steps.length) }))
               ),
-              React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2", 'aria-label': activeCreativeThread.title + " steps" },
+              React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2", 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_steps_11a083b", "{value1} steps"), { value1: (activeCreativeThread.title) }) },
                 activeCreativeThread.steps.map(function (step, stepIndex) {
                   var isCurrent = stepIndex === activeCreativeThreadStep;
                   var isComplete = activeCreativeThreadCompletedSteps.indexOf(stepIndex) !== -1;
@@ -5401,10 +5834,10 @@ const d = labToolData.artStudio || {};
                       type: "button",
                       onClick: function () { openCreativeThreadStep(activeCreativeThread, stepIndex, 'Moved within ' + activeCreativeThread.title); },
                       'aria-current': isCurrent ? 'step' : undefined,
-                      'aria-label': 'Go to step ' + (stepIndex + 1) + ': ' + step.label + (isComplete ? ', completed' : isCurrent ? ', current' : ''),
+                      'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_go_to_step_value1_value2_value3_f760000", "Go to step {value1}: {value2}{value3}"), { value1: (stepIndex + 1), value2: (step.label), value3: (isComplete ? ', completed' : isCurrent ? ', current' : '') }),
                       className: "min-h-[52px] w-full rounded-xl border px-3 py-2 text-left transition-colors " + (isCurrent ? "border-indigo-500 bg-indigo-700 text-white shadow-sm" : isComplete ? "border-emerald-300 bg-emerald-50 text-emerald-950 hover:bg-emerald-100" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
                     },
-                      React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wider " + (isCurrent ? "text-indigo-100" : isComplete ? "text-emerald-700" : "text-slate-500") }, savedStudy ? "\uD83D\uDCF8 Study saved" : isComplete ? "\u2713 Step " + (stepIndex + 1) : "Step " + (stepIndex + 1)),
+                      React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wider " + (isCurrent ? "text-indigo-100" : isComplete ? "text-emerald-700" : "text-slate-500") }, savedStudy ? __alloT("stem.artstudio.learning_study_saved_cf7a246", "📸 Study saved") : isComplete ? formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_e3415b9", "✓ Step {value1}"), { value1: (stepIndex + 1) }) : formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_cd4a348", "Step {value1}"), { value1: (stepIndex + 1) })),
                       React.createElement("span", { className: "mt-0.5 block text-xs font-black" }, step.label)
                     )
                   );
@@ -5412,29 +5845,29 @@ const d = labToolData.artStudio || {};
               ),
               React.createElement("div", { className: "mt-3 rounded-xl border border-slate-200 bg-white/90 p-3" },
                 onCurrentStep
-                  ? React.createElement("p", { id: "artstudio-thread-current-prompt", className: "text-xs leading-relaxed text-slate-800" }, React.createElement("strong", null, "Your move: "), currentStep.prompt)
-                  : React.createElement("p", { id: "artstudio-thread-current-prompt", role: "status", className: "text-xs leading-relaxed text-amber-900" }, "You are exploring " + (ART_STUDIO_TAB_LABELS[tab] || 'another lab') + ". Your thread is waiting at " + currentStep.label + "."),
+                  ? React.createElement("p", { id: "artstudio-thread-current-prompt", className: "text-xs leading-relaxed text-slate-800" }, React.createElement("strong", null, __alloT("stem.artstudio.learning_your_move_981ab1b", "Your move: ")), currentStep.prompt)
+                  : React.createElement("p", { id: "artstudio-thread-current-prompt", role: "status", className: "text-xs leading-relaxed text-amber-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_you_are_exploring_value1_your_thread_is_waiting__f7f1a61", "You are exploring {value1}. Your thread is waiting at {value2}."), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'another lab'), value2: (currentStep.label) })),
                 onCurrentStep && React.createElement("fieldset", { className: "mt-3 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3" },
-                  React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800" }, "Optional reflection"),
+                  React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800" }, __alloT("stem.artstudio.learning_optional_reflection_f371c5f", "Optional reflection")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
-                    [{ id: 'keep', label: 'Keep' }, { id: 'change', label: 'Change' }, { id: 'wonder', label: 'Wonder' }].map(function (reflection) {
+                    [{ id: 'keep', label: __alloT("stem.artstudio.learning_keep_183f00f", "Keep") }, { id: 'change', label: __alloT("stem.artstudio.learning_change_c0bf75b", "Change") }, { id: 'wonder', label: __alloT("stem.artstudio.learning_wonder_f3cb6ed", "Wonder") }].map(function (reflection) {
                       return React.createElement("label", { key: reflection.id, className: "flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg border px-3 text-xs font-black " + (studioReflectionKind === reflection.id ? "border-indigo-600 bg-indigo-700 text-white" : "border-indigo-200 bg-white text-indigo-900") },
                         React.createElement("input", { type: "radio", name: "artstudio-thread-reflection", value: reflection.id, checked: studioReflectionKind === reflection.id, onChange: function () { setStudioReflectionKind(reflection.id); }, className: "accent-indigo-700" }), reflection.label);
                     })
                   ),
-                  React.createElement("label", { htmlFor: "artstudio-thread-reflection-note", className: "mt-2 block text-[10px] font-black text-indigo-900" }, "Short note (optional)"),
-                  React.createElement("input", { id: "artstudio-thread-reflection-note", type: "text", maxLength: 160, value: studioReflectionNote, onChange: function (event) { setStudioReflectionNote(event.target.value.slice(0, 160)); }, placeholder: studioReflectionKind === 'keep' ? "What should carry forward?" : studioReflectionKind === 'change' ? "What will you revise?" : "What question appeared?", className: "mt-1 min-h-[44px] w-full rounded-lg border border-indigo-300 bg-white px-3 text-xs text-slate-900" })
+                  React.createElement("label", { htmlFor: "artstudio-thread-reflection-note", className: "mt-2 block text-[10px] font-black text-indigo-900" }, __alloT("stem.artstudio.learning_short_note_optional_095d2cf", "Short note (optional)")),
+                  React.createElement("input", { id: "artstudio-thread-reflection-note", type: "text", maxLength: 160, value: studioReflectionNote, onChange: function (event) { setStudioReflectionNote(event.target.value.slice(0, 160)); }, placeholder: studioReflectionKind === 'keep' ? __alloT("stem.artstudio.learning_what_should_carry_forward_d6820ac", "What should carry forward?") : studioReflectionKind === 'change' ? __alloT("stem.artstudio.learning_what_will_you_revise_3896390", "What will you revise?") : __alloT("stem.artstudio.learning_what_question_appeared_53d10f7", "What question appeared?"), className: "mt-1 min-h-[44px] w-full rounded-lg border border-indigo-300 bg-white px-3 text-xs text-slate-900" })
                 ),
-                onCurrentStep && studioVariationForkPending && React.createElement("p", { className: "mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-900" }, "Fork ready: saving creates a new branch and preserves the original study."),
-                onCurrentStep && canReplaceCurrentThreadStudy && React.createElement("p", { className: "mt-2 text-[10px] font-bold text-indigo-800" }, "This step already has a study. Saving again updates that checkpoint."),
+                onCurrentStep && studioVariationForkPending && React.createElement("p", { className: "mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-900" }, __alloT("stem.artstudio.learning_fork_ready_saving_creates_a_new_branch_and_prese_16292e1", "Fork ready: saving creates a new branch and preserves the original study.")),
+                onCurrentStep && canReplaceCurrentThreadStudy && React.createElement("p", { className: "mt-2 text-[10px] font-bold text-indigo-800" }, __alloT("stem.artstudio.learning_this_step_already_has_a_study_saving_again_updat_7abf721", "This step already has a study. Saving again updates that checkpoint.")),
                 React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" },
-                  onCurrentStep && activeCreativeThreadStep > 0 && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep - 1, 'Moved back'); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-xs font-black text-slate-700 hover:bg-slate-50" }, "\u2190 Back"),
-                  !onCurrentStep && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep, 'Returned to creative thread'); }, className: "min-h-[40px] rounded-lg bg-indigo-700 px-3 text-xs font-black text-white hover:bg-indigo-800" }, "Return to current step"),
-                  onCurrentStep && activeCreativeThreadStep < activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", title: canReplaceCurrentThreadStudy ? "Updates the existing study for this step" : undefined, onClick: function () { var continuingBranch = studioVariationForkPending; var savedRecord = saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep + 1, 'Completed a creative thread step', { completeStep: activeCreativeThreadStep, continueBranchRecord: continuingBranch ? savedRecord : null }); }, className: "min-h-[40px] rounded-lg bg-indigo-700 px-3 text-xs font-black text-white hover:bg-indigo-800" }, studioVariationForkPending ? "Save branch & next \u2192" : "Save study & next \u2192"),
-                  onCurrentStep && activeCreativeThreadStep < activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep + 1, 'Skipped saving and completed a creative thread step', { completeStep: activeCreativeThreadStep }); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" }, "Next without saving"),
-                  onCurrentStep && activeCreativeThreadStep === activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", title: canReplaceCurrentThreadStudy ? "Updates the existing study for this step" : undefined, onClick: function () { saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); openStudioProcess(); }, className: "min-h-[40px] rounded-lg bg-emerald-700 px-3 text-xs font-black text-white hover:bg-emerald-800" }, studioVariationForkPending ? "Save branch & review" : "Save study & review"),
-                  onCurrentStep && activeCreativeThreadStep === activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", onClick: openStudioProcess, className: "min-h-[40px] rounded-lg border border-emerald-200 bg-white px-3 text-xs font-black text-emerald-800 hover:bg-emerald-50" }, "Review without saving"),
-                  React.createElement("button", { type: "button", onClick: function () { leaveCreativeThread(false); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" }, "Leave brief")
+                  onCurrentStep && activeCreativeThreadStep > 0 && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep - 1, 'Moved back'); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-xs font-black text-slate-700 hover:bg-slate-50" }, __alloT("stem.artstudio.learning_back_aceb696", "← Back")),
+                  !onCurrentStep && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep, 'Returned to creative thread'); }, className: "min-h-[40px] rounded-lg bg-indigo-700 px-3 text-xs font-black text-white hover:bg-indigo-800" }, __alloT("stem.artstudio.learning_return_to_current_step_29e3562", "Return to current step")),
+                  onCurrentStep && activeCreativeThreadStep < activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", title: canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_updates_the_existing_study_for_this_step_4ddc7ff", "Updates the existing study for this step") : undefined, onClick: function () { var continuingBranch = studioVariationForkPending; var saved = saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); var proceed = function (savedRecord) { if (!savedRecord) return; openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep + 1, 'Completed a creative thread step', { completeStep: activeCreativeThreadStep, continueBranchRecord: continuingBranch ? savedRecord : null }); }; return saved && typeof saved.then === 'function' ? saved.then(proceed) : proceed(saved); }, className: "min-h-[40px] rounded-lg bg-indigo-700 px-3 text-xs font-black text-white hover:bg-indigo-800" }, studioVariationForkPending ? __alloT("stem.artstudio.learning_save_branch_next_75e1f34", "Save branch & next →") : __alloT("stem.artstudio.learning_save_study_next_0e4c9f1", "Save study & next →")),
+                  onCurrentStep && activeCreativeThreadStep < activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep + 1, 'Skipped saving and completed a creative thread step', { completeStep: activeCreativeThreadStep }); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" }, __alloT("stem.artstudio.learning_next_without_saving_993a688", "Next without saving")),
+                  onCurrentStep && activeCreativeThreadStep === activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", title: canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_updates_the_existing_study_for_this_step_4ddc7ff", "Updates the existing study for this step") : undefined, onClick: function () { var saved = saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); var proceed = function (savedRecord) { if (savedRecord) openStudioProcess(); }; return saved && typeof saved.then === 'function' ? saved.then(proceed) : proceed(saved); }, className: "min-h-[40px] rounded-lg bg-emerald-700 px-3 text-xs font-black text-white hover:bg-emerald-800" }, studioVariationForkPending ? __alloT("stem.artstudio.learning_save_branch_review_0f86e2e", "Save branch & review") : __alloT("stem.artstudio.learning_save_study_review_aa40018", "Save study & review")),
+                  onCurrentStep && activeCreativeThreadStep === activeCreativeThread.steps.length - 1 && React.createElement("button", { type: "button", onClick: openStudioProcess, className: "min-h-[40px] rounded-lg border border-emerald-200 bg-white px-3 text-xs font-black text-emerald-800 hover:bg-emerald-50" }, __alloT("stem.artstudio.learning_review_without_saving_aef3123", "Review without saving")),
+                  React.createElement("button", { type: "button", onClick: function () { leaveCreativeThread(false); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-slate-100" }, __alloT("stem.artstudio.learning_leave_brief_36fe1e0", "Leave brief"))
                 )
               )
             );
@@ -5454,20 +5887,20 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-xl", 'aria-hidden': "true" }, "\uD83E\uDDF0"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-violet-700" }, "Carry ideas between labs"),
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-violet-700" }, __alloT("stem.artstudio.learning_carry_ideas_between_labs_9e835f3", "Carry ideas between labs")),
                   React.createElement("h3", {
                     id: "artstudio-thread-kit-title",
                     tabIndex: -1,
                     className: "rounded text-sm font-black text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
-                  }, "Thread Kit"),
+                  }, __alloT("stem.artstudio.learning_thread_kit_f20ce46", "Thread Kit")),
                   React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, hasPalette
-                    ? "This palette stays with the project until you explicitly apply it."
-                    : "Collect a palette in Color Wheel, then carry it into Pixel Art and Contrast.")
+                    ? __alloT("stem.artstudio.learning_this_palette_stays_with_the_project_until_you_ex_e0789b1", "This palette stays with the project until you explicitly apply it.")
+                    : __alloT("stem.artstudio.learning_collect_a_palette_in_color_wheel_then_carry_it_i_de84c90", "Collect a palette in Color Wheel, then carry it into Pixel Art and Contrast."))
                 )
               ),
               React.createElement("p", { className: "mt-3 text-[10px] font-black uppercase tracking-wider text-slate-500" }, paletteLabel),
               hasPalette
-                ? React.createElement("ol", { className: "mt-2 flex flex-wrap gap-2", 'aria-label': "Thread Kit palette colors" },
+                ? React.createElement("ol", { className: "mt-2 flex flex-wrap gap-2", 'aria-label': __alloT("stem.artstudio.learning_thread_kit_palette_colors_6c952d1", "Thread Kit palette colors") },
                     studioThreadPalette.map(function (color, colorIndex) {
                       var label = "Color " + (colorIndex + 1) + ": hue " + color.h + " degrees, saturation " + color.s + " percent, lightness " + color.l + " percent";
                       return React.createElement("li", { key: color.h + '-' + color.s + '-' + color.l + '-' + colorIndex },
@@ -5481,30 +5914,30 @@ const d = labToolData.artStudio || {};
                       );
                     })
                   )
-                : React.createElement("div", { className: "mt-2 rounded-xl border border-dashed border-violet-300 bg-white/80 p-3 text-[11px] leading-relaxed text-slate-600" }, "Nothing is applied automatically. Your current artwork always stays unchanged until you choose a transfer."),
+                : React.createElement("div", { className: "mt-2 rounded-xl border border-dashed border-violet-300 bg-white/80 p-3 text-[11px] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_nothing_is_applied_automatically_your_current_ar_ca4f6a0", "Nothing is applied automatically. Your current artwork always stays unchanged until you choose a transfer.")),
               React.createElement("div", { className: "mt-3 grid gap-2" },
                 tab === 'colorWheel' && React.createElement("button", {
                   type: "button",
                   onClick: captureColorWheelPaletteToThreadKit,
                   className: "min-h-[44px] rounded-xl bg-violet-700 px-3 text-xs font-black text-white hover:bg-violet-800"
-                }, hasPalette ? "Update palette in Thread Kit" : "Add palette to Thread Kit"),
+                }, hasPalette ? __alloT("stem.artstudio.learning_update_palette_in_thread_kit_22e10e4", "Update palette in Thread Kit") : __alloT("stem.artstudio.learning_add_palette_to_thread_kit_298303d", "Add palette to Thread Kit")),
                 tab === 'pixel' && hasPalette && React.createElement("button", {
                   type: "button",
                   onClick: applyThreadKitPaletteToPixel,
                   className: "min-h-[44px] rounded-xl bg-blue-700 px-3 text-xs font-black text-white hover:bg-blue-800"
-                }, "Use palette in Pixel Art"),
+                }, __alloT("stem.artstudio.learning_use_palette_in_pixel_art_503ec14", "Use palette in Pixel Art")),
                 tab === 'contrast' && React.createElement("button", {
                   type: "button",
                   onClick: applyThreadKitPaletteToContrast,
                   className: "min-h-[44px] rounded-xl bg-teal-700 px-3 text-xs font-black text-white hover:bg-teal-800"
                 }, studioThreadPalette.length >= 2
-                  ? "Use palette + " + (studioThreadKit.accessibilityTarget === 7 ? "AAA" : "AA") + " goal in Contrast"
-                  : "Use " + (studioThreadKit.accessibilityTarget === 7 ? "AAA" : "AA") + " goal in Contrast")
+                  ? formatArtStudioLearningText(__alloT("stem.artstudio.learning_use_palette_value1_goal_in_contrast_50d395c", "Use palette + {value1} goal in Contrast"), { value1: (studioThreadKit.accessibilityTarget === 7 ? "AAA" : "AA") })
+                  : formatArtStudioLearningText(__alloT("stem.artstudio.learning_use_value1_goal_in_contrast_1949282", "Use {value1} goal in Contrast"), { value1: (studioThreadKit.accessibilityTarget === 7 ? "AAA" : "AA") }))
               ),
               React.createElement("div", { className: "mt-3 rounded-xl border border-slate-200 bg-white/90 p-2.5" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Accessibility intention"),
-                React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", role: "group", 'aria-label': "Thread Kit contrast target" },
-                  [{ value: 4.5, label: "AA 4.5:1" }, { value: 7, label: "AAA 7:1" }].map(function (target) {
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_accessibility_intention_afbf78b", "Accessibility intention")),
+                React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", role: "group", 'aria-label': __alloT("stem.artstudio.learning_thread_kit_contrast_target_cbbbf2c", "Thread Kit contrast target") },
+                  [{ value: 4.5, label: __alloT("stem.artstudio.learning_aa_4_5_1_da4f455", "AA 4.5:1") }, { value: 7, label: __alloT("stem.artstudio.learning_aaa_7_1_6c099a2", "AAA 7:1") }].map(function (target) {
                     var selected = studioThreadKit.accessibilityTarget === target.value;
                     return React.createElement("button", {
                       type: "button",
@@ -5522,6 +5955,7 @@ const d = labToolData.artStudio || {};
           };
 
           const renderStudioGuidePanel = function () {
+            var visibleCoach = simpleStudioGuide && simpleStudioCoach ? simpleStudioCoach : studioCoach;
             return React.createElement("section", {
               id: "artstudio-tour",
               hidden: !d.showTour,
@@ -5531,28 +5965,36 @@ const d = labToolData.artStudio || {};
             },
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, "Studio coach \u00B7 " + (ART_STUDIO_TAB_LABELS[tab] || 'Creative lab')),
-                  React.createElement("h3", { id: "artstudio-coach-title", tabIndex: -1, className: "mt-1 text-sm font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2" }, "One useful next move"),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, "Use one prompt, or ignore the guide and follow what the work needs.")
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_studio_coach_value1_398fe5d", "Studio coach · {value1}"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Creative lab') })),
+                  React.createElement("h3", { id: "artstudio-coach-title", tabIndex: -1, className: "mt-1 text-sm font-black text-slate-950 focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2" }, __alloT("stem.artstudio.learning_one_useful_next_move_6200585", "One useful next move")),
+                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_use_one_prompt_or_ignore_the_guide_and_follow_wh_935d388", "Use one prompt, or ignore the guide and follow what the work needs."))
                 ),
-                React.createElement("button", { type: "button", onClick: function () { toggleStudioCoach(false); }, className: "min-h-[40px] rounded-lg border border-pink-200 bg-white px-3 text-xs font-black text-pink-800 hover:bg-pink-50", 'aria-label': "Close Studio coach" }, "Close")
+                React.createElement("button", { type: "button", onClick: function () { toggleStudioCoach(false); }, className: "min-h-[40px] rounded-lg border border-pink-200 bg-white px-3 text-xs font-black text-pink-800 hover:bg-pink-50", 'aria-label': __alloT("stem.artstudio.learning_close_studio_coach_7d7fe8e", "Close Studio coach") }, __alloT("stem.artstudio.learning_close_7d9eb7a", "Close"))
               ),
-              studioCoach
-                ? React.createElement("div", { className: "mt-3 space-y-2" },
+              React.createElement('div', { role:'group', 'aria-label':__alloT('stem.artstudio.guide_wording','Guide wording'), className:'mt-3 grid grid-cols-2 gap-2' },
+                [{id:'simple',label:__alloT('stem.artstudio.guide_wording_simple','Simple wording')},{id:'detailed',label:__alloT('stem.artstudio.guide_wording_detailed','More detail')}].map(function(option){
+                  var selected = simpleStudioGuide === (option.id === 'simple');
+                  return React.createElement('button', {type:'button', key:option.id, 'data-artstudio-guide-wording':option.id, 'aria-pressed':selected, onClick:function(){upd('studioGuideWording',option.id);}, className:'min-h-[44px] rounded-xl border px-3 text-sm font-bold '+(selected?'border-indigo-700 bg-indigo-700 text-white':'border-slate-400 bg-white text-slate-800')}, option.label);
+                })),
+              visibleCoach
+                ? React.createElement("div", { className: "mt-3 space-y-2", 'data-artstudio-guide-prompts':simpleStudioGuide?'simple':'detailed' },
                     [
-                      { title: "Try first", text: studioCoach.try, style: "border-emerald-200 bg-emerald-50 text-emerald-950" },
-                      { title: "Notice", text: studioCoach.notice, style: "border-sky-200 bg-sky-50 text-sky-950" },
-                      { title: "Stretch", text: studioCoach.stretch, style: "border-violet-200 bg-violet-50 text-violet-950" }
+                      { title: __alloT("stem.artstudio.learning_try_first_dde4330", "Try first"), text: visibleCoach.try, style: "border-emerald-200 bg-emerald-50 text-emerald-950" },
+                      { title: simpleStudioGuide ? __alloT("stem.artstudio.guide_simple_notice_label", "Look for") : __alloT("stem.artstudio.learning_notice_6565914", "Notice"), text: visibleCoach.notice, style: "border-sky-200 bg-sky-50 text-sky-950" },
+                      { title: simpleStudioGuide ? __alloT("stem.artstudio.guide_simple_stretch_label", "Try next") : __alloT("stem.artstudio.learning_stretch_a33fbcf", "Stretch"), text: visibleCoach.stretch, style: "border-violet-200 bg-violet-50 text-violet-950" }
                     ].map(function (prompt) {
                       return React.createElement("section", { key: prompt.title, className: "rounded-xl border p-3 " + prompt.style },
                         React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wider" }, prompt.title),
-                        React.createElement("p", { className: "mt-1 text-xs leading-relaxed" }, prompt.text)
+                        React.createElement("p", { className: simpleStudioGuide ? "mt-1 text-sm leading-7" : "mt-1 text-xs leading-relaxed" }, prompt.text)
                       );
                     })
                   )
-                : React.createElement("p", { className: "mt-3 rounded-xl bg-white p-3 text-xs leading-relaxed text-slate-700" }, "Explore one variable at a time, save a study, and compare what changed."),
+                : React.createElement("p", { className: "mt-3 rounded-xl bg-white p-3 text-xs leading-relaxed text-slate-700" }, __alloT("stem.artstudio.learning_explore_one_variable_at_a_time_save_a_study_and__7b7036e", "Explore one variable at a time, save a study, and compare what changed.")),
+              simpleStudioCoach && React.createElement('details', {className:'mt-3 rounded-xl border border-slate-300 bg-white p-3', 'data-artstudio-guide-vocabulary':'true'},
+                React.createElement('summary', {className:'min-h-[40px] cursor-pointer content-center text-sm font-bold text-slate-900'}, __alloT('stem.artstudio.guide_word_to_explore','Word to explore') + ': ' + simpleStudioCoach.term),
+                React.createElement('p', {className:'mt-2 text-sm leading-7 text-slate-800'}, simpleStudioCoach.definition)),
               studioCoach && Array.isArray(studioCoach.next) && React.createElement("div", { className: "mt-3 grid gap-2" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Continue the idea in"),
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_continue_the_idea_in_1e4f02d", "Continue the idea in")),
                 studioCoach.next.map(function (nextTab) {
                   var nextLabel = ART_STUDIO_TAB_LABELS[nextTab] || nextTab;
                   return React.createElement("button", { type: "button", key: nextTab, onClick: function () { selectArtStudioTab(nextTab, nextLabel, { focusPanel: true }); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-left text-[11px] font-black text-slate-700 hover:bg-slate-50" }, nextLabel + " \u2192");
@@ -5561,11 +6003,34 @@ const d = labToolData.artStudio || {};
             );
           };
 
+          const renderStudioStudyNotes = function () {
+            var fieldClass = 'mt-1 block min-h-[44px] w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-normal text-slate-950';
+            return React.createElement('details', { className: 'rounded-2xl border border-slate-300 bg-white p-3', 'data-artstudio-study-notes': 'true' },
+              React.createElement('summary', { className: 'min-h-[40px] cursor-pointer content-center text-sm font-bold text-slate-900' }, __alloT('stem.artstudio.study_notes_optional', 'Study notes (optional)')),
+              React.createElement('p', { className: 'my-2 text-xs leading-relaxed text-slate-600' }, __alloT('stem.artstudio.study_notes_help', 'Capture your intention and discoveries. These notes travel with your next saved study.')),
+              React.createElement('label', { className: 'mt-3 block text-xs font-bold text-slate-800', htmlFor: 'artstudio-study-title' }, __alloT('stem.artstudio.study_title', 'Title'),
+                React.createElement('input', { id: 'artstudio-study-title', type: 'text', maxLength: 80, value: studioStudyDraft.title || '', onChange: function(e) { updateStudioStudyDraft('title', e.target.value); }, className: fieldClass })),
+              React.createElement('label', { className: 'mt-3 block text-xs font-bold text-slate-800', htmlFor: 'artstudio-study-intention' }, __alloT('stem.artstudio.study_intention_prompt', 'What are you trying to make or find out?'),
+                React.createElement('textarea', { id: 'artstudio-study-intention', rows: 2, maxLength: 160, value: studioStudyDraft.intention || '', onChange: function(e) { updateStudioStudyDraft('intention', e.target.value); }, className: fieldClass })),
+              !onActiveCreativeThreadStep && React.createElement('fieldset', { className: 'mt-3' },
+                React.createElement('legend', { className: 'text-xs font-bold text-slate-800' }, __alloT('stem.artstudio.study_reflection', 'Reflection')),
+                React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  [{id:'keep',label:__alloT('stem.artstudio.reflection_keep','Keep')},{id:'change',label:__alloT('stem.artstudio.reflection_change','Change')},{id:'wonder',label:__alloT('stem.artstudio.reflection_wonder','Wonder')}].map(function(item) {
+                    return React.createElement('label', { key:item.id, className:'flex min-h-[40px] items-center gap-2 rounded-lg border border-slate-300 px-2 text-xs text-slate-900' },
+                      React.createElement('input', { type:'radio', name:'artstudio-free-reflection', value:item.id, checked:freeStudyReflection === item.id, onChange:function(){updateStudioStudyDraft('reflection', item.id);} }), item.label);
+                  })),
+                React.createElement('label', { htmlFor:'artstudio-study-note', className:'mt-2 block text-xs font-bold text-slate-800' }, __alloT('stem.artstudio.study_observation','What did you notice, or what will you change?'),
+                  React.createElement('textarea', { id:'artstudio-study-note', rows:2, maxLength:160, value:freeStudyNote, onChange:function(e){updateStudioStudyDraft('note', e.target.value.slice(0,160));}, className:fieldClass }))),
+              React.createElement('label', { className:'mt-3 block text-xs font-bold text-slate-800', htmlFor:'artstudio-study-description' }, __alloT('stem.artstudio.study_description','Describe the artwork for someone who cannot see it'),
+                React.createElement('textarea', { id:'artstudio-study-description', rows:3, maxLength:300, value:studioStudyDraft.description || '', onChange:function(e){updateStudioStudyDraft('description',e.target.value);}, className:fieldClass })),
+              React.createElement('button', { type:'button', onClick:function(){saveArtStudioSnapshot({replace:canReplaceCurrentThreadStudy});}, className:'mt-3 min-h-[44px] w-full rounded-xl bg-indigo-700 px-3 text-sm font-bold text-white hover:bg-indigo-800' }, __alloT('stem.artstudio.save_study_with_notes','Save study with notes'))
+            );
+          };
           const renderStudioInspector = function () {
             var inspectorTabs = [
-              { id: 'make', label: 'Make' },
-              { id: 'guide', label: 'Guide' },
-              { id: 'process', label: 'Process' }
+              { id: 'make', label: __alloT("stem.artstudio.learning_make_ccdd25d", "Make") },
+              { id: 'guide', label: __alloT("stem.artstudio.learning_guide_8dd65d0", "Guide") },
+              { id: 'process', label: __alloT("stem.artstudio.learning_process_e083bd8", "Process") }
             ];
             var onInspectorKeyDown = function (event, index) {
               var nextIndex = -1;
@@ -5579,13 +6044,20 @@ const d = labToolData.artStudio || {};
               var nextControl = event.currentTarget.parentNode && event.currentTarget.parentNode.querySelectorAll('[role="tab"]')[nextIndex];
               if (nextControl && typeof nextControl.focus === 'function') nextControl.focus();
             };
-            return React.createElement("aside", {
+            return React.createElement(isCompactStudio ? 'dialog' : 'div', {
+              ref: studioInspectorDialogRef,
+              'data-artstudio-inspector-shell': 'true',
+              'aria-label': isCompactStudio ? __alloT('stem.artstudio.studio_inspector_dialog', 'Studio inspector') : undefined,
+              onCancel: function (event) { event.preventDefault(); closeCompactStudioInspector(); },
+              style: isCompactStudio ? { padding: 0, border: '1px solid #94a3b8', borderRadius: 24, width: 'calc(100% - 16px)', maxWidth: 640, maxHeight: '85dvh', overflow: 'auto', background: '#f8fafc', color: '#0f172a' } : { minWidth: 0 }
+            }, React.createElement("aside", {
               'data-artstudio-inspector': "true",
               'aria-labelledby': "artstudio-inspector-title",
               className: "min-w-0 rounded-3xl border border-slate-300 bg-slate-50/90 p-2 shadow-sm"
             },
-              React.createElement("h2", { id: "artstudio-inspector-title", className: "sr-only" }, "Studio inspector"),
-              React.createElement("div", { role: "tablist", 'aria-label': "Studio inspector", className: "grid grid-cols-3 gap-1 rounded-2xl bg-slate-200 p-1" },
+              React.createElement("h2", { id: "artstudio-inspector-title", className: "sr-only" }, __alloT("stem.artstudio.learning_studio_inspector_24e9612", "Studio inspector")),
+              isCompactStudio && React.createElement('button', { type:'button', onClick:closeCompactStudioInspector, className:'mb-2 min-h-[44px] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-900' }, __alloT('stem.artstudio.back_to_artwork','Back to artwork')),
+              React.createElement("div", { role: "tablist", 'aria-label': __alloT("stem.artstudio.learning_studio_inspector_24e9612", "Studio inspector"), className: "grid grid-cols-3 gap-1 rounded-2xl bg-slate-200 p-1" },
                 inspectorTabs.map(function (inspectorTab, index) {
                   var selected = studioInspectorTab === inspectorTab.id;
                   return React.createElement("button", {
@@ -5608,7 +6080,7 @@ const d = labToolData.artStudio || {};
                 'aria-labelledby': "artstudio-inspector-tab-make",
                 hidden: studioInspectorTab !== 'make',
                 className: "mt-2 space-y-3"
-              }, renderCreativeThreadRail(), renderStudioThreadKit()),
+              }, renderCreativeThreadRail(), renderStudioStudyNotes(), renderStudioThreadKit()),
               React.createElement("div", {
                 id: "artstudio-inspector-panel-guide",
                 role: "tabpanel",
@@ -5623,7 +6095,7 @@ const d = labToolData.artStudio || {};
                 hidden: studioInspectorTab !== 'process',
                 className: "mt-2"
               }, renderStudioProcessShelf())
-            );
+            ));
           };
 
           const renderStudioHome = function () {
@@ -5633,20 +6105,20 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
                 React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-500 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, 'Creative desk'),
-                  React.createElement("p", { className: "truncate text-lg font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
+                  React.createElement("p", { className: "truncate text-lg font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
                 ),
-                React.createElement("button", { type: "button", onClick: function () { var picked = surpriseTabs[Math.floor(Math.random() * surpriseTabs.length)]; beginStudioPath(picked, 'a surprise creative lab'); }, className: "ml-auto min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800" }, '\u2726 Surprise me')
+                React.createElement("button", { type: "button", onClick: function () { var picked = surpriseTabs[Math.floor(Math.random() * surpriseTabs.length)]; beginStudioPath(picked, 'a surprise creative lab'); }, className: "ml-auto min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800" }, __alloT("stem.artstudio.learning_surprise_me_70c269b", "✦ Surprise me"))
               ),
 
               React.createElement("section", { className: "relative overflow-hidden rounded-3xl bg-slate-950 text-white p-6 sm:p-8 shadow-xl", 'aria-labelledby': "artstudio-home-title" },
                 React.createElement("div", { className: "absolute -right-16 -top-20 h-56 w-56 rounded-full bg-pink-500/25 blur-3xl", 'aria-hidden': "true" }),
                 React.createElement("div", { className: "absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl", 'aria-hidden': "true" }),
                 React.createElement("div", { className: "relative max-w-2xl" },
-                  React.createElement("p", { className: "text-xs font-black uppercase tracking-[0.2em] text-pink-300" }, 'Begin with an intention'),
-                  React.createElement("h2", { id: "artstudio-home-title", tabIndex: -1, className: "mt-2 text-3xl sm:text-4xl font-black tracking-tight focus:outline-none" }, 'What do you want to make?'),
-                  React.createElement("p", { className: "mt-3 text-sm sm:text-base leading-relaxed text-slate-300" }, 'Choose a creative direction. The canvas comes first; techniques, artists, mathematics, and accessibility stay close when you want to look deeper.'),
-                  React.createElement("div", { className: "mt-5 flex flex-wrap gap-2", role: "group", 'aria-label': "Studio lenses" },
+                  React.createElement("p", { className: "text-xs font-black uppercase tracking-[0.2em] text-pink-300" }, __alloT("stem.artstudio.learning_begin_with_an_intention_e60717f", "Begin with an intention")),
+                  React.createElement("h2", { id: "artstudio-home-title", tabIndex: -1, className: "mt-2 text-3xl sm:text-4xl font-black tracking-tight focus:outline-none" }, __alloT("stem.artstudio.learning_what_do_you_want_to_make_b89d377", "What do you want to make?")),
+                  React.createElement("p", { className: "mt-3 text-sm sm:text-base leading-relaxed text-slate-300" }, __alloT("stem.artstudio.learning_choose_a_creative_direction_the_canvas_comes_fir_c03ae38", "Choose a creative direction. The canvas comes first; techniques, artists, mathematics, and accessibility stay close when you want to look deeper.")),
+                  React.createElement("div", { className: "mt-5 flex flex-wrap gap-2", role: "group", 'aria-label': __alloT("stem.artstudio.learning_studio_lenses_25e674f", "Studio lenses") },
                     ['\u270E Create', '\u25CE Learn', '\u2315 Inspect'].map(function (lens) { return React.createElement("span", { key: lens, className: "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white" }, lens); })
                   )
                 )
@@ -5656,8 +6128,8 @@ const d = labToolData.artStudio || {};
                 ? React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep, 'Resumed ' + activeCreativeThread.title); }, className: "mt-4 w-full flex items-center gap-4 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4 text-left hover:border-indigo-500 hover:bg-indigo-100 transition-colors" },
                     React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, activeCreativeThread.icon),
                     React.createElement("span", { className: "min-w-0 flex-1" },
-                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-indigo-700" }, 'Resume your Creative Thread'),
-                      React.createElement("span", { className: "block text-sm font-black text-slate-900" }, activeCreativeThread.title + ' \u00B7 step ' + (activeCreativeThreadStep + 1) + ' of ' + activeCreativeThread.steps.length),
+                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-indigo-700" }, __alloT("stem.artstudio.learning_resume_your_creative_thread_870f808", "Resume your Creative Thread")),
+                      React.createElement("span", { className: "block text-sm font-black text-slate-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_step_value2_of_value3_c1fed9f", "{value1} · step {value2} of {value3}"), { value1: (activeCreativeThread.title), value2: (activeCreativeThreadStep + 1), value3: (activeCreativeThread.steps.length) })),
                       React.createElement("span", { className: "mt-0.5 block text-xs text-slate-600" }, activeCreativeThread.steps[activeCreativeThreadStep].label)
                     ),
                     React.createElement("span", { className: "text-indigo-700 font-black", 'aria-hidden': "true" }, "\u2192")
@@ -5665,7 +6137,7 @@ const d = labToolData.artStudio || {};
                 : recentTab && React.createElement("button", { type: "button", onClick: function () { beginStudioPath(recentTab, ART_STUDIO_TAB_LABELS[recentTab]); }, className: "mt-4 w-full flex items-center gap-4 rounded-2xl border-2 border-pink-200 bg-pink-50 p-4 text-left hover:border-pink-400 hover:bg-pink-100 transition-colors" },
                     React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, "\u21BB"),
                     React.createElement("span", { className: "flex-1" },
-                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-pink-700" }, 'Return to your last lab'),
+                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-pink-700" }, __alloT("stem.artstudio.learning_return_to_your_last_lab_9a35b75", "Return to your last lab")),
                       React.createElement("span", { className: "block text-sm font-black text-slate-900" }, ART_STUDIO_TAB_LABELS[recentTab])
                     ),
                     React.createElement("span", { className: "text-pink-700 font-black", 'aria-hidden': "true" }, "\u2192")
@@ -5679,30 +6151,30 @@ const d = labToolData.artStudio || {};
                   setStudioProcessScope('current');
                   beginStudioPath(ART_STUDIO_TAB_ORDER.indexOf(reviewTab) !== -1 ? reviewTab : 'colorWheel', 'your last project review');
                   focusArtStudioTarget('artstudio-process-title');
-                }, className: "mt-4 w-full rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-left hover:border-amber-400 hover:bg-amber-100", 'aria-label': "Review your last Art Studio project on the Process Shelf" },
+                }, className: "mt-4 w-full rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-left hover:border-amber-400 hover:bg-amber-100", 'aria-label': __alloT("stem.artstudio.learning_review_your_last_art_studio_project_on_the_proce_9f970fe", "Review your last Art Studio project on the Process Shelf") },
                 React.createElement("span", { className: "flex items-center gap-3" },
                   React.createElement("span", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, "\uD83C\uDF9E"),
                   React.createElement("span", { className: "min-w-0 flex-1" },
-                    React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-amber-800" }, "Review your last project"),
-                    React.createElement("span", { className: "block text-sm font-black text-slate-900" }, lastCompletedProcessStudies.length + " saved " + (lastCompletedProcessStudies.length === 1 ? "study" : "studies")),
-                    React.createElement("span", { className: "mt-0.5 block text-xs text-slate-600" }, "Compare the decisions you kept, changed, and questioned.")
+                    React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-amber-800" }, __alloT("stem.artstudio.learning_review_your_last_project_a95004a", "Review your last project")),
+                    React.createElement("span", { className: "block text-sm font-black text-slate-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_saved_value2_aeb4480", "{value1} saved {value2}"), { value1: (lastCompletedProcessStudies.length), value2: (lastCompletedProcessStudies.length === 1 ? "study" : "studies") })),
+                    React.createElement("span", { className: "mt-0.5 block text-xs text-slate-600" }, __alloT("stem.artstudio.learning_compare_the_decisions_you_kept_changed_and_quest_778403c", "Compare the decisions you kept, changed, and questioned."))
                   ),
                   React.createElement("span", { className: "text-amber-800 font-black", 'aria-hidden': "true" }, "\u2192")
                 ),
                 React.createElement("span", { className: "mt-3 flex gap-2 overflow-hidden", 'aria-hidden': "true" },
                   lastCompletedProcessStudies.slice(0, 3).map(function (snapshot) {
                     return snapshot.artStudioStudy.previewSrc
-                      ? React.createElement("img", { key: snapshot.id, src: snapshot.artStudioStudy.previewSrc, alt: "", className: "h-12 w-20 rounded-lg border border-amber-200 bg-slate-950 object-cover" })
-                      : React.createElement("span", { key: snapshot.id, className: "grid h-12 w-20 place-items-center rounded-lg border border-dashed border-amber-300 bg-white text-[10px] font-bold text-amber-800" }, "Study");
+                      ? React.createElement("img", { key: snapshot.id, src: snapshot.artStudioStudy.previewSrc, alt: "", style: { backgroundColor: artStudioPaperColor((snapshot.data || {}).tab, snapshot.data) }, className: "h-12 w-20 rounded-lg border border-amber-200 bg-slate-950 object-cover" })
+                      : React.createElement("span", { key: snapshot.id, className: "grid h-12 w-20 place-items-center rounded-lg border border-dashed border-amber-300 bg-white text-[10px] font-bold text-amber-800" }, __alloT("stem.artstudio.learning_study_3ff5620", "Study"));
                   })
                 )
               ),
 
               React.createElement("section", { className: "mt-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-rose-50 p-4 sm:p-5", 'aria-labelledby': "artstudio-threads-title" },
                 React.createElement("div", { className: "max-w-2xl" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-indigo-700" }, 'Guided projects'),
-                  React.createElement("h2", { id: "artstudio-threads-title", className: "mt-1 text-xl font-black text-slate-950" }, 'Follow one idea through three labs'),
-                  React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, 'A Creative Thread gives you a flexible brief and keeps your next step nearby. Explore freely; your place will wait.')
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_guided_projects_5e5932a", "Guided projects")),
+                  React.createElement("h2", { id: "artstudio-threads-title", className: "mt-1 text-xl font-black text-slate-950" }, __alloT("stem.artstudio.learning_follow_one_idea_through_three_labs_89a0e96", "Follow one idea through three labs")),
+                  React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_a_creative_thread_gives_you_a_flexible_brief_and_ff9c8be", "A Creative Thread gives you a flexible brief and keeps your next step nearby. Explore freely; your place will wait."))
                 ),
                 React.createElement("div", { className: "mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3" },
                   CREATIVE_THREAD_TEMPLATES.map(function (thread) {
@@ -5710,16 +6182,16 @@ const d = labToolData.artStudio || {};
                       type: "button",
                       key: thread.id,
                       onClick: function () { startCreativeThread(thread.id); },
-                      'aria-label': 'Start ' + thread.title + '. ' + thread.description + ' Constraint: ' + thread.constraint,
+                      'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_start_value1_value2_constraint_value3_d80c6bb", "Start {value1}. {value2} Constraint: {value3}"), { value1: (thread.title), value2: (thread.description), value3: (thread.constraint) }),
                       className: "group min-h-[172px] rounded-2xl border-2 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0 " + thread.accent
                     },
                       React.createElement("div", { className: "flex items-start justify-between gap-3" },
                         React.createElement("span", { className: "grid h-10 w-10 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, thread.icon),
-                        React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-indigo-700" }, thread.steps.length + ' steps')
+                        React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_steps_11a083b", "{value1} steps"), { value1: (thread.steps.length) }))
                       ),
                       React.createElement("span", { className: "mt-3 block text-sm font-black text-slate-950" }, thread.title),
                       React.createElement("span", { className: "mt-1 block text-[11px] leading-relaxed text-slate-600" }, thread.description),
-                      React.createElement("span", { className: "mt-2 block text-[10px] font-bold leading-relaxed text-slate-700" }, 'Constraint: ' + thread.constraint)
+                      React.createElement("span", { className: "mt-2 block text-[10px] font-bold leading-relaxed text-slate-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (thread.constraint) }))
                     );
                   })
                 )
@@ -5728,10 +6200,10 @@ const d = labToolData.artStudio || {};
               React.createElement("section", { className: "mt-6", 'aria-labelledby': "artstudio-starting-points-title" },
                 React.createElement("div", { className: "flex items-end justify-between gap-3 mb-3" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, 'Starting points'),
-                    React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black text-slate-900" }, 'Choose a creative path')
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, __alloT("stem.artstudio.learning_starting_points_c018c0c", "Starting points")),
+                    React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT("stem.artstudio.learning_choose_a_creative_path_96f880f", "Choose a creative path"))
                   ),
-                  React.createElement("button", { type: "button", onClick: function () { beginStudioPath('colorWheel', 'the full lab navigator'); }, className: "text-xs font-black text-pink-700 hover:text-pink-900" }, 'Open full lab navigator \u2192')
+                  React.createElement("button", { type: "button", onClick: function () { beginStudioPath('colorWheel', 'the full lab navigator'); }, className: "text-xs font-black text-pink-700 hover:text-pink-900" }, __alloT("stem.artstudio.learning_open_full_lab_navigator_bce593b", "Open full lab navigator →"))
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" },
                   STUDIO_START_PATHS.map(function (path) {
@@ -5751,37 +6223,38 @@ const d = labToolData.artStudio || {};
 
           if (studioHomeOpen) return renderStudioHome();
 
-          return React.createElement("div", { className: "max-w-7xl mx-auto animate-in fade-in duration-200 motion-reduce:animate-none" },
+          return React.createElement("div", { className: "max-w-7xl mx-auto animate-in fade-in duration-200 motion-reduce:animate-none", 'data-artstudio-root': 'true' },
+            React.createElement('style', null, "dialog[data-artstudio-inspector-shell]::backdrop{background:rgba(15,23,42,.58)} [data-artstudio-root] button,[data-artstudio-root] summary{scroll-margin-block:1rem} @media(max-width:639px){[data-artstudio-root] [data-studio-touch-description]{display:none}[data-artstudio-root] [data-studio-compact-palette]>summary{min-height:44px;display:list-item;align-content:center}[data-artstudio-root] [data-studio-compact-palette][open]>summary{margin-bottom:12px}}"),
 
             React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
               React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
               React.createElement("div", { className: "min-w-0" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, 'Creative desk'),
-                React.createElement("h2", { className: "truncate text-sm sm:text-base font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
+                React.createElement("h2", { className: "truncate text-sm sm:text-base font-black text-slate-900" + (isContrast ? " text-white" : "") }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
               ),
-              React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || "CREATIVE"),
+              React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || __alloT("stem.artstudio.learning_creative_24674ae", "CREATIVE")),
               React.createElement("div", { className: "ml-auto flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto" },
-                React.createElement("button", { type: "button", onClick: openStudioHome, className: "px-3 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-100", 'aria-label': 'Open Studio home' }, "Home"),
+                React.createElement("button", { type: "button", onClick: openStudioHome, className: "px-3 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-100", 'aria-label': __alloT("stem.artstudio.learning_open_studio_home_72a7ad7", "Open Studio home") }, __alloT("stem.artstudio.learning_home_3a78695", "Home")),
                 React.createElement("button", {
                   id: "artstudio-kit-button",
                   type: "button",
-                  onClick: function () { selectStudioInspector('make'); focusArtStudioTarget('artstudio-thread-kit-title'); },
+                  onClick: function () { selectStudioInspector('make'); focusArtStudioTarget(isCompactStudio ? 'artstudio-inspector-tab-make' : 'artstudio-thread-kit-title'); },
                   className: "px-3 py-2 rounded-xl text-xs font-black " + (studioInspectorTab === 'make' ? "bg-violet-700 text-white" : "bg-violet-50 text-violet-900 hover:bg-violet-100"),
-                  'aria-label': "Open Thread Kit",
-                  'aria-expanded': studioInspectorTab === 'make',
+                  'aria-label': __alloT("stem.artstudio.learning_open_thread_kit_152787d", "Open Thread Kit"),
+                  'aria-expanded': studioInspectorTab === 'make' && (!isCompactStudio || studioMobileInspectorOpen),
                   'aria-controls': "artstudio-inspector-panel-make"
-                }, "Kit" + (studioThreadPalette.length ? " (" + studioThreadPalette.length + ")" : "")),
-                React.createElement("button", { id: "artstudio-learn-button", type: "button", onClick: function () { toggleStudioCoach(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (d.showTour ? "bg-pink-700 text-white" : "text-pink-800 bg-pink-50 hover:bg-pink-100"), "aria-label": d.showTour ? 'Close Studio learning guide' : 'Open Studio learning guide', 'aria-expanded': !!d.showTour, 'aria-controls': 'artstudio-tour' }, d.showTour ? "Close guide" : "Learn"),
-                React.createElement("button", { id: "artstudio-process-button", type: "button", onClick: function () { if (studioProcessOpen) closeStudioProcess(); else openStudioProcess(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (studioProcessOpen ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-900 hover:bg-amber-100"), 'aria-label': studioProcessOpen ? "Close Process shelf" : "Open Process shelf", 'aria-expanded': studioProcessOpen, 'aria-controls': "artstudio-process-shelf" }, "Process (" + artStudioStudies.length + ")"),
+                }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_kit_value1_5cdbaab", "Kit{value1}"), { value1: (studioThreadPalette.length ? " (" + studioThreadPalette.length + ")" : "") })),
+                React.createElement("button", { id: "artstudio-learn-button", type: "button", onClick: function () { toggleStudioCoach(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (studioGuideVisible ? "bg-pink-700 text-white" : "text-pink-800 bg-pink-50 hover:bg-pink-100"), "aria-label": studioGuideVisible ? __alloT("stem.artstudio.learning_close_studio_learning_guide_f7c01d1", "Close Studio learning guide") : __alloT("stem.artstudio.learning_open_studio_learning_guide_66daefb", "Open Studio learning guide"), 'aria-expanded': studioGuideVisible, 'aria-controls': 'artstudio-tour' }, studioGuideVisible ? __alloT("stem.artstudio.learning_close_guide_7674c25", "Close guide") : __alloT("stem.artstudio.learning_learn_ce78afd", "Learn")),
+                React.createElement("button", { id: "artstudio-process-button", type: "button", onClick: function () { if (studioProcessVisible) closeStudioProcess(); else openStudioProcess(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (studioProcessVisible ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-900 hover:bg-amber-100"), 'aria-label': studioProcessVisible ? __alloT("stem.artstudio.learning_close_process_shelf_e381bb1", "Close Process shelf") : __alloT("stem.artstudio.learning_open_process_shelf_b812ad3", "Open Process shelf"), 'aria-expanded': studioProcessVisible, 'aria-controls': "artstudio-process-shelf" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_process_value1_34d4fa4", "Process ({value1})"), { value1: (artStudioStudies.length) })),
                 React.createElement("details", { className: "relative", onKeyDown: function (event) { if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); event.currentTarget.open = false; var summary = event.currentTarget.querySelector('summary'); if (summary && typeof summary.focus === 'function') summary.focus(); } } },
-                  React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': "Studio actions" }, "Actions"),
+                  React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': __alloT("stem.artstudio.learning_studio_actions_a34974e", "Studio actions") }, __alloT("stem.artstudio.learning_actions_ff8059d", "Actions")),
                   React.createElement("div", { className: "absolute right-0 mt-2 w-56 space-y-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl" },
-                    React.createElement("p", { className: "px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, 'Save or continue in'),
-                    React.createElement("p", { id: "artstudio-snapshot-count", 'aria-live': "polite", className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] font-semibold text-slate-600" }, artStudioSnapshotCount + " saved " + (artStudioSnapshotCount === 1 ? "study" : "studies")),
-                    React.createElement("button", { type: "button", "aria-label": canReplaceCurrentThreadStudy ? "Replace saved study for this thread step" : "Save current study", onClick: function (event) { saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, canReplaceCurrentThreadStudy ? "\uD83D\uDCF8 Replace saved study" : studioVariationForkPending ? "\uD83C\uDF31 Save as new branch" : "\uD83D\uDCF8 Save study"),
-                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('page-designer'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50", title: "Insert this static image into Page Designer" }, "↗ Page Designer"),
-                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('visual-support'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-violet-800 hover:bg-violet-50", title: "Save this static image as a Visual Support" }, "＋ Visual Support"),
-                    typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-600" }, 'Artwork handoff is available in canvas labs.'),
+                    React.createElement("p", { className: "px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_save_or_continue_in_9842b9c", "Save or continue in")),
+                    React.createElement("p", { id: "artstudio-snapshot-count", 'aria-live': "polite", className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] font-semibold text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_saved_value2_aeb4480", "{value1} saved {value2}"), { value1: (artStudioSnapshotCount), value2: (artStudioSnapshotCount === 1 ? "study" : "studies") })),
+                    React.createElement("button", { type: "button", "aria-label": canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_replace_saved_study_for_this_thread_step_0d8905f", "Replace saved study for this thread step") : __alloT("stem.artstudio.learning_save_current_study_f90ef3d", "Save current study"), onClick: function (event) { saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_replace_saved_study_e1c6696", "📸 Replace saved study") : studioVariationForkPending ? __alloT("stem.artstudio.learning_save_as_new_branch_20e1466", "🌱 Save as new branch") : __alloT("stem.artstudio.learning_save_study_8f477d3", "📸 Save study")),
+                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('page-designer'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50", title: __alloT("stem.artstudio.learning_insert_this_static_image_into_page_designer_51860e0", "Insert this static image into Page Designer") }, __alloT("stem.artstudio.learning_page_designer_ed06901", "↗ Page Designer")),
+                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('visual-support'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-violet-800 hover:bg-violet-50", title: __alloT("stem.artstudio.learning_save_this_static_image_as_a_visual_support_15268fb", "Save this static image as a Visual Support") }, __alloT("stem.artstudio.learning_visual_support_62e55b9", "＋ Visual Support")),
+                    typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-600" }, __alloT("stem.artstudio.learning_artwork_handoff_is_available_in_canvas_labs_03c1709", "Artwork handoff is available in canvas labs.")),
                     React.createElement("button", { type: "button", onClick: function () { closeArtStudio('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
                   )
                 )
@@ -5790,7 +6263,7 @@ const d = labToolData.artStudio || {};
 
             React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
               React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-500 bg-white p-3 shadow-sm' },
-                React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[11px] font-black uppercase tracking-wider text-slate-600' }, 'Choose a studio tool'),
+                React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[11px] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_choose_a_studio_tool_44b120e", "Choose a studio tool")),
                 React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-500 bg-white px-3 text-sm font-bold text-slate-900' },
                   ART_STUDIO_GROUPS.map(function (group) {
                     return React.createElement('optgroup', { key: group.id, label: group.label },
@@ -5802,7 +6275,7 @@ const d = labToolData.artStudio || {};
                 )
               ),
               React.createElement('div', { className: 'hidden sm:block space-y-2' },
-                React.createElement('div', { className: 'grid grid-cols-3 lg:grid-cols-6 gap-1 rounded-xl border border-slate-400 bg-slate-100 p-1', role: 'group', 'aria-label': 'Art Studio tool groups' }, ART_STUDIO_GROUPS.map(function (group) {
+                React.createElement('div', { className: 'grid grid-cols-3 lg:grid-cols-6 gap-1 rounded-xl border border-slate-400 bg-slate-100 p-1', role: 'group', 'aria-label': __alloT("stem.artstudio.learning_art_studio_tool_groups_f20ca83", "Art Studio tool groups") }, ART_STUDIO_GROUPS.map(function (group) {
                   var groupActive = group.id === activeArtStudioGroup.id;
                   return React.createElement('button', {
                     type: 'button', key: group.id, 'aria-pressed': groupActive,
@@ -5810,7 +6283,7 @@ const d = labToolData.artStudio || {};
                     className: 'min-h-[42px] rounded-lg px-2 text-xs font-black transition-all ' + (groupActive ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50')
                   }, group.icon + ' ' + group.label);
                 })),
-                React.createElement('div', { id: 'artstudio-group-tools', className: 'flex flex-wrap gap-1 rounded-xl border border-rose-200 bg-rose-50/60 p-1', role: 'tablist', 'aria-label': activeArtStudioGroup.label + ' tools' },
+                React.createElement('div', { id: 'artstudio-group-tools', className: 'flex flex-wrap gap-1 rounded-xl border border-rose-200 bg-rose-50/60 p-1', role: 'tablist', 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_tools_a10bf03", "{value1} tools"), { value1: (activeArtStudioGroup.label) }) },
                   visibleArtStudioTabs.map(function (tb, tabIndex) {
                     return React.createElement('button', { 'aria-label': tb.label, key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex, activeArtStudioGroup.tabs); }, className: 'min-h-[40px] flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all ' + (tab === tb.id ? 'bg-white text-pink-700 shadow-md ring-1 ring-rose-200' : 'text-slate-700 hover:bg-white/70') }, tb.icon + ' ' + tb.label);
                   })
@@ -5824,10 +6297,11 @@ const d = labToolData.artStudio || {};
             },
             React.createElement("main", {
               'data-artstudio-stage': "true",
-              'aria-label': (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') + " creative stage",
+              'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_creative_stage_98aa189", "{value1} creative stage"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') }),
               className: "min-w-0"
             },
 
+            isCompactStudio && activeCreativeThread && activeCreativeThread.steps[activeCreativeThreadStep] && React.createElement('p', { className:'mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm leading-relaxed text-indigo-950' }, activeCreativeThread.steps[activeCreativeThreadStep].prompt),
             visibleArtStudioTabs.filter(function (tb) { return tb.id !== tab; }).map(function (tb) {
               return React.createElement('div', {
                 key: 'artstudio-inactive-panel-' + tb.id,
@@ -5841,7 +6315,7 @@ const d = labToolData.artStudio || {};
             React.createElement('section', {
               role: 'tabpanel', id: 'artstudio-panel-' + tab,
               'aria-labelledby': 'artstudio-tab-' + tab, tabIndex: 0,
-              'aria-label': (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') + ' workspace',
+              'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_workspace_c3cdaff", "{value1} workspace"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') }),
               'aria-describedby': activeCreativeThread ? 'artstudio-thread-current-prompt' : undefined,
               'data-artstudio-workspace': tab,
               className: 'space-y-4 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-4 focus-visible:ring-offset-white'
@@ -5865,7 +6339,7 @@ const d = labToolData.artStudio || {};
                 fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: __alloT('stem.artstudio.fractal_self_similar_at_every_scale', 'Fractal \u2014 self-similar at every scale'),                  hint: __alloT('stem.artstudio.mandelbrot_1975_cauliflower_coastlines', 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D') },
                 gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: __alloT('stem.artstudio.gradient_smooth_color_transitions', 'Gradient \u2014 smooth color transitions'),                    hint: __alloT('stem.artstudio.css_gives_you_linear_radial_and_conic_', 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.') },
                 stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: __alloT('stem.artstudio.stereogram_3d_from_a_flat_page', 'Stereogram \u2014 3D from a flat page'),                       hint: __alloT('stem.artstudio.90s_magic_eye_craze_each_eye_sees_a_sl', '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.') },
-                sculpt3d:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '\uD83D\uDDFF', title: '3D Sculpture \u2014 form, balance, and space',                    hint: 'Build with simple forms, then orbit the work to study silhouette, balance, negative space, scale, and how a sculpture changes from every viewpoint.' },
+                sculpt3d:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '\uD83D\uDDFF', title: __alloT("stem.artstudio.learning_3d_sculpture_form_balance_and_space_d970725", "3D Sculpture — form, balance, and space"),                    hint: 'Build with simple forms, then orbit the work to study silhouette, balance, negative space, scale, and how a sculpture changes from every viewpoint.' },
 
                 contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') },
                 harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony - sound, ratio, and color'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Compare consonant and dissonant intervals, connect frequency ratios to pattern, and translate musical relationships into visual harmony.') }
@@ -5887,7 +6361,7 @@ const d = labToolData.artStudio || {};
                 },
                   React.createElement('span', { style: { fontSize: 24, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 14, fontWeight: 900, margin: 0, lineHeight: 1.2, flex: 1 } }, meta.title),
-                  React.createElement('span', { className: 'rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-slate-600' }, 'Why it works')
+                  React.createElement('span', { className: 'rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-slate-600' }, __alloT("stem.artstudio.learning_why_it_works_913e56b", "Why it works"))
                 ),
                 React.createElement('div', { className: 'border-t border-slate-200/70 bg-white/70 px-4 py-3' },
                   React.createElement('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.55 } }, meta.hint)
@@ -5905,7 +6379,7 @@ const d = labToolData.artStudio || {};
                 era: d.artistEra || 'All eras',
                 medium: d.artistMedium || 'All media'
               };
-              var matches = filterArtistExplorerProfiles(filters);
+              var matches = filterArtistExplorerProfiles(filters, artStudioProfileText, artStudioCategoryText);
               var selected = matches.filter(function (profile) { return profile.id === d.artistProfileId; })[0] || matches[0] || null;
               var selectedIndex = selected ? ARTIST_EXPLORER_PROFILES.indexOf(selected) : -1;
               var comparison = compareArtistExplorerProfiles(artistCompareIds);
@@ -5917,14 +6391,18 @@ const d = labToolData.artStudio || {};
                 var stops = profile.colors.map(function (color, index) { return color + ' ' + Math.round(index * 100 / Math.max(1, profile.colors.length - 1)) + '%'; }).join(',');
                 return React.createElement('div', {
                   role: 'img',
-                  'aria-label': profile.name + ' study palette: ' + profile.colors.join(', '),
+                  'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_study_palette_value2_578de6a", "{value1} study palette: {value2}"), { value1: (profile.name), value2: (profile.colors.join(', ')) }),
                   style: { height: height || 54, borderRadius: 10, background: 'linear-gradient(135deg,' + stops + ')', border: '1px solid rgba(15,23,42,.16)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.28)' }
                 });
               }
               function selectProfile(profile) {
                 pendingArtistDetailFocusRef.current = profile.id;
+                if (profile.id === d.artistProfileId) {
+                  pendingArtistDetailFocusRef.current = '';
+                  focusArtistStudyDetails();
+                }
                 upd('artistProfileId', profile.id);
-                if (typeof announceToSR === 'function') announceToSR('Selected ' + profile.name + ' in Artists and Traditions Explorer');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.artist_selected_announcement', 'Selected {name} in Artists and Traditions Explorer'), { name: profile.name }));
               }
               function toggleComparison(profile) {
                 var ids = comparison.profiles.map(function (item) { return item.id; });
@@ -5993,80 +6471,81 @@ const d = labToolData.artStudio || {};
                 React.createElement('section', { className: 'rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-4', 'aria-labelledby': 'artist-explorer-intro' },
                   React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     React.createElement('div', { className: 'max-w-2xl' },
-                      React.createElement('h4', { id: 'artist-explorer-intro', className: 'text-base font-black text-rose-900' }, 'A wider map of artistic intelligence'),
-                      React.createElement('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, 'Explore artists across seven regions, many media, and different relationships among art, place, history, technology, and community. No profile is a style preset: notice decisions, investigate context, and make from your own experience.')
+                      React.createElement('h4', { id: 'artist-explorer-intro', className: 'text-base font-black text-rose-900' }, __alloT("stem.artstudio.learning_a_wider_map_of_artistic_intelligence_538206c", "A wider map of artistic intelligence")),
+                      React.createElement('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, __alloT("stem.artstudio.learning_explore_artists_across_seven_regions_many_media__abbad8f", "Explore artists across seven regions, many media, and different relationships among art, place, history, technology, and community. No profile is a style preset: notice decisions, investigate context, and make from your own experience."))
                     ),
-                    React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[11px] font-black text-white' }, ARTIST_EXPLORER_PROFILES.length + ' profiles')
+                    React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[11px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_profiles_7322db8", "{value1} profiles"), { value1: (ARTIST_EXPLORER_PROFILES.length) }))
                   )
                 ),
-                React.createElement('section', { className: 'rounded-xl border border-slate-500 bg-white p-3', 'aria-label': 'Filter artists and traditions' },
+                React.createElement('section', { className: 'rounded-xl border border-slate-500 bg-white p-3', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_and_traditions_73b9b7b", "Filter artists and traditions") },
                   React.createElement('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Search',
-                      React.createElement('input', { type: 'search', value: filters.query, onChange: function (event) { upd('artistQuery', event.target.value.slice(0, 80)); }, placeholder: 'Artist, place, idea, medium…', className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 px-3 text-sm', 'aria-label': 'Search artist profiles' })
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_search_49c266b", "Search"),
+                      React.createElement('input', { type: 'search', value: filters.query, onChange: function (event) { upd('artistQuery', event.target.value.slice(0, 80)); }, placeholder: __alloT("stem.artstudio.learning_artist_place_idea_medium_007bc98", "Artist, place, idea, medium…"), className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 px-3 text-sm', 'aria-label': __alloT("stem.artstudio.learning_search_artist_profiles_955147c", "Search artist profiles"), 'aria-describedby': 'artist-search-help' }),
+                      React.createElement('span', { id: 'artist-search-help', className: 'mt-1 block text-[10px] font-normal leading-relaxed text-slate-600' }, __alloT('stem.artstudio.artist_search_help', 'Accents are optional. Each search word can match anywhere in a profile.'))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Region',
-                      React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by region' }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_region_d3a008e", "Region"),
+                      React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_region_23f1146", "Filter artists by region") }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Era',
-                      React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by era' }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_era_60c87e4", "Era"),
+                      React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_era_da99abd", "Filter artists by era") }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Medium',
-                      React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by medium' }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_medium_8e588cd", "Medium"),
+                      React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_medium_e68bb39", "Filter artists by medium") }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     )
                   ),
                   React.createElement('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                    React.createElement('p', { className: 'mr-auto text-xs font-bold text-slate-700', role: 'status', 'aria-live': 'polite' }, matches.length + ' matching profile' + (matches.length === 1 ? '' : 's')),
-                    React.createElement('button', { type: 'button', onClick: function () { upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); }, className: 'min-h-[38px] rounded-lg border border-slate-400 bg-slate-50 px-3 text-xs font-bold text-slate-800' }, 'Clear filters'),
-                    React.createElement('button', { type: 'button', disabled: !ARTIST_EXPLORER_PROFILES.length, onClick: function () { var next = ARTIST_EXPLORER_PROFILES[(Math.max(0, selectedIndex) + 7) % ARTIST_EXPLORER_PROFILES.length]; upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); selectProfile(next); }, className: 'min-h-[38px] rounded-lg bg-rose-800 px-3 text-xs font-black text-white disabled:opacity-50' }, 'Surprise me')
+                    React.createElement('p', { className: 'mr-auto text-xs font-bold text-slate-700', role: 'status', 'aria-live': 'polite' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_matching_profile_value2_98abd78", "{value1} matching profile{value2}"), { value1: (matches.length), value2: (matches.length === 1 ? '' : 's') })),
+                    React.createElement('button', { type: 'button', onClick: function () { upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); }, className: 'min-h-[38px] rounded-lg border border-slate-400 bg-slate-50 px-3 text-xs font-bold text-slate-800' }, __alloT("stem.artstudio.learning_clear_filters_7179ea0", "Clear filters")),
+                    React.createElement('button', { type: 'button', disabled: !ARTIST_EXPLORER_PROFILES.length, onClick: function () { var next = ARTIST_EXPLORER_PROFILES[(Math.max(0, selectedIndex) + 7) % ARTIST_EXPLORER_PROFILES.length]; upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); selectProfile(next); }, className: 'min-h-[38px] rounded-lg bg-rose-800 px-3 text-xs font-black text-white disabled:opacity-50' }, __alloT("stem.artstudio.learning_surprise_me_fc704e0", "Surprise me"))
                   )
                 ),
                 comparison.profiles.length > 0 && React.createElement('section', { className: 'rounded-xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-white p-4', 'aria-labelledby': 'artist-comparison-title', 'data-artist-comparison': 'true' },
                   React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     React.createElement('div', null,
-                      React.createElement('h4', { id: 'artist-comparison-title', className: 'font-black text-indigo-950' }, 'Compare artistic decisions'),
-                      React.createElement('p', { className: 'mt-1 text-xs text-indigo-900' }, comparison.profiles.length < 2 ? 'Choose at least one more profile to begin a side-by-side inquiry.' : 'Compare context and choices without flattening distinct practices into a shared style.')
+                      React.createElement('h4', { id: 'artist-comparison-title', className: 'font-black text-indigo-950' }, __alloT("stem.artstudio.learning_compare_artistic_decisions_08c7da3", "Compare artistic decisions")),
+                      React.createElement('p', { className: 'mt-1 text-xs text-indigo-900' }, comparison.profiles.length < 2 ? __alloT("stem.artstudio.learning_choose_at_least_one_more_profile_to_begin_a_side_cc3541b", "Choose at least one more profile to begin a side-by-side inquiry.") : __alloT("stem.artstudio.learning_compare_context_and_choices_without_flattening_d_413cdf7", "Compare context and choices without flattening distinct practices into a shared style."))
                     ),
                     React.createElement('div', { className: 'flex items-center gap-2' },
-                      React.createElement('span', { className: 'rounded-full bg-indigo-900 px-3 py-1 text-[10px] font-black text-white' }, comparison.profiles.length + ' of 3'),
-                      React.createElement('button', { type: 'button', onClick: function () { setArtistCompareIds([]); upd('artistCompareIds', []); }, className: 'min-h-[36px] rounded-lg border border-indigo-400 bg-white px-3 text-[11px] font-black text-indigo-950' }, 'Clear')
+                      React.createElement('span', { className: 'rounded-full bg-indigo-900 px-3 py-1 text-[10px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_of_3_4eb6922", "{value1} of 3"), { value1: (comparison.profiles.length) })),
+                      React.createElement('button', { type: 'button', onClick: function () { setArtistCompareIds([]); upd('artistCompareIds', []); }, className: 'min-h-[36px] rounded-lg border border-indigo-400 bg-white px-3 text-[11px] font-black text-indigo-950' }, __alloT("stem.artstudio.learning_clear_83b12c2", "Clear"))
                     )
                   ),
-                  React.createElement('div', { className: 'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': 'Artists selected for comparison' }, comparison.profiles.map(function (profile) {
+                  React.createElement('div', { className: 'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': __alloT("stem.artstudio.learning_artists_selected_for_comparison_6d8ea0d", "Artists selected for comparison") }, comparison.profiles.map(function (profile) {
                     return React.createElement('article', { key: profile.id, role: 'listitem', className: 'rounded-xl border border-indigo-200 bg-white p-3 shadow-sm' },
                       palettePreview(profile, 34),
                       React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
                         React.createElement('div', null,
                           React.createElement('h5', { className: 'text-sm font-black text-slate-950' }, profile.name),
-                          React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, profile.places + ' \u00B7 ' + profile.medium)
+                          React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, artStudioProfileText(profile, "places") + ' \u00B7 ' + artStudioCategoryText(profile.medium))
                         ),
-                        React.createElement('button', { type: 'button', onClick: function () { toggleComparison(profile); }, 'aria-label': 'Remove ' + profile.name + ' from comparison', className: 'rounded-lg border border-slate-300 px-2 py-1 text-[10px] font-black text-slate-700' }, 'Remove')
+                        React.createElement('button', { type: 'button', onClick: function () { toggleComparison(profile); }, 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_remove_value1_from_comparison_0604b1b", "Remove {value1} from comparison"), { value1: (profile.name) }), className: 'rounded-lg border border-slate-300 px-2 py-1 text-[10px] font-black text-slate-700' }, __alloT("stem.artstudio.learning_remove_c3812fc", "Remove"))
                       ),
-                      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, profile.lookFor),
-                      React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-950' }, profile.tryThis)
+                      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "lookFor")),
+                      React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-950' }, artStudioProfileText(profile, "tryThis"))
                     );
                   })),
                   comparison.profiles.length >= 2 && React.createElement('div', { className: 'mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
                     React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, 'Inquiry prompts'),
-                      React.createElement('ol', { className: 'mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-slate-700' }, comparison.prompts.map(function (prompt) { return React.createElement('li', { key: prompt }, prompt); }))
+                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, __alloT("stem.artstudio.learning_inquiry_prompts_ffa4b15", "Inquiry prompts")),
+                      React.createElement('ol', { className: 'mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-slate-700' }, comparison.prompts.map(function (prompt, index) { return React.createElement('li', { key: prompt }, __alloT('stem.artstudio.learning_artist_comparison_prompt_' + index, prompt)); }))
                     ),
                     React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, comparison.sharedLabs.length ? 'Shared Studio labs' : 'Different lab pathways'),
+                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, comparison.sharedLabs.length ? __alloT("stem.artstudio.learning_shared_studio_labs_92ccae8", "Shared Studio labs") : __alloT("stem.artstudio.learning_different_lab_pathways_608addd", "Different lab pathways")),
                       React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' }, (comparison.sharedLabs.length ? comparison.sharedLabs : comparison.profiles.reduce(function (ids, profile) {
                         profile.labs.forEach(function (labId) { if (ids.indexOf(labId) === -1 && ids.length < 3) ids.push(labId); });
                         return ids;
                       }, [])).map(function (labId) {
                         var label = ART_STUDIO_TAB_LABELS[labId] || labId;
-                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, label); }, className: 'min-h-[36px] rounded-lg bg-indigo-900 px-3 text-[10px] font-black text-white' }, 'Open ' + label);
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, label); }, className: 'min-h-[36px] rounded-lg bg-indigo-900 px-3 text-[10px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (label) }));
                       }))
                     )
                   )
                 ),
                 matches.length === 0 ? React.createElement('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-5 text-center' },
-                  React.createElement('h4', { className: 'font-black text-amber-950' }, 'No profiles match these filters'),
-                  React.createElement('p', { className: 'mt-1 text-xs text-amber-900' }, 'Clear one or more filters to return to the full explorer.')
+                  React.createElement('h4', { className: 'font-black text-amber-950' }, __alloT("stem.artstudio.learning_no_profiles_match_these_filters_9470a20", "No profiles match these filters")),
+                  React.createElement('p', { className: 'mt-1 text-xs text-amber-900' }, __alloT("stem.artstudio.learning_clear_one_or_more_filters_to_return_to_the_full__a0a578d", "Clear one or more filters to return to the full explorer."))
                 ) : React.createElement('div', { className: 'grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]' },
-                  React.createElement('div', { className: 'grid gap-3 sm:grid-cols-2', role: 'list', 'aria-label': 'Artist and tradition profiles' }, matches.map(function (profile) {
+                  React.createElement('div', { className: 'grid gap-3 sm:grid-cols-2', role: 'list', 'aria-label': __alloT("stem.artstudio.learning_artist_and_tradition_profiles_ca027e7", "Artist and tradition profiles") }, matches.map(function (profile) {
                     var active = selected && selected.id === profile.id;
                     return React.createElement('div', { key: profile.id, role: 'listitem' },
                       React.createElement('button', {
@@ -6078,85 +6557,85 @@ const d = labToolData.artStudio || {};
                         React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
                           React.createElement('div', null,
                             React.createElement('h5', { className: 'text-sm font-black text-slate-900' }, profile.name),
-                            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600' }, profile.life + ' · ' + profile.places)
+                            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600' }, artStudioProfileText(profile, "life") + ' · ' + artStudioProfileText(profile, "places"))
                           ),
-                          React.createElement('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-700' }, profile.region)
+                          React.createElement('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-700' }, artStudioCategoryText(profile.region))
                         ),
-                        React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, profile.overview)
+                        React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "overview"))
                       ),
                       React.createElement('button', {
                         type: 'button',
                         'aria-pressed': comparison.profiles.some(function (item) { return item.id === profile.id; }),
                         onClick: function () { toggleComparison(profile); },
                         className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[11px] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-500 bg-white text-slate-700')
-                      }, comparison.profiles.some(function (item) { return item.id === profile.id; }) ? '✓ In comparison' : '+ Add to compare')
+                      }, comparison.profiles.some(function (item) { return item.id === profile.id; }) ? __alloT("stem.artstudio.learning_in_comparison_57af59b", "✓ In comparison") : __alloT("stem.artstudio.learning_add_to_compare_9a066a7", "+ Add to compare"))
                     );
                   })),
-                  selected && React.createElement('aside', { id: 'artist-selected-detail', ref: artistDetailRef, className: 'scroll-mt-4 lg:sticky lg:top-2 max-h-[72vh] overflow-y-auto rounded-xl border-2 border-rose-300 bg-[#fffaf3] p-4 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 focus-visible:ring-offset-2', tabIndex: -1, 'aria-label': 'Selected artist study details', 'aria-labelledby': 'artist-selected-detail-title' },
+                  selected && React.createElement('aside', { id: 'artist-selected-detail', ref: artistDetailRef, className: 'scroll-mt-4 lg:sticky lg:top-2 max-h-[72vh] overflow-y-auto rounded-xl border-2 border-rose-300 bg-[#fffaf3] p-4 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 focus-visible:ring-offset-2', tabIndex: -1, 'aria-label': __alloT("stem.artstudio.learning_selected_artist_study_details_0c68366", "Selected artist study details"), 'aria-labelledby': 'artist-selected-detail-title' },
                     palettePreview(selected, 82),
-                    React.createElement('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-wider text-rose-800' }, selected.region + ' · ' + selected.era),
+                    React.createElement('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-wider text-rose-800' }, artStudioCategoryText(selected.region) + ' · ' + artStudioCategoryText(selected.era)),
                     React.createElement('div', { className: 'mt-1 flex items-start justify-between gap-2' },
                       React.createElement('h4', { id: 'artist-selected-detail-title', className: 'font-serif text-xl font-black text-slate-900' }, selected.name),
-                      React.createElement('button', { type: 'button', onClick: function () { toggleComparison(selected); }, 'aria-pressed': comparison.profiles.some(function (item) { return item.id === selected.id; }), className: 'shrink-0 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-[10px] font-black text-indigo-950' }, comparison.profiles.some(function (item) { return item.id === selected.id; }) ? '\u2713 Compare' : '+ Compare')
+                      React.createElement('button', { type: 'button', onClick: function () { toggleComparison(selected); }, 'aria-pressed': comparison.profiles.some(function (item) { return item.id === selected.id; }), className: 'shrink-0 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-[10px] font-black text-indigo-950' }, comparison.profiles.some(function (item) { return item.id === selected.id; }) ? __alloT("stem.artstudio.learning_compare_99d7e96", "✓ Compare") : __alloT("stem.artstudio.learning_compare_7556ba0", "+ Compare"))
                     ),
-                    React.createElement('p', { className: 'text-xs font-bold text-slate-600' }, selected.life + ' · ' + selected.medium),
-                    React.createElement('p', { className: 'mt-3 text-xs leading-relaxed text-slate-700' }, selected.overview),
+                    React.createElement('p', { className: 'text-xs font-bold text-slate-600' }, artStudioProfileText(selected, "life") + ' · ' + artStudioCategoryText(selected.medium)),
+                    React.createElement('p', { className: 'mt-3 text-xs leading-relaxed text-slate-700' }, artStudioProfileText(selected, "overview")),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-sky-950' }, 'Look closely'),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-sky-950' }, selected.lookFor)
+                      React.createElement('h5', { className: 'text-xs font-black text-sky-950' }, __alloT("stem.artstudio.learning_look_closely_73dcf27", "Look closely")),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-sky-950' }, artStudioProfileText(selected, "lookFor"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-violet-950' }, 'Context matters'),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-violet-950' }, selected.context)
+                      React.createElement('h5', { className: 'text-xs font-black text-violet-950' }, __alloT("stem.artstudio.learning_context_matters_4c2b465", "Context matters")),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-violet-950' }, artStudioProfileText(selected, "context"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-emerald-950' }, 'Try the underlying question'),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-emerald-950' }, selected.tryThis)
+                      React.createElement('h5', { className: 'text-xs font-black text-emerald-950' }, __alloT("stem.artstudio.learning_try_the_underlying_question_03f40d8", "Try the underlying question")),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-emerald-950' }, artStudioProfileText(selected, "tryThis"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3' },
-                      React.createElement('h5', { className: 'text-xs font-black text-amber-950' }, 'Learn with respect'),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-amber-950' }, selected.respect)
+                      React.createElement('h5', { className: 'text-xs font-black text-amber-950' }, __alloT("stem.artstudio.learning_learn_with_respect_62c58d8", "Learn with respect")),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-amber-950' }, artStudioProfileText(selected, "respect"))
                     ),
                     React.createElement('div', { className: 'mt-3' },
-                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-600' }, 'Carry the inquiry into a Studio lab'),
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_carry_the_inquiry_into_a_studio_lab_9ee59ea", "Carry the inquiry into a Studio lab")),
                       React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' }, selected.labs.map(function (labId) {
                         var labLabel = ART_STUDIO_TAB_LABELS[labId] || labId;
-                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, labLabel); }, className: 'min-h-[38px] rounded-lg bg-slate-900 px-3 text-[11px] font-black text-white' }, 'Open ' + labLabel);
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, labLabel); }, className: 'min-h-[38px] rounded-lg bg-slate-900 px-3 text-[11px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (labLabel) }));
                       }))
                     ),
                     React.createElement('section', { className: 'mt-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3', 'aria-labelledby': 'artist-sourcebook-title' },
-                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.16em] text-emerald-800' }, 'Sourcebook bridge'),
-                      React.createElement('h5', { id: 'artist-sourcebook-title', className: 'mt-1 text-xs font-black text-emerald-950' }, 'Find reusable collection images'),
-                      React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-950' }, 'Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.'),
-                      React.createElement('label', { className: 'mt-2 block text-[10px] font-black text-emerald-950' }, 'Reuse rights',
-                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-600 bg-white px-2 text-[11px]', 'aria-label': 'Rights filter for artist collection search' },
-                          React.createElement('option', { value: 'pd' }, 'Public domain only'),
-                          React.createElement('option', { value: 'pd-cc0' }, 'Public domain + CC0'),
-                          React.createElement('option', { value: 'all' }, 'Public domain + CC0 + CC BY')
+                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.16em] text-emerald-800' }, __alloT("stem.artstudio.learning_sourcebook_bridge_db3b850", "Sourcebook bridge")),
+                      React.createElement('h5', { id: 'artist-sourcebook-title', className: 'mt-1 text-xs font-black text-emerald-950' }, __alloT("stem.artstudio.learning_find_reusable_collection_images_500a5f8", "Find reusable collection images")),
+                      React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-950' }, __alloT("stem.artstudio.learning_searches_sourcebook_providers_and_fails_closed_n_9f8b741", "Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.")),
+                      React.createElement('label', { className: 'mt-2 block text-[10px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_reuse_rights_2477b47", "Reuse rights"),
+                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-600 bg-white px-2 text-[11px]', 'aria-label': __alloT("stem.artstudio.learning_rights_filter_for_artist_collection_search_ab98871", "Rights filter for artist collection search") },
+                          React.createElement('option', { value: 'pd' }, __alloT("stem.artstudio.learning_public_domain_only_19144e2", "Public domain only")),
+                          React.createElement('option', { value: 'pd-cc0' }, __alloT("stem.artstudio.learning_public_domain_cc0_e6d13f4", "Public domain + CC0")),
+                          React.createElement('option', { value: 'all' }, __alloT("stem.artstudio.learning_public_domain_cc0_cc_by_e9c22da", "Public domain + CC0 + CC BY"))
                         )
                       ),
                       React.createElement('div', { className: 'mt-2 grid gap-2' },
-                        React.createElement('button', { type: 'button', disabled: currentWorks.status === 'loading', onClick: function () { findRightsClearedWorks(selected); }, className: 'min-h-[40px] rounded-lg bg-emerald-900 px-3 text-[11px] font-black text-white disabled:opacity-50' }, currentWorks.status === 'loading' ? 'Checking rights…' : (sourcebookReady ? 'Find rights-cleared images' : 'Load Sourcebook & find images')),
-                        React.createElement('button', { type: 'button', onClick: function () { continueInSourcebook(selected); }, className: 'min-h-[40px] rounded-lg border border-emerald-700 bg-white px-3 text-[11px] font-black text-emerald-950' }, 'Continue this search in Sourcebook →')
+                        React.createElement('button', { type: 'button', disabled: currentWorks.status === 'loading', onClick: function () { findRightsClearedWorks(selected); }, className: 'min-h-[40px] rounded-lg bg-emerald-900 px-3 text-[11px] font-black text-white disabled:opacity-50' }, currentWorks.status === 'loading' ? __alloT("stem.artstudio.learning_checking_rights_7b138e7", "Checking rights…") : (sourcebookReady ? __alloT("stem.artstudio.learning_find_rights_cleared_images_02275a0", "Find rights-cleared images") : __alloT("stem.artstudio.learning_load_sourcebook_find_images_7e85633", "Load Sourcebook & find images"))),
+                        React.createElement('button', { type: 'button', onClick: function () { continueInSourcebook(selected); }, className: 'min-h-[40px] rounded-lg border border-emerald-700 bg-white px-3 text-[11px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_continue_this_search_in_sourcebook_8bbf2a6", "Continue this search in Sourcebook →"))
                       ),
-                      !sourcebookReady && React.createElement('p', { className: 'mt-2 text-[10px] font-bold text-emerald-900', role: 'status' }, 'Sourcebook’s verified provider service will load on demand. If it cannot load, Art Studio shows no substitute results.')
+                      !sourcebookReady && React.createElement('p', { className: 'mt-2 text-[10px] font-bold text-emerald-900', role: 'status' }, __alloT("stem.artstudio.learning_sourcebook_s_verified_provider_service_will_load_b0bab1c", "Sourcebook’s verified provider service will load on demand. If it cannot load, Art Studio shows no substitute results."))
                     ),
-                    React.createElement('a', { href: artistExplorerSourceUrl(selected), target: '_blank', rel: 'noopener noreferrer', className: 'mt-4 inline-flex min-h-[40px] items-center rounded-lg border border-rose-700 bg-white px-3 text-xs font-black text-rose-900' }, 'Explore museum collection records ↗'),
-                    React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-500' }, 'External collection records are for further study. Rights vary by individual artwork; this tab does not grant reuse permission or reproduce those works.')
+                    React.createElement('a', { href: artistExplorerSourceUrl(selected), target: '_blank', rel: 'noopener noreferrer', className: 'mt-4 inline-flex min-h-[40px] items-center rounded-lg border border-rose-700 bg-white px-3 text-xs font-black text-rose-900' }, __alloT("stem.artstudio.learning_read_artist_source_9966e4a", "Read artist source ↗")),
+                    React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-500' }, __alloT("stem.artstudio.learning_external_collection_records_are_for_further_stud_651b261", "External collection records are for further study. Rights vary by individual artwork; this tab does not grant reuse permission or reproduce those works."))
                   )
                 ),
                 selected && currentWorks.status !== 'idle' && React.createElement('section', { className: 'rounded-2xl border-2 border-emerald-300 bg-[#f4fbf7] p-4', 'aria-labelledby': 'artist-sourcebook-results-title', 'data-artist-sourcebook-results': currentWorks.status },
                   React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     React.createElement('div', null,
-                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.18em] text-emerald-800' }, 'Rights-verified visual assets'),
-                      React.createElement('h4', { id: 'artist-sourcebook-results-title', className: 'mt-1 font-serif text-xl font-black text-emerald-950' }, 'Sourcebook matches for ' + selected.name),
+                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.18em] text-emerald-800' }, __alloT("stem.artstudio.learning_rights_verified_visual_assets_5a9290b", "Rights-verified visual assets")),
+                      React.createElement('h4', { id: 'artist-sourcebook-results-title', className: 'mt-1 font-serif text-xl font-black text-emerald-950' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_sourcebook_matches_for_value1_cc30f03", "Sourcebook matches for {value1}"), { value1: (selected.name) })),
                       React.createElement('p', { className: 'mt-1 max-w-3xl text-[11px] leading-relaxed text-emerald-950', role: 'status', 'aria-live': 'polite' }, currentWorks.message)
                     ),
-                    React.createElement('span', { className: 'rounded-full bg-emerald-900 px-3 py-1 text-[10px] font-black text-white' }, artistRightsScope === 'pd' ? 'Public domain only' : (artistRightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY'))
+                    React.createElement('span', { className: 'rounded-full bg-emerald-900 px-3 py-1 text-[10px] font-black text-white' }, artistRightsScope === 'pd' ? __alloT("stem.artstudio.learning_public_domain_only_19144e2", "Public domain only") : (artistRightsScope === 'pd-cc0' ? __alloT("stem.artstudio.learning_pd_cc0_b582414", "PD + CC0") : __alloT("stem.artstudio.learning_pd_cc0_cc_by_c5b5129", "PD + CC0 + CC BY")))
                   ),
                   currentWorks.status === 'loading' && React.createElement('div', { className: 'mt-4 h-2 overflow-hidden rounded-full bg-emerald-100', 'aria-hidden': 'true' }, React.createElement('div', { className: 'h-full w-1/2 animate-pulse rounded-full bg-emerald-700' })),
-                  currentWorks.status === 'ready' && currentWorks.items.length === 0 && React.createElement('div', { className: 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950' }, 'Nothing was shown because no collection result passed both relevance and the active rights allowlist.'),
-                  currentWorks.items.length > 0 && React.createElement('div', { className: 'mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': 'Rights-verified Sourcebook matches' }, currentWorks.items.map(function (item) {
+                  currentWorks.status === 'ready' && currentWorks.items.length === 0 && React.createElement('div', { className: 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950' }, __alloT("stem.artstudio.learning_nothing_was_shown_because_no_collection_result_p_f71a2ad", "Nothing was shown because no collection result passed both relevance and the active rights allowlist.")),
+                  currentWorks.items.length > 0 && React.createElement('div', { className: 'mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': __alloT("stem.artstudio.learning_rights_verified_sourcebook_matches_b27e810", "Rights-verified Sourcebook matches") }, currentWorks.items.map(function (item) {
                     var credit = sourcebookApi && typeof sourcebookApi.buildAttribution === 'function' ? sourcebookApi.buildAttribution(item) : ((item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Source collection'));
                     return React.createElement('article', { key: item.id, role: 'listitem', className: 'overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm' },
                       React.createElement('div', { className: 'h-44 bg-slate-100' }, React.createElement('img', { src: item.imageUrl, alt: item.title + (item.creator ? ' by ' + item.creator : ''), loading: 'lazy', className: 'h-full w-full object-contain' })),
@@ -6168,8 +6647,8 @@ const d = labToolData.artStudio || {};
                         React.createElement('p', { className: 'mt-1 text-[10px] font-bold text-slate-600' }, (item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Open collection')),
                         React.createElement('p', { className: 'mt-2 text-[9px] leading-relaxed text-slate-600' }, credit),
                         React.createElement('div', { className: 'mt-3 grid gap-2' },
-                          React.createElement('button', { type: 'button', onClick: function () { saveWorkToSourcebook(item); }, className: 'min-h-[38px] rounded-lg bg-emerald-900 px-3 text-[10px] font-black text-white' }, 'Save to Sourcebook palette'),
-                          React.createElement('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'min-h-[38px] inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-white px-3 text-[10px] font-black text-emerald-950' }, 'Verify source & rights ↗')
+                          React.createElement('button', { type: 'button', onClick: function () { saveWorkToSourcebook(item); }, className: 'min-h-[38px] rounded-lg bg-emerald-900 px-3 text-[10px] font-black text-white' }, __alloT("stem.artstudio.learning_save_to_sourcebook_palette_d32e66d", "Save to Sourcebook palette")),
+                          React.createElement('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'min-h-[38px] inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-white px-3 text-[10px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_verify_source_rights_a23341e", "Verify source & rights ↗"))
                         )
                       )
                     );
@@ -6508,7 +6987,9 @@ const d = labToolData.artStudio || {};
 
             ),
 
-            tab === 'pixel' && React.createElement("div", { className: "space-y-3" },
+            tab === 'pixel' && React.createElement("div",
+
+              { className: "space-y-3" },
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
@@ -6536,9 +7017,30 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              // Color Palette Presets
+              renderCanvasTouchMode({
+                stateKey: 'pixelTouchMode',
+                groupLabel: 'Pixel art touch interaction',
+                helpId: 'artstudio-pixel-touch-help',
+                interactLabel: 'Draw pixels',
+                activeClass: 'bg-pink-700 text-white',
+                activeHelp: 'One-finger pixel drawing is active. Choose Scroll page when you want to move past the pixel canvas.',
+                scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still draw; choose Draw pixels for finger drawing.'
+              }),
 
-              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
+              React.createElement("canvas", { tabIndex: 0, id: 'pixelCanvas', ref: pixelRef, width: 512, height: 512, role: "img",
+                'aria-label': 'Pixel art editor, ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' by ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' grid with ' + Object.keys(d.pixelData || {}).length + ' colored cells.',
+                'aria-describedby': "artstudio-pixel-keyboard-help",
+                'aria-details': "artstudio-pixel-touch-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space",
+                className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                style: { maxWidth: '100%', imageRendering: 'pixelated', touchAction: d.pixelTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+
+              React.createElement("p", { id: "artstudio-pixel-keyboard-help", className: "text-xs text-slate-600 text-center" },
+                "Keyboard: focus the canvas, move the cell cursor with Arrow keys, jump with Home or End, and press Space or Enter to use the selected tool."
+              ),
+
+              React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette': 'pixel', className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
+                React.createElement('summary', { className:'cursor-pointer text-sm font-bold text-slate-800' }, __alloT('stem.artstudio.pixel_palette_options', 'Palettes and colors')),
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
@@ -6593,28 +7095,7 @@ const d = labToolData.artStudio || {};
 
                 )
 
-              ),
-
-              renderCanvasTouchMode({
-                stateKey: 'pixelTouchMode',
-                groupLabel: 'Pixel art touch interaction',
-                helpId: 'artstudio-pixel-touch-help',
-                interactLabel: 'Draw pixels',
-                activeClass: 'bg-pink-700 text-white',
-                activeHelp: 'One-finger pixel drawing is active. Choose Scroll page when you want to move past the pixel canvas.',
-                scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still draw; choose Draw pixels for finger drawing.'
-              }),
-
-              React.createElement("p", { id: "artstudio-pixel-keyboard-help", className: "text-xs text-slate-600 text-center" },
-                "Keyboard: focus the canvas, move the cell cursor with Arrow keys, jump with Home or End, and press Space or Enter to use the selected tool."
-              ),
-              React.createElement("canvas", { tabIndex: 0, id: 'pixelCanvas', ref: pixelRef, width: 512, height: 512, role: "img",
-                'aria-label': 'Pixel art editor, ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' by ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' grid with ' + Object.keys(d.pixelData || {}).length + ' colored cells.',
-                'aria-describedby': "artstudio-pixel-keyboard-help",
-                'aria-details': "artstudio-pixel-touch-help",
-                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space",
-                className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-                style: { maxWidth: '100%', imageRendering: 'pixelated', touchAction: d.pixelTouchMode === 'draw' ? 'none' : 'pan-y' } })
+              )
 
             ),
 
@@ -6680,7 +7161,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else upd('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Symmetry PNG exported without editing guides.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Symmetry PNG exported without editing guides.'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
                 React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Toggle fullscreen Symmetry Studio workspace"), onClick: function () { toggleFullscreen('symmetryFullscreenWorkspace'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\u26F6 Fullscreen"))
 
@@ -8241,7 +8722,9 @@ const d = labToolData.artStudio || {};
 
             // ═══ GENERATIVE ART TAB ═══
 
-            tab === 'generative' && React.createElement("div", { className: "relative space-y-3" },
+            tab === 'generative' && React.createElement("div",
+
+              { className: "relative space-y-3" },
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap", role: "group", "aria-label": "Generative art controls" },
 
@@ -8249,7 +8732,7 @@ const d = labToolData.artStudio || {};
 
                 [{ id: 'flow', icon: '\uD83C\uDF0A', label: __alloT('stem.artstudio.flow_field', 'Flow Field') }, { id: 'rain', icon: '\uD83C\uDF27', label: __alloT('stem.artstudio.particle_rain', 'Particle Rain') }, { id: 'stars', icon: '\u2728', label: __alloT('stem.artstudio.starfield', 'Starfield') }, { id: 'aurora', icon: '\uD83C\uDF0C', label: __alloT('stem.artstudio.aurora', 'Aurora') }].map(function (s) {
 
-                  return React.createElement("button", { "aria-label": 'Use ' + s.label + ' generative style', "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                  return React.createElement("button", { "aria-label": 'Use ' + s.label + ' generative style', "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { resetGenerativeRun({ genStyle: s.id }); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
 
                 }),
 
@@ -8264,9 +8747,9 @@ const d = labToolData.artStudio || {};
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold " + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, (d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
+                React.createElement("button", { onClick: function () { resetGenerativeRun(); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c._genExportAction ? c._genExportAction() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
@@ -8274,19 +8757,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("label", { htmlFor: "artstudio-generative-density", className: "text-[11px] font-bold text-slate-600" }, "Density:"),
 
-                React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: d.genDensity || 100, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 max-w-full accent-fuchsia-600" }),
+                React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: d.genDensity || 100, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { resetGenerativeRun({ genDensity: parseInt(e.target.value) }); }, className: "w-32 max-w-full accent-fuchsia-600" }),
 
                 React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
 
               ),
-
-              renderStudioColorCapsule({
-                prefix: 'gen',
-                color: generativeColor,
-                label: 'Particle color',
-                resetKey: 'genReset',
-                note: 'Hue anchors the system; saturation and lightness shape every particle and glow.'
-              }),
 
               renderCanvasTouchMode({
                 stateKey: 'genTouchMode',
@@ -8299,7 +8774,7 @@ const d = labToolData.artStudio || {};
                 scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still create bursts; choose Interact with art for finger input.'
               }),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img",
+              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0) + '-' + (typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1) + '-' + (d.genDensity || 100) + '-' + generativeColor.h + '-' + generativeColor.s + '-' + generativeColor.l, width: 640, height: 480, role: "img",
                 'aria-label': 'Generative art canvas using ' + (d.genStyle || 'flow') + ' style with ' + (d.genDensity || 100) + ' particles; ' + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'paused' : 'playing') + '.',
                 'aria-describedby': "artstudio-generative-keyboard-help",
                 'aria-details': "artstudio-generative-touch-help",
@@ -8322,7 +8797,10 @@ const d = labToolData.artStudio || {};
 
                     (d.genDensity || 100) + ' particles; ' + (isPaused ? 'paused' : 'playing') + '.');
 
-                  if (canvas._genInit) return;
+                  if (canvas._genInit) {
+                    if (canvas._genSyncStatus) canvas._genSyncStatus();
+                    return;
+                  }
 
                   canvas._genInit = true;
 
@@ -8338,6 +8816,17 @@ const d = labToolData.artStudio || {};
                   var baseSat = generativeColor.s;
                   var baseLit = generativeColor.l;
 
+                  var seed = typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1;
+                  var randomState = seed;
+                  // Mulberry32: all random evolution uses this saved 32-bit state.
+                  function random() {
+                    randomState = (randomState + 0x6D2B79F5) >>> 0;
+                    var value = randomState;
+                    value = Math.imul(value ^ (value >>> 15), value | 1);
+                    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+                    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+                  }
+                  var settings = { seed: seed, style: style, density: density, hue: baseHue, saturation: baseSat, lightness: baseLit };
                   var particles = [];
 
                   var mouseX = -1, mouseY = -1;
@@ -8392,17 +8881,17 @@ const d = labToolData.artStudio || {};
 
                     particles.push({
 
-                      x: Math.random() * W, y: Math.random() * H,
+                      x: random() * W, y: random() * H,
 
                       vx: 0, vy: 0,
 
-                      life: Math.random() * 200 + 100,
+                      life: random() * 200 + 100,
 
                       maxLife: 300,
 
-                      hue: (baseHue + Math.random() * 60) % 360,
+                      hue: (baseHue + random() * 60) % 360,
 
-                      size: 1 + Math.random() * 2
+                      size: 1 + random() * 2
 
                     });
 
@@ -8412,19 +8901,98 @@ const d = labToolData.artStudio || {};
 
                   var tick = 0;
 
-                  var paused = false;
+                  var burstCount = 0;
+                  var isRestoring = false;
+                  var savedState = d.genState;
+                  var particleFields = ['x', 'y', 'vx', 'vy', 'life', 'maxLife', 'hue', 'size'];
+                  var validState = savedState && savedState.version === 1 &&
+                    savedState.settings && Object.keys(settings).every(function (key) { return savedState.settings[key] === settings[key]; }) &&
+                    Number.isSafeInteger(savedState.frame) && savedState.frame >= 0 &&
+                    Number.isInteger(savedState.randomState) &&
+                    Array.isArray(savedState.particles) && savedState.particles.every(function (particle) {
+                      return particle && particleFields.every(function (key) { return Number.isFinite(particle[key]); }) && particle.size > 0;
+                    });
+                  function cloneParticles(list) {
+                    return list.map(function (particle) {
+                      var copy = {};
+                      particleFields.forEach(function (key) { copy[key] = particle[key]; });
+                      return copy;
+                    });
+                  }
+                  if (validState) {
+                    particles = cloneParticles(savedState.particles);
+                    randomState = savedState.randomState >>> 0;
+                    tick = savedState.frame;
+                    burstCount = Math.max(0, Math.floor(Number(savedState.burstCount) || 0));
+                  }
+                  canvas._genSyncStatus = function () {
+                    canvas.setAttribute('data-gen-seed', String(seed));
+                    canvas.setAttribute('data-gen-frame', String(tick));
+                    canvas.setAttribute('data-gen-bursts', String(burstCount));
+                    var status = document.getElementById('artstudio-generative-step');
+                    if (status) status.textContent = __alloT('stem.artstudio.simulation_step', 'Step') + ' ' + tick;
+                  };
+                  canvas._genExportAction = function (pendingOnly) {
+                    if (isRestoring) return d.genSnapshot || '';
+                    if (pendingOnly) return '';
+                    try { return canvas.toDataURL('image/png'); } catch (_) { return ''; }
+                  };
+                  canvas._captureArtStudioState = function () {
+                    var snapshot = canvas._genExportAction();
+                    return {
+                      genSeed: seed,
+                      genFrame: tick,
+                      genPaused: canvas.getAttribute('data-paused') === '1',
+                      genSnapshot: snapshot,
+                      genState: {
+                        version: 1, settings: Object.assign({}, settings), frame: tick,
+                        randomState: randomState, burstCount: burstCount, particles: cloneParticles(particles)
+                      }
+                    };
+                  };
+                  if (validState && typeof d.genSnapshot === 'string' && d.genSnapshot.indexOf('data:image/') === 0) {
+                    isRestoring = true;
+                    var checkpointImage = new Image();
+                    checkpointImage.onload = function () {
+                      if (!canvas.isConnected) return;
+                      ctx.globalCompositeOperation = 'source-over';
+                      ctx.drawImage(checkpointImage, 0, 0, W, H);
+                      isRestoring = false;
+                    };
+                    checkpointImage.onerror = function () {
+                      if (!canvas.isConnected) return;
+                      isRestoring = false;
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.generative_preview_unavailable', 'The saved particle trails could not be loaded. The simulation settings and particles are restored.'));
+                    };
+                    checkpointImage.src = d.genSnapshot;
+                  }
+                  canvas._genSyncStatus();
 
                   // Pause state is refreshed before the initialization guard so the controls remain functional.
 
+                  function drawGenerativeParticle(particle, alpha) {
+                    ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fillStyle = 'hsla(' + particle.hue + ',' + baseSat + '%,' + baseLit + '%,' + (alpha * 0.8) + ')';
+                    ctx.fill();
+                    if (particle.size > 1.5) {
+                      ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+                      ctx.fillStyle = 'hsla(' + particle.hue + ',' + Math.max(0, baseSat - 10) + '%,' + Math.max(0, baseLit - 10) + '%,' + (alpha * 0.08) + ')';
+                      ctx.fill();
+                    }
+                  }
+
                   function burstAt(x, y) {
+                    if (isRestoring) return;
+                    burstCount++;
+                    canvas._genSyncStatus();
 
                     mouseX = x; mouseY = y;
 
                     for (var bi = 0; bi < 30; bi++) {
 
-                      var angle = Math.random() * Math.PI * 2;
+                      var angle = random() * Math.PI * 2;
 
-                      var speed = 1 + Math.random() * 3;
+                      var speed = 1 + random() * 3;
 
                       particles.push({
 
@@ -8432,16 +9000,26 @@ const d = labToolData.artStudio || {};
 
                         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
 
-                        life: 150 + Math.random() * 100, maxLife: 250,
+                        life: 150 + random() * 100, maxLife: 250,
 
-                        hue: (baseHue + Math.random() * 120) % 360,
+                        hue: (baseHue + random() * 120) % 360,
 
-                        size: 1 + Math.random() * 3
+                        size: 1 + random() * 3
 
                       });
 
                     }
 
+                    // Manual input should remain visible when animation is paused,
+                    // including reduced-motion sessions. Paint only the new burst;
+                    // preserve simulation time and all existing particle positions.
+                    if (canvas.getAttribute('data-paused') === '1') {
+                      ctx.globalCompositeOperation = 'lighter';
+                      for (var burstIndex = particles.length - 30; burstIndex < particles.length; burstIndex++) {
+                        drawGenerativeParticle(particles[burstIndex], 1);
+                      }
+                      ctx.globalCompositeOperation = 'source-over';
+                    }
                   }
 
                   function updateGenerativePointer(e) {
@@ -8534,16 +9112,7 @@ const d = labToolData.artStudio || {};
 
                   updateGenCursor(typeof document !== 'undefined' && document.activeElement === canvas);
 
-                  function animate() {
-
-                    if (canvas.getAttribute('data-paused') === '1') {
-
-                      if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
-
-                      return;
-
-                    }
-
+                  function stepSimulation() {
                     tick++;
 
                     // Fade trail
@@ -8576,9 +9145,9 @@ const d = labToolData.artStudio || {};
 
                         p.vy += 0.05;
 
-                        p.vx += (Math.random() - 0.5) * 0.1;
+                        p.vx += (random() - 0.5) * 0.1;
 
-                        if (p.y > H) { p.y = 0; p.x = Math.random() * W; p.vy = 0; p.life = p.maxLife; }
+                        if (p.y > H) { p.y = 0; p.x = random() * W; p.vy = 0; p.life = p.maxLife; }
 
                       } else if (style === 'stars') {
 
@@ -8590,15 +9159,15 @@ const d = labToolData.artStudio || {};
 
                         p.vx += sdx / sdist * 0.1; p.vy += sdy / sdist * 0.1;
 
-                        if (sdist > Math.max(W, H) * 0.7) { p.x = scx + (Math.random() - 0.5) * 20; p.y = scy + (Math.random() - 0.5) * 20; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
+                        if (sdist > Math.max(W, H) * 0.7) { p.x = scx + (random() - 0.5) * 20; p.y = scy + (random() - 0.5) * 20; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
 
                       } else if (style === 'aurora') {
 
                         p.vx += Math.sin(p.y * 0.01 + tick * 0.02) * 0.2;
 
-                        p.vy += (Math.random() - 0.5) * 0.05 - 0.02;
+                        p.vy += (random() - 0.5) * 0.05 - 0.02;
 
-                        if (p.y < 0 || p.x < 0 || p.x > W) { p.x = Math.random() * W; p.y = H * 0.7 + Math.random() * H * 0.3; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
+                        if (p.y < 0 || p.x < 0 || p.x > W) { p.x = random() * W; p.y = H * 0.7 + random() * H * 0.3; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
 
                         p.hue = (baseHue + Math.sin(p.x * 0.01) * 60 + tick * 0.5) % 360;
 
@@ -8606,23 +9175,7 @@ const d = labToolData.artStudio || {};
 
                       p.x += p.vx; p.y += p.vy;
 
-                      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-
-                      ctx.fillStyle = 'hsla(' + p.hue + ',' + baseSat + '%,' + baseLit + '%,' + (alpha * 0.8) + ')';
-
-                      ctx.fill();
-
-                      // Glow effect
-
-                      if (p.size > 1.5) {
-
-                        ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-
-                        ctx.fillStyle = 'hsla(' + p.hue + ',' + Math.max(0, baseSat - 10) + '%,' + Math.max(0, baseLit - 10) + '%,' + (alpha * 0.08) + ')';
-
-                        ctx.fill();
-
-                      }
+                      drawGenerativeParticle(p, alpha);
 
                     }
 
@@ -8634,27 +9187,40 @@ const d = labToolData.artStudio || {};
 
                       particles.push({
 
-                        x: style === 'stars' ? W / 2 + (Math.random() - 0.5) * 20 : Math.random() * W,
+                        x: style === 'stars' ? W / 2 + (random() - 0.5) * 20 : random() * W,
 
-                        y: style === 'rain' ? 0 : style === 'aurora' ? H * 0.7 + Math.random() * H * 0.3 : Math.random() * H,
+                        y: style === 'rain' ? 0 : style === 'aurora' ? H * 0.7 + random() * H * 0.3 : random() * H,
 
                         vx: 0, vy: 0,
 
-                        life: 200 + Math.random() * 100, maxLife: 300,
+                        life: 200 + random() * 100, maxLife: 300,
 
-                        hue: (baseHue + Math.random() * 60) % 360,
+                        hue: (baseHue + random() * 60) % 360,
 
-                        size: 1 + Math.random() * 2
+                        size: 1 + random() * 2
 
                       });
 
                     }
 
-                    if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
-
+                    canvas._genSyncStatus();
                   }
 
-                  animate();
+                  canvas._genAdvance = function (steps) {
+                    if (isRestoring) return false;
+                    canvas.setAttribute('data-paused', '1');
+                    for (var stepIndex = 0; stepIndex < steps; stepIndex++) stepSimulation();
+                    updateGenCursor(typeof document !== 'undefined' && document.activeElement === canvas);
+                    return true;
+                  };
+                  function animate() {
+                    if (!canvas.isConnected) return;
+                    if (!isRestoring && canvas.getAttribute('data-paused') !== '1') stepSimulation();
+                    if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
+                  }
+                  // A restored checkpoint remains at its exact frame until the next animation tick.
+                  if (validState) canvas._genAnim = requestAnimationFrame(animate);
+                  else animate();
 
                 }
 
@@ -8667,7 +9233,40 @@ const d = labToolData.artStudio || {};
                 style: { display: 'none' }
               }),
 
-              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves.")
+              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves."),
+
+              React.createElement("fieldset", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3", 'aria-describedby': "artstudio-generative-experiment-help" },
+                React.createElement("legend", { className: "px-1 text-xs font-bold text-fuchsia-950" }, __alloT('stem.artstudio.repeatable_experiment', 'Repeatable experiment')),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("label", { htmlFor: "artstudio-generative-seed", className: "text-xs font-bold text-slate-700" }, __alloT('stem.artstudio.random_seed', 'Seed')),
+                  React.createElement("input", { id: "artstudio-generative-seed", type: "number", min: 0, max: 4294967295, step: 1, value: typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1,
+                    onChange: function (event) { if (event.target.value !== '') resetGenerativeRun({ genSeed: Math.max(0, Math.min(4294967295, Math.floor(Number(event.target.value) || 0))), genPaused: true }); },
+                    className: "min-h-[44px] w-36 rounded-lg border border-fuchsia-300 px-2 text-sm text-slate-900" }),
+                  React.createElement("button", { type: "button", onClick: function () { resetGenerativeRun({ genPaused: true }); }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.same_seed', 'Same seed')),
+                  React.createElement("button", { type: "button", onClick: function () {
+                    var previousSeed = typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1;
+                    var nextSeed = Math.floor(Math.random() * 4294967296) >>> 0;
+                    if (nextSeed === previousSeed) nextSeed = (previousSeed + 1) >>> 0;
+                    resetGenerativeRun({ genSeed: nextSeed, genPaused: true });
+                  }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.new_seed', 'New seed')),
+                  React.createElement("button", { type: "button", 'aria-label': __alloT('stem.artstudio.advance_100_steps', 'Pause and advance 100 simulation steps'), onClick: function () {
+                    var canvas = document.getElementById('genCanvas');
+                    if (!canvas || !canvas._genAdvance || !canvas._genAdvance(100)) return;
+                    updMany(canvas._captureArtStudioState());
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.generative_paused_step', 'Generative experiment paused at step') + ' ' + canvas.getAttribute('data-gen-frame') + '.');
+                  }, className: "min-h-[44px] rounded-lg bg-fuchsia-800 px-3 text-xs font-bold text-white" }, __alloT('stem.artstudio.plus_100_steps', '+100 steps')),
+                  React.createElement("span", { id: "artstudio-generative-step", className: "text-xs font-bold tabular-nums text-fuchsia-950" }, __alloT('stem.artstudio.simulation_step', 'Step') + ' ' + (Number(d.genFrame) || 0))
+                ),
+                React.createElement("p", { id: "artstudio-generative-experiment-help", className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.artstudio.seed_experiment_help', 'Same seed restarts at step 0 with the same random sequence. Change one setting, then use +100 steps to compare at an equal step. Canvas bursts are extra inputs; avoid them for a controlled comparison.'))
+              ),
+
+              renderStudioColorCapsule({
+                prefix: 'gen',
+                color: generativeColor,
+                label: 'Particle color',
+                resetKey: 'genReset',
+                note: 'Hue anchors the system; saturation and lightness shape every particle and glow.'
+              })
 
             ),
 
@@ -8691,7 +9290,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-500') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-500') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
                 React.createElement("button", {
                   "aria-label": (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? "Resume spin art animation" : "Pause spin art animation",
@@ -8704,13 +9303,14 @@ const d = labToolData.artStudio || {};
                   className: "px-2 py-1 rounded-lg text-[11px] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                 }, (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
+                React.createElement("button", { onClick: function () { updMany({ spinReset: Date.now(), spinSnapshot: '', spinDrips: [], spinAngle: 0 }); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; var picture = c._spinExportAction ? c._spinExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
-              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
+              React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette': 'spinArt', className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
+                React.createElement('summary', { className:'cursor-pointer text-sm font-bold text-slate-800' }, __alloT('stem.artstudio.spin_palette_options', 'Palettes and paint color')),
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
@@ -8787,6 +9387,7 @@ const d = labToolData.artStudio || {};
                   canvas.dataset.sat = spinColor.s;
                   canvas.dataset.lit = spinColor.l;
                   canvas.dataset.rpm = d.spinRPM || 120;
+                  canvas.dataset.dark = d.spinDark ? '1' : '0';
                   canvas.dataset.brush = d.spinBrush || 6;
                   canvas.dataset.splatter = d.spinSplatter ? '1' : '0';
                   canvas.dataset.paused = spinPaused ? '1' : '0';
@@ -8812,13 +9413,51 @@ const d = labToolData.artStudio || {};
 
 
 
-                  ctx.fillStyle = isDark ? '#0f172a' : '#fefefe';
+                  // Paint remains transparent so changing the paper never erases marks.
+                  ctx.clearRect(0, 0, W, H);
+                  canvas._spinExportAction = function () {
+                    if (spinRestoring && canvas._artStudioReady) return canvas._artStudioReady.then(function () { return canvas._spinExportAction(); });
+                    var output = document.createElement('canvas');
+                    output.width = W; output.height = H;
+                    var outputContext = output.getContext('2d');
+                    outputContext.fillStyle = canvas.dataset.dark === '1' ? '#0f172a' : '#fefefe';
+                    outputContext.fillRect(0, 0, W, H);
+                    outputContext.drawImage(canvas, 0, 0);
+                    return output.toDataURL('image/png');
+                  };
 
-                  ctx.fillRect(0, 0, W, H);
+                  var angle = Number(d.spinAngle) || 0;
 
-                  var angle = 0;
+                  var drips = Array.isArray(d.spinDrips) ? d.spinDrips.slice(0, 2000).map(function (drip) { return Object.assign({}, drip); }) : [];
+                  var spinSnapshot = d.spinSnapshot || '';
+                  var spinRestoring = !!spinSnapshot;
+                  canvas._artStudioRestoring = spinRestoring;
+                  var spinCheckpointPending = false;
+                  var finishSpinRestore;
+                  canvas._artStudioReady = new Promise(function (resolve) { finishSpinRestore = resolve; });
+                  if (!spinSnapshot) finishSpinRestore();
+                  if (spinSnapshot) {
+                    var spinImage = new Image();
+                    spinImage.onload = function () {
+                      try { ctx.drawImage(spinImage, 0, 0, W, H); } finally { spinRestoring = false; canvas._artStudioRestoring = false; finishSpinRestore(); }
+                    };
+                    spinImage.onerror = function () { spinRestoring = false; canvas._artStudioRestoring = false; finishSpinRestore(); };
+                    spinImage.src = spinSnapshot;
+                  }
+                  canvas._captureArtStudioState = function () {
+                    try {
+                      var snapshot = spinRestoring ? spinSnapshot : canvas.toDataURL('image/png');
+                      if (!snapshot || snapshot === 'data:,') return null;
+                      return { spinSnapshot: snapshot, spinAngle: angle,
+                        spinDrips: drips.slice(0, 2000).map(function (drip) { return Object.assign({}, drip); }) };
+                    } catch (_) { return null; }
+                  };
 
-                  var drips = [];
+                  function persistSpinArtwork() {
+                    var checkpoint = canvas._captureArtStudioState();
+                    if (checkpoint) updMany(checkpoint);
+                    spinCheckpointPending = false;
+                  }
 
                   canvas._spinPointerDown = false;
 
@@ -8864,6 +9503,7 @@ const d = labToolData.artStudio || {};
                   function finishSpinPointer(e) {
 
                     canvas._spinPointerDown = false;
+                    persistSpinArtwork();
 
                     try { if (e && e.pointerId !== undefined) canvas.releasePointerCapture(e.pointerId); } catch (err) {}
 
@@ -8956,6 +9596,8 @@ const d = labToolData.artStudio || {};
                   updateSpinCursor(typeof document !== 'undefined' && document.activeElement === canvas);
 
                   function spawnDrip(x, y) {
+                    if (spinRestoring) return;
+                    spinCheckpointPending = true;
 
                     var curHue = parseFloat(canvas.dataset.hue) || 0;
                     var curSat = parseFloat(canvas.dataset.sat);
@@ -8978,7 +9620,8 @@ const d = labToolData.artStudio || {};
 
                   function animate() {
 
-                    if (canvas.dataset.paused === '1') {
+                    if (spinRestoring || canvas.dataset.paused === '1') {
+                      if (!spinRestoring && spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
 
                       if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
 
@@ -9045,6 +9688,7 @@ const d = labToolData.artStudio || {};
                     }
 
                     ctx.restore();
+                    if (spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
 
                     if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
 
@@ -9715,9 +10359,8 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "space-y-3" },
 
-                  React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200" },
-
-                    React.createElement("h4", { className: "text-xs font-bold text-teal-700 mb-3" }, __alloT('stem.artstudio.tessellation_controls', "\uD83D\uDD37 Tessellation Controls")),
+                  React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette':'tessellation', className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200" },
+                    React.createElement("summary", { className: "cursor-pointer text-sm font-bold text-teal-800" }, __alloT('stem.artstudio.tessellation_controls', "\uD83D\uDD37 Tessellation Controls")),
 
                     React.createElement("div", { className: "mb-3" },
 
@@ -10503,7 +11146,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.the_mandelbrot_set', "The Mandelbrot set")), __alloT('stem.artstudio.is_generated_by_iterating_z_z_c_for_ev', " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals "), React.createElement("strong", null, __alloT('stem.artstudio.infinite_complexity', "infinite complexity")), __alloT('stem.artstudio.at_every_scale', " at every scale.")),
 
-                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, __alloT('stem.artstudio.julia_sets', "Julia sets")), __alloT('stem.artstudio.use_the_same_formula_but_fix_c_and_var', " use the same formula but fix c and vary the starting z. Each Mandelbrot point generates a unique Julia set \u2014 points inside the Mandelbrot produce connected Julias; outside points produce dust-like 'Fatou sets'.")),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, __alloT('stem.artstudio.julia_sets', "Julia sets")), __alloT('stem.artstudio.julia_parameter_connection_explained', " use the same formula but fix c and vary the starting z. For z squared plus c, parameters in the Mandelbrot set give connected Julia sets; parameters outside it give disconnected, dust-like Cantor Julia sets. The Fatou set is the complement of the Julia set.")),
 
                       React.createElement("p", null, __alloT('stem.artstudio.the', "\uD83D\uDD25 The "), React.createElement("strong", null, __alloT('stem.artstudio.burning_ship_2', "Burning Ship")), __alloT('stem.artstudio.fractal_modifies_the_iteration_to_z_re', " fractal modifies the iteration to z = (|Re(z)| + i|Im(z)|)\u00B2 + c, creating an asymmetric shape resembling a flaming vessel. It was discovered by Michael Michelitsch and Otto R\u00F6ssler in 1992.")),
 
@@ -11055,7 +11698,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", null, __alloT('stem.artstudio.screens_create_gradients_by_mixing', "\uD83C\uDF08 Screens create gradients by mixing "), React.createElement("strong", null, __alloT('stem.artstudio.rgb_sub_pixels', "RGB sub-pixels")), __alloT('stem.artstudio.each_pixel_blends_red_green_and_blue_l', ". Each pixel blends red, green, and blue light at different intensities. A gradient smoothly interpolates these values across space.")),
 
-                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, __alloT('stem.artstudio.hsl_interpolation', "HSL interpolation")), __alloT('stem.artstudio.produces_more_perceptually_uniform_gra', " produces more perceptually uniform gradients than RGB. Going from red to blue in RGB passes through muddy grays; in HSL, it sweeps through vivid purples \u2014 the way a painter would mix.")),
+                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, __alloT('stem.artstudio.hsl_interpolation', "HSL interpolation")), __alloT('stem.artstudio.gradient_interpolation_explained', " follows a path around the hue circle. RGB interpolation blends channel values: halfway between pure red and pure blue is purple, not gray. Neither HSL nor RGB is perceptually uniform; spaces such as OKLab are designed for more even perceived changes. A hue path and a pigment mixture describe different processes.")),
 
                       React.createElement("p", null, "\uD83C\uDF05 ", React.createElement("strong", null, __alloT('stem.artstudio.real_world_gradients', "Real-world gradients")), __alloT('stem.artstudio.are_everywhere_sunsets_rayleigh_scatte', " are everywhere: sunsets (Rayleigh scattering separates wavelengths), rainbows (refraction sorts light by frequency), and ocean depths (water absorbs red first, leaving deep blue).")),
 

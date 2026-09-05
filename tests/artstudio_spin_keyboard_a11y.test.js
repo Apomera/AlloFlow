@@ -20,6 +20,7 @@ function makeContext() {
   return {
     arc: vi.fn(),
     beginPath: vi.fn(),
+    clearRect: vi.fn(),
     fill: vi.fn(),
     fillRect: vi.fn(),
     restore: vi.fn(),

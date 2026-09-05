@@ -236,7 +236,7 @@ describe('Art Studio graphic and form semantics', () => {
     expect(source).toContain("packed: compact ? 'uint16-v1' : ''");
     expect(source).toContain('_artStudioWatercolorCache.undo.push(captureState(true))');
     expect(source).toContain('_artStudioWatercolorStateStore.save(durableStateKey, durableState)');
-    expect(source).toContain('record.state.flatSnapshot !== incomingSnapshot');
+    expect(source).toContain('record.state.flatSnapshot !== snapshot');
     expect(source).toContain('localRevision !== revisionAtLoad');
   });
 

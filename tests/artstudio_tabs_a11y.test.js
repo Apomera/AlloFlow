@@ -8,11 +8,11 @@ describe('Art Studio section tabs accessibility', () => {
     expect(source).toContain("const ART_STUDIO_TAB_ORDER = ['artistExplorer', 'colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];");
     expect(source).toContain("const tab = ART_STUDIO_TAB_ORDER.indexOf(requestedArtStudioTab) !== -1 ? requestedArtStudioTab : 'colorWheel';");
     expect(source).toContain('const ART_STUDIO_GROUPS = [');
-    expect(source).toContain("label: 'Paint & color'");
-    expect(source).toContain("label: 'Pattern & mathematics'");
-    expect(source).toContain("label: 'Perception & access'");
+    expect(source).toContain("label: __alloT(\"stem.artstudio.learning_paint_color_0cfeba8\", \"Paint & color\")");
+    expect(source).toContain("label: __alloT(\"stem.artstudio.learning_pattern_mathematics_b2fb534\", \"Pattern & mathematics\")");
+    expect(source).toContain("label: __alloT(\"stem.artstudio.learning_perception_access_5e1f966\", \"Perception & access\")");
     expect(source).toContain("'data-artstudio-grouped-nav': 'true'");
-    expect(source).toContain("'aria-label': 'Art Studio tool groups'");
+    expect(source).toContain("'aria-label': __alloT(\"stem.artstudio.learning_art_studio_tool_groups_f20ca83\", \"Art Studio tool groups\")");
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("id: 'artstudio-tab-' + tb.id");
     expect(source).toContain("'aria-controls': 'artstudio-panel-' + tb.id");

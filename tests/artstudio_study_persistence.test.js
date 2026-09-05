@@ -338,10 +338,11 @@ describe('Art Studio durable study persistence', () => {
     expect(latestSnapshots).toHaveLength(0);
   });
 
-  it('persists and restores only lightweight project and Creative Thread progress', async () => {
+  it('persists lightweight project progress and the guide preference per learner', async () => {
     await mount({
       profileId: 'learner-a',
       artStudio: {
+        studioGuideWording: 'simple',
         studioFreeProjectId: 'free-project-7',
         studioCurrentProjectRunId: 'current-project-7',
         studioThreadId: 'tiny-night-world',
@@ -372,6 +373,7 @@ describe('Art Studio durable study persistence', () => {
     expect(workflowRows).toHaveLength(1);
     expect(workflowRows[0].workflow).toEqual({
       schemaVersion: 3,
+      studioGuideWording: 'simple',
       studioFreeProjectId: 'free-project-7',
       studioCurrentProjectRunId: 'current-project-7',
       studioThreadId: 'tiny-night-world',
@@ -399,6 +401,7 @@ describe('Art Studio durable study persistence', () => {
 
     await mount({ profileId: 'learner-a' });
     expect(latestToolData.artStudio).toMatchObject({
+      studioGuideWording: 'simple',
       studioFreeProjectId: 'free-project-7',
       studioCurrentProjectRunId: 'current-project-7',
       studioThreadId: 'tiny-night-world',
@@ -421,6 +424,10 @@ describe('Art Studio durable study persistence', () => {
         }],
       },
     });
+    await mount({ profileId: 'learner-b' });
+    expect(latestToolData.artStudio.studioGuideWording).not.toBe('simple');
+    await mount({ profileId: 'learner-a' });
+    expect(latestToolData.artStudio.studioGuideWording).toBe('simple');
   });
 
   it('persists independent Thread Kits for multiple project runs', async () => {

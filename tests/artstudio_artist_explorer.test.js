@@ -105,7 +105,7 @@ describe('Art Studio Artist & Traditions Explorer', () => {
     expect(html).toContain('no result appears unless its item-level rights pass the selected allowlist');
     expect(html).toContain('Sourcebook’s verified provider service will load on demand');
     expect(html).toContain('Load Sourcebook &amp; find images');
-    expect(html).toContain('Explore museum collection records');
+    expect(html).toContain('Read artist source');
     expect(html).toContain('this tab does not grant reuse permission');
   });
 
@@ -146,7 +146,7 @@ describe('Art Studio Artist & Traditions Explorer', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain('they are not image-generation style presets');
     expect(source).toContain('carry the question—not a copied signature style');
-    expect(source).toContain('Kusama is a living artist');
+    expect(source).toContain('Study repetition and perception in Kusama');
     expect(source).toContain('Pueblo designs are not a pattern pack');
     expect(source).toContain('Do not copy Anmatyerr marks or claim their meanings');
     expect(source).toContain('Kihara is a living artist');

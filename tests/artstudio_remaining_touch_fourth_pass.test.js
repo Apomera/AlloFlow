@@ -65,7 +65,7 @@ const touchCases = [
     groupLabel: 'Generative art touch interaction',
     activeLabel: 'Interact with art',
     initial: { tab: 'generative', genStyle: 'flow', genDensity: 20, genPaused: true },
-    interactionStarted: (canvas, random) => random.mock.calls.length > 0,
+    interactionStarted: (canvas) => Number(canvas.getAttribute('data-gen-bursts')) > 0,
   },
   {
     label: 'Spin Art',
