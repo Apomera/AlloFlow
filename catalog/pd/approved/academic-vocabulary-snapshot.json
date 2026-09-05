@@ -3,7 +3,7 @@
   "kind": "pd_module",
   "metadata": {
     "id": "academic-vocabulary-snapshot",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "language": "en-US",
     "title": "Academic Vocabulary that Sticks",
     "topic": "Literacy",
@@ -31,7 +31,9 @@
               "A word bank is a reference to use during reading and writing, not a memorization list."
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -47,16 +49,36 @@
             "instructions": "This is the form in practice: six tier-two words with student-friendly definitions, the kind of word bank that sits beside a text during reading and writing.",
             "data": {
               "items": [
-                { "term": "analyze", "def": "To look at something piece by piece to figure out what it means or how it works." },
-                { "term": "evidence", "def": "Facts or details that show why something is true — what you point to when someone asks 'how do you know?'" },
-                { "term": "contrast", "def": "To show how two things are different from each other." },
-                { "term": "consequence", "def": "What happens because of something else — the result, good or bad." },
-                { "term": "reluctant", "def": "Not wanting to do something, and maybe trying to get out of it." },
-                { "term": "significant", "def": "Important enough to matter and worth paying attention to." }
+                {
+                  "term": "analyze",
+                  "def": "To look at something piece by piece to figure out what it means or how it works."
+                },
+                {
+                  "term": "evidence",
+                  "def": "Facts or details that show why something is true — what you point to when someone asks 'how do you know?'"
+                },
+                {
+                  "term": "contrast",
+                  "def": "To show how two things are different from each other."
+                },
+                {
+                  "term": "consequence",
+                  "def": "What happens because of something else — the result, good or bad."
+                },
+                {
+                  "term": "reluctant",
+                  "def": "Not wanting to do something, and maybe trying to get out of it."
+                },
+                {
+                  "term": "significant",
+                  "def": "Important enough to matter and worth paying attention to."
+                }
               ]
             }
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -72,9 +94,9 @@
               {
                 "prompt": "Which set is the best candidate for explicit whole-class instruction before a science text?",
                 "options": [
-                  "happy, run, book — words everyone knows",
-                  "every unfamiliar word in the chapter",
-                  "words the teacher finds personally interesting",
+                  "happy, run, book — everyday words nearly every student knows",
+                  "every unfamiliar word in the chapter, pre-taught as a list the week before",
+                  "words the teacher finds personally interesting, whether or not the text uses them",
                   "analyze, evidence, significant — high-utility words the text leans on"
                 ],
                 "correctIndex": 3,
@@ -84,9 +106,9 @@
                 "prompt": "Which is the strongest STUDENT-FRIENDLY definition of 'reluctant'?",
                 "options": [
                   "Not wanting to do something, and maybe trying to get out of it",
-                  "Unwilling; disinclined",
-                  "An adjective describing hesitation",
-                  "The opposite of eager"
+                  "Unwilling; disinclined; marked by hesitation",
+                  "An adjective describing hesitation, placed before the noun it modifies",
+                  "The opposite of eager; compare willing, keen, and enthusiastic"
                 ],
                 "correctIndex": 0,
                 "explanation": "It characterizes how the word is used in plain language. Dictionary synonyms only help students who already know the synonyms."
@@ -94,17 +116,20 @@
               {
                 "prompt": "A teacher introduces 'consequence' well on Monday and never returns to it. The most likely outcome is:",
                 "options": [
-                  "Students own the word — one strong introduction is enough",
+                  "Students own the word — one strong introduction is enough for most",
                   "The word fades; learning needs multiple meaningful encounters in varied contexts",
-                  "Students learn it if it was on the word wall",
-                  "Only struggling readers forget it"
+                  "Students learn it if it stays on the word wall where they see it every day of the week",
+                  "Only struggling readers forget it, because stronger readers keep words from one exposure"
                 ],
                 "correctIndex": 1,
                 "explanation": "Vocabulary learning is incremental: examples, non-examples, forced decisions, and morphology across days do the work."
               }
             ]
           },
-          "gate": { "kind": "score", "threshold": 0.66 }
+          "gate": {
+            "kind": "score",
+            "threshold": 0.66
+          }
         }
       ]
     },
@@ -118,7 +143,9 @@
           "content": {
             "prompt": "Look at the next text your students will read. Choose up to five tier-two words worth teaching explicitly, write a student-friendly definition for the hardest one, and name two different encounters you will engineer with it during the week."
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     }

@@ -3,11 +3,11 @@
   "kind": "pd_module",
   "metadata": {
     "id": "udl-engagement-quickstart",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "language": "en-US",
     "title": "UDL Quick Start: Multiple Means of Engagement",
     "topic": "UDL",
-    "summary": "A ~15-minute primer on the engagement principle of Universal Design for Learning: recruiting interest, sustaining effort, and supporting self-regulation, with a knowledge check and a classroom action step.",
+    "summary": "A ~15-minute primer on the engagement principle of Universal Design for Learning: welcoming interests and identities, sustaining effort, and building emotional capacity, with a knowledge check and a classroom action step. Aligned to the CAST UDL Guidelines 3.0 (2024).",
     "estMinutes": 15,
     "credit": "AlloFlow Seed Library",
     "license": "CC-BY-SA-4.0",
@@ -22,19 +22,24 @@
           "type": "read",
           "title": "Why engagement is designed, not demanded",
           "content": {
-            "body": "In the Universal Design for Learning framework, engagement is not a personality trait some students have and others lack. It is the product of an interaction between a learner and an environment, and it varies within the same learner across subjects, days, and contexts. The UDL Guidelines from CAST treat engagement as its own design principle, with three broad strategies.\n\nRecruiting interest (Guideline 7) asks: why would a learner care about this, right now? Offering meaningful choices (of topic, tool, or sequence), connecting tasks to what is relevant and authentic for the learners in the room, and reducing distractions and threats in the environment all lower the cost of getting started. Choice does not mean choosing everything; even two genuine options change how a task feels.\n\nSustaining effort and persistence (Guideline 8) is about the middle of the work, where engagement usually collapses. Keeping the goal visible and restating it in varied ways, varying difficulty so that challenge stays reachable, structuring collaboration deliberately, and giving feedback that is specific, mastery-oriented, and focused on process rather than ability all help learners stay in the task.\n\nSupporting self-regulation (Guideline 9) develops the learner's own capacity to manage engagement: setting personal goals and expectations, naming and practicing coping strategies for frustration, and building in moments of self-assessment and reflection. The long-term aim of the engagement principle is not compliance — it is learners who understand what engages them and can act on that knowledge.",
+            "body": "In the Universal Design for Learning framework, engagement is not a personality trait some students have and others lack. It is the product of an interaction between a learner and an environment, and it varies within the same learner across subjects, days, and contexts. The UDL Guidelines from CAST treat engagement — the 'why' of learning — as its own design principle, with three guidelines. The names below are from Guidelines 3.0 (2024); the older 2.2 names are still common in books and trainings, so both are given.\n\nWelcoming interests and identities (Guideline 7; formerly Recruiting Interest) asks: why would a learner care about this, right now, and does this classroom honor who they are? Offering meaningful choices (of topic, tool, or sequence), connecting tasks to what is relevant and authentic for the learners in the room, making room for joy and play, and reducing distractions and threats in the environment all lower the cost of getting started. Choice does not mean choosing everything; even two genuine options change how a task feels.\n\nSustaining effort and persistence (Guideline 8) is about the middle of the work, where engagement usually collapses. Keeping the goal visible and restating it in varied ways, varying difficulty so that challenge stays reachable, structuring collaboration deliberately, and giving feedback that is specific, mastery-oriented, and focused on process rather than ability all help learners stay in the task.\n\nEmotional capacity (Guideline 9; formerly Self-Regulation) develops the learner's own ability to work with emotion and motivation: setting personal goals and expectations, naming and practicing coping strategies for frustration, and building in moments of self-assessment and reflection. CAST renamed this guideline because 'self-regulation' was too easily read as compliance. The long-term aim of the engagement principle is not compliance — it is learners who understand what engages them and can act on that knowledge.",
             "keyPoints": [
               "Engagement is an interaction with the environment, not a fixed trait.",
-              "Recruit interest with genuine choice, relevance, and fewer threats (Guideline 7).",
+              "Welcome interests and identities with genuine choice, relevance, joy, and fewer threats (Guideline 7).",
               "Sustain effort with visible goals, reachable challenge, and mastery-oriented feedback (Guideline 8).",
-              "Build self-regulation so learners can manage their own engagement (Guideline 9).",
+              "Build emotional capacity so learners can work with their own emotion and motivation (Guideline 9).",
               "The long-term aim is self-knowledge, not compliance."
             ],
             "links": [
-              { "label": "CAST UDL Guidelines — Engagement", "url": "https://udlguidelines.cast.org/engagement/" }
+              {
+                "label": "CAST UDL Guidelines 3.0 — Engagement",
+                "url": "https://udlguidelines.cast.org/engagement/"
+              }
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -51,20 +56,20 @@
                 "prompt": "In the UDL framework, engagement is best understood as:",
                 "options": [
                   "A stable trait that some students bring to class and others do not",
-                  "A reward system that motivates students to finish work",
+                  "A reward system that motivates students to finish assigned work before the deadline",
                   "The product of an interaction between a learner and the designed environment",
-                  "A synonym for on-task behavior during independent work"
+                  "A synonym for on-task behavior that a teacher can observe during independent work time"
                 ],
                 "correctIndex": 2,
                 "explanation": "UDL treats engagement as designable: the same learner engages differently as the environment, task, and supports change."
               },
               {
-                "prompt": "Which move most directly supports RECRUITING interest (Guideline 7)?",
+                "prompt": "Which move most directly supports WELCOMING interests and identities (Guideline 7)?",
                 "options": [
                   "Offering two genuine ways to enter the task, either of which meets the goal",
-                  "Adding a completion grade so the task counts",
-                  "Extending the assignment deadline for everyone",
-                  "Reading the directions aloud twice"
+                  "Adding a completion grade so the task counts toward the quarter average and students take it seriously",
+                  "Extending the assignment deadline by a week for every student in the class",
+                  "Reading the directions aloud twice before students begin working"
                 ],
                 "correctIndex": 0,
                 "explanation": "Meaningful choice lowers the cost of getting started; grades and repeated directions do not create interest."
@@ -72,28 +77,31 @@
               {
                 "prompt": "A student starts strong but abandons long tasks halfway. Which support best targets SUSTAINING effort (Guideline 8)?",
                 "options": [
-                  "Move the student to a quieter seat",
-                  "Shorten every future task so nothing feels long",
-                  "Ask the student to try harder next time",
+                  "Move the student to a quieter seat near the teacher's desk for the rest of the unit and check in daily",
+                  "Shorten every future task for the class so that nothing feels long to anyone",
+                  "Ask the student to try harder next time and check in at the end of the week",
                   "Break the goal into visible milestones and give specific, process-focused feedback at each one"
                 ],
                 "correctIndex": 3,
                 "explanation": "Guideline 8 is about the middle of the work: visible sub-goals and mastery-oriented feedback keep reachable challenge in view."
               },
               {
-                "prompt": "Which practice builds SELF-REGULATION (Guideline 9) rather than just managing behavior?",
+                "prompt": "Which practice builds EMOTIONAL CAPACITY (Guideline 9) rather than just managing behavior?",
                 "options": [
-                  "A class-wide points system for staying seated",
+                  "A class-wide points system that rewards staying seated and quiet",
                   "Having learners set a personal goal, name a coping strategy, and reflect on how it went",
-                  "Removing all challenging material to prevent frustration",
-                  "Assigning a peer to monitor the student's work"
+                  "Removing all challenging material from the unit so that no student experiences frustration",
+                  "Assigning a peer to monitor the student's work and report off-task moments to the teacher"
                 ],
                 "correctIndex": 1,
-                "explanation": "Self-regulation grows when learners practice noticing and managing their own engagement — not when it is managed for them."
+                "explanation": "Emotional capacity grows when learners practice noticing and working with their own engagement — not when it is managed for them."
               }
             ]
           },
-          "gate": { "kind": "score", "threshold": 0.75 }
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
         }
       ]
     },
@@ -105,9 +113,11 @@
           "type": "reflect",
           "title": "One design change",
           "content": {
-            "prompt": "Pick one upcoming lesson. Name the point where engagement usually drops, and describe one concrete change — a choice you could offer, a way to keep the goal visible, or a self-regulation support — that redesigns that moment. What would tell you it worked?"
+            "prompt": "Pick one upcoming lesson. Name the point where engagement usually drops, and describe one concrete change — a choice you could offer, a way to keep the goal visible, or an emotional-capacity support — that redesigns that moment. What would tell you it worked?"
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     }

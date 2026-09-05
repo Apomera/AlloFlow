@@ -3,7 +3,7 @@
   "kind": "pd_module",
   "metadata": {
     "id": "retrieval-practice-quickstart",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "language": "en-US",
     "title": "Retrieval Practice: Quizzing that Builds Memory",
     "topic": "Learning Science",
@@ -22,11 +22,11 @@
           "type": "read",
           "title": "What retrieval practice is — and why it works",
           "content": {
-            "body": "Retrieval practice means having learners bring information to mind from memory — answering a question, writing what they remember, explaining an idea aloud — rather than reviewing it again. The act of retrieving strengthens memory more than re-reading or re-watching the same material. Researchers call this the 'testing effect.'\n\nThis is one of the most consistently replicated findings in learning science (e.g., Roediger & Karpicke, 2006, and many studies since), and it holds across ages, subjects, and formats. The benefit is largest when retrieval is effortful but successful, and when it is spaced out over time rather than crammed.\n\nImportant: the goal is LEARNING, not grading. Retrieval works best when it is low- or no-stakes — frequent, ungraded or lightly weighted practice — which gets the memory benefit while keeping anxiety low. High-stakes, infrequent testing does not.",
+            "body": "Retrieval practice means having learners bring information to mind from memory — answering a question, writing what they remember, explaining an idea aloud — rather than reviewing it again. The act of retrieving strengthens memory more than re-reading or re-watching the same material. Researchers call this the 'testing effect.'\n\nThis is one of the most consistently replicated findings in learning science (e.g., Roediger & Karpicke, 2006, and many studies since), and it holds across ages, subjects, and formats. The benefit is largest when retrieval is effortful but successful, and when it is spaced out over time rather than crammed. Feedback after retrieval — seeing the correct answer soon after trying — adds to the benefit, especially for items a learner got wrong.\n\nImportant: the goal is LEARNING, not grading. Retrieval works best when it is low- or no-stakes — frequent, ungraded or lightly weighted practice — which gets the memory benefit while keeping anxiety low. High-stakes, infrequent testing does not.",
             "keyPoints": [
               "Recalling from memory builds retention more than re-reading.",
               "It is well-replicated across ages and subjects (testing effect).",
-              "Keep it low-/no-stakes and spaced over time."
+              "Keep it low-/no-stakes, spaced over time, and followed by feedback."
             ],
             "links": [
               {
@@ -53,10 +53,10 @@
               {
                 "prompt": "The 'testing effect' (retrieval practice) is best described as:",
                 "options": [
-                  "Re-reading highlighted notes is the most efficient way to study",
+                  "Re-reading highlighted notes several times is the most efficient way to prepare for an exam",
                   "Recalling information from memory strengthens later retention more than re-reading it",
-                  "Frequent graded tests mainly serve accountability",
-                  "Matching instruction to each student's learning style"
+                  "Frequent graded tests mainly serve accountability and tell students where they stand",
+                  "Matching instruction to each student's learning style improves scores on the next test"
                 ],
                 "correctIndex": 1,
                 "explanation": "Retrieving from memory strengthens later retention more than restudying the same material."
@@ -64,10 +64,10 @@
               {
                 "prompt": "Which is the strongest example of retrieval practice?",
                 "options": [
-                  "Re-reading the chapter and highlighting key sentences",
-                  "Watching a recap video of the lesson",
+                  "Re-reading the chapter and highlighting the sentences that seem most important to remember",
+                  "Watching a recap video of the lesson the evening before the unit test",
                   "A brief, closed-notes 'brain dump' where students write everything they remember",
-                  "Copying the teacher's notes neatly"
+                  "Copying the teacher's notes neatly into a notebook to keep them organized"
                 ],
                 "correctIndex": 2,
                 "explanation": "A closed-notes brain dump requires active recall; re-reading and watching are passive review."
@@ -75,9 +75,9 @@
               {
                 "prompt": "To get the memory benefit while keeping anxiety low, retrieval practice should usually be:",
                 "options": [
-                  "High-stakes and infrequent",
+                  "High-stakes and infrequent, so students take it seriously",
                   "Replaced by re-reading for struggling students",
-                  "Saved only for the end-of-year exam",
+                  "Saved for the end-of-year exam, when the whole course can be reviewed at once",
                   "Low- or no-stakes (ungraded or lightly weighted)"
                 ],
                 "correctIndex": 3,
@@ -89,7 +89,7 @@
                   "Harm long-term retention",
                   "Improve long-term retention",
                   "Make no measurable difference",
-                  "Help only the highest-achieving students"
+                  "Help only the top students"
                 ],
                 "correctIndex": 1,
                 "explanation": "Spacing retrieval over time improves long-term retention compared with cramming."
@@ -113,7 +113,7 @@
           "content": {
             "items": [
               "Open a lesson with a 2-minute 'what do you remember from last time?' brain dump.",
-              "End class with 3–5 ungraded recall questions.",
+              "End class with 3–5 ungraded recall questions, then show the answers right away.",
               "Use short, low-stakes quizzes spaced across the unit — not only before the test.",
               "Have students close their notes and explain a concept from memory before reviewing it."
             ]
