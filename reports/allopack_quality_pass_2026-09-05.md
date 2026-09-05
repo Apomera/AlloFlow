@@ -85,6 +85,27 @@ Expanding the app's own error disclosure gave the real cause: the *reading*, ope
 The boundary is now keyed by resource id and active view, so switching either remounts it and clears a stale error. A transient module race costs one view instead of the session. Covered by `tests/content_viewer_boundary_key.test.js` across all three shell copies, with the assertion checked against the pre-fix tag to confirm it actually fails there.
 
 This is a host change, so it cannot be seen until the bundle is rebuilt and deployed; the route-inject harness only swaps view modules, not the shell. What *was* verified live: both new packs load into the deployed app with every resource rendering and no page errors, including the crossword-eligible glossary, the sentence frames, and both studios showing "Ready to share, 0 items to review".
+## Fourth pass (same day): the resource types the catalog was not using
+
+Counting resource types across the 26 packs turned up two gaps that no single pack review would surface.
+
+**Five packs had no anchor chart** — American Revolution, Fractions on the Number Line, Photosynthesis, Plate Tectonics, and Weather vs. Climate — while the other twenty-one did. Each now has one, and each is built around the move that pack actually teaches rather than being a restatement of the glossary: the escalation cycle (Britain acts, colonists protest, Britain responds harder, more colonists join); reading the top and bottom numbers off a number line, with the 1/8-versus-1/4 trap called out; the three boundary types plus why Wegener was dismissed for lacking a mechanism; and the time-scale question that settles most weather-versus-climate arguments.
+
+Photosynthesis needed care, because that pack already had an inputs-and-outputs concept map, and the obvious anchor chart would have duplicated it. Its chart is instead the four things people get wrong — that a plant eats soil, that leaves are green because chlorophyll uses green light, that plants do not respire, and that oxygen is the point rather than a by-product.
+
+**`outline` was used by exactly one pack out of twenty-six.** That is the type the app renders as a Visual Organizer, with an interactive map and a 3D view, so twenty-five packs were leaving a whole surface unused. Five more now have one, chosen because their content is genuinely hierarchical rather than to raise a count:
+
+| Pack | Concept map | Why this content suits it |
+| --- | --- | --- |
+| Body Systems | The Handoff Map | six systems, but the lesson is the handoffs between them |
+| Simple Machines | Six Machines, Two Families | the six group into the inclined-plane and lever families |
+| Figurative Language | Five Ways to Say It Sideways | five devices, grouped by what the sentence does |
+| Ecosystems | Where the Energy Goes | producers, consumers, decomposers, and the ten percent rule |
+| Cell Structure | The Factory Floor Plan | organelles grouped by the job they do |
+
+The Simple Machines map is the one that adds something the reading does not state: the six machines are grouped into the two families engineers actually use, with the wheel and axle presented as a lever that turns in a full circle and the pulley as a wheel and axle with a rope in its groove. Every pack that gained a resource also gained a numbered directions step naming it, so the audit's "directions body names its resources" check still passes against the higher resource count.
+
+Anchor charts now stand at 26 of 26, and the audit gained a flag for a pack without one, calibrated against a deliberately stripped copy. Concept maps stand at 6 of 26. Verified live: the Cell Structure map renders in the deployed app as a Visual Organizer with its six branches and lettered items, no page errors.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

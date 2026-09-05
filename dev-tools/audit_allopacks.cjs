@@ -155,6 +155,9 @@ for (const f of files) {
     const stranded = [...new Set(everSkipped.map((s) => s.replace(/ \(.*\)$/, '')))].filter((t) => !practised.has(t));
     if (stranded.length) flags.push(`no game can practise: ${stranded.join(', ')} (too long or too short for every game the pack offers)`);
   }
+  // Settled 2026-09-05: every pack carries a wall reference. A teacher browsing the catalog
+  // expects one, and a pack without it is the odd one out rather than a deliberate choice.
+  if (!by('anchor-chart').length) flags.push('no anchor chart (every pack in the catalog has one)');
   if (faq && faq.data.length < 4) flags.push(`faq has ${faq.data.length} questions`);
   if (frames && frames.data.items.length < 4) flags.push(`sentence-frames has ${frames.data.items.length} frames`);
   if (!/[A-Z0-9.-]+\s*\(/.test(pack.allopack.standards || '')) flags.push('standards lack a parenthetical gloss');
