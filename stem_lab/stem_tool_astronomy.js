@@ -2225,16 +2225,19 @@
       return function() { cancelled = true; if (instance) instance.dispose(); viewer.current = null; };
     }, [retry]);
     React.useEffect(function() { if (viewer.current && status === 'ready') viewer.current.sync(props.model(catalog || fallbackCatalog())); });
+    var surface = props.surface || null, contrast = !!props.contrast;
+    function viewBg(nightHex) { return contrast && surface ? surface.panel : nightHex; }
+    function viewBorder(nightHex) { return contrast && surface ? surface.border : nightHex; }
     function button(label, fn, extra) {
-      return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: function() { if (viewer.current) fn(viewer.current); }, style: { padding: '9px 12px', minHeight: 40, border: '1px solid #475569', borderRadius: 8, background: '#0b1628', color: '#e2e8f0', cursor: 'pointer' }, disabled: status !== 'ready' }, extra || {}), label);
+      return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: function() { if (viewer.current) fn(viewer.current); }, style: { padding: '9px 12px', minHeight: 40, border: '1px solid ' + viewBorder('#475569'), borderRadius: 8, background: viewBg('#0b1628'), color: '#e2e8f0', cursor: 'pointer' }, disabled: status !== 'ready' }, extra || {}), label);
     }
     var t = props.t;
     return h('div', null,
-      h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid #334155', background: '#030714' } },
+      h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + viewBorder('#334155'), background: viewBg('#030714') } },
         h('div', { ref: host, id: 'astronomy-observatory-3d', className: 'astr-focus', tabIndex: 0, role: 'group', 'aria-label': props.sceneLabel, 'aria-describedby': 'astronomy-observatory-camera-help astronomy-observatory-summary', style: { position: 'relative', height: 'clamp(380px, 56vw, 620px)', width: '100%', outlineOffset: -4 } }),
         h('div', { style: { position: 'absolute', top: 12, right: 12, pointerEvents: 'none', padding: '6px 9px', borderRadius: 8, background: 'rgba(3,7,18,.8)', color: '#cbd5e1', fontSize: 11, letterSpacing: 0.6, maxWidth: '45%', textAlign: 'right' } },
           catalog && !catalog.fallback ? t('stem.astronomy.obs_catalog_badge', 'HYG v4.1 stars · CC BY-SA 4.0') : t('stem.astronomy.obs_catalog_fallback_badge', 'Built-in bright stars only')),
-        status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center', background: '#0b1224', color: '#e2e8f0' } },
+        status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center', background: viewBg('#0b1224'), color: '#e2e8f0' } },
           h('p', null, status === 'failed' ? t('stem.astronomy.obs_failed', 'The 3D observatory could not start. The Sky Map tab shows the same computed sky in 2D.') : t('stem.astronomy.obs_loading', 'Computing your sky…')),
           status === 'failed' ? h('button', { type: 'button', className: 'astr-focus', onClick: function() { setRetry(retry + 1); }, style: { padding: 10, borderRadius: 8, background: '#fbbf24', color: '#0f172a', border: 0 } }, t('stem.astronomy.obs_retry', 'Retry 3D observatory')) : null) : null),
       h('div', { role: 'group', 'aria-label': t('stem.astronomy.meteor_camera', 'Sky camera controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
@@ -9260,15 +9263,19 @@
         var zoneOptions = [];
         [resolved.timeZone].concat(OBSERVATORY_SITES.map(function(s) { return s.timeZone; }), [browserTimeZone(), 'UTC']).forEach(function(z) { if (z && zoneOptions.indexOf(z) === -1 && validTimeZone(z)) zoneOptions.push(z); });
         var reduced = _prefersReducedMotion;
-        var inputStyle = { width: '100%', minWidth: 0, padding: 9, borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 13 };
+        var inputStyle = { width: '100%', minWidth: 0, padding: 9, borderRadius: 8, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#e2e8f0', fontSize: 13 };
         var fieldStyle = { display: 'grid', gap: 5, fontSize: 12, color: '#cbd5e1', minWidth: 0 };
         function setLayers(patch) { upd({ obsLayers: Object.assign({}, resolved.layers, patch) }); }
         function setInstant(utcMs) { var w = utcMsToWallTime(utcMs, resolved.timeZone); upd({ obsLive: false, obsDate: w.dateText, obsTime: w.timeText, obsPlaying: false }); }
         function shiftTime(ms) { setInstant(resolved.utcMs + ms); }
         function toggleButton(label, on, onClick, color, key) {
-          return a11yButton({ key: key, type: 'button', 'aria-pressed': on, onClick: onClick, style: { padding: '8px 11px', borderRadius: 8, border: '1px solid ' + (on ? (color || '#67e8f9') : '#475569'), background: on ? '#0f2a3a' : '#0f172a', color: color || '#a5f3fc', cursor: 'pointer', fontSize: 12 } }, label);
+          return a11yButton({ key: key, type: 'button', 'aria-pressed': on, onClick: onClick, style: { padding: '8px 11px', borderRadius: 8, border: '1px solid ' + obsBorder(on ? (color || '#67e8f9') : '#475569'), background: obsBg(on ? '#0f2a3a' : '#0f172a'), color: color || '#a5f3fc', cursor: 'pointer', fontSize: 12 } }, label);
         }
         function compass(az) { return azCompass(az); }
+        // The host publishes a high-contrast surface; collapse our panel tints
+        // onto it rather than staying navy while the rest of the tool goes black.
+        function obsBg(nightHex) { return astronomyContrast ? astronomySurface.panel : nightHex; }
+        function obsBorder(nightHex) { return astronomyContrast ? astronomySurface.border : nightHex; }
         var daylightText = sunAlt > 0 ? __alloT('stem.astronomy.obs_daylight', 'Daylight. Stars are hidden by the bright sky.')
           : sunAlt > -6 ? __alloT('stem.astronomy.obs_civil', 'Civil twilight. Only the Moon and brightest planets show.')
           : sunAlt > -12 ? __alloT('stem.astronomy.obs_nautical', 'Nautical twilight. Bright stars are appearing.')
@@ -9353,15 +9360,15 @@
                   h('input', { 'aria-label': __alloT('stem.astronomy.obs_time', 'Local time'), type: 'time', value: resolved.wall.timeText, className: 'astr-focus', style: inputStyle, onChange: function(e) { if (e.target.value) upd({ obsLive: false, obsDate: resolved.wall.dateText, obsTime: e.target.value.slice(0, 5), obsPlaying: false }); } })),
                 h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                   [[-86400000, '−1 d'], [-3600000, '−1 h'], [-600000, '−10 m'], [600000, '+10 m'], [3600000, '+1 h'], [86400000, '+1 d']].map(function(step) {
-                    return a11yButton({ key: step[1], type: 'button', 'aria-label': __alloT('stem.astronomy.obs_shift', 'Shift time') + ' ' + step[1], onClick: function() { shiftTime(step[0]); }, style: { padding: '8px 9px', borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, step[1]);
+                    return a11yButton({ key: step[1], type: 'button', 'aria-label': __alloT('stem.astronomy.obs_shift', 'Shift time') + ' ' + step[1], onClick: function() { shiftTime(step[0]); }, style: { padding: '8px 9px', borderRadius: 8, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, step[1]);
                   })),
                 h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.obs_jump_group', 'Jump to a moment of this day'), style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                   [['sunset', events.sunset, __alloT('stem.astronomy.obs_jump_sunset', 'Sunset')], ['darkStart', events.darkStart, __alloT('stem.astronomy.obs_jump_dark', 'Dark sky')], ['solarMidnight', events.solarMidnight, __alloT('stem.astronomy.obs_jump_midnight', 'Solar midnight')], ['darkEnd', events.darkEnd, __alloT('stem.astronomy.obs_jump_dawn', 'Dawn')], ['sunrise', events.sunrise, __alloT('stem.astronomy.obs_jump_sunrise', 'Sunrise')]].filter(function(ev) { return Number.isFinite(ev[1]); }).map(function(ev) {
                     var w = utcMsToWallTime(ev[1], resolved.timeZone);
-                    return a11yButton({ key: ev[0], type: 'button', 'aria-label': __alloT('stem.astronomy.obs_jump_to', 'Jump to') + ' ' + ev[2] + ' ' + w.timeText, onClick: function() { setInstant(ev[1]); }, style: { padding: '8px 9px', borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#fde68a', cursor: 'pointer', fontSize: 12 } }, ev[2] + ' ' + w.timeText);
+                    return a11yButton({ key: ev[0], type: 'button', 'aria-label': __alloT('stem.astronomy.obs_jump_to', 'Jump to') + ' ' + ev[2] + ' ' + w.timeText, onClick: function() { setInstant(ev[1]); }, style: { padding: '8px 9px', borderRadius: 8, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#fde68a', cursor: 'pointer', fontSize: 12 } }, ev[2] + ' ' + w.timeText);
                   }).concat(events.polar ? [h('span', { key: 'polar', style: { fontSize: 11.5, color: '#cbd5e1', alignSelf: 'center' } }, events.polar === 'day' ? __alloT('stem.astronomy.obs_polar_day', 'Midnight sun: the Sun never sets on this date here.') : __alloT('stem.astronomy.obs_polar_night', 'Polar night: the Sun never rises on this date here.'))] : [])),
                 h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
-                  a11yButton({ type: 'button', disabled: reduced, 'aria-pressed': resolved.playing, 'aria-label': resolved.playing ? __alloT('stem.astronomy.obs_pause', 'Pause time-lapse') : __alloT('stem.astronomy.obs_play', 'Play time-lapse'), onClick: function() { upd({ obsPlaying: !resolved.playing }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: resolved.playing ? '#fbbf24' : '#0f172a', color: resolved.playing ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 } }, resolved.playing ? '⏸ ' + __alloT('stem.astronomy.obs_pause_short', 'Pause') : '▶ ' + __alloT('stem.astronomy.obs_play_short', 'Time-lapse')),
+                  a11yButton({ type: 'button', disabled: reduced, 'aria-pressed': resolved.playing, 'aria-label': resolved.playing ? __alloT('stem.astronomy.obs_pause', 'Pause time-lapse') : __alloT('stem.astronomy.obs_play', 'Play time-lapse'), onClick: function() { upd({ obsPlaying: !resolved.playing }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + obsBorder('#fbbf24'), background: resolved.playing ? '#fbbf24' : obsBg('#0f172a'), color: resolved.playing ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 } }, resolved.playing ? '⏸ ' + __alloT('stem.astronomy.obs_pause_short', 'Pause') : '▶ ' + __alloT('stem.astronomy.obs_play_short', 'Time-lapse')),
                   h('select', { 'aria-label': __alloT('stem.astronomy.obs_rate', 'Time-lapse speed'), value: resolved.rate, className: 'astr-focus', style: Object.assign({}, inputStyle, { width: 'auto' }), onChange: function(e) { upd({ obsRate: e.target.value }); } },
                     OBSERVATORY_RATES.map(function(r) { return h('option', { key: r.id, value: r.id }, { '1m': __alloT('stem.astronomy.obs_rate_1m', '1 min per second'), '10m': __alloT('stem.astronomy.obs_rate_10m', '10 min per second'), '1h': __alloT('stem.astronomy.obs_rate_1h', '1 hour per second'), '1d': __alloT('stem.astronomy.obs_rate_1d', '1 day per second') }[r.id]); })))
               ),
@@ -9379,7 +9386,7 @@
                 toggleButton(__alloT('stem.astronomy.obs_layer_guides', 'Ecliptic and equator'), resolved.layers.guides, function() { setLayers({ guides: !resolved.layers.guides }); }, '#fde68a', 'guides'),
                 toggleButton(__alloT('stem.astronomy.obs_layer_trails', 'Star trails'), resolved.layers.trails, function() { setLayers({ trails: !resolved.layers.trails }); }, '#c4b5fd', 'trails')
               ),
-              resolved.layers.trails ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 12, padding: '9px 11px', borderRadius: 8, background: '#171a2e', border: '1px solid #c4b5fd' } },
+              resolved.layers.trails ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 12, padding: '9px 11px', borderRadius: 8, background: obsBg('#171a2e'), border: '1px solid ' + obsBorder('#c4b5fd') } },
                 h('label', { style: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 12, color: '#ddd6fe' } }, __alloT('stem.astronomy.obs_trail_span', 'Trail length'),
                   h('select', { 'aria-label': __alloT('stem.astronomy.obs_trail_span', 'Trail length'), value: resolved.trailHours, className: 'astr-focus', style: Object.assign({}, inputStyle, { width: 'auto' }), onChange: function(e) { upd({ obsTrailHours: e.target.value }); } },
                     OBSERVATORY_TRAIL_HOURS.map(function(hrs) { return h('option', { key: hrs, value: hrs }, hrs + ' ' + (hrs === 1 ? __alloT('stem.astronomy.obs_hour_word', 'hour') : __alloT('stem.astronomy.obs_hours_word', 'hours'))); }))),
@@ -9398,12 +9405,12 @@
                   h('input', { 'aria-label': __alloT('stem.astronomy.obs_drift_label', 'Deep time: star motion (±100,000 years)'), type: 'range', min: -100000, max: 100000, step: 2500, value: resolved.drift, className: 'astr-focus', 'aria-valuetext': driftLabel(resolved.drift), onChange: function(e) { upd({ obsDrift: e.target.value }); } }),
                   h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                     h('span', { style: { color: deepTime ? '#fbcfe8' : '#94a3b8', fontWeight: deepTime ? 700 : 400 } }, driftLabel(resolved.drift)),
-                    deepTime ? a11yButton({ type: 'button', onClick: function() { upd({ obsDrift: 0 }); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 11 } }, __alloT('stem.astronomy.obs_drift_reset', 'Back to today')) : null))
+                    deepTime ? a11yButton({ type: 'button', onClick: function() { upd({ obsDrift: 0 }); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#cbd5e1', cursor: 'pointer', fontSize: 11 } }, __alloT('stem.astronomy.obs_drift_reset', 'Back to today')) : null))
               ),
-              deepTime ? h('p', { role: 'status', style: { margin: '0 0 12px', padding: '9px 11px', borderRadius: 8, background: '#2a1a2e', border: '1px solid #f9a8d4', color: '#fbcfe8', fontSize: 12, lineHeight: 1.6 } },
+              deepTime ? h('p', { role: 'status', style: { margin: '0 0 12px', padding: '9px 11px', borderRadius: 8, background: obsBg('#2a1a2e'), border: '1px solid ' + obsBorder('#f9a8d4'), color: '#fbcfe8', fontSize: 12, lineHeight: 1.6 } },
                 h('strong', null, __alloT('stem.astronomy.obs_drift_banner', 'Deep-time view') + ': '),
                 __alloT('stem.astronomy.obs_drift_caveat', 'Star positions and brightnesses come from each star\'s measured distance and 3D velocity, moved in a straight line. That is a good approximation over tens of thousands of years, not a galactic orbit model. The Sun, Moon, planets, meteors, aurora and deep-sky objects are hidden because they would be meaningless at this range, and Earth\'s slow axis wobble is not extrapolated either, so treat compass directions as approximate. The sky is drawn dark so the change is visible.')) : null,
-              h(ObservatoryView, { React: React, t: __alloT, model: modelFactory, sceneLabel: sceneLabel, finders: finders,
+              h(ObservatoryView, { React: React, t: __alloT, model: modelFactory, sceneLabel: sceneLabel, finders: finders, contrast: astronomyContrast, surface: astronomySurface,
                 onClockCommit: function(utcMs) { setInstant(utcMs); },
                 onReducedMotion: function() { upd({ obsPlaying: false }); },
                 onPick: function(info) { upd(info && info.pattern ? { obsPicked: info, obsHighlight: info.pattern } : { obsPicked: info || null }); },
@@ -9415,7 +9422,7 @@
                 },
                 onAnnounce: function(text) { if (typeof ctx.announceToSR === 'function') { try { ctx.announceToSR(text); } catch (_) {} } },
                 onFindMiss: function(label) { if (typeof addToast === 'function') addToast(label + ' ' + __alloT('stem.astronomy.obs_below_now', 'is below the horizon right now.')); } }),
-              h('div', { id: 'astronomy-observatory-picked', role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: picked ? '#1a2238' : 'transparent', border: picked ? '1px solid #fde68a' : '1px dashed #334155', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
+              h('div', { id: 'astronomy-observatory-picked', role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: picked ? obsBg('#1a2238') : 'transparent', border: picked ? '1px solid ' + obsBorder('#fde68a') : '1px dashed ' + obsBorder('#334155'), fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
                 picked ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'baseline' } },
                   h('span', null, h('strong', { style: { color: '#fef08a' } }, '◎ ' + picked.name), ' · ',
                     picked.kind === 'star' ? [Number.isFinite(picked.mag) ? __alloT('stem.astronomy.magnitude_short', 'Magnitude ') + Number(picked.mag).toFixed(2) : null, picked.colorClass ? __alloT('stem.astronomy.obs_color_' + picked.colorClass.replace('-', '_'), picked.colorClass) + ' ' + __alloT('stem.astronomy.obs_star_word', 'star') : null, picked.constellation ? __alloT('stem.astronomy.obs_in_constellation', 'in') + ' ' + picked.constellation : null, picked.hip ? 'HIP ' + picked.hip : null].filter(Boolean).join(' · ')
@@ -9425,22 +9432,22 @@
                     : '',
                     Number.isFinite(picked.alt) ? ' · ' + Math.round(picked.alt) + '° ' + compass(picked.az) : '',
                     picked.pattern && textPack.constellations[picked.pattern] ? h('span', { style: { color: '#a5f3fc' } }, ' · ' + __alloT('stem.astronomy.obs_part_of', 'Part of') + ' ' + textPack.constellations[picked.pattern] + ' (' + __alloT('stem.astronomy.obs_now_highlighted', 'now highlighted') + ')') : null),
-                  a11yButton({ type: 'button', onClick: function() { upd({ obsPicked: null }); }, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_clear_pick', 'Clear')))
+                  a11yButton({ type: 'button', onClick: function() { upd({ obsPicked: null }); }, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_clear_pick', 'Clear')))
                 : h('span', { style: { color: '#94a3b8' } }, __alloT('stem.astronomy.obs_pick_hint', 'Click a star, planet, the Moon or a deep-sky glow in the scene to identify it.'))),
               // Guided tour: the best few things to look at in this exact sky.
-              h('div', { id: 'astronomy-observatory-tour', role: 'region', 'aria-label': __alloT('stem.astronomy.obs_tour_title', 'Tonight\'s tour'), style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#111a2e', border: '1px solid #67e8f9', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
+              h('div', { id: 'astronomy-observatory-tour', role: 'region', 'aria-label': __alloT('stem.astronomy.obs_tour_title', 'Tonight\'s tour'), style: { marginTop: 12, padding: 12, borderRadius: 10, background: obsBg('#111a2e'), border: '1px solid ' + obsBorder('#67e8f9'), fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline', justifyContent: 'space-between' } },
                   h('div', { style: { fontWeight: 800, color: '#67e8f9' } }, '✨ ' + __alloT('stem.astronomy.obs_tour_title', 'Tonight\'s tour') + (tour.length ? ' · ' + (tourIndex + 1) + ' / ' + tour.length : '')),
                   tour.length > 1 ? h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.obs_tour_nav', 'Tour steps'), style: { display: 'flex', gap: 6 } },
-                    a11yButton({ type: 'button', disabled: tourIndex === 0, onClick: function() { upd({ obsTourStep: tourIndex - 1 }); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, '‹ ' + __alloT('stem.astronomy.obs_tour_prev', 'Previous')),
-                    a11yButton({ type: 'button', disabled: tourIndex >= tour.length - 1, onClick: function() { upd({ obsTourStep: tourIndex + 1 }); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.astronomy.obs_tour_next', 'Next') + ' ›')) : null),
+                    a11yButton({ type: 'button', disabled: tourIndex === 0, onClick: function() { upd({ obsTourStep: tourIndex - 1 }); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, '‹ ' + __alloT('stem.astronomy.obs_tour_prev', 'Previous')),
+                    a11yButton({ type: 'button', disabled: tourIndex >= tour.length - 1, onClick: function() { upd({ obsTourStep: tourIndex + 1 }); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#e2e8f0', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.astronomy.obs_tour_next', 'Next') + ' ›')) : null),
                 tourStep ? h('div', { style: { marginTop: 6 } },
                   h('div', null, h('span', { style: { fontSize: 10.5, letterSpacing: 0.6, textTransform: 'uppercase', color: '#94a3b8', marginRight: 8 } }, tourKindLabel[tourStep.kind] || tourStep.kind), h('strong', { style: { color: '#fef3c7' } }, tourStep.title), Number.isFinite(tourStep.alt) && tourStep.kind !== 'daylight' ? h('span', { style: { color: '#cbd5e1' } }, ' · ' + Math.round(tourStep.alt) + '° ' + compass(tourStep.az)) : null),
                   h('p', { style: { margin: '4px 0 0', color: '#e2e8f0' } }, tourStep.note),
                   tourStep.kind !== 'daylight' ? h('p', { style: { margin: '4px 0 0', color: '#94a3b8', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_tour_hint', 'Use the ★ Find button above the camera controls to turn toward it.')) : null)
                 : h('p', { style: { margin: '6px 0 0', color: '#94a3b8' } }, __alloT('stem.astronomy.obs_tour_empty', 'Nothing to tour yet: the catalog is still loading or the sky is too bright.'))),
               // What is up: the accessible text twin of the scene.
-              h('div', { id: 'astronomy-observatory-summary', style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } },
+              h('div', { id: 'astronomy-observatory-summary', style: { marginTop: 12, padding: 12, borderRadius: 10, background: obsBg('#0f172a'), border: '1px solid ' + obsBorder('#334155'), fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } },
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
                   h('div', { style: { fontWeight: 800, color: '#fbbf24' } }, __alloT('stem.astronomy.obs_summary_title', 'What this sky contains')),
                   a11yButton({ type: 'button', onClick: function() {
@@ -9454,7 +9461,7 @@
                       .concat(tour.length ? ['', __alloT('stem.astronomy.obs_tour_title', 'Tonight\'s tour') + ':'].concat(tour.map(function(step, i) { return (i + 1) + '. ' + step.title + ' — ' + step.note; })) : [])
                       .concat(['', __alloT('stem.astronomy.obs_attribution', 'Star data: HYG Database v4.1 by David Nash (astronexus), CC BY-SA 4.0, adapted to a naked-eye subset.')]);
                     copyPlainText(lines.join('\n')).then(function() { if (typeof addToast === 'function') addToast(__alloT('stem.astronomy.obs_copied', 'Sky summary copied.')); }).catch(function() { if (typeof addToast === 'function') addToast(__alloT('stem.astronomy.obs_copy_failed', 'Copy is not available here. Select the text instead.')); });
-                  }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5 } }, '📋 ' + __alloT('stem.astronomy.obs_copy_summary', 'Copy summary'))),
+                  }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5 } }, '📋 ' + __alloT('stem.astronomy.obs_copy_summary', 'Copy summary'))),
                 h('ul', { style: { margin: 0, paddingLeft: 18 } },
                   h('li', null, h('strong', null, resolved.site.name + ' · ' + wallText + ' · '), resolved.lat.toFixed(2) + '°, ' + resolved.lon.toFixed(2) + '°'),
                   h('li', null, h('strong', null, textPack.sun + ': '), Math.round(sunAlt) + '° ' + compass(bodies.sun.az) + '. ' + daylightText),
@@ -9470,9 +9477,9 @@
                 )
               ),
               // Optional NOAA integration, kept separate from the simulation.
-              h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: '#111a2e', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: obsBg('#111a2e'), border: '1px solid ' + obsBorder('#334155'), fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
-                  a11yButton({ type: 'button', onClick: checkNoaa, disabled: !!(noaa && noaa.loading), style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #86efac', background: '#0f172a', color: '#86efac', cursor: 'pointer', fontSize: 12 } }, '🛰 ' + __alloT('stem.astronomy.obs_noaa_check', 'Check NOAA aurora forecast (now)')),
+                  a11yButton({ type: 'button', onClick: checkNoaa, disabled: !!(noaa && noaa.loading), style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + obsBorder('#86efac'), background: obsBg('#0f172a'), color: '#86efac', cursor: 'pointer', fontSize: 12 } }, '🛰 ' + __alloT('stem.astronomy.obs_noaa_check', 'Check NOAA aurora forecast (now)')),
                   toggleButton(__alloT('stem.astronomy.obs_noaa_apply', 'Drive the aurora layer from the forecast'), noaaApplied, function() { upd({ obsNoaaApply: !(d.obsNoaaApply === true) }); }, '#86efac', 'apply'),
                   !resolved.live ? h('span', null, __alloT('stem.astronomy.obs_noaa_live_only', 'Forecast data applies to the live sky only. Switch to Live now to use it.')) : null),
                 noaaStatus ? h('p', { role: 'status', style: { margin: '8px 0 0' } }, noaaStatus) : null,

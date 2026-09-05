@@ -102,7 +102,17 @@ node dev-tools/build_hyg_naked_eye_subset.cjs path\to\hygdata_v41.csv
 - 7 more `ui_strings` keys. Unit suite 38; browser suite 13.
 - Test note: a server-rendered `<select>` carries its choice as `selected` on the matching `<option>`, not as a `value` attribute on the select, unlike `<input>`. Assert the option, not the select.
 
+## Enhancement slice 6 (2026-09-05): honouring the high-contrast theme
+This slice fixed a defect I introduced across slices 1 to 5 rather than adding a feature.
+
+- **What was wrong.** The tool publishes a high-contrast surface as CSS variables (`--allo-stem-panel` and friends, black/yellow/amber) and its own `sectionCard` reads them, with a source comment saying the tool "honor[s] the host's dedicated contrast mode". Every panel I added hard-coded its own navy instead, so with high contrast on, the Observatory stayed navy while the rest of the tool went black. Nothing became illegible, but the theme's promise was half-kept.
+- **What was measured first.** `dev-tools/scan_theme_contrast.cjs` reports 417 findings on this file, but every one assumes a light ground and this tool is deliberately a night surface, so they are false positives here and most predate this work. Measuring the pairs actually used in the Observatory found the worst at 6.37:1 against a 4.5 bar, so the night theme was never a contrast failure. The real gap was the theme contract, not the ratios.
+- **The fix.** 14 backgrounds and 15 borders now route through `obsBg()` / `obsBorder()`, which return the night hex unchanged or the host's contrast tokens. `ObservatoryView` takes `contrast` and `surface` props for its own chrome. The night palette is preserved exactly, so the screenshots are unchanged.
+- **The test is a probe, not a spelling pin.** `probeContrast()` walks the rendered Observatory, resolves each text colour against the nearest ancestor that actually paints a background, and measures. It runs over a deliberately busy state (trails, guides, a pick, a shower, a NOAA reading) in **both** themes, and asserts the panels carry no night navy once contrast is on. A fourth test feeds the probe a known-bad pair and a known-good pair, so a clean run cannot be vacuous.
+- Unit suite 42.
+
 ## Known gaps / next candidates
+- The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
 - Star trails during time-lapse (accumulation buffer) would be a striking addition but needs a render-target pipeline.
 - Proper motion is not applied (arcminute scale for a few fast stars over decades); refraction is now applied.

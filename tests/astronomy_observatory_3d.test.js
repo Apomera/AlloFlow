@@ -12,8 +12,43 @@ beforeEach(() => {
   loadTool('stem_lab/stem_tool_astronomy.js', 'astronomy');
   sky = window.__alloAstroPure;
 });
-function render(state) {
-  return renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], ...state } });
+function render(state, overrides) {
+  return renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], ...state } }, overrides);
+}
+
+// --- contrast probe --------------------------------------------------------
+function luminance(hex) {
+  const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(c => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+}
+function contrastRatio(fg, bg) {
+  const a = luminance(fg), b = luminance(bg);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+const HEX = /(?:^|;)\s*background:\s*(#[0-9a-fA-F]{6})/;
+const INK = /(?:^|;)\s*color:\s*(#[0-9a-fA-F]{6})/;
+// Every inline-styled text node in the observatory, measured against the nearest
+// ancestor that actually paints a colour. Returns the worst offenders.
+function probeContrast(html, rootId) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const root = doc.getElementById(rootId) || doc.body;
+  const findings = [];
+  for (const el of root.querySelectorAll('*')) {
+    const style = el.getAttribute('style') || '';
+    const ink = style.match(INK);
+    if (!ink) continue;
+    if (!(el.textContent || '').trim()) continue;
+    let ground = null;
+    for (let node = el; node && node !== doc.body; node = node.parentElement) {
+      const bg = (node.getAttribute('style') || '').match(HEX);
+      if (bg) { ground = bg[1]; break; }
+    }
+    if (!ground) continue;
+    const ratio = contrastRatio(ink[1], ground);
+    if (ratio < 4.5) findings.push({ fg: ink[1], bg: ground, ratio: Number(ratio.toFixed(2)), text: el.textContent.trim().slice(0, 40) });
+  }
+  return findings;
 }
 const MOOSEHEAD = { lat: 45.58, lon: -69.72 };
 
@@ -418,6 +453,56 @@ describe('Star trails', () => {
     expect(cat.byMag).toHaveLength(cat.count);
     expect(cat.hip[cat.byMag[0]]).toBe(32349);            // Sirius leads
     for (let i = 1; i < 400; i++) expect(cat.mag[cat.byMag[i]]).toBeGreaterThanOrEqual(cat.mag[cat.byMag[i - 1]]);
+  });
+});
+
+describe('Theme surfaces and contrast', () => {
+  const busy = { obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsShower: 'perseids', obsAurora: 4, obsLayers: { trails: true, guides: true }, obsPicked: { kind: 'star', name: 'Vega', hip: 91262, mag: 0.03, ci: 0, colorClass: 'white', constellation: 'Lyra', pattern: 'lyra', alt: 60, az: 90 }, obsNoaa: { fetchedAt: Date.now(), siteProb: 12, ovalProb: 40, ovalLat: 60, forecastTime: '2026-07-05T03:45:00Z' } };
+
+  it('keeps every measured text pair above 4.5 to 1 in the night theme', () => {
+    const findings = probeContrast(render(busy), 'astronomy-observatory-tour')
+      .concat(probeContrast(render(busy), 'astronomy-observatory-summary'))
+      .concat(probeContrast(render(busy), 'astronomy-observatory-picked'));
+    expect(findings).toEqual([]);
+  });
+
+  it('collapses observatory panels onto the host contrast surface instead of staying navy', () => {
+    const night = new DOMParser().parseFromString(render(busy), 'text/html');
+    const hc = new DOMParser().parseFromString(render(busy, { isContrast: true }), 'text/html');
+    const panels = ['astronomy-observatory-summary', 'astronomy-observatory-tour', 'astronomy-observatory-picked'];
+    for (const id of panels) {
+      const nightStyle = night.getElementById(id).getAttribute('style');
+      const hcStyle = hc.getElementById(id).getAttribute('style');
+      expect(nightStyle, id + ' night').toMatch(/background:#(0f172a|111a2e|1a2238)/);
+      expect(hcStyle, id + ' contrast').toContain('background:#000000');
+      expect(hcStyle, id + ' contrast border').toContain('#fbbf24');
+    }
+    // No observatory panel may keep a night navy once contrast is on.
+    const strays = [];
+    for (const id of panels) {
+      const root = hc.getElementById(id);
+      for (const el of [root, ...root.querySelectorAll('*')]) {
+        const bg = (el.getAttribute('style') || '').match(HEX);
+        if (bg && bg[1].toLowerCase() !== '#000000') strays.push(id + ' -> ' + bg[1]);
+      }
+    }
+    expect(strays).toEqual([]);
+  });
+
+  it('keeps every measured text pair above 4.5 to 1 in the contrast theme too', () => {
+    const findings = probeContrast(render(busy, { isContrast: true }), 'astronomy-observatory-tour')
+      .concat(probeContrast(render(busy, { isContrast: true }), 'astronomy-observatory-summary'))
+      .concat(probeContrast(render(busy, { isContrast: true }), 'astronomy-observatory-picked'));
+    expect(findings).toEqual([]);
+  });
+
+  it('proves the probe can fail, so a clean run is not vacuous', () => {
+    const bad = '<div id="probe" style="background:#0f172a"><span style="color:#1e293b">barely there</span></div>';
+    const findings = probeContrast(bad, 'probe');
+    expect(findings).toHaveLength(1);
+    expect(findings[0].ratio).toBeLessThan(2);
+    // And a genuinely readable pair is not reported.
+    expect(probeContrast('<div id="probe" style="background:#0f172a"><span style="color:#e2e8f0">clear</span></div>', 'probe')).toEqual([]);
   });
 });
 
