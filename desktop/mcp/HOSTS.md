@@ -124,6 +124,10 @@ covers it. Binding to any address other than loopback additionally requires
 
 Hosts that speak Streamable HTTP locally (Codex, Cursor and VS Code accept a `url` instead of a
 `command`) can use `http://127.0.0.1:8765/mcp/<token>` directly without any tunnel.
+Codex example: `codex mcp add alloflow-remediation-http --url http://127.0.0.1:8765/mcp --bearer-token-env-var ALLOFLOW_MCP_HTTP_TOKEN`.
+
+To check the HTTP transport with the official MCP SDK client (the stack HTTP-only hosts build on),
+run `dev-tools/mcp_http_sdk_client_check.mjs`; its header explains the one-time SDK install.
 
 ## What differs between hosts
 
