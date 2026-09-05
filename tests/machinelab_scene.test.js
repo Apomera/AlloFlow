@@ -482,3 +482,57 @@ describe('Siege Field wave 6: storm, landing marks, life', () => {
     expect(src).toContain('var fx0 = laneHalf + 22 + hash01(2, 4, 91) * 20, fz0 = -standoff * 0.35;');
   });
 });
+
+describe('Siege Field wave 7: the coach, the map, the sock, the cracks', () => {
+  it('offers a top-down map camera', () => {
+    const html = renderTool('machineLab', state({ sceneCam: 'map' }));
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[^<]*Map/);
+    const src = source();
+    expect(src).toContain("else if (mode === 'map') goal = { target: new THREE.Vector3(0, 0, -standoff * 0.5)");
+  });
+
+  it('the coach tries real flights through the same model, and reports honestly when none reaches', () => {
+    const src = source();
+    expect(src).toContain("var altShot = _machineMath.shot(Object.assign({}, shotInputs, cands[ci3].patch));");
+    expect(src).toContain("if (altShot && altShot.range >= d.standoff) reached = cands[ci3];");
+    expect(src).toContain("'Coach: no single small change reaches from here. Combine two, or move closer.'");
+    // Trebuchets are coached on the counterweight, torsion engines on the bundle.
+    expect(src).toContain("if (machineId === 'trebuchet') cands.push({ patch: { cwMass: d.cwMass * 1.25 }");
+    expect(src).toContain("else cands.push({ patch: { bundleTurns: d.torsionTurns + 4 }");
+  });
+
+  it('the coach candidates the model reads are the keys the model takes', () => {
+    // If inputsFor renames a key, the coach would patch a dead field and
+    // silently coach nothing. Pin the four keys against inputsFor.
+    const src = source();
+    const inputs = src.slice(src.indexOf('function inputsFor(kind) {'), src.indexOf('var machineId = d.machine'));
+    for (const key of ['releaseAngle', 'projMass', 'cwMass', 'bundleTurns']) {
+      expect(inputs.includes(key + ':') || inputs.includes('base.' + key + ' = '), key).toBe(true);
+    }
+  });
+
+  it('a coach candidate that reaches is one the model agrees reaches', () => {
+    // Direct check through the exposed model: a heavier counterweight throws
+    // further at the defaults, which is the coach's whole premise.
+    const M = cfg._math;
+    const base = {
+      machine: 'trebuchet', g: 9.81, projMass: 25, projDiameter: 0.26, releaseAngle: 45, launchElevation: 2,
+      winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2, etaMech: 0.85, drag: true, windZ: 0,
+      cwMass: 1200, cwDrop: 3.2, beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60
+    };
+    const a = M.shot(base), b = M.shot(Object.assign({}, base, { cwMass: 1500 }));
+    expect(b.range).toBeGreaterThan(a.range);
+  });
+
+  it('lays cracks on cracked blocks only, from a pool, and hides the rest', () => {
+    const src = source();
+    expect(src).toContain("if (cb.state !== 'cracked') continue;");
+    expect(src).toContain('for (; ci4 < S.cracks.length; ci4++) S.cracks[ci4].visible = false;');
+  });
+
+  it('the windsock hangs in calm air and lifts with the wind', () => {
+    const src = source();
+    expect(src).toContain('S.sock.rotation.z = -(Math.PI / 2) * (1 - Math.min(1, windAbs / 8))');
+    expect(src).toContain('S.sock.rotation.y = wind < 0 ? Math.PI : 0;');
+  });
+});

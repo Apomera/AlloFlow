@@ -170,6 +170,19 @@ sits them over the hills.
 - **Life**: 14 sheep on the far hillside, off the lane; chimney smoke from both towers
   drifting with the wind.
 
+### Wave 7 (2026-09-05)
+
+- **The coach.** On a short shot, four single changes (release ±5°, stone ×0.75, and the
+  counterweight ×1.25 or four more bundle turns) are each flown through `_machineMath.shot`
+  with the real inputs; the first that reaches is named in the feedback, else "no single
+  small change reaches from here". ★Computed, never guessed; the candidate keys are pinned
+  against `inputsFor` so a rename cannot make the coach patch a dead field.
+- **Map camera** (rotX 86, straight down the lane) for reading crosswind drift.
+- **Windsock** by the engine: points downwind, hangs in calm air, level by 8 m/s.
+- **Crack decals**: a pool of 24 planes with a jagged canvas texture, laid on the face of
+  cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
+- **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

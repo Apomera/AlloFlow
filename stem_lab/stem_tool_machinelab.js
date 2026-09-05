@@ -3781,6 +3781,63 @@ window.StemLab = window.StemLab || {
     }
     S.traces = traces; S.tracesSig = null;
 
+    // ── A windsock beside the engine: the wind, read where the stone leaves. ──
+    if (!contrast) {
+      var sockPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 3.6, 6), mat(0x3b2a1a));
+      sockPole.position.set(-6.5, 1.8, -standoff + 5.5);
+      sockPole.castShadow = true;
+      S.model.add(sockPole);
+      var sockPivot = new THREE.Group();
+      sockPivot.position.set(-6.5, 3.5, -standoff + 5.5);
+      var sock = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.6, 8, 1, true), new THREE.MeshLambertMaterial({ color: 0xf2a33a, side: THREE.DoubleSide }));
+      // Cone axis is y with the tip at +y; lay it so the open mouth is at the pivot.
+      sock.rotation.z = Math.PI / 2; sock.position.x = 0.8;
+      sockPivot.add(sock);
+      S.model.add(sockPivot);
+      S.sock = sockPivot;
+    }
+    // ── Cracks: a pool of decals laid on the face of cracked blocks. ──
+    var crackTex = contrast ? null : makeCanvasTexture(THREE, 128, function (g2, n2) {
+      g2.clearRect(0, 0, n2, n2);
+      g2.strokeStyle = 'rgba(25,18,12,0.9)'; g2.lineWidth = 3; g2.lineCap = 'round';
+      for (var ck2 = 0; ck2 < 3; ck2++) {
+        g2.beginPath();
+        var cx2 = n2 * (0.3 + hash01(ck2, 3, 101) * 0.4), cy2 = n2 * (0.2 + hash01(ck2, 5, 102) * 0.3);
+        g2.moveTo(cx2, cy2);
+        for (var seg2 = 0; seg2 < 6; seg2++) { cx2 += (hash01(ck2 * 7 + seg2, 7, 103) - 0.5) * 34; cy2 += 12 + hash01(ck2 * 7 + seg2, 11, 104) * 12; g2.lineTo(cx2, cy2); }
+        g2.stroke();
+      }
+    });
+    if (crackTex) {
+      var cracks = [];
+      var crackMat = new THREE.MeshLambertMaterial({ map: crackTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+      for (var cr2 = 0; cr2 < 24; cr2++) {
+        var crk = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), crackMat);
+        crk.rotation.y = Math.PI; crk.visible = false;
+        S.model.add(crk); cracks.push(crk);
+      }
+      S.cracks = cracks;
+    }
+    // ── Torsion engines: a wheeled carriage under the deck. ──
+    if (!contrast && guest.ml && (m.kind === 'ballista' || m.kind === 'onager')) {
+      var tl = Math.max(1.3, (guest.ml.armLen || 1.1) * 1.35), tw = Math.max(0.85, (guest.ml.armLen || 1.1) * 0.95);
+      var carMat = new THREE.MeshLambertMaterial({ color: 0x5b3b1f, map: tex.wood || null });
+      var axleMat = new THREE.MeshLambertMaterial({ color: 0x3a3a40 });
+      [-1, 1].forEach(function (ex) {
+        var axle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, tw + 0.9, 6), axleMat);
+        axle.rotation.x = Math.PI / 2; axle.position.set(ex * tl * 0.42, 0.3, 0);
+        mg.add(axle);
+        [-1, 1].forEach(function (ez) {
+          var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 12), carMat);
+          wheel.rotation.x = Math.PI / 2; wheel.position.set(ex * tl * 0.42, 0.3, ez * (tw / 2 + 0.4));
+          wheel.castShadow = true; mg.add(wheel);
+        });
+      });
+      var sill2 = new THREE.Mesh(new THREE.BoxGeometry(tl + 0.4, 0.12, 0.16), carMat);
+      sill2.position.set(0, 0.3, tw / 2 + 0.1); mg.add(sill2);
+      var sill3 = sill2.clone(); sill3.position.z = -tw / 2 - 0.1; mg.add(sill3);
+    }
+
     // ── The stone, its trail, the burst ──
     var stoneR = Math.max(0.3, Math.min(1.1, (m.projDiameter || 0.26) * 1.5));
     var stoneGeo = new THREE.DodecahedronGeometry(stoneR, 1);
@@ -3973,6 +4030,18 @@ window.StemLab = window.StemLab || {
           S.wall.batch.set(n, mc - midCol, wallTop + 0.3, 0, 0.6, colourFor({ col: mc, row: ext.maxRow + 1, mat: 'stone', state: 'intact' })); n++;
         }
         S.wall.batch.commit(n);
+        if (S.cracks) {
+          var ci4 = 0;
+          for (var bi3 = 0; bi3 < list.length && ci4 < S.cracks.length; bi3++) {
+            var cb = list[bi3];
+            if (cb.state !== 'cracked') continue;
+            var crk2 = S.cracks[ci4++];
+            crk2.position.set(cb.col - midCol, cb.row + 0.5, -0.505);
+            crk2.rotation.z = hash01(cb.col, cb.row, 105) * 6.28;
+            crk2.visible = true;
+          }
+          for (; ci4 < S.cracks.length; ci4++) S.cracks[ci4].visible = false;
+        }
       }
 
       // The engine's own swing, on the flight clock.
@@ -4259,6 +4328,11 @@ window.StemLab = window.StemLab || {
           u.wl.rotation.z = flap; u.wr.rotation.z = -flap;
         });
       }
+      if (S.sock) {
+        // Points downwind; hangs in calm air, lifts to level by about 8 m/s.
+        S.sock.rotation.y = wind < 0 ? Math.PI : 0;
+        S.sock.rotation.z = -(Math.PI / 2) * (1 - Math.min(1, windAbs / 8)) + (ambient ? Math.sin(tSec * 5) * 0.05 * Math.min(1, windAbs / 4) : 0);
+      }
       if (S.fire) {
         var flick = ambient ? (0.85 + 0.15 * Math.sin(tSec * 23) + 0.1 * Math.sin(tSec * 7.3)) : 1;
         S.fire.light.intensity = S.fire.base * flick;
@@ -4282,6 +4356,7 @@ window.StemLab = window.StemLab || {
       if (mode === 'machine') goal = { target: machinePos, half: [reachM, highM * 0.6, reachM], rotY: 238, rotX: 12 };
       else if (mode === 'castle') goal = { target: wallPos, half: [span / 2 + 3, wallTop * 0.55 + 2, 4], rotY: 196, rotX: 9 };
       else if (mode === 'field') goal = { target: fieldTarget, pts: fieldPts, rotY: SCENE_HOME.rotY, rotX: SCENE_HOME.rotX };
+      else if (mode === 'map') goal = { target: new THREE.Vector3(0, 0, -standoff * 0.5), half: [Math.max(laneHalf, span / 2 + 6), 2, standoff * 0.5 + 10], rotY: 180, rotX: 86 };
       else if (mode === 'stone') {
         goal = stonePos
           ? { target: stonePos, half: [Math.max(6, standoff * 0.06), Math.max(4, standoff * 0.04), Math.max(6, standoff * 0.06)], rotY: 258, rotX: 15 }
@@ -7132,6 +7207,27 @@ window.StemLab = window.StemLab || {
         var work = (d.totalCrankWork || 0) + (preview.crankWork || 0);
 
         if (!impact || impact.status === 'short') {
+          // The coach: try the smallest single changes a student could make and
+          // report the first that reaches. Computed, not guessed: each is a
+          // real flight through the same model. If none reaches, say that.
+          var coachLine = '';
+          try {
+            var cands = [
+              { patch: { releaseAngle: Math.min(75, d.releaseAngle + 5) }, say: __alloT('stem.machinelab.coach_angle_up', 'a release angle of ') + Math.min(75, d.releaseAngle + 5) + '°' },
+              { patch: { releaseAngle: Math.max(15, d.releaseAngle - 5) }, say: __alloT('stem.machinelab.coach_angle_up', 'a release angle of ') + Math.max(15, d.releaseAngle - 5) + '°' },
+              { patch: { projMass: Math.max(0.2, d.projMass * 0.75) }, say: __alloT('stem.machinelab.coach_lighter', 'a lighter stone, about ') + fmt(d.projMass * 0.75, 0) + ' kg' }
+            ];
+            if (machineId === 'trebuchet') cands.push({ patch: { cwMass: d.cwMass * 1.25 }, say: __alloT('stem.machinelab.coach_cw', 'a counterweight of ') + fmt(d.cwMass * 1.25, 0) + ' kg' });
+            else cands.push({ patch: { bundleTurns: d.torsionTurns + 4 }, say: __alloT('stem.machinelab.coach_turns', 'four more turns in the bundle') });
+            var reached = null;
+            for (var ci3 = 0; ci3 < cands.length && !reached; ci3++) {
+              var altShot = _machineMath.shot(Object.assign({}, shotInputs, cands[ci3].patch));
+              if (altShot && altShot.range >= d.standoff) reached = cands[ci3];
+            }
+            coachLine = reached
+              ? ' ' + __alloT('stem.machinelab.coach_reach', 'Coach: ') + reached.say + __alloT('stem.machinelab.coach_reach2', ' would reach the wall.')
+              : ' ' + __alloT('stem.machinelab.coach_none', 'Coach: no single small change reaches from here. Combine two, or move closer.');
+          } catch (e) { coachLine = ''; }
           // The stone still flies: to where it lands, short of the wall. A shot
           // that only produced a sentence taught nothing about WHY it fell short.
           var shortPath = (preview.path || []).slice();
@@ -7144,7 +7240,7 @@ window.StemLab = window.StemLab || {
               ok: false,
               message: __alloT('stem.machinelab.fell_short', 'Short by ') +
                 fmt(impact ? impact.shortBy : d.standoff, 1) +
-                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.')
+                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.') + coachLine
             },
             siegeFlightId: shortId,
             siegeFlight: shortPath.length > 1
@@ -8201,6 +8297,7 @@ window.StemLab = window.StemLab || {
           { id: 'machine', icon: '🏗️', label: __alloT('stem.machinelab.cam_machine', 'Engine') },
           { id: 'castle', icon: '🏰', label: __alloT('stem.machinelab.cam_castle', 'Castle') },
           { id: 'field', icon: '🌄', label: __alloT('stem.machinelab.cam_field', 'Whole field') },
+          { id: 'map', icon: '🗺️', label: __alloT('stem.machinelab.cam_map', 'Map'), title: __alloT('stem.machinelab.cam_map_t', 'Straight down, for reading how far the crosswind pushes the stone sideways') },
           { id: 'free', icon: '🖐️', label: __alloT('stem.machinelab.cam_free', 'Free look') }
         ];
 
