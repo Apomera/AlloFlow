@@ -1160,37 +1160,37 @@ var d = labToolData.brainAtlas || {};
                   fn: 'People do report preferences, but the "meshing hypothesis" (teaching in a matched style improves learning) has not survived controlled tests. Pashler, McDaniel, Rohrer and Bjork (2008) found no adequate evidence for it, and later experiments that assigned students to matched or mismatched instruction (Rogowsky et al. 2015; Husmann and O\'Loughlin 2019) found no benefit from matching. In Dekker et al. (2012), 93% of surveyed UK teachers endorsed the claim, making it one of the most widely believed neuromyths.',
                   instead: 'Pick the format that fits the CONTENT (a map for geography, a demonstration for a lab skill), offer multiple representations to everyone (the UDL principle), and use retrieval practice and spacing, which have strong evidence.',
                   source: 'Pashler et al. 2008, Psychological Science in the Public Interest; Dekker et al. 2012, Frontiers in Psychology', sourceUrl: 'https://doi.org/10.1111/j.1539-6053.2009.01038.x' },
-                { id: 'myth_left_right_brain', name: t('stem.brainatlas.myth_left_right_brain', 'Left-brained vs right-brained people'), short: 'Left/right brain', x: 0.38, y: 0.66, w: 0.08, verdict: 'oversimplified', belief: 91,
+                { id: 'myth_left_right_brain', seeView: 'crossLateral', seeRegion: null, name: t('stem.brainatlas.myth_left_right_brain', 'Left-brained vs right-brained people'), short: 'Left/right brain', x: 0.38, y: 0.66, w: 0.08, verdict: 'oversimplified', belief: 91,
                   claim: 'Logical people are "left-brained" and creative people are "right-brained", and teaching should target the dominant side.',
                   fn: 'Real lateralization exists: language is usually left-dominant and some spatial-attention functions lean right (see the Cross-Lateral view). But the idea that a PERSON has a globally dominant hemisphere is not supported. Nielsen et al. (2013) analysed resting-state scans from 1,011 people and found no evidence that individuals have a stronger left- or right-sided network overall; nearly every task uses both hemispheres working together through the corpus callosum.',
                   instead: 'Teach lateralization as a fact about FUNCTIONS (language, spatial attention), not about personality types. Creativity and logic both recruit widely distributed networks in both hemispheres.',
                   source: 'Nielsen et al. 2013, PLoS ONE', sourceUrl: 'https://doi.org/10.1371/journal.pone.0071275' },
-                { id: 'myth_ten_percent', name: t('stem.brainatlas.myth_ten_percent', 'We only use 10% of our brain'), short: '10% of the brain', x: 0.62, y: 0.66, w: 0.08, verdict: 'debunked', belief: 48,
+                { id: 'myth_ten_percent', seeView: 'stimulate', seeRegion: null, name: t('stem.brainatlas.myth_ten_percent', 'We only use 10% of our brain'), short: '10% of the brain', x: 0.62, y: 0.66, w: 0.08, verdict: 'debunked', belief: 48,
                   claim: 'Most of the brain sits idle, and unlocking the unused 90% would give people extraordinary abilities.',
                   fn: 'Functional imaging shows activity across virtually every brain region over the course of a normal day, and damage to almost any area produces a measurable deficit. The brain is about 2% of body mass but consumes roughly 20% of resting energy; evolution does not preserve costly tissue that does nothing. The claim likely grew from misquoted early-20th-century remarks about untapped potential, not from any measurement.',
                   instead: 'Use the Stimulation Lab and Stroke Territories views: small lesions in "quiet" association cortex still change planning, attention, or language, which is the direct evidence against the myth.',
                   source: 'Boyd 2008, Scientific American; Jarrett 2014, Great Myths of the Brain', sourceUrl: 'https://www.scientificamerican.com/article/do-people-only-use-10-percent-of-their-brains/' },
-                { id: 'myth_first_three_years', name: t('stem.brainatlas.myth_first_three_years', 'The window closes at age 3'), short: 'Closing windows', x: 0.86, y: 0.66, w: 0.08, verdict: 'oversimplified',
+                { id: 'myth_first_three_years', seeView: 'synapses', seeRegion: 'critical_periods', name: t('stem.brainatlas.myth_first_three_years', 'The window closes at age 3'), short: 'Closing windows', x: 0.86, y: 0.66, w: 0.08, verdict: 'oversimplified',
                   claim: 'Brain development is essentially finished by age three, so children need special enrichment products (classical music, flashcards) before the window shuts.',
                   fn: 'True critical periods exist for basic sensory functions, such as binocular vision and native-language sound categories (see the Synapse & Development view). Most learning, though, relies on sensitive periods that remain partly open for life, and the prefrontal cortex keeps remodelling into the mid-20s. The "Mozart effect" came from one small 1993 study of a brief spatial-task boost in adults; a 2010 meta-analysis (Pietschnig et al.) found little support for it, and no commercial enrichment product has evidence of lasting cognitive gains.',
                   instead: 'What early brains reliably need is ordinary responsive caregiving, rich back-and-forth language, sleep, play, and safety. Later learning is not locked out.',
                   source: 'Bruer 1999, The Myth of the First Three Years; Pietschnig et al. 2010, Intelligence', sourceUrl: 'https://doi.org/10.1016/j.intell.2010.03.001' },
-                { id: 'myth_brain_training', name: t('stem.brainatlas.myth_brain_training', 'Brain-training apps raise intelligence'), short: 'Brain training', x: 0.14, y: 0.84, w: 0.08, verdict: 'oversimplified',
+                { id: 'myth_brain_training', seeView: 'synapses', seeRegion: 'neuroplasticity', name: t('stem.brainatlas.myth_brain_training', 'Brain-training apps raise intelligence'), short: 'Brain training', x: 0.14, y: 0.84, w: 0.08, verdict: 'oversimplified',
                   claim: 'A few minutes a day on a brain-training app improves memory, attention, and intelligence in general.',
                   fn: 'Practice reliably improves the trained task, and sometimes very similar tasks, but "far transfer" to school work, reasoning, or everyday memory has not held up. A 2016 review by Simons and colleagues found the strongest claims rested on weak designs, and the US Federal Trade Commission fined Lumosity the same year for unsupported advertising. Plasticity is real (see Neuroplasticity in the Synapse view) but bounded.',
                   instead: 'Practise the actual skill you want to improve. Aerobic exercise and adequate sleep have modest but real evidence for attention and memory.',
                   source: 'Simons et al. 2016, Psychological Science in the Public Interest', sourceUrl: 'https://doi.org/10.1177/1529100616661983' },
-                { id: 'myth_adhd_brain', name: t('stem.brainatlas.myth_adhd_brain', 'ADHD brain differences'), short: 'ADHD brains', x: 0.38, y: 0.84, w: 0.08, verdict: 'real_small',
+                { id: 'myth_adhd_brain', seeView: 'eegWaves', seeRegion: 'theta_wave', name: t('stem.brainatlas.myth_adhd_brain', 'ADHD brain differences'), short: 'ADHD brains', x: 0.38, y: 0.84, w: 0.08, verdict: 'real_small',
                   claim: 'Either "ADHD brains are visibly different, so a scan can diagnose it" or, from the other side, "there is no brain test, so ADHD is not real".',
                   fn: 'Both extremes are wrong. The ENIGMA-ADHD consortium (Hoogman et al. 2017) compared 1,713 people with ADHD and 1,529 without and found slightly smaller volumes in several subcortical structures (accumbens, amygdala, caudate, hippocampus, putamen) and total brain volume, most evident in children. The effects were small (roughly d = 0.1 to 0.2), so the two groups overlap almost completely and no scan can sort an individual. Likewise the EEG theta/beta ratio was proposed as a marker but is not diagnostically reliable (Arns et al. 2013). Differences are real at the GROUP level, dimensional, heterogeneous, and shaped by development and environment.',
                   instead: 'Diagnosis stays clinical: developmental history, ratings from several settings, and functional impairment. Support follows function, not a scan. The SEL Hub Advocacy tool covers accommodations and self-advocacy.',
                   source: 'Hoogman et al. 2017, Lancet Psychiatry (ENIGMA-ADHD); Arns et al. 2013, Journal of Attention Disorders', sourceUrl: 'https://doi.org/10.1016/S2215-0366(17)30049-4' },
-                { id: 'myth_autism_brain', name: t('stem.brainatlas.myth_autism_brain', 'The "autistic brain"'), short: 'Autism brains', x: 0.62, y: 0.84, w: 0.08, verdict: 'real_small',
+                { id: 'myth_autism_brain', seeView: 'synapses', seeRegion: 'pruning', name: t('stem.brainatlas.myth_autism_brain', 'The "autistic brain"'), short: 'Autism brains', x: 0.62, y: 0.84, w: 0.08, verdict: 'real_small',
                   claim: 'There is a single recognisable autistic brain, or autism is simply a broken version of a typical brain.',
                   fn: 'Group-level differences exist but are small and varied. ENIGMA-ASD (van Rooij et al. 2018) compared 1,571 autistic people with 1,651 controls and found modest differences in subcortical volumes and in cortical thickness, mostly frontal and temporal, with effect sizes around d = 0.1 to 0.2 and near-total overlap between groups. Some autistic children show early brain overgrowth; others do not. Heterogeneity is the main finding: autism describes many developmental paths, not one anatomy, which is why a neurodiversity framing (differences, strengths, and needs along dimensions) fits the data better than a deficit model.',
                   instead: 'Describe autism as a spectrum of real neurological differences with a wide range of profiles. Support and accommodations should follow the individual, not a scan or a stereotype.',
                   source: 'van Rooij et al. 2018, American Journal of Psychiatry (ENIGMA-ASD)', sourceUrl: 'https://doi.org/10.1176/appi.ajp.2017.17010100' },
-                { id: 'myth_retina_screening', name: t('stem.brainatlas.myth_retina_screening', 'An eye photo can diagnose ADHD'), short: 'Retina AI screen', x: 0.86, y: 0.84, w: 0.08, verdict: 'promising',
+                { id: 'myth_retina_screening', seeView: 'visualPathway', seeRegion: null, name: t('stem.brainatlas.myth_retina_screening', 'An eye photo can diagnose ADHD'), short: 'Retina AI screen', x: 0.86, y: 0.84, w: 0.08, verdict: 'promising',
                   claim: 'A deep-learning model can diagnose ADHD from a photograph of the retina with about 96% accuracy.',
                   fn: 'A 2025 Korean study (Choi et al., npj Digital Medicine) trained a model on retinal fundus photographs and reported an AUROC of roughly 0.96 for telling children with ADHD from matched controls. That is a genuinely interesting result because the retina develops from the same tissue as the brain. But it was a matched case-control design, which inflates accuracy compared with a real clinic where ADHD is one of many possibilities; it has not been validated in an outside population; and it cannot separate ADHD from conditions that were not in the sample. At best it could one day help decide who gets a full assessment. It is not a diagnostic test.',
                   instead: 'Teach students to ask three questions about any headline: who was in the sample, was it tested on new people, and does "accuracy" mean the same thing in a real screening population. This is what "promising, not proven" looks like.',
@@ -7012,6 +7012,17 @@ var d = labToolData.brainAtlas || {};
               try { panel.focus({ preventScroll: true }); } catch (e) {}
             }, 20);
           }
+          function openBrainAtlasMythView(card) {
+            if (!card || !card.seeView || !VIEWS[card.seeView]) return;
+            upd('view', card.seeView);
+            upd('viewGroup', brainAtlasViewGroupFor(card.seeView));
+            upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[card.seeView] = true; return o; })());
+            upd('selected3DStructure', '');
+            upd('selectedRegion', card.seeRegion || null);
+            upd('quizMode', false);
+            upd('search', '');
+            if (typeof announceToSR === 'function') announceToSR((VIEWS[card.seeView].name || card.seeView) + ' ' + (t('stem.brainatlas.view_opened', 'view opened.') || 'view opened.'));
+          }
           function openStimTreatmentAtlas(item) {
             if (!item) return;
             upd('stimGuideOpen', false);
@@ -12087,6 +12098,16 @@ var d = labToolData.brainAtlas || {};
                       currentView.isNeuromyths && sel.source && React.createElement("div", null,
                         React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.source', 'Source')),
                         sel.sourceUrl ? React.createElement("a", { className: "text-xs text-sky-700 underline leading-relaxed", href: sel.sourceUrl, target: "_blank", rel: "noopener noreferrer" }, sel.source) : React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, sel.source)
+                      ),
+                      currentView.isNeuromyths && sel.seeView && VIEWS[sel.seeView] && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.see_it_in_the_atlas', 'See it in the atlas')),
+                        React.createElement("button", {
+                          type: "button",
+                          "data-brainatlas-myth-see-view": sel.seeView,
+                          "data-brainatlas-myth-see-region": sel.seeRegion || undefined,
+                          onClick: function () { openBrainAtlasMythView(sel); },
+                          className: "transition-colors w-full text-left py-2 px-3 rounded-lg text-xs font-bold border-2 border-sky-300 text-sky-800 hover:bg-sky-50 active:scale-[0.97]"
+                        }, (t('stem.brainatlas.open_view_named', 'Open') || 'Open') + ': ' + (VIEWS[sel.seeView].name || sel.seeView))
                       ),
 
                       plainLesson ? React.createElement("section", { className: "brainatlas-plain-lesson", "data-brainatlas-plain-lesson": sel.id, "aria-labelledby": "brainatlas-plain-question" },

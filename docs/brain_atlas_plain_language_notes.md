@@ -111,3 +111,9 @@ September 5, 2026. The Neuromyths view has an ungraded practice panel. Eight hea
 ### Verified in a browser
 
 The Neuromyths view was driven in Chromium against the deployed host with the local tool file injected over the CDN copy. At 1280px in the light, dark, and high-contrast themes, and at 390px in light, the framing panel, the eight cards, the belief chart, and the headline check all rendered with no blank labels, no contrast failures below WCAG AA in the new panels, no horizontal page overflow, and no touch target under 24px. Answering a headline showed the red mark on the chosen wrong verdict, the green mark on the correct one, and the cue text. The two action buttons carry a minimum width so they share a row on desktop and stack full width on a phone.
+
+## Following a myth card into the atlas
+
+September 5, 2026. Several myth cards point at another view in their own evidence text, for example the left/right card citing the cross-lateral view for real lateralization, or the brain-training card citing neuroplasticity in the synapse view. That reference used to be a dead end. Seven of the eight cards now carry a button that opens the view they cite and, where one applies, selects the specific region: critical periods for the age-three window, neuroplasticity for brain training, synaptic pruning for the autism card, and theta waves for the ADHD card, which is where the theta/beta hedge already lives. Learning styles has no button because its text cites no view.
+
+The jump sets the view, its group, and the region together, leaves quiz mode, clears a stale search, and announces the destination, matching the existing treatment and 3D jumps. A test asserts that each named region really belongs to the view it is paired with, so a card can never promise a destination that does not exist.
