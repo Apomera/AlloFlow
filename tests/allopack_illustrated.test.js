@@ -25,6 +25,9 @@ describe('illustrated water cycle accessibility and portability',()=>{
   for(const item of glossary){expect(getAlt(item)).toBe(item.imageAlt);expect(item.imageAlt.length).toBeGreaterThan(20);expect(item.imageAlt.length).toBeLessThanOrEqual(250);expect(item.imageAltHash).toBe(hashImage(item.image));}
   for(const p of panels){expect(p.alt.length).toBeGreaterThan(20);expect(p.alt.length).toBeLessThanOrEqual(250);expect(p.altHash).toBe(hashImage(p.imageUrl));expect(p.altSource).toBe('vision');expect(p.decorative).toBe(false);}
  });
+ it('never names the term inside its own picture description (flashcard quiz mode shows the image)',()=>{
+  for(const item of glossary){expect(item.imageAlt.toLowerCase()).not.toContain(item.term.toLowerCase());}
+ });
  it('embeds exactly the reviewed files without network image dependencies',()=>{
   const manifest=read('allopacks/media/water_cycle_grade6/manifest.json');
   const urls=[...glossary.map(i=>i.image),...panels.map(i=>i.imageUrl)];
