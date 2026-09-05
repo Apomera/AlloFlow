@@ -650,6 +650,7 @@
   //   theme          'light' (default) | 'dark' — pad and control colours
   //   idPrefix       string for element ids/data attributes (default 'prim3d')
   //   labels         optional overrides: title, help, point, radius, height, x, y, add, remove, reset
+  //   rootProps      extra props merged onto the root element (e.g. a data attribute)
   // Pointer drag state lives on the canvas element (no React state per move).
   function renderProfilePad(React, opts) {
     opts = opts || {};
@@ -758,7 +759,7 @@
     var mini = 'min-h-[40px] min-w-[40px] rounded-lg border px-2 text-sm font-bold ' + (dark ? 'border-slate-500 bg-slate-900 text-slate-100' : 'border-slate-500 bg-white text-slate-700');
     var field = 'rounded border px-1 py-0.5 text-[0.625rem] ' + (dark ? 'border-slate-500 bg-slate-950 text-slate-100' : 'border-slate-500 bg-white text-slate-900');
     var helpId = prefix + '-profile-pad-help';
-    return h('div', { className: 'mb-2 rounded-xl border p-2 ' + (dark ? 'border-violet-700 bg-slate-900/70' : 'border-fuchsia-200 bg-fuchsia-50'), 'data-profile-pad': part.shape },
+    return h('div', Object.assign({ className: 'mb-2 rounded-xl border p-2 ' + (dark ? 'border-violet-700 bg-slate-900/70' : 'border-fuchsia-200 bg-fuchsia-50'), 'data-profile-pad': part.shape }, opts.rootProps || {}),
       h('p', { className: 'mb-1 text-[0.6875rem] font-black ' + (dark ? 'text-violet-200' : 'text-fuchsia-800') }, L.title),
       h('p', { id: helpId, className: 'mb-1 text-[0.625rem] ' + ink }, L.help),
       h('div', { className: 'flex flex-wrap items-start gap-2' },
@@ -776,14 +777,19 @@
           h('div', { className: 'mt-1 flex flex-wrap gap-1' },
             h('button', { type: 'button', className: mini, disabled: locked || profile.length >= maxPts, 'aria-label': 'Add a shape point after the selected point', onClick: function () {
               var next = profile.map(function (pt) { return pt.slice(); });
-              var a = next[sel], b = next[Math.min(sel + 1, next.length - 1)];
-              next.splice(sel + 1, 0, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
-              select(sel + 1); commit(next, 'Shape point added.');
+              var a = next[sel], b = next[Math.min(next.length - 1, sel + 1)];
+              var last = sel === next.length - 1;
+              var mid = last ? [a[0], a[1]] : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+              // After the last point there is nothing to average with: nudge the copy
+              // along the profile's natural axis (height for lathe, x for outline).
+              if (last) mid[isLathe ? 1 : 0] = Math.min(1, mid[isLathe ? 1 : 0] + 0.1);
+              next.splice(sel + 1, 0, mid);
+              select(sel + 1); commit(next, 'Added shape point ' + (sel + 2) + '.');
             } }, L.add),
             h('button', { type: 'button', className: mini, disabled: locked || profile.length <= PROFILE_MIN_POINTS, 'aria-label': 'Remove the selected shape point', onClick: function () {
               var next = profile.map(function (pt) { return pt.slice(); });
               next.splice(sel, 1);
-              select(Math.max(0, sel - 1)); commit(next, 'Shape point removed.');
+              select(Math.max(0, sel - 1)); commit(next, 'Removed shape point ' + (sel + 1) + '.');
             } }, L.remove),
             DEFAULT_PROFILES[part.shape] ? h('button', { type: 'button', className: mini, disabled: locked, 'aria-label': 'Reset the drawn shape to its starter shape', onClick: function () {
               select(0); commit(DEFAULT_PROFILES[part.shape].map(function (p) { return p.slice(); }), 'Shape reset.');

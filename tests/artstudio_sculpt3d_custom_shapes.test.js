@@ -4,6 +4,8 @@
 // primitives never show the pad. Prim3D is mocked the same way the other
 // sculpt tests mock it; the real profile rules live in tests/prim3d.test.js.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   React,
   ReactDOMClient,
@@ -66,7 +68,20 @@ function makePrim3D() {
     applyMorphProfile: (recipe) => normalizeRecipe(recipe),
     duplicatePart: (recipe) => normalizeRecipe(recipe),
     nudgePart: (recipe) => normalizeRecipe(recipe),
+    // The pad itself is the real shared one (Prim3D.renderProfilePad, also used
+    // by Print Lab); everything else stays mocked as in the other sculpt tests.
+    renderProfilePad: realRenderProfilePad(),
   };
+}
+
+function realRenderProfilePad() {
+  const saved = window.AlloModules;
+  window.AlloModules = {};
+  // eslint-disable-next-line no-new-func
+  new Function(readFileSync(resolve(process.cwd(), 'prim3d_module.js'), 'utf8'))();
+  const pad = window.AlloModules.Prim3D.renderProfilePad;
+  window.AlloModules = saved;
+  return pad;
 }
 
 describe('Art Studio Sculpt 3D drawn shapes', () => {
