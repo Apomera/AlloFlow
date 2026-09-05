@@ -27,7 +27,12 @@
         // Rescued (headings were already in the broad rule).
         h('h2', { className: 'text-slate-900' }, 'Heading with a dark utility class'),
         // REAL DEFECT: an !important pin the host cannot override.
-        h('p', { className: 'pinned' }, 'Paragraph pinned dark with !important')
+        h('p', { className: 'pinned' }, 'Paragraph pinned dark with !important'),
+        // A plain link. NOT a finding: Tailwind's preflight sets `a { color:
+        // inherit }`, so the link takes its parent's forced yellow. Measured
+        // 2026-09-05 before adding a host link rule, which was therefore not
+        // added. Stays here so the instrument keeps proving it.
+        h('p', null, 'Read the ', h('a', { href: '#source' }, 'primary source'), ' before deciding.')
       );
     }
   });
