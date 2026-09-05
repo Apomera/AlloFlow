@@ -1327,7 +1327,7 @@ const d = labToolData.artStudio || {};
             };
             storeStudioThreadKitEntry(nextKit, runId);
             if (typeof addToast === 'function') addToast('Palette added to the Thread Kit.', 'success');
-            if (typeof announceToSR === 'function') announceToSR('Color Wheel palette added to the Thread Kit.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_color_wheel_palette_added_to_the_thread_kit', 'Color Wheel palette added to the Thread Kit.'));
           };
           const applyThreadKitPaletteToPixel = function () {
             if (!studioThreadPalette.length) return;
@@ -1340,7 +1340,7 @@ const d = labToolData.artStudio || {};
               pixelLit: firstColor.l
             });
             if (typeof addToast === 'function') addToast('Thread Kit palette loaded in Pixel Art.', 'success');
-            if (typeof announceToSR === 'function') announceToSR('Thread Kit palette loaded in Pixel Art.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_thread_kit_palette_loaded_in_pixel_art', 'Thread Kit palette loaded in Pixel Art.'));
           };
           const applyThreadKitPaletteToContrast = function () {
             var contrastPatch = {
@@ -4348,7 +4348,7 @@ const d = labToolData.artStudio || {};
             function undoSymmetry() {
               var history = canvas._symUndo || [];
               if (!history.length) {
-                if (typeof announceToSR === 'function') announceToSR('Nothing to undo.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.'));
                 return;
               }
               var current = captureSymmetryCanvas();
@@ -4357,13 +4357,13 @@ const d = labToolData.artStudio || {};
               canvas._symUndo = history.slice(0, -1);
               if (current) canvas._symRedo = (canvas._symRedo || []).concat([current]).slice(-20);
               persistSymmetryArtwork();
-              if (typeof announceToSR === 'function') announceToSR('Undid the last symmetry change.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_undid_the_last_symmetry_change', 'Undid the last symmetry change.'));
             }
 
             function redoSymmetry() {
               var future = canvas._symRedo || [];
               if (!future.length) {
-                if (typeof announceToSR === 'function') announceToSR('Nothing to redo.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
                 return;
               }
               var current = captureSymmetryCanvas();
@@ -4372,7 +4372,7 @@ const d = labToolData.artStudio || {};
               if (current) canvas._symUndo = (canvas._symUndo || []).concat([current]).slice(-20);
               canvas._symRedo = future.slice(0, -1);
               persistSymmetryArtwork();
-              if (typeof announceToSR === 'function') announceToSR('Redid the symmetry change.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redid_the_symmetry_change', 'Redid the symmetry change.'));
             }
 
             function clearSymmetry() {
@@ -4393,7 +4393,7 @@ const d = labToolData.artStudio || {};
               canvas._prevX = null; canvas._prevY = null;
               if (before) recordSymmetryChange(before);
               else persistSymmetryArtwork();
-              if (typeof announceToSR === 'function') announceToSR('Cleared the symmetry artwork.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_cleared_the_symmetry_artwork', 'Cleared the symmetry artwork.'));
             }
 
             canvas._symUndoAction = undoSymmetry;
@@ -6803,8 +6803,8 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': "Watercolor touch interaction" },
                   React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR('Watercolor touch mode set to scroll page.'); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR('Watercolor touch mode set to draw on paper.'); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
+                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
+                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
                   ),
                   React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
                 ),
@@ -6816,10 +6816,10 @@ const d = labToolData.artStudio || {};
                   React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor redone.' : 'Nothing to redo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
                   React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
                   React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? 'All watercolor masking fluid removed.' : 'No masking fluid to remove.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR('Watercolor canvas cleared.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR('Watercolor brush reloaded.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR('Watercolor dried.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Watercolor PNG exported without diagnostic overlays.'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_canvas_cleared', 'Watercolor canvas cleared.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_brush_reloaded', 'Watercolor brush reloaded.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_dried', 'Watercolor dried.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_png_exported_without_diagnostic_overl', 'Watercolor PNG exported without diagnostic overlays.')); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
                 ),
                 React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
@@ -7176,7 +7176,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else upd('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Symmetry PNG exported without editing guides.'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_png_exported_without_editing_guides', 'Symmetry PNG exported without editing guides.')); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
                 React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Toggle fullscreen Symmetry Studio workspace"), onClick: function () { toggleFullscreen('symmetryFullscreenWorkspace'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\u26F6 Fullscreen"))
 
@@ -7189,7 +7189,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Origin Y:"),
                 React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100), "aria-label": "Symmetry origin vertical position", "aria-valuetext": Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + " percent", onChange: function(e) { upd('symCenterY', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + "%"),
-                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": "Reset symmetry origin to center", onClick: function() { updMany({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR('Symmetry origin reset to the center.'); } }, "Center"),
+                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": "Reset symmetry origin to center", onClick: function() { updMany({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_origin_reset_to_the_center', 'Symmetry origin reset to the center.')); } }, "Center"),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Blend:"),
                 [{ id: 'normal', label: 'Normal', aria: 'Normal symmetry brush blending' }, { id: 'glow', label: '\u2728 Glow', aria: 'Glow symmetry brush blending' }].map(function(blend) {
                   var activeBlend = d.symBlendMode === 'glow' ? 'glow' : 'normal';
@@ -7231,7 +7231,7 @@ const d = labToolData.artStudio || {};
                           React.createElement("output", null, Math.round(variation.value) + variation.unit)
                         );
                       }),
-                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": "Reset symmetry repeat variation", onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR('Symmetry repeat variation reset.'); } }, 'Reset variation')
+                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": "Reset symmetry repeat variation", onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_repeat_variation_reset', 'Symmetry repeat variation reset.')); } }, 'Reset variation')
                     ),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Symmetry canvas appearance" },
                       React.createElement("button", { type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": "Show symmetry guides", "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
@@ -7643,13 +7643,13 @@ const d = labToolData.artStudio || {};
                 if (!sculptUndo.length) return;
                 var previous = sculptUndo[sculptUndo.length - 1] || null;
                 updMany({ sculptRecipe: previous, sculptUndo: sculptUndo.slice(0, -1), sculptRedo: sculptRedo.concat([recipe]).slice(-20), sculptSel: 0 });
-                if (typeof announceToSR === 'function') announceToSR('Undid the last sculpture change.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_undid_the_last_sculpture_change', 'Undid the last sculpture change.'));
               };
               var redoSculpt = function() {
                 if (!sculptRedo.length) return;
                 var next = sculptRedo[sculptRedo.length - 1] || null;
                 updMany({ sculptRecipe: next, sculptUndo: sculptUndo.concat([recipe]).slice(-20), sculptRedo: sculptRedo.slice(0, -1), sculptSel: 0 });
-                if (typeof announceToSR === 'function') announceToSR('Redid the sculpture change.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redid_the_sculpture_change', 'Redid the sculpture change.'));
               };
               var _cnvBox = { current: null };
               // ── preview lifecycle (callback ref; state cached ON the canvas) ──
@@ -7968,7 +7968,7 @@ const d = labToolData.artStudio || {};
                 callGemini(prompt, false, false, 0.85).then(function(resp) {
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
                   window._artSculptBusy = false;
-                  if (r) { if (!recipe) r.name = subj.slice(0, 80); upd('sculptSel', 0); setRecipe(r); if (typeof announceToSR === 'function') announceToSR('Sculpture updated'); }
+                  if (r) { if (!recipe) r.name = subj.slice(0, 80); upd('sculptSel', 0); setRecipe(r); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_updated', 'Sculpture updated')); }
                   else { upd('_sculptPing', (d._sculptPing || 0) + 2); if (addToast) addToast('⚠️ ' + __alloT('stem.artstudio.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); }
                 }).catch(function() { window._artSculptBusy = false; upd('_sculptPing', (d._sculptPing || 0) + 2); });
               };
@@ -7980,9 +7980,9 @@ const d = labToolData.artStudio || {};
                   a.href = cnv.toDataURL('image/png');
                   a.download = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                  if (typeof announceToSR === 'function') announceToSR('Sculpture picture saved.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_picture_saved', 'Sculpture picture saved.'));
                 } catch (e) {
-                  if (typeof announceToSR === 'function') announceToSR('Unable to save the sculpture picture.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_save_the_sculpture_picture', 'Unable to save the sculpture picture.'));
                 }
               };
               var sculptureFileStem = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'sculpture';
@@ -8001,11 +8001,11 @@ const d = labToolData.artStudio || {};
                   a.download = sculptureFileStem + '.sculpture.json';
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   if (objectUrl) setTimeout(function() { try { window.URL.revokeObjectURL(objectUrl); } catch (e) {} }, 0);
-                  if (typeof announceToSR === 'function') announceToSR('Editable sculpture model exported as JSON.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_editable_sculpture_model_exported_as_json', 'Editable sculpture model exported as JSON.'));
                   if (typeof addToast === 'function') addToast('Editable sculpture model exported.', 'success');
                 } catch (e) {
                   if (objectUrl) { try { window.URL.revokeObjectURL(objectUrl); } catch (err) {} }
-                  if (typeof announceToSR === 'function') announceToSR('Unable to export the sculpture model.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_export_the_sculpture_model', 'Unable to export the sculpture model.'));
                   if (typeof addToast === 'function') addToast('Unable to export the sculpture model.', 'error');
                 }
               };
@@ -8069,7 +8069,7 @@ const d = labToolData.artStudio || {};
                 if (!recipe || !selectedPart || !P3D.duplicatePart || !P3D.updatePart) return;
                 var next = P3D.duplicatePart(recipe, sel);
                 if (!next || !next.parts || next.parts.length <= parts.length) {
-                  if (typeof announceToSR === 'function') announceToSR('Unable to add another sculpture part.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_add_another_sculpture_part', 'Unable to add another sculpture part.'));
                   return;
                 }
                 var mirroredIndex = sel + 1;
@@ -8151,7 +8151,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("label", { className: mini + " flex-1 cursor-pointer text-center px-2 py-2 focus-within:ring-4 focus-within:ring-pink-600 focus-within:ring-offset-2" }, '⬆ Load model',
                       React.createElement("input", { type: "file", accept: ".json,.sculpture.json,application/json", className: "sr-only", "aria-label": "Import sculpture JSON model", onChange: importSculptJson })
                     ),
-                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); if (typeof announceToSR === 'function') announceToSR('Sculpture cleared.'); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
+                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_cleared', 'Sculpture cleared.')); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
                   )
                 ),
                 // editor column
@@ -8307,7 +8307,7 @@ const d = labToolData.artStudio || {};
                       if (!nm) return;
                       var g2 = Object.assign({}, gallery); g2[nm] = recipe;
                       upd('sculptGallery', g2); e.target.elements.sculptname.value = '';
-                      if (typeof announceToSR === 'function') announceToSR('Saved to gallery');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_saved_to_gallery', 'Saved to gallery'));
                     } },
                       React.createElement("input", { name: "sculptname", placeholder: __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), "aria-label": __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
                       React.createElement("button", { type: "submit", className: mini, "aria-label": "Save sculpture to gallery" }, '💾')
@@ -8511,9 +8511,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Redrawing the spirograph.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_spirograph', "\u21BB Redraw")),
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_spirograph', 'Redrawing the spirograph.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_spirograph', "\u21BB Redraw")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Spirograph PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_png_exported', 'Spirograph PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow spirograph enabled.' : 'Single-color spirograph enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -8603,7 +8603,7 @@ const d = labToolData.artStudio || {};
 
                       canvas._spiroDone = true;
 
-                      if (typeof announceToSR === 'function') announceToSR('Spirograph drawing complete.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_drawing_complete', 'Spirograph drawing complete.'));
 
                     }
 
@@ -9718,9 +9718,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Redrawing the string art.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_string_art', "\u21BB Redraw")),
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_string_art', 'Redrawing the string art.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_string_art', "\u21BB Redraw")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('String-art PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_png_exported', 'String-art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow threads enabled.' : 'Single-color threads enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -9886,7 +9886,7 @@ const d = labToolData.artStudio || {};
 
                       canvas._strDone = true;
 
-                      if (typeof announceToSR === 'function') announceToSR('String-art drawing complete.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_drawing_complete', 'String-art drawing complete.'));
 
                     }
 
@@ -9980,7 +9980,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Op Art animation resumed.' : 'Op Art animation paused.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Op Art PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported', 'Op Art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -10343,7 +10343,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear tessellation tile colors", onClick: function () { upd('tessClickData', {}); upd('tessReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Tessellation tile colors cleared.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
+                      React.createElement("button", { "aria-label": "Clear tessellation tile colors", onClick: function () { upd('tessClickData', {}); upd('tessReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_tessellation_tile_colors_cleared', 'Tessellation tile colors cleared.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
 
@@ -11033,9 +11033,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal view reset to one times zoom and centered pan.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_view_reset_to_one_times_zoom_and_centere', 'Fractal view reset to one times zoom and centered pan.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Fractal PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_png_exported', 'Fractal PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11543,7 +11543,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Gradient PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_png_exported', 'Gradient PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11591,7 +11591,7 @@ const d = labToolData.artStudio || {};
 
                         else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
 
-                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR('Gradient CSS copied to the clipboard.'); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR('Unable to copy gradient CSS.'); });
+                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
 
                       }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
@@ -12121,7 +12121,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); if (typeof announceToSR === 'function') announceToSR('Rendering stereogram from the current depth map.'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_stereogram_from_the_current_depth_map', 'Rendering stereogram from the current depth map.')); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
 
@@ -12928,7 +12928,7 @@ const d = labToolData.artStudio || {};
 
                           if (typeof addToast === 'function') addToast('Keep up to ' + ART_STUDIO_MAX_ANIM_KEYFRAMES + ' keyframes. Remove one before capturing another.', 'warning');
 
-                          if (typeof announceToSR === 'function') announceToSR('Keyframe limit reached. Remove a keyframe before capturing another.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_keyframe_limit_reached_remove_a_keyframe_before', 'Keyframe limit reached. Remove a keyframe before capturing another.'));
 
                           return;
 
@@ -12947,11 +12947,11 @@ const d = labToolData.artStudio || {};
 
                         var c = document.getElementById('stereoAnimDrawCanvas');
 
-                        if (c) { var ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height); if (typeof announceToSR === 'function') announceToSR('Animation depth canvas cleared.'); }
+                        if (c) { var ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animation_depth_canvas_cleared', 'Animation depth canvas cleared.')); }
 
                       }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, __alloT('stem.artstudio.clear_canvas_2', "\uD83D\uDDD1 Clear Canvas")),
 
-                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); if (typeof announceToSR === 'function') announceToSR('All animation keyframes cleared.'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_all_frames', "\u274C Clear All Frames")),
+                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_all_animation_keyframes_cleared', 'All animation keyframes cleared.')); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_all_frames', "\u274C Clear All Frames")),
 
                       React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_drawing_png', "\u2B07\uFE0F Save Drawing PNG")),
 
@@ -13416,7 +13416,7 @@ const d = labToolData.artStudio || {};
 
                           if (typeof addToast === 'function') addToast('Draw a static depth map before using Transform.', 'warning');
 
-                          if (typeof announceToSR === 'function') announceToSR('No static depth map is available. Return to Static mode and draw one first.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_no_static_depth_map_is_available_return_to_stati', 'No static depth map is available. Return to Static mode and draw one first.'));
 
                           return;
 
@@ -13434,7 +13434,7 @@ const d = labToolData.artStudio || {};
                           stereoAnimPlaying: false
                         });
 
-                        if (typeof announceToSR === 'function') announceToSR('Rendering animated stereogram.');
+                        if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_animated_stereogram', 'Rendering animated stereogram.'));
 
 
 
@@ -13689,7 +13689,7 @@ const d = labToolData.artStudio || {};
 
                                 if (typeof addToast === 'function') addToast('🎭 AI Motion: ' + renderedFrames.length + ' frames rendered!', 'success');
 
-                                if (typeof announceToSR === 'function') announceToSR('AI motion animation rendered.');
+                                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_ai_motion_animation_rendered', 'AI motion animation rendered.'));
 
                                 if (reducedMotion) upd('stereoAnimPlaying', false);
 
@@ -13765,7 +13765,7 @@ const d = labToolData.artStudio || {};
 
                               if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
 
-                              if (typeof announceToSR === 'function') announceToSR('Animation rendered.');
+                              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animation_rendered', 'Animation rendered.'));
 
                               if (reducedMotion) upd('stereoAnimPlaying', false);
 
@@ -13897,7 +13897,7 @@ const d = labToolData.artStudio || {};
 
                               if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
 
-                              if (typeof announceToSR === 'function') announceToSR('Animation rendered.');
+                              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animation_rendered', 'Animation rendered.'));
 
                               if (reducedMotion) upd('stereoAnimPlaying', false);
 
@@ -13969,7 +13969,7 @@ const d = labToolData.artStudio || {};
 
                         upd('stereoAnimAiMotionStatus', '');
 
-                        if (typeof announceToSR === 'function') announceToSR('Stereogram animation reset.');
+                        if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_stereogram_animation_reset', 'Stereogram animation reset.'));
 
                       },
 
@@ -14062,13 +14062,13 @@ const d = labToolData.artStudio || {};
 
                           _stopStereoAnim(); upd('stereoAnimPlaying', false);
 
-                          if (typeof announceToSR === 'function') announceToSR('Animated stereogram paused.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animated_stereogram_paused', 'Animated stereogram paused.'));
 
                         } else {
 
                           _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8); upd('stereoAnimPlaying', true);
 
-                          if (typeof announceToSR === 'function') announceToSR('Animated stereogram playing.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animated_stereogram_playing', 'Animated stereogram playing.'));
 
                         }
 
