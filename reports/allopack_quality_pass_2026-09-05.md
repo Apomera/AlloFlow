@@ -165,6 +165,30 @@ Nothing was dropped to get there. Proportional Relationships still asks for five
 One edit was reverted on review. Simplifying the Simile definition to "two different things" reads more easily than "two unlike things" and is subtly wrong, because a comparison of two *similar* things is not a simile at all. Precision beat the fraction of a grade level, and the word went back.
 
 The excluded blocks stay excluded, each for a stated reason recorded in the source: the directions body (a checklist of resource titles), anchor-chart bullets and concept-map items (sentence fragments), and quiz stems (too short to estimate, and a stem quoting a figurative sentence scores high for reasons unrelated to difficulty). Both fragment blocks measured clean anyway, which is some evidence the exclusions are not hiding anything.
+## Seventh pass (same day): concept sorts, and three checks that were not worth shipping
+
+The audit checks quizzes for surface tells — an answer far longer than its distractors — and checks nothing of the kind for concept sorts, even though a sort is graded the same way. Three ways a sort can be solved without understanding it were probed. Only one turned out to be real, and none of the three produced a gate worth keeping. The four defects below were found by reading the output, not by a rule.
+
+### Probe 1: items listed in category blocks — not a defect, the game shuffles
+
+Three packs list their sort cards grouped by category, so position alone would give the answer. It does not: the student game runs an inline Fisher-Yates over the items before dealing them (`games_source.jsx`, in the effect that sets `currentContainer: 'deck'`). The grouped order is only ever seen in the teacher review panel, which groups by category on purpose. Checking this before "fixing" it saved rewriting three packs to no effect.
+
+### Probe 2: one category's cards systematically longer — real, in two packs
+
+Shuffling does not change card length, so this one survives. Four packs had a mean-length ratio above 1.8 between categories, but ratio alone is the wrong test: in the Constitution sort the two *shortest* cards sit in different categories, so length is not a strategy a student could rely on. Two were genuine, and both are fixed:
+
+- **Cell Structure** ran 4.05. Every "BOTH plant and animal" card was a single organelle name while the animal-only cards were full clauses, so "if it is one word, put it in BOTH" worked on five of the ten cards. Shortening the two animal cards brings it to 1.55.
+- **Ratios** ran 2.04 on the back of one card, `4 : 5 (added 2 to each part)`, four times longer than every other card in the sort — and the parenthetical states the misconception, which is to say the card explains its own answer. It is now `4 : 5`. Ratio 1.24.
+
+Simple Machines also carried a self-classifying card: "A flagpole rope running over a wheel at the top" describes a rope running over a wheel, which *is* the definition of a pulley, so the card sorts itself. Now "A flagpole rope".
+
+### Probe 3: cards the pack never teaches — one real defect, but no shippable rule
+
+This found the worst item of the pass. **"Centrioles (used when the cell divides)" appears exactly once in the entire Cell Structure pack: on that card.** Not in the reading, the glossary, the anchor chart, the concept map, the quiz or the FAQ. A student either already knew it or guessed. It is now "No cell wall", which is reasoned straight from the reading's paragraph on why celery snaps and you do not.
+
+The automated version of this check does not work and was not shipped. It flags a card whose content words appear nowhere else in the pack, and it cannot tell an untaught technical term from a deliberately fresh example. It flags every card in the Tell It Back sort — which uses a different story from the reading *on purpose*, so the sort tests story structure rather than memory — and every example sentence in the Figurative Language and Point of View sorts, where fresh examples are the whole point. One true finding against roughly twenty false ones is not a gate.
+
+That is the third check this week to be measured and then dropped, after the directions body and the quiz stems. The pattern is worth naming: a probe that finds a real defect has still earned nothing until its false-positive rate is looked at.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
