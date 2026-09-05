@@ -3540,6 +3540,97 @@ window.StemLab = window.StemLab || {
       }
     }
 
+    // ── The far ridges. Three bands of hills past the valley's own rim, each
+    // tinted further toward the horizon than the one in front of it, so the
+    // distance reads as haze rather than as smaller trees. They carry no fog
+    // of their own: the tint IS the fog, which keeps them under our control at
+    // every hour instead of dissolving into one flat band at dusk. ──
+    if (!contrast) {
+      var ridgeCentre = new THREE.Vector3(0, 0, -standoff * 0.5);
+      var ridgeNear = new THREE.Color(P.stars ? 0x1b2544 : 0x496b46);
+      [[236, 36, 0.5], [278, 54, 0.68], [318, 76, 0.84]].forEach(function (layer, li) {
+        var R = layer[0], H = layer[1], haze = layer[2];
+        var segs = 72, pos = [], base = -30;
+        var peak = function (i) {
+          var f = (i % segs) / segs;
+          return H * (0.44 + 0.3 * Math.sin(f * 6.283 * 3 + li * 1.7) + 0.28 * hash01(i % segs, li + 1, 111) + 0.18 * Math.sin(f * 6.283 * 7 + li * 0.6));
+        };
+        for (var ri2 = 0; ri2 < segs; ri2++) {
+          var a0 = (ri2 / segs) * Math.PI * 2, a1 = ((ri2 + 1) / segs) * Math.PI * 2;
+          var x0 = Math.cos(a0) * R, z0 = Math.sin(a0) * R;
+          var x1 = Math.cos(a1) * R, z1 = Math.sin(a1) * R;
+          var y0 = peak(ri2), y1 = peak(ri2 + 1);
+          pos.push(x0, base, z0, x1, base, z1, x1, y1, z1);
+          pos.push(x0, base, z0, x1, y1, z1, x0, y0, z0);
+        }
+        var rgeo = new THREE.BufferGeometry();
+        rgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+        var rcol = ridgeNear.clone().lerp(new THREE.Color(P.horizon), haze);
+        var ridgeMesh = new THREE.Mesh(rgeo, new THREE.MeshBasicMaterial({
+          color: rcol.getHex(), side: THREE.DoubleSide, fog: false
+        }));
+        ridgeMesh.position.copy(ridgeCentre);
+        ridgeMesh.frustumCulled = false;
+        S.model.add(ridgeMesh);
+      });
+    }
+
+    // ── Tufts and wildflowers on the near field. The ground already carries a
+    // noise map, but a noise map is flat at eye level; these give the grass
+    // something that stands up in it. Nothing grows on the beaten lane. ──
+    if (!contrast && typeof THREE.InstancedMesh === 'function') {
+      var td = new THREE.Object3D(), tc = new THREE.Color();
+      var TUFTS = 520;
+      var tufts = new THREE.InstancedMesh(new THREE.ConeGeometry(0.1, 0.34, 3), mat(0xffffff), TUFTS);
+      tufts.castShadow = false; tufts.receiveShadow = false;
+      var tp = 0, tt = 0;
+      while (tp < TUFTS && tt < TUFTS * 4) {
+        tt++;
+        var gx = (hash01(tt, 11, 121) - 0.5) * (laneHalf * 2.8);
+        var gz = 14 - hash01(tt, 13, 122) * (standoff + 34);
+        var lf2 = laneFactor(gx, gz, standoff, laneHalf);
+        if (lf2 > 0.35 && hash01(tt, 17, 123) > 0.05) continue;
+        var gsc = 0.6 + hash01(tt, 19, 124) * 0.7;
+        td.position.set(gx, terrainHeight(gx, gz, standoff, laneHalf) + 0.16 * gsc, gz);
+        td.scale.set(gsc, gsc * (0.8 + hash01(tt, 23, 125) * 0.7), gsc);
+        td.rotation.set((hash01(tt, 29, 126) - 0.5) * 0.35, hash01(tt, 31, 127) * 6.28, (hash01(tt, 37, 128) - 0.5) * 0.35);
+        td.updateMatrix();
+        tufts.setMatrixAt(tp, td.matrix);
+        tc.setHex(0x4c7f2c).lerp(new THREE.Color(0x9ac055), hash01(tt, 41, 129));
+        if (lf2 > 0.2) tc.lerp(new THREE.Color(0xa79256), Math.min(1, lf2 * 1.1));
+        tufts.setColorAt(tp, tc);
+        tp++;
+      }
+      tufts.count = tp;
+      tufts.instanceMatrix.needsUpdate = true;
+      if (tufts.instanceColor) tufts.instanceColor.needsUpdate = true;
+      S.model.add(tufts);
+
+      var FLOWERS = 140;
+      var HUES = [0xf7e06a, 0xe98ab5, 0xf6f2e4, 0xa8bdf2];
+      var flowers = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 6, 4), mat(0xffffff), FLOWERS);
+      flowers.castShadow = false;
+      var fp = 0, ft = 0;
+      while (fp < FLOWERS && ft < FLOWERS * 6) {
+        ft++;
+        var fx = (hash01(ft, 43, 131) - 0.5) * (laneHalf * 2.6);
+        var fz = 12 - hash01(ft, 47, 132) * (standoff + 24);
+        if (laneFactor(fx, fz, standoff, laneHalf) > 0.25) continue;
+        td.position.set(fx, terrainHeight(fx, fz, standoff, laneHalf) + 0.22, fz);
+        td.scale.setScalar(0.7 + hash01(ft, 53, 133) * 0.6);
+        td.rotation.set(0, 0, 0);
+        td.updateMatrix();
+        flowers.setMatrixAt(fp, td.matrix);
+        tc.setHex(HUES[Math.floor(hash01(ft, 59, 134) * HUES.length) % HUES.length]);
+        flowers.setColorAt(fp, tc);
+        fp++;
+      }
+      flowers.count = fp;
+      flowers.instanceMatrix.needsUpdate = true;
+      if (flowers.instanceColor) flowers.instanceColor.needsUpdate = true;
+      S.model.add(flowers);
+    }
+
     // ── The castle ──
     var merlonCap = span + 2;
     var batch = (window.StemLab && typeof window.StemLab.makeVoxelBatch === 'function')

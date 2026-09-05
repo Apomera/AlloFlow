@@ -676,3 +676,46 @@ describe('Siege Field wave 10: seconds on the arc, the track on the ground', () 
     expect(html).toContain('a bead for every second of flight');
   });
 });
+
+describe('Siege Field wave 11: far ridges, grass and wildflowers', () => {
+  it('rings the valley with three ridge bands, each hazed further toward the horizon', () => {
+    const src = source();
+    expect(src).toContain('[[236, 36, 0.5], [278, 54, 0.68], [318, 76, 0.84]].forEach(function (layer, li) {');
+    expect(src).toContain('var rcol = ridgeNear.clone().lerp(new THREE.Color(P.horizon), haze);');
+    // The tint is the haze, so the ridges must not take the scene fog as well.
+    expect(src).toContain('color: rcol.getHex(), side: THREE.DoubleSide, fog: false');
+  });
+
+  it('sits the ridges outside the ground plane and never culls them', () => {
+    const src = source();
+    // groundSpan reaches at most standoff * 2.4 + 200, half of that from the
+    // valley centre, so the nearest band at 236 is always past the rim.
+    expect(src).toContain('var groundSpan = Math.max(320, standoff * 2.4 + 200);');
+    expect(src).toContain('ridgeMesh.frustumCulled = false;');
+  });
+
+  it('grows grass off the lane, dry and sparse on it, and none at all in high contrast', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.InstancedMesh === 'function') {\n      var td = new THREE.Object3D(), tc = new THREE.Color();");
+    expect(src).toContain('if (lf2 > 0.35 && hash01(tt, 17, 123) > 0.05) continue;');
+    expect(src).toContain('if (lf2 > 0.2) tc.lerp(new THREE.Color(0xa79256), Math.min(1, lf2 * 1.1));');
+  });
+
+  it('keeps wildflowers out of the lane entirely', () => {
+    const src = source();
+    expect(src).toContain('if (laneFactor(fx, fz, standoff, laneHalf) > 0.25) continue;');
+  });
+
+  it('places grass by the same terrain the physics uses, so nothing floats or sinks', () => {
+    const src = source();
+    expect(src).toContain('td.position.set(gx, terrainHeight(gx, gz, standoff, laneHalf) + 0.16 * gsc, gz);');
+    expect(src).toContain('td.position.set(fx, terrainHeight(fx, fz, standoff, laneHalf) + 0.22, fz);');
+  });
+
+  it('scatters both from the deterministic hash, never Math.random', () => {
+    const src = source();
+    const scatter = src.slice(src.indexOf('// ── Tufts and wildflowers'), src.indexOf('// ── The castle ──'));
+    expect(scatter).not.toContain('Math.random');
+    expect(scatter).toContain('hash01(');
+  });
+});

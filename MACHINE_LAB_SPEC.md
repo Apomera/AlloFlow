@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 11 (2026-09-05)
+
+- **Far ridges.** Three bands of hills ring the valley past its own rim at 236, 278 and 318 m,
+  each tinted further toward the horizon colour than the one in front of it. They carry no
+  scene fog: the tint IS the haze, which keeps them readable at every hour instead of
+  dissolving into one flat band at dusk.
+- **Grass and wildflowers** on the near field: 520 tufts and 140 flowers, placed on the same
+   the physics uses, scattered from  and not . Nothing
+  grows on the beaten lane except a few dry stalks, strawed off toward the dirt colour.
+- Both are off in high contrast, and neither is animated, so the render-on-demand path is
+  unaffected.
+- Cost: ridge segments and tuft counts were trimmed until the SwiftShader frame rate was back
+  at the pre-wave baseline (3.5 fps vs 3.3 in the same harness).
+
 ### Wave 10 (2026-09-05)
 
 - **Seconds on the arc.** A bead wherever the flight clock passes a whole second, up to ten,
