@@ -216,3 +216,65 @@ describe('Siege Field: defaults and the mirror', () => {
     expect(src).toContain("{ y: 'sceneRotY', x: 'sceneRotX', z: 'sceneZoom' }");
   });
 });
+
+describe('Siege Field wave 2: replay, arc, wind, start card', () => {
+  it('offers a slow-motion replay in both siege bays, disabled until a shot exists', () => {
+    for (const view of ['scene', 'siege']) {
+      const none = renderTool('machineLab', state({ view }));
+      expect(none, view).toMatch(/<button[^>]*disabled[^>]*>[^<]*Replay in slow motion/);
+      const some = renderTool('machineLab', state({ view, lastFlight: { path: [{ x: 0, y: 2, z: 0, t: 0 }, { x: 20, y: 1, z: 0, t: 1 }], seconds: 1, before: [], outcome: 'hit' } }));
+      expect(some, view).toMatch(/<button(?![^>]*disabled)[^>]*>[^<]*Replay in slow motion/);
+    }
+  });
+
+  it('keeps the last flight on both a hit and a short shot, and marks a replay so it is not re-scored', () => {
+    const src = source();
+    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome }");
+    expect(src).toContain("lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null");
+    expect(src).toContain("outcome: lf.outcome, replay: true, rate: REPLAY_RATE");
+    // The swing stretches with the replay, so the arm is not done before the stone leaves.
+    expect(src).toContain("var swingT = (data.flight && data.flight.replay) ? t / Math.max(1, data.flight.rate || 3) : t;");
+  });
+
+  it('offers the predicted arc as a pressed toggle, on by default, and pushes the arc without a rebuild', () => {
+    const on = renderTool('machineLab', state());
+    expect(on).toMatch(/aria-pressed="true"[^>]*>[^<]*Predicted arc/);
+    const off = renderTool('machineLab', state({ scenePath: false }));
+    expect(off).toMatch(/aria-pressed="false"[^>]*>[^<]*Predicted arc/);
+    const src = source();
+    // The prediction rides on the push and is compared by signature in the
+    // tick; it must NOT be in the scene sig, or every slider tick rebuilds the valley.
+    expect(src).toContain("if (showArc && S.arc.sig !== data.previewSig) {");
+    const sig = src.match(/SCENE_GL\.push\(\{\n\s*sig: \[([^\]]*)\]/);
+    expect(sig).toBeTruthy();
+    expect(sig[1]).not.toContain('preview');
+  });
+
+  it('shows the wind hint only when there is wind', () => {
+    expect(renderTool('machineLab', state({ windZ: 0 }))).not.toContain('Read the wind from the banner');
+    expect(renderTool('machineLab', state({ windZ: 6 }))).toContain('Read the wind from the banner');
+  });
+
+  it('has a dismissible start-here card that stays dismissed', () => {
+    const fresh = renderTool('machineLab', state());
+    expect(fresh).toContain('Start here');
+    expect(fresh).toMatch(/aria-label="Dismiss the start-here card"/);
+    const gone = renderTool('machineLab', state({ sceneIntroDismissed: true }));
+    expect(gone).not.toContain('Start here');
+  });
+
+  it('restates the HUD labels for the younger bands', () => {
+    expect(renderTool('machineLab', state({ bandOverride: 'k2' }))).toContain('How fast');
+    expect(renderTool('machineLab', state({ bandOverride: 'g35' }))).toContain('How far');
+    expect(renderTool('machineLab', state({ bandOverride: 'g68' }))).toContain('Downrange');
+    expect(renderTool('machineLab', state({ bandOverride: 'g912' }))).not.toContain('How fast');
+  });
+
+  it('tumbles only the blocks THIS shot knocked out, decided once when the stone lands', () => {
+    const src = source();
+    expect(src).toContain("if (flying && landed && S.tumbleId !== data.flight.id) {");
+    expect(src).toContain("if (nb.state === 'breached' && !wasBreached[nb.col + '_' + nb.row]) S.tumble[nb.col + '_' + nb.row] = true;");
+    // Under reduced motion the tumble is skipped, not slowed.
+    expect(src).toContain("var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;");
+  });
+});

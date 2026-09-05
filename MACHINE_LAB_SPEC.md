@@ -96,6 +96,25 @@ it the stone JUMPED to the end of its arc: a shot that looks like nothing happen
   in-flight disabled button as "never breached" (3 of 99 red before this work). It waits
   for the flight to clear now.
 
+### Wave 2 (same day)
+
+- **Blocks tumble.** The set of blocks THIS shot knocked out is decided once on the
+  landing frame (breached now, not breached in `prevBlocks`) and each travels from where
+  it stood to where it lies over 1.1 s with a small hop. Reduced motion skips it.
+- **Wind you can read.** `windZ` rides on the push: the banner streams downwind (flipped
+  by sign, drooping in light air), the flame leans, and eight smoke puffs drift with the
+  square of their height. The setup card names it when wind is non-zero.
+- **Predicted arc.** Dashed line + impact ring, built from `previewPath` and rebuilt IN
+  PLACE when `previewSig` changes. ★It is deliberately NOT in the scene `sig`: the Target
+  Wall puts range/apex/drift in its sig and rebuilds per slider tick, which would rebuild
+  the whole valley here. Toggle `scenePath`.
+- **Range stakes** every 10 m down both lane edges, taller and red every 50 m.
+- **Slow-motion replay** (`lastFlight` kept on both hit and short; `replay: true, rate: 3`
+  on the flight; the swing clock is divided by the rate). Button in both siege bays.
+- **Start-here card** (`sceneIntroDismissed`), HUD labels restated for K-2 / 3-5.
+- ★Sun direction must have NEGATIVE z or the castle face (toward the engine) is a silhouette
+  from every default camera. Noon and dusk were wrong on first pass.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

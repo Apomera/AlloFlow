@@ -2982,7 +2982,7 @@ window.StemLab = window.StemLab || {
         stars: false, glow: 1.0, fire: 0.35
       };
       case 'dusk': return {
-        id: 'dusk', top: 0x2a3a7c, horizon: 0xf0895a, sun: 0xffa262, sunDir: [-0.86, 0.15, 0.36],
+        id: 'dusk', top: 0x2a3a7c, horizon: 0xf0895a, sun: 0xffa262, sunDir: [-0.86, 0.15, -0.36],
         sunI: 0.95, hemiSky: 0x8f80b8, hemiGround: 0x4d4838, hemiI: 0.6, fog: 0xe4a688,
         stars: false, glow: 0.8, fire: 0.9
       };
@@ -2992,7 +2992,7 @@ window.StemLab = window.StemLab || {
         stars: true, glow: 0.35, fire: 1.6
       };
       default: return {
-        id: 'noon', top: 0x3f8ae6, horizon: 0xd2e7fb, sun: 0xfff7e3, sunDir: [0.35, 0.9, 0.22],
+        id: 'noon', top: 0x3f8ae6, horizon: 0xd2e7fb, sun: 0xfff7e3, sunDir: [0.35, 0.9, -0.22],
         sunI: 1.25, hemiSky: 0xdfefff, hemiGround: 0x5f7a3c, hemiI: 0.6, fog: 0xd8e9fa,
         stars: false, glow: 0.7, fire: 0
       };
@@ -3316,7 +3316,7 @@ window.StemLab = window.StemLab || {
       if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
       var v = 0.86 + hash01(b.col, b.row, 6) * 0.14;
       if (b.state === 'cracked') return new THREE.Color(0xd08a4a).getHex();
-      if (b.state === 'breached') return new THREE.Color(0.42 * v, 0.40 * v, 0.37 * v).getHex();
+      if (b.state === 'breached') return new THREE.Color(0.66 * v, 0.62 * v, 0.56 * v).getHex();
       if (b.mat === 'granite') return new THREE.Color(0.62 * v, 0.64 * v, 0.68 * v).getHex();
       if (b.mat === 'earth') return new THREE.Color(0.55 * v, 0.42 * v, 0.28 * v).getHex();
       return new THREE.Color(0.86 * v, 0.82 * v, 0.74 * v).getHex();
@@ -3394,7 +3394,12 @@ window.StemLab = window.StemLab || {
       fireLight.position.y = 1.0;
       fireGrp.add(fireLight);
       S.model.add(fireGrp);
-      S.fire = { flame: flame, light: fireLight, base: P.fire };
+      var smoke = [];
+      for (var si2 = 0; si2 < 8; si2++) {
+        var puff = new THREE.Mesh(new THREE.SphereGeometry(0.22 + si2 * 0.05, 8, 6), new THREE.MeshLambertMaterial({ color: 0x9a948c, transparent: true, opacity: 0.35 }));
+        fireGrp.add(puff); smoke.push(puff);
+      }
+      S.fire = { flame: flame, light: fireLight, base: P.fire, smoke: smoke };
 
       var birds = new THREE.Group();
       for (var bi = 0; bi < 6; bi++) {
@@ -3409,6 +3414,43 @@ window.StemLab = window.StemLab || {
       S.model.add(birds);
       S.birds = birds;
     }
+
+    // ── Range stakes: a post every 10 m down both edges of the lane, a
+    // taller one every 50, so distance is something the eye can count and the
+    // HUD's downrange number has a referent in the world. ──
+    if (!contrast) {
+      var stakeMat = mat(0x6b4b2a), flagMat = mat(0xe2c074), bigMat = mat(0xb3202a);
+      for (var sd = 10; sd < standoff - 2; sd += 10) {
+        var big = sd % 50 === 0;
+        [-1, 1].forEach(function (side) {
+          var post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, big ? 2.2 : 1.2, 6), stakeMat);
+          post.position.set(side * (laneHalf * 0.5), big ? 1.1 : 0.6, -standoff + sd);
+          post.castShadow = true;
+          S.model.add(post);
+          var flag = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.04), big ? bigMat : flagMat);
+          flag.position.set(side * (laneHalf * 0.5) + side * -0.25, big ? 2.0 : 1.05, -standoff + sd);
+          S.model.add(flag);
+        });
+      }
+    }
+
+    // ── The predicted arc. Updated IN PLACE from each push (a slider drag
+    // must not rebuild the valley), shown quiet until the stone is away. ──
+    var arcGeo = new THREE.BufferGeometry();
+    arcGeo.setFromPoints([new THREE.Vector3(0, 1, -standoff), new THREE.Vector3(0, 1, -standoff + 1)]);
+    var arcMat = (typeof THREE.LineDashedMaterial === 'function')
+      ? new THREE.LineDashedMaterial({ color: contrast ? 0xffff00 : 0xfbbf24, dashSize: 1.2, gapSize: 0.8, transparent: true, opacity: 0.75 })
+      : new THREE.LineBasicMaterial({ color: contrast ? 0xffff00 : 0xfbbf24, transparent: true, opacity: 0.75 });
+    var arcLine = new THREE.Line(arcGeo, arcMat);
+    arcLine.frustumCulled = false;
+    arcLine.visible = false;
+    S.model.add(arcLine);
+    var arcRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.1, 8, 24), new THREE.MeshLambertMaterial({
+      color: contrast ? 0xffff00 : 0xfbbf24, emissive: contrast ? 0xffff00 : 0xfbbf24, emissiveIntensity: 0.4, transparent: true, opacity: 0.8
+    }));
+    arcRing.visible = false;
+    S.model.add(arcRing);
+    S.arc = { line: arcLine, ring: arcRing, sig: null };
 
     // ── The stone, its trail, the burst ──
     var stoneR = Math.max(0.3, Math.min(1.1, (m.projDiameter || 0.26) * 1.5));
@@ -3506,6 +3548,17 @@ window.StemLab = window.StemLab || {
       var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
 
       // The wall, plus merlons over whichever top-course blocks still stand.
+      // Blocks knocked out by THIS shot tumble from where they stood to where
+      // they lie, over about a second, rather than teleporting. The set is
+      // decided once, on the frame the stone lands.
+      if (flying && landed && S.tumbleId !== data.flight.id) {
+        S.tumbleId = data.flight.id; S.tumbleT0 = now; S.tumble = {};
+        var wasBreached = {};
+        (data.prevBlocks || []).forEach(function (pb) { if (pb.state === 'breached') wasBreached[pb.col + '_' + pb.row] = true; });
+        (data.blocks || []).forEach(function (nb) { if (nb.state === 'breached' && !wasBreached[nb.col + '_' + nb.row]) S.tumble[nb.col + '_' + nb.row] = true; });
+      }
+      var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;
+      var tumbleEase = tumbleK * tumbleK * (3 - 2 * tumbleK);
       if (S.wall.batch) {
         var n = 0, standing = {};
         for (var i = 0; i < list.length && n < S.wall.batch.capacity; i++) {
@@ -3513,7 +3566,12 @@ window.StemLab = window.StemLab || {
           var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
           if (b.state === 'breached') {
             var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
-            x += (r1 - 0.5) * 2.4; z += (r2 - 0.5) * 2.8 + 1.2; y = 0.24 + r3 * 0.5; sc = 0.45 + r1 * 0.25;
+            var rx = x + (r1 - 0.5) * 2.4, rz = (r2 - 0.5) * 2.8 + 1.2, ry = 0.24 + r3 * 0.5, rsc = 0.45 + r1 * 0.25;
+            if (S.tumble && S.tumble[b.col + '_' + b.row] && tumbleEase < 1) {
+              x = x + (rx - x) * tumbleEase; z = rz * tumbleEase;
+              y = y + (ry - y) * tumbleEase + Math.sin(tumbleEase * Math.PI) * 0.9;
+              sc = 1 + (rsc - 1) * tumbleEase;
+            } else { x = rx; z = rz; y = ry; sc = rsc; }
           } else if (b.row === ext.maxRow) {
             standing[b.col] = true;
           }
@@ -3532,7 +3590,34 @@ window.StemLab = window.StemLab || {
         g.data = flying
           ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: data.muzzleV, reduced: red }
           : {};
-        try { g.tick(flying ? (S.flightT0 || now) + Math.min(t, 0.9) * 1000 : now); } catch (e) {}
+        // A slow-motion replay stretches the swing with the flight.
+        var swingT = (data.flight && data.flight.replay) ? t / Math.max(1, data.flight.rate || 3) : t;
+        try { g.tick(flying ? (S.flightT0 || now) + Math.min(swingT, 0.9) * 1000 : now); } catch (e) {}
+      }
+
+      // The predicted arc: rebuilt only when the prediction changes.
+      if (S.arc) {
+        var showArc = data.showPath !== false && !flying && !!(data.previewPath && data.previewPath.length > 1);
+        if (showArc && S.arc.sig !== data.previewSig) {
+          S.arc.sig = data.previewSig;
+          var arcPts = [];
+          for (var ap = 0; ap < data.previewPath.length; ap++) {
+            var pp = data.previewPath[ap];
+            if ((Number(pp.x) || 0) > standoff + 1) break;
+            arcPts.push(new THREE.Vector3(Number(pp.z) || 0, Math.max(0.1, Number(pp.y) || 0), -standoff + (Number(pp.x) || 0)));
+          }
+          if (arcPts.length > 1) {
+            S.arc.line.geometry.setFromPoints(arcPts);
+            if (typeof S.arc.line.computeLineDistances === 'function') S.arc.line.computeLineDistances();
+            var endPt = arcPts[arcPts.length - 1];
+            var reaches = endPt.z >= -0.6 && endPt.y > 0.15;
+            S.arc.ring.visible = reaches;
+            if (reaches) S.arc.ring.position.set(endPt.x, Math.max(0.5, endPt.y), 0.12);
+          }
+        }
+        S.arc.line.visible = showArc;
+        if (!showArc) S.arc.ring.visible = false;
+        else if (S.arc.ring.visible && !red) S.arc.ring.scale.setScalar(1 + 0.1 * Math.sin(tSec * 4));
       }
 
       // The stone. Path x is downrange (+z in the world), z is drift (world x).
@@ -3634,12 +3719,21 @@ window.StemLab = window.StemLab || {
 
       // Ambient life: banner, birds, fire. All skipped under reduced motion.
       var ambient = !red && data.ambient !== false;
+      // Wind is the crosswind slider, and it is READABLE here: the banner
+      // streams downwind and the smoke leans, so a student can see the thing
+      // that will push the stone sideways before they loose it.
+      var wind = Number(data.windZ) || 0;
+      var windAbs = Math.abs(wind);
       if (S.banner && S.bannerBase) {
+        S.banner.rotation.y = wind < 0 ? Math.PI : 0;
         var bp = S.banner.geometry.attributes.position;
         var base = S.bannerBase;
+        var amp = 0.12 + windAbs * 0.03, freq = 5 + windAbs * 0.8;
         for (var bv = 0; bv < bp.count; bv++) {
           var bx = base[bv * 3], by = base[bv * 3 + 1];
-          bp.setZ(bv, ambient ? Math.sin(bx * 2.6 + tSec * 6 + by * 1.5) * 0.16 * (bx / 2.4 + 0.1) : 0);
+          bp.setZ(bv, ambient ? Math.sin(bx * 2.6 + tSec * freq + by * 1.5) * amp * (bx / 2.4 + 0.1) : 0);
+          // Light air: the far edge droops. A stiff wind holds it flat.
+          bp.setY(bv, by - Math.max(0, 1 - windAbs / 3) * 0.35 * (bx / 2.4));
         }
         bp.needsUpdate = true;
       }
@@ -3656,6 +3750,16 @@ window.StemLab = window.StemLab || {
         var flick = ambient ? (0.85 + 0.15 * Math.sin(tSec * 23) + 0.1 * Math.sin(tSec * 7.3)) : 1;
         S.fire.light.intensity = S.fire.base * flick;
         S.fire.flame.scale.set(1, flick, 1);
+        S.fire.flame.rotation.z = -Math.max(-0.6, Math.min(0.6, wind * 0.05));
+        if (S.fire.smoke) {
+          for (var sm = 0; sm < S.fire.smoke.length; sm++) {
+            var puffH = ((ambient ? tSec * 0.55 : 0.4) + sm * 0.5) % 4.2;
+            var puff = S.fire.smoke[sm];
+            puff.position.set(wind * 0.16 * puffH * puffH * 0.5 + Math.sin(sm * 1.7 + puffH) * 0.15, 1.0 + puffH, Math.cos(sm * 2.1) * 0.15);
+            puff.scale.setScalar(0.6 + puffH * 0.35);
+            puff.material.opacity = Math.max(0, 0.38 * (1 - puffH / 4.2));
+          }
+        }
       }
 
       // Camera. The host fits whatever fitPts describe every frame, so a
@@ -3828,6 +3932,9 @@ window.StemLab = window.StemLab || {
       // Siege Field. The hour sets sky, sun and shadow; the camera mode is a
       // choice, not a position, so a snapshot cannot restore a stale glide.
       sceneTime: 'dusk', sceneCam: 'cinematic', sceneAmbient: true,
+      // Predicted arc over the field; the start-here card; the last shot, kept
+      // whole so it can be replayed in slow motion.
+      scenePath: true, sceneIntroDismissed: false, lastFlight: null,
       // auto = follow the OS reduce-motion setting; on/off override it. A
       // student whose laptop has animations off otherwise sees no shot at all.
       motionPref: 'auto',
@@ -6453,6 +6560,38 @@ window.StemLab = window.StemLab || {
         });
       }
 
+      // Clearing the flight returns the bays to render-on-demand. Read from
+      // prev so a second shot fired during the first does not have its
+      // flight wiped by the earlier timer.
+      function clearFlightLater(id, secs) {
+        setTimeout(function () {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            if (!cur.siegeFlight || cur.siegeFlight.id !== id) return prev;
+            return Object.assign({}, prev, {
+              machineLab: Object.assign({}, cur, { siegeFlight: null })
+            });
+          });
+        }, secs * 1000 + 900);
+      }
+
+      // Play the last shot again at a third of the speed, arm swing included.
+      // The wall is drawn as it stood before that shot until the stone lands,
+      // so the blocks tumble again. Nothing is re-scored: it is a replay.
+      var REPLAY_RATE = 3;
+      function replayLast() {
+        var lf = d.lastFlight;
+        if (d.siegeFlight || !lf || !lf.path || lf.path.length < 2) return;
+        var rid = (d.siegeFlightId || 0) + 1;
+        var secs = Math.max(2.5, (lf.seconds || 1.4) * REPLAY_RATE);
+        updMulti({
+          siegeFlightId: rid,
+          siegeFlight: { id: rid, path: lf.path, seconds: secs, before: lf.before, outcome: lf.outcome, replay: true, rate: REPLAY_RATE }
+        });
+        clearFlightLater(rid, secs);
+        announceToSR(__alloT('stem.machinelab.sr_replay', 'Replaying the last shot in slow motion.'));
+      }
+
       function loose() {
         if (d.siegeFlight) return;
         if (!preview) {
@@ -6464,20 +6603,6 @@ window.StemLab = window.StemLab || {
         var shots = (d.shotsFired || 0) + 1;
         var work = (d.totalCrankWork || 0) + (preview.crankWork || 0);
 
-        // Clearing the flight returns the bays to render-on-demand. Read from
-        // prev so a second shot fired during the first does not have its
-        // flight wiped by the earlier timer.
-        function clearFlightLater(id, secs) {
-          setTimeout(function () {
-            setLabToolData(function (prev) {
-              var cur = (prev && prev.machineLab) || {};
-              if (!cur.siegeFlight || cur.siegeFlight.id !== id) return prev;
-              return Object.assign({}, prev, {
-                machineLab: Object.assign({}, cur, { siegeFlight: null })
-              });
-            });
-          }, secs * 1000 + 900);
-        }
         if (!impact || impact.status === 'short') {
           // The stone still flies: to where it lands, short of the wall. A shot
           // that only produced a sentence taught nothing about WHY it fell short.
@@ -6496,7 +6621,8 @@ window.StemLab = window.StemLab || {
             siegeFlightId: shortId,
             siegeFlight: shortPath.length > 1
               ? { id: shortId, path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' }
-              : null
+              : null,
+            lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null
           });
           if (shortPath.length > 1) clearFlightLater(shortId, shortPlay);
           announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.'));
@@ -6549,7 +6675,8 @@ window.StemLab = window.StemLab || {
           // it stood, drawn until the stone lands.
           siegeFlight: {
             id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome
-          }
+          },
+          lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome }
         });
         clearFlightLater(flightId, playSecs);
         if (nowBreached && !d.breached) {
@@ -6558,6 +6685,18 @@ window.StemLab = window.StemLab || {
           addToast('🏰 ' + __alloT('stem.machinelab.breached_toast', 'Breach!'));
         }
         announceToSR(msg + (nowBreached ? ' ' + __alloT('stem.machinelab.sr_breach', 'The wall is breached.') : ''));
+      }
+
+      function replayButton(key) {
+        var can = !d.siegeFlight && !!(d.lastFlight && d.lastFlight.path && d.lastFlight.path.length > 1);
+        return h('button', {
+          key: key, type: 'button', onClick: replayLast, disabled: !can,
+          title: __alloT('stem.machinelab.replay_t', 'Play the last shot again at one third speed'),
+          style: {
+            padding: '11px 14px', borderRadius: 10, cursor: can ? 'pointer' : 'default',
+            border: '1px solid ' + T.border, background: T.card, color: can ? T.text : T.dim, fontSize: 13, fontWeight: 700
+          }
+        }, '⏪ ' + __alloT('stem.machinelab.replay', 'Replay in slow motion'));
       }
 
       function wallGraphic(blocks) {
@@ -6827,6 +6966,7 @@ window.StemLab = window.StemLab || {
                     fontSize: 14, fontWeight: 700
                   }
                 }, __alloT('stem.machinelab.rebuild', 'Rebuild the wall')),
+                replayButton('replay'),
                 d.siegeFeedback ? h('p', {
                   key: 'fb', role: 'status',
                   style: {
@@ -7436,6 +7576,10 @@ window.StemLab = window.StemLab || {
           standoff: d.standoff,
           wallPreset: d.wallPreset || 'curtain',
           time: timeId,
+          windZ: d.windZ || 0,
+          showPath: d.scenePath !== false,
+          previewPath: preview && preview.path ? preview.path : null,
+          previewSig: preview ? [Math.round(d.standoff), preview.range, preview.apex, preview.drift].join('|') : '',
           kind: machineId,
           releaseAngle: d.releaseAngle,
           muzzleV: preview ? preview.muzzleV : 0,
@@ -7543,6 +7687,24 @@ window.StemLab = window.StemLab || {
               }))
           ]),
           oddStoneNote('sceneodd'),
+          !d.sceneIntroDismissed ? card([
+            h('div', { key: 'row', style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' } }, [
+              h('div', { key: 'txt' }, [
+                h('div', { key: 'h', style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 4 } }, '🧭 ' + __alloT('stem.machinelab.scene_start', 'Start here')),
+                h('ol', { key: 'ol', style: { margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.6, color: T.muted } }, [
+                  h('li', { key: '1' }, young ? __alloT('stem.machinelab.scene_s1_y', 'Pick a machine and a castle.') : __alloT('stem.machinelab.scene_s1', 'Pick an engine and a target.')),
+                  h('li', { key: '2' }, young ? __alloT('stem.machinelab.scene_s2_y', 'Change ONE slider below.') : __alloT('stem.machinelab.scene_s2', 'Change one slider in Set up the shot, and watch the dotted arc move.')),
+                  h('li', { key: '3' }, young ? __alloT('stem.machinelab.scene_s3_y', 'Press Loose! and watch the numbers over the field.') : __alloT('stem.machinelab.scene_s3', 'Loose, and read the speed, height and energy over the field as the stone flies.')),
+                  h('li', { key: '4' }, young ? __alloT('stem.machinelab.scene_s4_y', 'Watch it again slowly with Replay.') : __alloT('stem.machinelab.scene_s4', 'Replay in slow motion, then look for the same numbers in the ledger below.'))
+                ])
+              ]),
+              h('button', {
+                key: 'x', type: 'button', onClick: function () { upd('sceneIntroDismissed', true); },
+                'aria-label': __alloT('stem.machinelab.dismiss_start', 'Dismiss the start-here card'),
+                style: { padding: '4px 10px', borderRadius: 8, cursor: 'pointer', border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 12, fontWeight: 700, flex: '0 0 auto' }
+              }, __alloT('stem.machinelab.got_it', 'Got it'))
+            ])
+          ], 'scenestart', { borderStyle: 'dashed' }) : null,
           h('div', {
             key: 'world', ref: sceneFsRef,
             style: {
@@ -7575,9 +7737,9 @@ window.StemLab = window.StemLab || {
                 h('div', { key: 'ph', ref: sceneHudRef('phase'), style: { marginTop: 3, fontSize: 11, color: '#e2e8f0' } }, labels.cocked)
               ]),
               h('div', { key: 'stats', style: Object.assign({}, glass, { display: 'flex', gap: 14, textAlign: 'right' }) }, [
-                hudStat('speed', __alloT('stem.machinelab.hud_speed', 'Speed')),
-                hudStat('height', __alloT('stem.machinelab.hud_height', 'Height')),
-                hudStat('dist', __alloT('stem.machinelab.hud_dist', 'Downrange')),
+                hudStat('speed', young ? __alloT('stem.machinelab.hud_speed_y', 'How fast') : __alloT('stem.machinelab.hud_speed', 'Speed')),
+                hudStat('height', young ? __alloT('stem.machinelab.hud_height_y', 'How high') : __alloT('stem.machinelab.hud_height', 'Height')),
+                hudStat('dist', young ? __alloT('stem.machinelab.hud_dist_y', 'How far') : __alloT('stem.machinelab.hud_dist', 'Downrange')),
                 hudStat('time', __alloT('stem.machinelab.hud_time', 'Time'))
               ])
             ]),
@@ -7600,7 +7762,17 @@ window.StemLab = window.StemLab || {
                   border: '1px solid ' + (ambient ? T.accent : T.border),
                   background: ambient ? T.accent : T.card, color: ambient ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
                 }
-              }, '🍃 ' + __alloT('stem.machinelab.ambient', 'Ambient motion'))
+              }, '🍃 ' + __alloT('stem.machinelab.ambient', 'Ambient motion')),
+              h('button', {
+                key: 'arc', type: 'button', 'aria-pressed': d.scenePath !== false ? 'true' : 'false',
+                onClick: function () { upd('scenePath', d.scenePath === false); },
+                title: __alloT('stem.machinelab.arc_t', 'Draw the arc the model predicts, and a ring where it meets the wall. Off if you want to predict it yourself first.'),
+                style: {
+                  padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
+                  border: '1px solid ' + (d.scenePath !== false ? T.accent : T.border),
+                  background: d.scenePath !== false ? T.accent : T.card, color: d.scenePath !== false ? T.accentInk : T.text, fontSize: 11, fontWeight: 700
+                }
+              }, '📈 ' + __alloT('stem.machinelab.arc_toggle', 'Predicted arc'))
             ]),
             camControls(sCam, __alloT('stem.machinelab.scene_label', 'siege field'), 'scene'),
             h('div', { key: 'fire', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
@@ -7621,6 +7793,7 @@ window.StemLab = window.StemLab || {
                 key: 'reset', type: 'button', onClick: function () { resetWall(d.wallPreset); },
                 style: { padding: '11px 16px', borderRadius: 10, cursor: 'pointer', border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 13, fontWeight: 700 }
               }, __alloT('stem.machinelab.rebuild', 'Rebuild the wall')),
+              replayButton('replay'),
               h('span', { key: 'tally', style: { fontSize: 12, color: T.muted } },
                 __alloT('stem.machinelab.shots_loosed', 'Shots loosed') + ': ' + (d.shotsFired || 0) + ' · ' +
                 __alloT('stem.machinelab.legend_intact', 'intact ') + summary.intact + ' · ' +
@@ -7643,7 +7816,9 @@ window.StemLab = window.StemLab || {
               card([
                 h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.machinelab.scene_setup', 'Set up the shot')),
                 h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 12, color: T.dim, lineHeight: 1.5 } },
-                  __alloT('stem.machinelab.scene_setup_hint', 'These are the same controls as Build and the Target Wall. Change one thing, loose, and watch what it did.'))
+                  __alloT('stem.machinelab.scene_setup_hint', 'These are the same controls as Build and the Target Wall. Change one thing, loose, and watch what it did.')),
+                (d.windZ || 0) !== 0 ? h('p', { key: 'wind', style: { margin: '0 0 10px', fontSize: 12, color: T.accent, fontWeight: 700 } },
+                  __alloT('stem.machinelab.scene_wind_hint', 'Read the wind from the banner and the smoke: it pushes the stone sideways for the whole flight.')) : null
               ].concat(shotControls.map(slider)).concat([
                 slider({ key: 'standoff', label: __alloT('stem.machinelab.standoff', 'Standoff from the wall'), min: 10, max: 300, step: 5, unit: 'm' }),
                 slider({ key: 'windZ', label: __alloT('stem.machinelab.crosswind', 'Crosswind'), min: -15, max: 15, step: 0.5, unit: 'm/s' }),
