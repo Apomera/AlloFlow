@@ -128,6 +128,43 @@ The nuance stayed. The American Revolution FAQ still says that Crispus Attucks b
 **One half of the check was wrong and was removed.** The first version also measured the directions body, and flagged two packs. Reading them showed the flag was an artifact: a directions body is a numbered checklist of resource titles, and long proper titles like "A Retelling Card for a Reading Buddy" push the score up without making anything harder to read. The check now covers FAQ prose only, with the reason recorded in the source so it does not get re-added.
 
 Quiz stems were considered and deliberately left unmeasured: they are short, which makes the estimate noisy, and a question that quotes a figurative sentence scores high for reasons that have nothing to do with difficulty.
+## Sixth pass (same day): the same question asked of every text a student reads
+
+The fifth pass fixed the FAQ. It did not ask whether the FAQ was the only place this had happened. Measuring the remaining student-facing prose the same way answered that: the FAQ was not special, and the worst offender was somewhere else entirely.
+
+| Text | Packs over their own band, before |
+| --- | --- |
+| Applied-challenge brief | 7 |
+| Glossary definitions | 2 |
+| Memory-aid examples | 2 |
+| Anchor-chart bullets | 0 |
+| Concept-map items | 0 |
+
+The **challenge brief** is the one that matters most and was the worst by a distance — up to 9.6 against a grade-7 band. It is also the text with the strongest excuse: a brief has a context, a driving question, open questions, criteria and a deliverable, and that shape pulls writing toward formal, clause-heavy prose. The excuse does not survive contact with the purpose. The brief is what a student must get through *before they can start the task at all*. A student who cannot read it cannot begin.
+
+Twelve flags across ten packs, all now clear, all fixed the same way as the FAQ — splitting long sentences, keeping every requirement:
+
+| Pack | Text | Before | After |
+| --- | --- | --- | --- |
+| Proportional Relationships | brief | 9.6 | 5.8 |
+| American Revolution | memory-aid | 8.4 | 5.9 |
+| American Revolution | glossary | 7.4 | 5.0 |
+| Figurative Language | glossary | 7.6 | 5.1 |
+| Figurative Language | brief | 7.4 | 6.0 |
+| Ecosystems | brief | 7.2 | 4.8 |
+| Area and Perimeter | brief | 7.1 | 4.8 |
+| Point of View | brief | 6.6 | 4.6 |
+| Fractions | memory-aid | 6.4 | 3.5 |
+| Forces and Motion | brief | 5.3 | 2.8 |
+| Day Sky, Night Sky | memory-aid | 4.8 | 1.9 |
+| Day Sky, Night Sky | brief | 4.7 | 2.3 |
+| Tell It Back | memory-aid | 4.1 | 2.5 |
+
+Nothing was dropped to get there. Proportional Relationships still asks for five data pairs with inputs far apart, an output-over-input column, a verdict that names the break point if there is one, and the constant stated with its units. The Ecosystems brief still asks for confidence ratings on each prediction. Two of the ten flagged packs — Day Sky, Night Sky and Tell It Back — were written earlier the same day, which is the useful part: the check caught new work, not only inherited work.
+
+One edit was reverted on review. Simplifying the Simile definition to "two different things" reads more easily than "two unlike things" and is subtly wrong, because a comparison of two *similar* things is not a simile at all. Precision beat the fraction of a grade level, and the word went back.
+
+The excluded blocks stay excluded, each for a stated reason recorded in the source: the directions body (a checklist of resource titles), anchor-chart bullets and concept-map items (sentence fragments), and quiz stems (too short to estimate, and a stem quoting a figurative sentence scores high for reasons unrelated to difficulty). Both fragment blocks measured clean anyway, which is some evidence the exclusions are not hiding anything.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
