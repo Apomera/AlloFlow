@@ -365,6 +365,14 @@ describe('Space motion and deep time', () => {
     expect(today).toBeGreaterThan(25); expect(today).toBeLessThan(26.5);
     expect(past - today).toBeGreaterThan(3);        // the figure was distinctly wider
     expect(future - today).toBeGreaterThan(1);
+    // The tour claims the Dipper is near its most compact right now. Check it:
+    // no sampled epoch across 200,000 years is meaningfully tighter than today.
+    let tightest = Infinity;
+    for (let y = -100000; y <= 100000; y += 5000) tightest = Math.min(tightest, widest(y));
+    expect(today - tightest).toBeLessThan(0.1);
+    // And it opens out in both directions, which is why "in either direction" holds.
+    expect(widest(-50000)).toBeGreaterThan(today);
+    expect(widest(50000)).toBeGreaterThan(today);
     // 61 Cygni is the fastest bright star in the subset: it travels right across the sky.
     const c61 = cat.byHip[104214];
     const a = sky.starMotionAt(cat, c61, 0), b = sky.starMotionAt(cat, c61, 100000);
@@ -399,6 +407,7 @@ describe('Space motion and deep time', () => {
     expect(tour[0].kind).toBe('drift');
     expect(tour[0].title).toContain('50,000 years');
     expect(tour[0].note).toContain('61 Cygni');
+    expect(tour[0].note).toContain('near its most compact');
   });
 });
 
@@ -567,6 +576,26 @@ describe('When to look tonight', () => {
     expect(sun.best).toBeNull();
     expect(sun.neverRises).toBe(false);
     expect(sun.circumpolar).toBe(false);
+  });
+
+  it('only calls a moment dark when the Sun is genuinely well down, matching the wording', () => {
+    const sirius = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 10);
+    // The panel says "Best in a dark sky"; the model must agree with that phrase.
+    expect(sirius.best.sunAlt).toBeLessThan(-12);
+  });
+
+  it('describes civil twilight the way the brightness model actually behaves', () => {
+    // At the Sun's civil-twilight altitudes a couple of the very brightest stars
+    // clear the limit, so the copy must not claim only planets are visible.
+    const civil = sky.limitingMagnitude(3, -3, -30, 0);
+    expect(civil).toBeGreaterThan(-1.5);   // Sirius at -1.44 gets through
+    expect(civil).toBeLessThan(1.5);       // but the sky is far from dark
+    // Sunset is 16:07 at this site and date, so 16:20 is inside civil twilight.
+    const doc = new DOMParser().parseFromString(render({ obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '16:20' }), 'text/html');
+    const summary = doc.getElementById('astronomy-observatory-summary').textContent;
+    expect(summary).toContain('Civil twilight');
+    expect(summary).not.toContain('Only the Moon and brightest planets');
+    expect(summary).toContain('a first star or two');
   });
 
   it('anchors the window on local noon so a night is never split in half', () => {
@@ -962,7 +991,7 @@ describe('Observatory tab rendering', () => {
     expect(panel).toMatch(/rises \d\d:\d\d/);
     expect(panel).toMatch(/Highest (29|30)°/);
     expect(panel).toMatch(/sets \d\d:\d\d/);
-    expect(panel).toContain('Best in full darkness around');
+    expect(panel).toContain('Best in a dark sky around');
     expect(panel).not.toContain('NaN');
 
     // Polaris never sets from Maine, and the panel says so instead of inventing times.

@@ -1533,7 +1533,8 @@
       windowStart: start, rise: cross(true), set: cross(false),
       transit: top.t, transitAlt: top.alt, minAlt: low.alt,
       circumpolar: low.alt > 0, neverRises: top.alt <= 0,
-      best: best ? { t: best.t, alt: best.alt, az: best.az } : null,
+      // sunAlt travels with the answer so "a dark sky" stays checkable.
+      best: best ? { t: best.t, alt: best.alt, az: best.az, sunAlt: best.sunAlt } : null,
       darkOnly: !!best
     };
   }
@@ -1579,7 +1580,7 @@
     if (input.driftYears) {
       var ky = Math.abs(input.driftYears) / 1000, when = input.driftYears > 0 ? 'in ' + ky + ',000 years' : ky + ',000 years ago';
       return [{ kind: 'drift', id: 'drift', title: 'The sky ' + when, az: 180, alt: 45,
-        note: 'Every star is moving through the galaxy, and the closest ones sweep across the sky fastest: 61 Cygni covers more than a degree every thousand years, while distant stars barely stir. Familiar figures warp slowly. The Big Dipper stretches by several degrees over 100,000 years, because five of its seven stars travel together as one group while Dubhe and Alkaid do not. Brightness changes here too, as each star\'s distance grows or shrinks.' }];
+        note: 'Every star is moving through the galaxy, and the closest ones sweep across the sky fastest: 61 Cygni covers more than a degree every thousand years, while distant stars barely stir. Familiar figures warp slowly, and the Big Dipper happens to be near its most compact right now. Wind back a hundred thousand years and its widest span was about five degrees greater; wind forward the same and it spreads again, more slowly. Five of its seven stars travel together as one group, while Dubhe and Alkaid go their own way. Brightness changes here too, as each star\'s distance grows or shrinks.' }];
     }
     var moon = bodies.moon, planets = bodies.planets.filter(function(p) { return p.alt > 3; });
     if (dark < 0.05) steps.push({ kind: 'daylight', id: 'daylight', title: 'A daytime sky', note: 'Sunlight scattered by the air outshines the stars, but the sky is still turning. Venus and the Moon can be found in daylight. Never look at the Sun without certified solar filters.', az: bodies.sun.az, alt: Math.max(10, bodies.sun.alt - 20) });
@@ -9424,7 +9425,7 @@
         function obsBg(nightHex) { return astronomyContrast ? astronomySurface.panel : nightHex; }
         function obsBorder(nightHex) { return astronomyContrast ? astronomySurface.border : nightHex; }
         var daylightText = sunAlt > 0 ? __alloT('stem.astronomy.obs_daylight', 'Daylight. Stars are hidden by the bright sky.')
-          : sunAlt > -6 ? __alloT('stem.astronomy.obs_civil', 'Civil twilight. Only the Moon and brightest planets show.')
+          : sunAlt > -6 ? __alloT('stem.astronomy.obs_civil2', 'Civil twilight. The Moon, the brightest planets and a first star or two show.')
           : sunAlt > -12 ? __alloT('stem.astronomy.obs_nautical', 'Nautical twilight. Bright stars are appearing.')
           : sunAlt > -18 ? __alloT('stem.astronomy.obs_astronomical', 'Astronomical twilight. Faint stars are still washed out.')
           : __alloT('stem.astronomy.obs_dark', 'Fully dark sky.');
@@ -9608,7 +9609,7 @@
                       : [Number.isFinite(pickedWhen.rise) ? __alloT('stem.astronomy.obs_when_rises', 'rises') + ' ' + clockAt(pickedWhen.rise) : null,
                          __alloT('stem.astronomy.obs_when_highest', 'Highest') + ' ' + Math.round(pickedWhen.transitAlt) + '° ' + __alloT('stem.astronomy.obs_when_at', 'at') + ' ' + clockAt(pickedWhen.transit),
                          Number.isFinite(pickedWhen.set) ? __alloT('stem.astronomy.obs_when_sets', 'sets') + ' ' + clockAt(pickedWhen.set) : null].filter(Boolean).join(' · ') + '.',
-                    pickedWhen.best ? ' ' + __alloT('stem.astronomy.obs_when_best', 'Best in full darkness around') + ' ' + clockAt(pickedWhen.best.t) + ' ' + __alloT('stem.astronomy.obs_when_at_alt', 'at') + ' ' + Math.round(pickedWhen.best.alt) + '°.'
+                    pickedWhen.best ? ' ' + __alloT('stem.astronomy.obs_when_best2', 'Best in a dark sky around') + ' ' + clockAt(pickedWhen.best.t) + ' ' + __alloT('stem.astronomy.obs_when_at_alt', 'at') + ' ' + Math.round(pickedWhen.best.alt) + '°.'
                       : (pickedWhen.neverRises ? '' : ' ' + __alloT('stem.astronomy.obs_when_twilight_only', 'It is only above the horizon in daylight or twilight tonight.'))) : null)
                 : h('span', { style: { color: '#94a3b8' } }, __alloT('stem.astronomy.obs_pick_hint', 'Click a star, planet, the Moon or a deep-sky glow in the scene to identify it.'))),
               targets.length ? h('div', { id: 'astronomy-observatory-targets', role: 'group', 'aria-label': __alloT('stem.astronomy.obs_targets_title', 'Tonight\'s list'), style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: obsBg('#111a2e'), border: '1px solid ' + obsBorder('#86efac'), fontSize: 12.5, color: '#e2e8f0' } },

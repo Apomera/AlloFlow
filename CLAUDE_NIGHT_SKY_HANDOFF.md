@@ -175,6 +175,17 @@ Before this slice I suspected the tab was recomputing too much per render, so I 
 
 The Observatory sits in the same range as the tool's existing computed-sky tab, and the heaviest interaction is under 6 ms. **No optimisation was made, because none is warranted.** Anyone revisiting this should re-measure rather than assume.
 
+## Enhancement slice 12 (2026-09-05): auditing my own claims
+Eleven slices produced a lot of user-facing copy. This slice checked each factual claim against what the code actually computes. Three were wrong or loose, and all three are now measured and pinned by tests.
+
+1. **"Best in full darkness"** was attached to a Sun-altitude threshold of −12°, which is the end of nautical twilight, not full darkness (−18°). The tool already uses −18° elsewhere, correctly labelled "Full darkness begins", so the same words meant two different things. The threshold is deliberately kept at −12° because it stays useful at high latitudes in summer, and the wording is now **"Best in a dark sky around"**. `objectVisibility` returns the Sun's altitude with that answer so a test can assert the phrase matches the physics.
+2. **"Civil twilight. Only the Moon and brightest planets show."** contradicted the brightness model, which admits stars down to roughly magnitude 0.2 at those Sun altitudes, so Sirius and Vega are drawn. Now: **"The Moon, the brightest planets and a first star or two show."** A test pins the limiting magnitude at civil-twilight altitudes against that sentence.
+3. **"The Big Dipper stretches by several degrees over 100,000 years"** was written from intuition. Measured, the widest span is 25.71° today, 30.42° a hundred thousand years back and 27.18° forward, with the true minimum about two thousand years ago at 25.68°. The figure is **near its most compact right now and opens out in both directions**, which is both accurate and a better fact. The tour says so, and a test samples 200,000 years to confirm nothing is meaningfully tighter than today.
+
+The remaining numeric claims were checked and stand: 61 Cygni does cover more than a degree per thousand years (1.49° measured), the deep-time slider does span ±100,000 years, and the ephemeris accuracy note ("about arcminutes") matches Schlyter's stated precision.
+
+- Unit suite 65.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
