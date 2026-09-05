@@ -96,6 +96,11 @@ Commits feb28fe89 and 00ae638c8.
   SHA-256 `89e460dbf8d2f10d4add4219de39334c8611e5c18039cdf9d5998c8a5d1aba1a`, built 2026-09-05
   20:21 UTC; build-time and isolated verification passed with the HTTP probe. This is the bundle
   to share for the pilot.
+- Superseded the same evening by commit 1e79d8a70 (worker digests bound to file stat, checksum
+  file from the build): final bundle v0.10.0, 71,037,520 bytes,
+  SHA-256 `08d5cb9777c4a814a5c37d6ea71b3c9b9007c7f2e744dde94dee6ea8565d1a28`, built 2026-09-05
+  21:07 UTC, `desktop/dist/mcpb/SHA256SUMS.txt` written and checked with `sha256sum -c`. Build-time
+  verification passed with the HTTP probe.
 
 ## Still open before sharing
 
