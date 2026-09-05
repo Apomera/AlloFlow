@@ -249,7 +249,7 @@ describe('Fisher Lab voyage checkpoint schema', () => {
     expect(checkpoint.pose).toMatchObject({ x: 500, z: -500 });
     expect(checkpoint.pose.heading).toBeCloseTo(Math.PI * 1.5);
     expect(checkpoint.vessel).toEqual({ fuel: 100, voyageAttempt: 9_999 });
-    expect(checkpoint.environment).toEqual({ timeOfDay: 'day', weather: 'clear', cameraView: 'chase' });
+    expect(checkpoint.environment).toEqual({ timeOfDay: 'day', weather: 'clear', seaState: 'calm', cameraView: 'chase' });
     expect(checkpoint.progress).toMatchObject({ fishLanded: 1, fishingAttempts: 999, lobstersHauled: 2, keeperLobsters: 1, trapDecisionMade: true });
     expect(checkpoint.scoring).toMatchObject({
       stewardshipScore: 0,

@@ -779,9 +779,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     CORE_COLREGS_ENCOUNTERS[region].lookoutReport = 'Constant bearing and decreasing range indicate risk of collision. Decide early and make a substantial, visible maneuver.';
   });
   var CORE_VOYAGE_MODES = {
-    guided: { id: 'guided', label: 'Guided', tagline: 'Full fuel, calm daylight, generous targets', startFuel: 100, fuelBurn: 0.42, scoreMultiplier: 1, requiredFuel: 15, requiredAccuracy: 60, safeSpeed: 5, weather: 'clear', timeOfDay: 'day' },
-    skipper: { id: 'skipper', label: 'Skipper', tagline: 'Fog, tighter fuel planning, stronger standards', startFuel: 85, fuelBurn: 0.56, scoreMultiplier: 1.25, requiredFuel: 25, requiredAccuracy: 80, safeSpeed: 4, weather: 'foggy', timeOfDay: 'day' },
-    master: { id: 'master', label: 'Master', tagline: 'Rain at sunset, lean reserves, expert accuracy', startFuel: 72, fuelBurn: 0.7, scoreMultiplier: 1.5, requiredFuel: 30, requiredAccuracy: 90, safeSpeed: 3.5, weather: 'rainy', timeOfDay: 'sunset' }
+    guided: { id: 'guided', label: 'Guided', tagline: 'Full fuel, calm daylight, generous targets', startFuel: 100, fuelBurn: 0.42, scoreMultiplier: 1, requiredFuel: 15, requiredAccuracy: 60, safeSpeed: 5, weather: 'clear', timeOfDay: 'day', seaState: 'calm' },
+    skipper: { id: 'skipper', label: 'Skipper', tagline: 'Fog and breeze, tighter fuel planning, stronger standards', startFuel: 85, fuelBurn: 0.56, scoreMultiplier: 1.25, requiredFuel: 25, requiredAccuracy: 80, safeSpeed: 4, weather: 'foggy', timeOfDay: 'day', seaState: 'breeze' },
+    master: { id: 'master', label: 'Master', tagline: 'Rain and chop at sunset, lean reserves, expert accuracy', startFuel: 72, fuelBurn: 0.7, scoreMultiplier: 1.5, requiredFuel: 30, requiredAccuracy: 90, safeSpeed: 3.5, weather: 'rainy', timeOfDay: 'sunset', seaState: 'chop' }
   };
   function getCoreSimProfile(region) {
     return Object.prototype.hasOwnProperty.call(CORE_SIM_PROFILES, region) ? CORE_SIM_PROFILES[region] : CORE_SIM_PROFILES.maine;
@@ -5809,6 +5809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
     getCoreLearningNoteReview: getCoreLearningNoteReview,
+    getCoreSeaState: getCoreSeaState,
+    getCoreSeaMotion: getCoreSeaMotion,
+    sampleCoreSeaSurface: sampleCoreSeaSurface,
     getCoreExplanationPractice: getCoreExplanationPractice,
     getCoreExplanationFeedback: getCoreExplanationFeedback,
     getCoreMeasurementModel: getCoreMeasurementModel,
@@ -13690,6 +13693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       environment: {
         timeOfDay: timeOfDay,
         weather: weather,
+        seaState: getCoreSeaState(environment.seaState).id,
         cameraView: cameraView
       },
       progress: {
@@ -13875,6 +13879,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     next[key] = enabled === true;
     return next;
   }
+  // Illustrative sheltered-water handling, not calibrated vessel or forecast data.
+  // Leeway depends on hull/windage: https://gnome.orr.noaa.gov/doc/faq.html
+  // Wind waves and swell differ: https://www.weather.gov/marine/wavedetail
+  function getCoreSeaState(value) {
+    var presets = {
+      calm: { id: 'calm', label: 'Calm', windKnots: 0, windFrom: 270, waveScale: 0.35, resistance: 0 },
+      breeze: { id: 'breeze', label: 'Breeze', windKnots: 8, windFrom: 270, waveScale: 0.9, resistance: 0.12 },
+      chop: { id: 'chop', label: 'Chop', windKnots: 16, windFrom: 270, waveScale: 1.8, resistance: 0.28 }
+    };
+    return Object.assign({}, Object.prototype.hasOwnProperty.call(presets, value) ? presets[value] : presets.calm);
+  }
+  function getCoreSeaMotion(input) {
+    input = input || {};
+    var sea = getCoreSeaState(input.seaState);
+    var heading = typeof input.heading === 'number' && isFinite(input.heading) ? input.heading : Math.PI;
+    var speed = typeof input.speed === 'number' && isFinite(input.speed) ? Math.max(-8, Math.min(8, input.speed)) : 0;
+    var fx = Math.sin(heading), fz = Math.cos(heading);
+    // Presets use wind FROM west, drifting TOWARD east (+world x).
+    var driftX = sea.windKnots * 0.03;
+    var headSea = Math.max(0, -fx * (speed < 0 ? -1 : 1));
+    var resistance = sea.resistance * (0.25 + 0.75 * headSea);
+    var groundX = fx * speed + driftX, groundZ = fz * speed;
+    var groundSpeed = Math.sqrt(groundX * groundX + groundZ * groundZ);
+    var course = groundSpeed < 0.01 ? null : (Math.atan2(groundX, -groundZ) * 180 / Math.PI + 360) % 360;
+    return { seaState: sea.id, windKnots: sea.windKnots, driftX: driftX, driftZ: 0, resistance: resistance,
+      groundX: groundX, groundZ: groundZ, groundSpeed: groundSpeed, course: course };
+  }
+  function sampleCoreSeaSurface(x, z, time, seaState) {
+    x = isFinite(x) ? Number(x) : 0; z = isFinite(z) ? Number(z) : 0; time = isFinite(time) ? Number(time) : 0;
+    var scale = getCoreSeaState(seaState).waveScale;
+    var a = x * 0.08 - time * 1.1, b = -z * 0.12 + time * 0.9, c = (x - z) * 0.16 + time * 2.1;
+    return { height: scale * (0.15 * Math.sin(a) + 0.06 * Math.cos(b) + 0.035 * Math.sin(c)),
+      slopeX: scale * (0.012 * Math.cos(a) + 0.0056 * Math.cos(c)),
+      slopeZ: scale * (0.0072 * Math.sin(b) - 0.0056 * Math.cos(c)) };
+  }
+
   // Optional examples support reasoning without grading or changing student writing.
   var CORE_EXPLANATION_PRACTICE = {
   "navigation": {
@@ -14414,6 +14454,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // being depth-clipped along the wave field. Sorting is unaffected — the
     // opaque pass (boat, buoys, land) still runs first and still occludes.
     waterMat.depthWrite = false;
+    waterMat.vertexColors = true;
+    // A restrained sky reflection at grazing angles keeps dusk water readable.
+    // The ripple-perturbed normal drives the reflection, so it follows the sea.
+    var seaSkyTint = { value: new THREE.Color(0x366d8d) };
+    waterMat.onBeforeCompile = function(shader) {
+      shader.uniforms.fisherSeaSky = seaSkyTint;
+      var output = shader.fragmentShader.indexOf('#include <output_fragment>') !== -1 ? '#include <output_fragment>' : 'gl_FragColor = vec4( outgoingLight, diffuseColor.a );';
+      waterMat.userData.skyReflection = shader.fragmentShader.indexOf(output) !== -1;
+      if (!waterMat.userData.skyReflection) return;
+      shader.fragmentShader = 'uniform vec3 fisherSeaSky;\n' + shader.fragmentShader.replace(output,
+        'float seaReflection = 0.03 + 0.60 * pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 5.0);\n' +
+        'outgoingLight = mix(outgoingLight, fisherSeaSky, seaReflection);\n' + output);
+    };
+    // Small repeating normal texture adds capillary-scale highlights without
+    // another mesh, draw call, remote asset, or extra floating-body displacement.
+    try {
+      var rippleCanvas = document.createElement('canvas'); rippleCanvas.width = rippleCanvas.height = 64;
+      var rippleContext = rippleCanvas.getContext('2d');
+      var rippleImage = rippleContext.createImageData(64, 64);
+      for (var ry = 0; ry < 64; ry++) for (var rx = 0; rx < 64; rx++) {
+        var u = rx / 64 * Math.PI * 2, v = ry / 64 * Math.PI * 2;
+        var nx = 0.35 * Math.cos(4 * u + 2 * v) + 0.12 * Math.sin(9 * u - 3 * v);
+        var ny = 0.22 * Math.sin(3 * u - 5 * v), inv = 1 / Math.sqrt(nx * nx + ny * ny + 1), ri = (ry * 64 + rx) * 4;
+        rippleImage.data[ri] = Math.round((nx * inv + 1) * 127.5);
+        rippleImage.data[ri + 1] = Math.round((ny * inv + 1) * 127.5);
+        rippleImage.data[ri + 2] = Math.round((inv + 1) * 127.5);
+        rippleImage.data[ri + 3] = 255;
+      }
+      rippleContext.putImageData(rippleImage, 0, 0);
+      waterMat.normalMap = new THREE.CanvasTexture(rippleCanvas);
+      waterMat.normalMap.wrapS = waterMat.normalMap.wrapT = THREE.RepeatWrapping;
+      waterMat.normalMap.repeat.set(64, 64);
+      waterMat.normalScale.set(0.1, 0.1);
+    } catch (_) { /* Geometry and crest colors remain usable without this detail layer. */ }
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;
@@ -14424,6 +14498,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var waterPosArr = waterPositions.array;
     var waterNormals = waterGeo.attributes.normal;
     var waterNormArr = waterNormals.array;
+    var waterColors = new THREE.BufferAttribute(new Float32Array(waterPosArr.length).fill(1), 3);
+    waterGeo.setAttribute('color', waterColors);
+    water.name = 'fisherlab-sea-surface';
     var initialZ = new Float32Array(waterPosArr.length / 3);
     for (var iw = 0; iw < waterPosArr.length / 3; iw++) {
       initialZ[iw] = waterPosArr[iw * 3 + 2];
@@ -14447,11 +14524,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var waveTabCv = new Float32Array(2 * WATER_SEG + 1), waveTabCd = new Float32Array(2 * WATER_SEG + 1);
 
     function updateWaterSurface(t, chop) {
-      var a1 = 0.15 * chop, a2 = 0.12 * chop, a3 = 0.06 * chop;
+      water.userData.seaTime = t;
+      water.userData.waveScale = chop;
+      var a1 = 0.15 * chop, a2 = 0.06 * chop, a3 = 0.035 * chop;
       var i, px, py, u, arg;
       for (i = 0; i < WSEG1; i++) {
         px = -700 + i * waterStep;
-        arg = px * W_K1 + t * W_W1;
+        arg = px * W_K1 - t * W_W1;
         waveTabAv[i] = Math.sin(arg) * a1;
         waveTabAd[i] = Math.cos(arg) * a1 * W_K1;
         py = 700 - i * waterStep;
@@ -14475,6 +14554,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var vi = row + ix;
           var o = vi * 3;
           p[o + 2] = initialZ[vi] + waveTabAv[ix] + bv + cv;
+          var crest = Math.max(0, Math.min(1, (p[o + 2] / Math.max(0.001, 0.245 * chop) + 1) * 0.5));
+          waterColors.array[o] = 0.56 + crest * 0.44;
+          waterColors.array[o + 1] = 0.76 + crest * 0.24;
+          waterColors.array[o + 2] = 0.88 + crest * 0.12;
           // Analytic surface normal from the same derivatives. Without this the
           // vertices moved but every normal stayed (0,0,1), so the sun lit a
           // dead-flat sheet and Phong interpolated one specular value across a
@@ -14487,6 +14570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       waterPositions.needsUpdate = true;
       waterNormals.needsUpdate = true;
+      waterColors.needsUpdate = true;
     }
 
     // ─── Procedural Vegetation Generator
@@ -14822,6 +14906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     boat.add(sternGlow);
 
     boat.position.set(0, 0, 0);
+    boat.name = 'fisherlab-vessel';
     scene.add(boat);
 
     // Regional crossing traffic makes the COLREGS lesson visible in the voyage.
@@ -15160,7 +15245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             T_.rain = (weather === 'rainy') ? 0.8 : 0;
             T_.stars = (tod === 'night' && weather !== 'foggy' && weather !== 'rainy') ? 1 : 0;
             // sea state responds to weather (rougher in rain) — feeds the wave amplitude
-            AF.seaChop = (weather === 'rainy') ? 1 : (weather === 'foggy') ? 0.35 : (tod === 'sunset') ? 0.28 : 0.15;
+            AF.seaChop = getCoreSeaState(boatState && boatState.seaState).waveScale;
           } catch (_) {}
         };
 
@@ -16021,6 +16106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       closestTrapHauled: false,
       timeOfDay: voyageMode.timeOfDay,
       weather: voyageMode.weather,
+      seaState: voyageMode.seaState,
       cameraView: 'chase',
       paused: false,
       stewardshipScore: 0,
@@ -16151,6 +16237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       sun.color.setHex(sunColor);
       sun.intensity = sunInt;
       waterMat.color.setHex(waterColor);
+      seaSkyTint.value.setHex(weather === 'foggy' ? 0x526374 : weather === 'rainy' ? 0x263f54 : tod === 'night' ? 0x081825 : tod === 'sunset' ? 0x776e77 : 0x366d8d);
 
       // ★ The hemisphere fill was pinned at a bright, cool, daytime 0.5 and never
       // read the clock — every other light here did. On a near-white hull that
@@ -16311,6 +16398,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       repaintHeldScene({ cameraView: nextView }, true);
       return nextView;
     }
+    function applySeaSurfacePose() {
+      var surface = sampleCoreSeaSurface(boatState.pos.x, boatState.pos.z, elapsed, boatState.seaState);
+      boat.position.y = reducedMotion ? 0 : surface.height;
+      if (!reducedMotion) {
+        boat.rotation.x += -Math.atan(surface.slopeX * Math.sin(boatState.heading) + surface.slopeZ * Math.cos(boatState.heading));
+        boat.rotation.z += Math.atan(surface.slopeX * Math.cos(boatState.heading) - surface.slopeZ * Math.sin(boatState.heading));
+      }
+      for (var i = 0; i < buoys.length; i++) {
+        var buoy = buoys[i], wave = sampleCoreSeaSurface(buoy.position.x, buoy.position.z, elapsed, boatState.seaState);
+        buoy.position.y = reducedMotion ? 0 : wave.height;
+        buoy.rotation.x = reducedMotion ? 0 : -Math.atan(wave.slopeZ);
+        buoy.rotation.z = reducedMotion ? 0 : Math.atan(wave.slopeX);
+      }
+    }
+    function setCoreSeaState(value) {
+      boatState.seaState = getCoreSeaState(value).id;
+      AF.seaChop = getCoreSeaState(value).waveScale;
+      waterMat.normalScale.set(0.08 + AF.seaChop * 0.08, 0.08 + AF.seaChop * 0.08);
+      updateWaterSurface(reducedMotion ? 0 : elapsed, AF.seaChop);
+      boat.rotation.x = boatState.pitch; boat.rotation.z = boatState.roll;
+      applySeaSurfacePose();
+      var patch = { seaState: boatState.seaState, seaMotion: getCoreSeaMotion(boatState) };
+      if (!repaintHeldScene(patch, true)) publishHudPatch(patch);
+      return boatState.seaState;
+    }
     function setCoreWeather(weather) {
       boatState.weather = weather;
       updateEnvironment(boatState.timeOfDay, weather);
@@ -16330,7 +16442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         elapsed: elapsed,
         pose: { x: boatState.pos.x, z: boatState.pos.z, heading: boatState.heading },
         vessel: { fuel: boatState.fuel, voyageAttempt: boatState.voyageAttempt },
-        environment: { timeOfDay: boatState.timeOfDay, weather: boatState.weather, cameraView: boatState.cameraView },
+        environment: { timeOfDay: boatState.timeOfDay, weather: boatState.weather, seaState: boatState.seaState, cameraView: boatState.cameraView },
         progress: {
           passedRedNun: boatState.passedRedNun,
           reachedHalfwayRock: boatState.reachedHalfwayRock,
@@ -16417,6 +16529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.voyageAttempt = checkpoint.vessel.voyageAttempt;
       boatState.timeOfDay = checkpoint.environment.timeOfDay;
       boatState.weather = checkpoint.environment.weather;
+      boatState.seaState = getCoreSeaState(checkpoint.environment.seaState).id;
       boatState.cameraView = checkpoint.environment.cameraView;
       boatState.passedRedNun = progress.passedRedNun;
       boatState.reachedHalfwayRock = progress.reachedHalfwayRock;
@@ -16891,7 +17004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var throttleResponse = 1 - Math.exp(-3.0 * dt);
       boatState.throttle += (accel - boatState.throttle) * throttleResponse;
       boatState.speed += boatState.throttle * 6 * dt;
-      boatState.speed *= Math.exp(-0.9 * dt);
+      boatState.speed *= Math.exp(-(0.9 + getCoreSeaMotion(boatState).resistance) * dt);
       var conditionSpeedLimit = boatState.weather === 'foggy' ? voyageMode.safeSpeed : boatState.weather === 'rainy' ? Math.min(5, voyageMode.safeSpeed + 1) : 8;
       if (boatState.speed > 8) boatState.speed = 8;
       if (boatState.speed < -3) boatState.speed = -3;
@@ -16914,8 +17027,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var targetPitch = boatState.throttle * 0.04 + (keys[' '] ? 0.03 : 0);
       boatState.pitch += (targetPitch - boatState.pitch) * 0.08;
 
-      var dx = Math.sin(boatState.heading) * boatState.speed * dt;
-      var dz = Math.cos(boatState.heading) * boatState.speed * dt;
+      var seaMotion = getCoreSeaMotion(boatState);
+      var dx = seaMotion.groundX * dt;
+      var dz = seaMotion.groundZ * dt;
       boatState.pos.x += dx;
       boatState.pos.z += dz;
       var weatherFuelFactor = boatState.weather === 'rainy' ? 1.25 : boatState.weather === 'foggy' ? 1.08 : 1;
@@ -16928,13 +17042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boat.rotation.x = boatState.pitch;
       boat.rotation.z = boatState.roll;
 
-      // Bobbing
-      if (!reducedMotion) {
-        boat.position.y = Math.sin(elapsed * 1.6) * 0.06;
-        boat.rotation.z += Math.sin(elapsed * 1.2) * 0.03;
-      } else {
-        boat.position.y = 0;
-      }
+      applySeaSurfacePose();
 
       // Rotate lighthouse beam (opacity eases toward its day/night target —
       // it used to snap on/off with time-of-day changes)
@@ -17281,24 +17389,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
 
-      // Wave animation — 3 octaves plus matching surface normals; amplitude
-      // scales with weather-driven sea state (calm on clear days, choppy in
-      // rain) so the water visibly reads the weather sim.
+      // Keep the efficient lookup-table mesh in sync with the shared point sampler.
       if (!reducedMotion) {
-        updateWaterSurface(elapsed, 1 + (AF.seaChop || 0.15) * 1.7);
-      }
-
-      // Buoys ride the same sea the boat does — static marks in a moving
-      // seascape read as scenery pegged to the seabed. Amplitude follows the
-      // weather-driven chop, so a mark bucking in rain is a visible cue.
-      if (!reducedMotion) {
-        var buoyChop = 0.10 + (AF.seaChop || 0.15) * 0.22;
-        for (var bb = 0; bb < buoys.length; bb++) {
-          var bu = buoys[bb], ph = (bu.userData && bu.userData.bobPhase) || 0;
-          bu.position.y = Math.sin(elapsed * 1.5 + ph) * buoyChop;
-          bu.rotation.z = Math.sin(elapsed * 1.1 + ph) * buoyChop * 0.5;
-          bu.rotation.x = Math.cos(elapsed * 0.9 + ph) * buoyChop * 0.35;
-        }
+        updateWaterSurface(elapsed, getCoreSeaState(boatState.seaState).waveScale);
+        if (waterMat.normalMap) waterMat.normalMap.offset.x -= dt * (0.002 + seaMotion.windKnots * 0.001);
       }
 
       // Update Audio Synth modulation
@@ -17334,6 +17428,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'give-way' ? 25 : 0;
 
       var hudPayload = {
+        seaState: boatState.seaState,
+        seaMotion: seaMotion,
         speed: boatState.speed,
         heading: boatState.heading,
         fuel: boatState.fuel,
@@ -17563,6 +17659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       reportRadarCall: function(call) {
         reportRadarCall(call);
       },
+      setSeaState: setCoreSeaState,
       setWeather: function(w) {
         return setCoreWeather(w);
       },
@@ -17819,6 +17916,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var timeOfDay = todHook[0], setTimeOfDayState = todHook[1];
     var camHook = useState('chase');
     var cameraView = camHook[0], setCameraViewState = camHook[1];
+    var seaStateHook = useState('calm');
+    var seaState = seaStateHook[0], setSeaState = seaStateHook[1];
     var weatherHook = useState('clear');
     var weather = weatherHook[0], setWeatherState = weatherHook[1];
     var voyageModeHook = useState(stateInit.coreVoyageMode || 'guided');
@@ -18054,6 +18153,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         harborRef.current.setWeather(weather);
       }
     }, [weather]);
+
+    useEffect(function() {
+      if (harborRef.current && harborRef.current.setSeaState) harborRef.current.setSeaState(seaState);
+    }, [seaState]);
 
     // persist region changes
     useEffect(function() {
@@ -18532,6 +18635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setVoyageMode(checkpoint.mode);
       setTimeOfDayState(checkpoint.environment.timeOfDay);
       setWeatherState(checkpoint.environment.weather);
+      setSeaState(getCoreSeaState(checkpoint.environment.seaState).id);
       setCameraViewState(checkpoint.environment.cameraView);
       setTab('sim');
       var summary = getCoreVoyageCheckpointSummary(checkpoint);
@@ -18630,11 +18734,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setVoyageMode(recovery.mode);
         setTimeOfDayState(recovery.environment.timeOfDay);
         setWeatherState(recovery.environment.weather);
+        setSeaState(getCoreSeaState(recovery.environment.seaState).id);
         setCameraViewState(recovery.environment.cameraView);
         setTab('sim');
       } else {
         setTimeOfDayState(selectedMode.timeOfDay);
         setWeatherState(selectedMode.weather);
+        setSeaState(selectedMode.seaState);
       }
       setStatus([]);
       setHud({});
@@ -18775,6 +18881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             harborRef.current.setTimeOfDay(checkpointToRestore ? checkpointToRestore.environment.timeOfDay : timeOfDay);
             harborRef.current.setCameraView(checkpointToRestore ? checkpointToRestore.environment.cameraView : cameraView);
             harborRef.current.setWeather(checkpointToRestore ? checkpointToRestore.environment.weather : weather);
+            harborRef.current.setSeaState(checkpointToRestore ? checkpointToRestore.environment.seaState : seaState);
             var focusGeneration = simLoadGenerationRef.current;
             setTimeout(function() {
               if (!isCurrentSimulatorLaunch(focusGeneration)) return;
@@ -19858,6 +19965,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('p', { style: { color: '#b8cedf', fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, 'Investigation steps and trials last while this lab is open. Saved notebook entries remain in this browser.'));
     }
 
+    function seaNavigationCard() {
+      var sea = getCoreSeaState(seaState);
+      var motion = getCoreSeaMotion({ seaState: seaState, heading: hud.heading, speed: hud.speed });
+      var heading = ((180 - (hud.heading == null ? Math.PI : hud.heading) * 180 / Math.PI) % 360 + 360) % 360;
+      var textStyle = { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 };
+      function arrow(bearing, color, dashed, length) {
+        if (bearing === null) return null;
+        return h('g', { transform: 'rotate(' + bearing + ' 60 60)' },
+          h('line', { x1: 60, y1: 65, x2: 60, y2: 60 - length, stroke: color, strokeWidth: 3, strokeDasharray: dashed ? '4 3' : undefined }),
+          h('path', { d: 'M 55 ' + (65 - length) + ' L 60 ' + (57 - length) + ' L 65 ' + (65 - length), fill: 'none', stroke: color, strokeWidth: 3 }));
+      }
+      return h('section', { 'data-fisherlab-sea-card': sea.id, 'aria-label': 'Wind and navigation instruments', style: { marginBottom: 14, padding: 16, border: '1px solid #2e6f81', borderRadius: 14, background: 'radial-gradient(ellipse at top right,rgba(20,184,166,0.22),transparent 65%),linear-gradient(120deg,#071d30,#123144)' } },
+        h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' } },
+          h('svg', { viewBox: '0 0 120 120', width: 120, height: 120, 'aria-hidden': 'true', style: { flex: '0 0 120px' } },
+            h('circle', { cx: 60, cy: 60, r: 46, fill: '#061a29', stroke: '#3a647b' }),
+            [0,90,180,270].map(function(d,i) { return h('text', { key: d, x: 60 + Math.sin(d * Math.PI/180)*52, y: 64 - Math.cos(d*Math.PI/180)*52, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, ['N','E','S','W'][i]); }),
+            arrow(heading, '#7dd3fc', false, 28), arrow(motion.course, '#fbbf24', true, 40),
+            h('circle', { cx: 60, cy: 60, r: 4, fill: '#e0f2fe' })),
+          h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+            h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '0.08em' } }, 'WIND & WATER · ' + sea.label.toUpperCase()),
+            h('p', { style: { color: '#f0fdfa', fontSize: 20, fontWeight: 800, margin: '5px 0 8px' } }, sea.windKnots ? 'Wind from W · ' + sea.windKnots + ' kt → E' : 'Calm wind · gentle surface'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px 20px', fontSize: 13, color: '#e0f2fe', lineHeight: 1.6 } },
+              h('span', null, 'Through water: ', h('b', null, Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
+              h('span', null, 'Over ground: ', h('b', { 'data-sea-ground-speed': true }, motion.groundSpeed.toFixed(1) + ' kt')),
+              h('span', null, 'Heading: ', h('b', null, Math.round(heading) % 360 + '°')),
+              h('span', null, 'Track: ', h('b', { 'data-sea-course': true }, motion.course === null ? '— stationary' : Math.round(motion.course) % 360 + '°'))),
+            h('p', { style: Object.assign({}, textStyle, { margin: '8px 0 0' }) }, 'Solid blue: bow heading. Dashed gold: travel direction. ' + (hud.paused ? 'Paused: values preview the selected conditions.' : sea.windKnots ? 'Wind adds eastward drift; heading and track can differ.' : 'Try Breeze or Chop in the sea conditions control.')))),
+        h('details', { style: { marginTop: 8 } },
+          h('summary', { style: { color: '#bae6fd', fontSize: 12 } }, 'How this training sea works'),
+          h('p', { style: textStyle }, 'Keep the throttle steady and compare heading with track. Turning into the model waves adds resistance. Wind can move an unpowered boat. The compass diagram uses north at the top; the harbor and travel distances use a compressed training scale.'),
+          h('p', { style: textStyle }, 'Sea conditions are independent of rain and fog; Guided mode lets you change them. These presets use a fixed west wind and an illustrative 3% downwind drift coefficient; real leeway depends on the vessel. Currents, local shelter, gusts, separate swell, and calibrated hull dynamics are not modeled. Motion reduction freezes decorative wave motion without changing drift or resistance.'),
+          h('p', { style: textStyle }, h('a', { href: 'https://gnome.orr.noaa.gov/doc/faq.html', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NOAA: leeway'), ' · ', h('a', { href: 'https://www.weather.gov/marine/wavedetail', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NWS: waves and swell'))));
+    }
+
     function learningWarmup() {
       var lessons = [
         { id: 'navigation', label: 'Navigation math', title: 'Same route. Different speed.',
@@ -20792,6 +20933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('button', { type: 'button', ref: savedVoyageCheckpoint ? null : simLaunchRef, className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Start new ' + modeProfile.label + ' voyage')) : null,
+          sim.active ? seaNavigationCard() : null,
           sim.active ? h('div', { ref: stageRef, className: 'fl-sim-stage' + (stageExpanded ? ' fl-theater' : '') },
             // Sound, View and Weather Controls bar
             h('div', { ref: simBarRef, className: 'fl-sim-bar', style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
@@ -20832,6 +20974,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   }, labels[tod]);
                 })
               ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, color: '#bae6fd', fontSize: 12 } }, h('label', { htmlFor: 'fl-sea-state' }, 'Sea conditions'),
+                h('select', { id: 'fl-sea-state', value: seaState, disabled: voyageMode !== 'guided', title: voyageMode === 'guided' ? 'Change the training sea independently of weather' : 'Sea preset is fixed for this voyage mode', onChange: function(e) { setSeaState(e.target.value); }, style: { minHeight: 44, padding: '6px 8px', borderRadius: 7, border: '1px solid #5eead4', background: '#0b2637', color: '#e0f2fe', fontSize: 12 } },
+                  ['calm', 'breeze', 'chop'].map(function(id) { return h('option', { key: id, value: id }, getCoreSeaState(id).label); }))),
               h('div', { role: 'group', 'aria-label': 'Weather', style: { display: 'flex', gap: 4 } },
                 ['clear', 'foggy', 'rainy'].map(function(w) {
                   var isSel = weather === w;
@@ -20977,6 +21122,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', null, 'Speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
                 h('div', null, 'Safe speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#bae6fd' } }, (hud.safeSpeed == null ? 8 : hud.safeSpeed).toFixed(1) + ' kt')),
                 h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
+                h('div', { 'data-sea-helm': true }, 'Ground: ', h('b', { style: { color: '#fde68a' } }, (hud.seaMotion ? hud.seaMotion.groundSpeed : Math.abs(hud.speed || 0)).toFixed(1) + ' kt'), hud.seaMotion && hud.seaMotion.course !== null ? ' · ' + (Math.round(hud.seaMotion.course) % 360) + '°' : ''),
+                h('div', null, 'Wind: ', h('b', { style: { color: '#99f6e4' } }, getCoreSeaState(seaState).windKnots ? 'W → E · ' + getCoreSeaState(seaState).windKnots + ' kt' : 'calm')),
                 h('div', null, 'Fuel: ', h('b', { style: { color: fuelValue < 30 ? '#fb923c' : '#86efac' } }, fuelValue.toFixed(0) + '%')),
                 h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
                 h('div', null, 'Shellfish Retained: ', h('b', { style: { color: '#fbbf24' } }, hud.keeperLobsters || 0)),

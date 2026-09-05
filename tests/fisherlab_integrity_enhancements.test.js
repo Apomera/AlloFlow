@@ -574,7 +574,7 @@ describe('Fisher Lab replay and regional identity integrity', () => {
 
     expect(initialStart).toBeGreaterThan(-1);
     expect(restartStart).toBeGreaterThan(-1);
-    expect(initialKeys.filter((key) => !resetKeys.has(key))).toEqual(['timeOfDay', 'weather', 'cameraView']);
+    expect(initialKeys.filter((key) => !resetKeys.has(key))).toEqual(['timeOfDay', 'weather', 'seaState', 'cameraView']);
     expect(restartBlock).toContain('boat.rotation.set(0, boatState.heading, 0);');
     expect(restartBlock).toContain('boat.position.y = 0;');
 

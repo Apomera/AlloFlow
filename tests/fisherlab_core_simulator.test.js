@@ -1735,7 +1735,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('simulation remains paused until you resume');
     expect(source).toContain("role: 'application', tabIndex: 0");
     expect(source).toContain('boatState.fuel = Math.max(0');
-    expect(source).toContain('boatState.speed *= Math.exp(-0.9 * dt);');
+    expect(source).toContain('boatState.speed *= Math.exp(-(0.9 + getCoreSeaMotion(boatState).resistance) * dt);');
     expect(source).toContain('boatState.pos.z += dz;');
     expect(source).toContain('if (d < 7) {');
     // The chase-camera offset used to be pinned here as a source string. It is
