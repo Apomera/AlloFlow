@@ -115,6 +115,21 @@ it the stone JUMPED to the end of its arc: a shot that looks like nothing happen
 - ★Sun direction must have NEGATIVE z or the castle face (toward the engine) is a silhouette
   from every default camera. Noon and dusk were wrong on first pass.
 
+### Wave 3 (2026-09-05)
+
+- **The haul.** Every flight now carries `windup: 1.6` s. Both siege bays subtract it from
+  the shared flight clock; during it the engine is posed from REST to COCKED through a new
+  `S.mlPose(k)` hook on both engine builders (k = 0 drawn, 1 slack; the torsion one is the
+  swing's own `pose`, so they cannot disagree), and the HUD reads "Winding the engine:
+  crank work becomes stored energy" with the stored kJ counting up. The energy bar fills
+  amber as it goes in. ★The clear timer and the replay both include the windup.
+- **Moving vs height bar**: two spans the loop fills (½mv² amber, mgh sky); hidden when idle.
+- **Ghost traces** of the last three flights (`sceneTraces`, compacted, persisted, updated in
+  place by `tracesSig`), so "change one thing" has a before to compare against.
+- **Stake labels**: canvas-text sprites reading "10 m" … "50 m" over every stake.
+- **Bests** (`siegeBests[preset] = {shots, work}`): recorded on a breach, fewest shots then
+  least work; toast only when beating a previous best; shown in the Field tally.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

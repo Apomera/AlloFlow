@@ -278,3 +278,68 @@ describe('Siege Field wave 2: replay, arc, wind, start card', () => {
     expect(src).toContain("var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;");
   });
 });
+
+describe('Siege Field wave 3: winding, energy bar, traces, bests', () => {
+  it('every flight carries the windup, and the clear timer waits for it too', () => {
+    const src = source();
+    expect(src).toContain('var WINDUP_SECS = 1.6;');
+    expect(src).toContain("outcome: res.outcome, windup: WINDUP_SECS");
+    expect(src).toContain("outcome: 'short', windup: WINDUP_SECS");
+    expect(src).toContain("replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS");
+    expect(src).toContain('clearFlightLater(flightId, playSecs + WINDUP_SECS);');
+    expect(src).toContain('clearFlightLater(shortId, shortPlay + WINDUP_SECS);');
+    expect(src).toContain('clearFlightLater(rid, secs + WINDUP_SECS);');
+  });
+
+  it('both siege bays subtract the windup from the shared flight clock, so neither fires early', () => {
+    const src = source();
+    const hits = src.match(/t = Math\.max\(0, raw - windup\);/g) || [];
+    expect(hits.length).toBe(2);
+    // And both hand the engine its winding pose from the same exposed hook.
+    const poses = src.match(/g\.mlPose\(winding \* winding\)/g) || [];
+    expect(poses.length).toBe(2);
+    expect(src).toContain('S.mlPose = function (k) { pose(1 - Math.max(0, Math.min(1, k))); };');
+    expect(src).toMatch(/S\.mlPose = function \(k\) \{\n\s+var REST_DEG = 42;/);
+  });
+
+  it('reduced motion skips the haul rather than freezing on it', () => {
+    const src = source();
+    expect(src).toContain('if (red) { t = dur; winding = 0; }');
+    expect(src).toContain('if (reduced) { t = dur; winding = 0; }');
+  });
+
+  it('draws the moving-versus-height bar as two spans the loop fills', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toMatch(/<span[^>]*style="[^"]*width:0%[^"]*background:#fbbf24/);
+    expect(html).toMatch(/<span[^>]*style="[^"]*width:0%[^"]*background:#7dd3fc/);
+    const src = source();
+    expect(src).toContain("setBar((ke + pe) > 0 ? ke / (ke + pe) : 1, (ke + pe) > 0 ? pe / (ke + pe) : 0);");
+  });
+
+  it('keeps compact traces of the last three flights in state, on hits and short shots alike', () => {
+    const src = source();
+    expect(src).toContain("sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])");
+    expect(src).toContain("sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])");
+    expect(src).toMatch(/sceneTraces: \[\], siegeBests: \{\},/);
+  });
+
+  it('shows the best siege for the current target only once one exists', () => {
+    const none = renderTool('machineLab', state());
+    expect(none).not.toContain('Best here');
+    const some = renderTool('machineLab', state({ wallPreset: 'keep', siegeBests: { keep: { shots: 4, work: 181000 }, curtain: { shots: 9, work: 400000 } } }));
+    expect(some).toContain('Best here: 4 shots, 181 kJ');
+    const other = renderTool('machineLab', state({ wallPreset: 'curtain', siegeBests: { keep: { shots: 4, work: 181000 } } }));
+    expect(other).not.toContain('Best here');
+  });
+
+  it('records a best on a breach by fewest shots then least work, and toasts only when beating one', () => {
+    const src = source();
+    expect(src).toContain("var better = !prevBest || shots < prevBest.shots || (shots === prevBest.shots && work < prevBest.work);");
+    expect(src).toContain("if (prevBest) addToast('🏆 '");
+  });
+
+  it('labels every stake with its distance', () => {
+    const src = source();
+    expect(src).toContain("g2.fillText(sd + ' m', n2 / 2, n2 / 2);");
+  });
+});

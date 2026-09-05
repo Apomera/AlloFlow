@@ -1898,6 +1898,9 @@ window.StemLab = window.StemLab || {
       return deg * Math.PI / 180;
     }
 
+    // Winding pose for the field bays (k = 0 drawn, k = 1 slack), the same
+    // function the swing uses, so the two cannot disagree about the arms.
+    S.mlPose = function (k) { pose(1 - Math.max(0, Math.min(1, k))); };
     pose(0);
     stone.position.set(pivotX + armLen * Math.cos(-0.96), pivotY + armLen * Math.sin(-0.96) - sling, 0);
 
@@ -2302,6 +2305,16 @@ window.StemLab = window.StemLab || {
     S.ml = { arm: arm, sling: slingGrp, stone: stone, cord: cord, pivotH: pivotH,
              beamLong: beamLong, sling3: sling, stoneR: Math.max(projR, 0.22) };
     S.mlShot = null;
+    // Winding pose for the field bays: k = 0 cocked (long arm down), k = 1 at
+    // rest with the counterweight down and the long arm in the air. The crew
+    // haul it from 1 to 0 before every shot.
+    S.mlPose = function (k) {
+      var REST_DEG = 42;
+      var deg = COCKED_DEG + (REST_DEG - COCKED_DEG) * Math.max(0, Math.min(1, k));
+      arm.rotation.z = deg * Math.PI / 180;
+      slingGrp.rotation.z = -arm.rotation.z;
+      restSlingOnGround(S.ml, arm.rotation.z);
+    };
 
     // Frame what the machine actually occupies when cocked, rather than a box
     // the size of its full swing: it sat small in a mostly empty frame.
@@ -2752,11 +2765,15 @@ window.StemLab = window.StemLab || {
       // stone was still halfway there would read as the tool cheating.
       var flying = !!(data.flight && data.flight.path && data.flight.path.length > 1);
       var t = 0, dur = 0;
+      var windup = flying ? Math.max(0, Number(data.flight.windup) || 0) : 0;
+      var winding = 0;   // 0..1 through the crew's haul, or 0 when done
       if (flying) {
         if (S.flightId !== data.flight.id) { S.flightId = data.flight.id; S.flightT0 = now; }
         dur = Math.max(0.3, data.flight.seconds || 1.4);
-        t = Math.max(0, (now - (S.flightT0 || now)) / 1000);
-        if (reduced) t = dur;
+        var raw = Math.max(0, (now - (S.flightT0 || now)) / 1000);
+        t = Math.max(0, raw - windup);
+        if (windup > 0 && raw < windup) winding = 1 - raw / windup;
+        if (reduced) { t = dur; winding = 0; }
       }
       var landed = !flying || t >= dur;
       var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
@@ -2803,11 +2820,13 @@ window.StemLab = window.StemLab || {
       // hands the shot over to the field stone below.
       var g = S.siegeGuest;
       if (g && typeof g.tick === 'function') {
-        g.data = flying
+        g.data = (flying && winding <= 0)
           ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: data.muzzleV, reduced: reduced }
           : {};
-        try { g.tick(flying ? (S.flightT0 || now) + Math.min(t, 0.9) * 1000 : now); }
+        try { g.tick(flying ? (S.flightT0 || now) + windup * 1000 + Math.min(t, 0.9) * 1000 : now); }
         catch (e) {}
+        // The haul: the engine goes from rest to cocked over the windup.
+        if (winding > 0 && typeof g.mlPose === 'function') { try { g.mlPose(winding * winding); } catch (e) {} }
       }
 
       // The stone, on the path the model computed. x downrange maps to +z from
@@ -3430,6 +3449,21 @@ window.StemLab = window.StemLab || {
           var flag = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.04), big ? bigMat : flagMat);
           flag.position.set(side * (laneHalf * 0.5) + side * -0.25, big ? 2.0 : 1.05, -standoff + sd);
           S.model.add(flag);
+          // The distance, written on the stake, so the HUD's downrange number
+          // is something you can also read off the ground.
+          var labelTex = makeCanvasTexture(THREE, 128, function (g2, n2) {
+            g2.clearRect(0, 0, n2, n2);
+            g2.font = 'bold 44px system-ui, sans-serif'; g2.textAlign = 'center'; g2.textBaseline = 'middle';
+            g2.lineWidth = 8; g2.strokeStyle = 'rgba(20,14,8,0.9)'; g2.strokeText(sd + ' m', n2 / 2, n2 / 2);
+            g2.fillStyle = '#fff6dc'; g2.fillText(sd + ' m', n2 / 2, n2 / 2);
+          });
+          if (labelTex && typeof THREE.Sprite === 'function') {
+            labelTex.wrapS = THREE.ClampToEdgeWrapping; labelTex.wrapT = THREE.ClampToEdgeWrapping;
+            var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false }));
+            spr.scale.set(big ? 3.2 : 2.4, big ? 3.2 : 2.4, 1);
+            spr.position.set(side * (laneHalf * 0.5), big ? 3.4 : 2.2, -standoff + sd);
+            S.model.add(spr);
+          }
         });
       }
     }
@@ -3451,6 +3485,15 @@ window.StemLab = window.StemLab || {
     arcRing.visible = false;
     S.model.add(arcRing);
     S.arc = { line: arcLine, ring: arcRing, sig: null };
+    var traces = [];
+    for (var trI = 0; trI < 3; trI++) {
+      var trGeo = new THREE.BufferGeometry();
+      trGeo.setFromPoints([new THREE.Vector3(0, 1, -standoff), new THREE.Vector3(0, 1, -standoff + 1)]);
+      var trLine = new THREE.Line(trGeo, new THREE.LineBasicMaterial({ color: contrast ? 0xffffff : 0xf1e2c4, transparent: true, opacity: 0.55 - trI * 0.16 }));
+      trLine.frustumCulled = false; trLine.visible = false;
+      S.model.add(trLine); traces.push(trLine);
+    }
+    S.traces = traces; S.tracesSig = null;
 
     // ── The stone, its trail, the burst ──
     var stoneR = Math.max(0.3, Math.min(1.1, (m.projDiameter || 0.26) * 1.5));
@@ -3535,14 +3578,18 @@ window.StemLab = window.StemLab || {
       // Flight clock, identical to the Target Wall's so the two never disagree.
       var flying = !!(data.flight && data.flight.path && data.flight.path.length > 1);
       var t = 0, dur = 0;
+      var windup = flying ? Math.max(0, Number(data.flight.windup) || 0) : 0;
+      var winding = 0;
       if (flying) {
         if (S.flightId !== data.flight.id) {
           S.flightId = data.flight.id; S.flightT0 = now; S.trailHist = []; S.impactAt = null; S.burstT0 = null;
           S.strobePath = data.flight.path;
         }
         dur = Math.max(0.3, data.flight.seconds || 1.4);
-        t = Math.max(0, (now - (S.flightT0 || now)) / 1000);
-        if (red) t = dur;
+        var raw = Math.max(0, (now - (S.flightT0 || now)) / 1000);
+        t = Math.max(0, raw - windup);
+        if (windup > 0 && raw < windup) winding = 1 - raw / windup;
+        if (red) { t = dur; winding = 0; }
       }
       var landed = !flying || t >= dur;
       var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
@@ -3587,12 +3634,30 @@ window.StemLab = window.StemLab || {
       // The engine's own swing, on the flight clock.
       var g = S.siegeGuest;
       if (g && typeof g.tick === 'function') {
-        g.data = flying
+        g.data = (flying && winding <= 0)
           ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: data.muzzleV, reduced: red }
           : {};
         // A slow-motion replay stretches the swing with the flight.
         var swingT = (data.flight && data.flight.replay) ? t / Math.max(1, data.flight.rate || 3) : t;
-        try { g.tick(flying ? (S.flightT0 || now) + Math.min(swingT, 0.9) * 1000 : now); } catch (e) {}
+        try { g.tick(flying ? (S.flightT0 || now) + windup * 1000 + Math.min(swingT, 0.9) * 1000 : now); } catch (e) {}
+        // The haul: rest to cocked over the windup, eased so the last part is
+        // the slow, heavy part, as it is on a real winch.
+        if (winding > 0 && typeof g.mlPose === 'function') { try { g.mlPose(winding * winding); } catch (e) {} }
+      }
+
+      // Ghost traces of the last flights, for comparing one change against
+      // the shot before it. Persisted in state, so they survive a rebuild.
+      if (S.traces && data.tracesSig !== S.tracesSig) {
+        S.tracesSig = data.tracesSig;
+        var trs = data.traces || [];
+        for (var ti2 = 0; ti2 < S.traces.length; ti2++) {
+          var tr = trs[trs.length - 1 - ti2];
+          var ln = S.traces[ti2];
+          if (tr && tr.length > 1) {
+            ln.geometry.setFromPoints(tr.map(function (p) { return new THREE.Vector3(p.z || 0, Math.max(0.1, p.y || 0), -standoff + (p.x || 0)); }));
+            ln.visible = true;
+          } else { ln.visible = false; }
+        }
       }
 
       // The predicted arc: rebuilt only when the prediction changes.
@@ -3699,8 +3764,23 @@ window.StemLab = window.StemLab || {
       // Live physics for the HUD.
       var mass = Math.max(0.01, Number(data.projMass) || 25);
       var grav = Number(data.gravity) || 9.81;
-      if (stonePos) {
+      var ebarKe = SCENE_HUD.keBar, ebarPe = SCENE_HUD.peBar, ebarBox = SCENE_HUD.ebar;
+      // keFrac and peFrac are fractions of the bar; anything left is empty
+      // track, which is how the haul reads as energy going IN.
+      function setBar(keFrac, peFrac) {
+        if (ebarKe) ebarKe.style.width = Math.round(keFrac * 100) + '%';
+        if (ebarPe) ebarPe.style.width = Math.round(peFrac * 100) + '%';
+        if (ebarBox) ebarBox.style.visibility = (keFrac + peFrac > 0) ? 'visible' : 'hidden';
+      }
+      if (flying && winding > 0) {
+        var storedNow = Math.max(0, Number(data.stored) || 0) * (1 - winding);
+        sceneHudWrite('phase', L.winding || '');
+        sceneHudWrite('energy', (L.storedNow || 'Stored') + ' ' + fmt(storedNow / 1000, 1) + ' kJ / ' + fmt((Number(data.stored) || 0) / 1000, 1) + ' kJ');
+        sceneHudWrite('speed', '—'); sceneHudWrite('height', '—'); sceneHudWrite('dist', '—'); sceneHudWrite('time', '—');
+        setBar(Math.max(0.02, 1 - winding), 0);
+      } else if (stonePos) {
         var ke = 0.5 * mass * speed * speed, pe = mass * grav * Math.max(0, height);
+        setBar((ke + pe) > 0 ? ke / (ke + pe) : 1, (ke + pe) > 0 ? pe / (ke + pe) : 0);
         sceneHudWrite('phase', t < 0.55 ? (L.swing || '') : (L.flight || ''));
         sceneHudWrite('speed', fmt(speed, 1) + ' m/s');
         sceneHudWrite('height', fmt(height, 1) + ' m');
@@ -3712,6 +3792,7 @@ window.StemLab = window.StemLab || {
         sceneHudWrite('energy', L.outcomeEnergy || L.idleEnergy || '');
         sceneHudWrite('speed', '—'); sceneHudWrite('height', '—'); sceneHudWrite('dist', '—'); sceneHudWrite('time', '—');
       } else {
+        setBar(0, 0);
         sceneHudWrite('phase', L.cocked || '');
         sceneHudWrite('speed', '—'); sceneHudWrite('height', '—'); sceneHudWrite('dist', '—'); sceneHudWrite('time', '—');
         sceneHudWrite('energy', L.idleEnergy || '');
@@ -3935,6 +4016,8 @@ window.StemLab = window.StemLab || {
       // Predicted arc over the field; the start-here card; the last shot, kept
       // whole so it can be replayed in slow motion.
       scenePath: true, sceneIntroDismissed: false, lastFlight: null,
+      // Compact traces of the last three flights, and the best siege per target.
+      sceneTraces: [], siegeBests: {},
       // auto = follow the OS reduce-motion setting; on/off override it. A
       // student whose laptop has animations off otherwise sees no shot at all.
       motionPref: 'auto',
@@ -6579,6 +6662,10 @@ window.StemLab = window.StemLab || {
       // The wall is drawn as it stood before that shot until the stone lands,
       // so the blocks tumble again. Nothing is re-scored: it is a replay.
       var REPLAY_RATE = 3;
+      // The crew haul the engine down before every shot. Stored energy is
+      // put in BEFORE launch, and this is the second or so where you watch
+      // it go in.
+      var WINDUP_SECS = 1.6;
       function replayLast() {
         var lf = d.lastFlight;
         if (d.siegeFlight || !lf || !lf.path || lf.path.length < 2) return;
@@ -6586,9 +6673,9 @@ window.StemLab = window.StemLab || {
         var secs = Math.max(2.5, (lf.seconds || 1.4) * REPLAY_RATE);
         updMulti({
           siegeFlightId: rid,
-          siegeFlight: { id: rid, path: lf.path, seconds: secs, before: lf.before, outcome: lf.outcome, replay: true, rate: REPLAY_RATE }
+          siegeFlight: { id: rid, path: lf.path, seconds: secs, before: lf.before, outcome: lf.outcome, replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS }
         });
-        clearFlightLater(rid, secs);
+        clearFlightLater(rid, secs + WINDUP_SECS);
         announceToSR(__alloT('stem.machinelab.sr_replay', 'Replaying the last shot in slow motion.'));
       }
 
@@ -6620,11 +6707,12 @@ window.StemLab = window.StemLab || {
             },
             siegeFlightId: shortId,
             siegeFlight: shortPath.length > 1
-              ? { id: shortId, path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' }
+              ? { id: shortId, path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short', windup: WINDUP_SECS }
               : null,
-            lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null
+            lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null,
+            sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])
           });
-          if (shortPath.length > 1) clearFlightLater(shortId, shortPlay);
+          if (shortPath.length > 1) clearFlightLater(shortId, shortPlay + WINDUP_SECS);
           announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.'));
           return;
         }
@@ -6674,15 +6762,27 @@ window.StemLab = window.StemLab || {
           // What the 3D field needs to play the throw. `before` is the wall as
           // it stood, drawn until the stone lands.
           siegeFlight: {
-            id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome
+            id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, windup: WINDUP_SECS
           },
-          lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome }
+          lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
+          sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])
         });
-        clearFlightLater(flightId, playSecs);
+        clearFlightLater(flightId, playSecs + WINDUP_SECS);
         if (nowBreached && !d.breached) {
           awardStemXP(40);
           celebrate();
           addToast('🏰 ' + __alloT('stem.machinelab.breached_toast', 'Breach!'));
+          // A personal best per target: fewest shots, then least crank work.
+          // Recorded on the breach, compared against what stood before.
+          var presetKey = d.wallPreset || 'curtain';
+          var prevBest = (d.siegeBests || {})[presetKey];
+          var better = !prevBest || shots < prevBest.shots || (shots === prevBest.shots && work < prevBest.work);
+          if (better) {
+            var bests = Object.assign({}, d.siegeBests || {});
+            bests[presetKey] = { shots: shots, work: work };
+            upd('siegeBests', bests);
+            if (prevBest) addToast('🏆 ' + __alloT('stem.machinelab.new_best', 'New best for this target: ') + shots + __alloT('stem.machinelab.new_best2', ' shots.'));
+          }
         }
         announceToSR(msg + (nowBreached ? ' ' + __alloT('stem.machinelab.sr_breach', 'The wall is breached.') : ''));
       }
@@ -7547,6 +7647,8 @@ window.StemLab = window.StemLab || {
         var labels = {
           cocked: __alloT('stem.machinelab.scene_ph_cocked', 'Cocked and ready'),
           swing: __alloT('stem.machinelab.scene_ph_swing', 'Arm swinging: stored energy becomes motion'),
+          winding: __alloT('stem.machinelab.scene_ph_winding', 'Winding the engine: crank work becomes stored energy'),
+          storedNow: __alloT('stem.machinelab.scene_stored_now', 'Stored so far'),
           flight: __alloT('stem.machinelab.scene_ph_flight', 'In flight: only gravity and air act now'),
           impact: __alloT('stem.machinelab.scene_ph_impact', 'Impact'),
           outcome: outcomeText,
@@ -7577,6 +7679,9 @@ window.StemLab = window.StemLab || {
           wallPreset: d.wallPreset || 'curtain',
           time: timeId,
           windZ: d.windZ || 0,
+          stored: preview ? preview.stored : 0,
+          traces: d.sceneTraces || [],
+          tracesSig: (d.sceneTraces || []).map(function (p) { return p.length + ':' + (p.length ? Math.round(p[p.length - 1].x) : 0); }).join('|'),
           showPath: d.scenePath !== false,
           previewPath: preview && preview.path ? preview.path : null,
           previewSig: preview ? [Math.round(d.standoff), preview.range, preview.apex, preview.drift].join('|') : '',
@@ -7747,6 +7852,15 @@ window.StemLab = window.StemLab || {
               key: 'energyhud', 'aria-hidden': 'true', ref: sceneHudRef('energy'),
               style: Object.assign({}, glass, { position: 'absolute', left: 20, top: 130, fontSize: 11, fontWeight: 700, pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' })
             }, labels.idleEnergy),
+            // Moving versus height energy, as a bar the tick fills. Amber is
+            // the effort colour everywhere in this tool; sky is the load.
+            h('div', {
+              key: 'ebar', 'aria-hidden': 'true', ref: sceneHudRef('ebar'),
+              style: { position: 'absolute', left: 20, top: 172, width: 260, height: 10, borderRadius: 999, overflow: 'hidden', background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)', display: 'flex', pointerEvents: 'none', visibility: 'hidden' }
+            }, [
+              h('span', { key: 'ke', ref: sceneHudRef('keBar'), style: { display: 'block', width: '0%', height: '100%', background: '#fbbf24', transition: 'width 120ms linear' } }),
+              h('span', { key: 'pe', ref: sceneHudRef('peBar'), style: { display: 'block', width: '0%', height: '100%', background: '#7dd3fc', transition: 'width 120ms linear' } })
+            ]),
             h('div', { key: 'rows', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
               chipRow('cam', __alloT('stem.machinelab.cam_modes', 'Camera'), CAM_MODES, camMode, function (id) {
                 upd('sceneCam', id);
@@ -7798,7 +7912,10 @@ window.StemLab = window.StemLab || {
                 __alloT('stem.machinelab.shots_loosed', 'Shots loosed') + ': ' + (d.shotsFired || 0) + ' · ' +
                 __alloT('stem.machinelab.legend_intact', 'intact ') + summary.intact + ' · ' +
                 __alloT('stem.machinelab.legend_cracked', 'cracked ') + summary.cracked + ' · ' +
-                __alloT('stem.machinelab.legend_gone', 'gone ') + summary.breached)
+                __alloT('stem.machinelab.legend_gone', 'gone ') + summary.breached +
+                ((d.siegeBests || {})[d.wallPreset || 'curtain']
+                  ? ' · 🏆 ' + __alloT('stem.machinelab.best_here', 'Best here: ') + (d.siegeBests[d.wallPreset || 'curtain'].shots) + __alloT('stem.machinelab.best_shots', ' shots, ') + fmt(d.siegeBests[d.wallPreset || 'curtain'].work / 1000, 0) + ' kJ'
+                  : ''))
             ]),
             d.siegeFeedback ? h('p', {
               key: 'fb', role: 'status',
