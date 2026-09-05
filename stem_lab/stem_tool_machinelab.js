@@ -2093,7 +2093,11 @@ window.StemLab = window.StemLab || {
       box(0.08, 1.7, 0.08, flagX, 0.85, flagZ, colors.load);
       box(0.7, 0.34, 0.06, flagX + 0.34, 1.5, flagZ, colors.load, true);
     }
-    var stone = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.16, Math.min(0.48, (Number(m.projDiameter) || 0.26) * 0.8)), 16, 12), material(colors.effort, true));
+    // Sized to be SEEN: at least ~1% of the lane, so a 100 m throw shows a
+    // 1 m marker rather than a true-scale speck. The graph beside it, not
+    // this sphere, is the measurement.
+    var markerR = Math.max(Math.max(0.16, Math.min(0.48, (Number(m.projDiameter) || 0.26) * 0.8)), maxX * 0.011);
+    var stone = new THREE.Mesh(new THREE.SphereGeometry(markerR, 16, 12), material(colors.effort, true));
     stone.castShadow = !contrast;
     S.model.add(stone);
 
@@ -2108,7 +2112,7 @@ window.StemLab = window.StemLab || {
     S.rangeLaunchStone = launchStone;
     var rangeGhosts = [];
     for (var gi = 0; gi < 7; gi++) {
-      var ghost = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.14, Math.min(0.42, (Number(m.projDiameter) || 0.26) * 0.72)), 12, 10), material(colors.effort, true, 0.45));
+      var ghost = new THREE.Mesh(new THREE.SphereGeometry(Math.max(Math.max(0.14, Math.min(0.42, (Number(m.projDiameter) || 0.26) * 0.72)), maxX * 0.009), 12, 10), material(colors.effort, true, 0.55));
       ghost.visible = false;
       S.model.add(ghost); rangeGhosts.push(ghost);
     }
