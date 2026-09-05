@@ -82,6 +82,21 @@ Commits 323452efe, 08cbee967 and 3f40dfb69.
   15:17 UTC, build-time verification passed with the HTTP probe. This supersedes the hash in the
   Installer section above.
 
+## Round 3 (2026-09-05, evening): host verification and first-call latency
+
+Commits feb28fe89 and 00ae638c8.
+
+- Official MCP SDK client passes against the connector over both transports
+  (`dev-tools/mcp_http_sdk_client_check.mjs`; evidence in `scratch/mcp-v010-hosts/EVIDENCE.md`).
+- Codex CLI 0.144.5 accepted stdio and HTTP (bearer env var) registrations; a model-driven call is
+  blocked until the account's usage limit resets on 2026-09-11.
+- The 35 MB vendor binaries are hashed in a worker thread at boot; vendor verification on the first
+  tool call drops from about 5 s to 137 ms once the worker is done.
+- Final installer: v0.10.0, 71,037,315 bytes,
+  SHA-256 `89e460dbf8d2f10d4add4219de39334c8611e5c18039cdf9d5998c8a5d1aba1a`, built 2026-09-05
+  20:21 UTC; build-time and isolated verification passed with the HTTP probe. This is the bundle
+  to share for the pilot.
+
 ## Still open before sharing
 
 - Manual screen-reader, keyboard, reading-order and content-fidelity review of real outputs.
