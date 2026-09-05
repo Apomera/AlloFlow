@@ -51636,7 +51636,11 @@ ${_alloActivityContext(activity)}
                 )}
               </div>
             ) : (
-              <ErrorBoundary fallbackMessage={t('errors.content_viewer') || 'The content viewer encountered an error. Try regenerating the resource or switching views.'}>
+              // Keyed by resource id AND view. Without a key React reuses ONE boundary instance, so a single
+              // early throw — a view rendering before its deferred module has drained — leaves every resource
+              // the user opens next showing Component Error, and even the fallback's own advice to switch
+              // views does nothing. A new key remounts the boundary, which clears the stale error.
+              <ErrorBoundary key={(generatedContent && generatedContent.id) + ':' + activeView} fallbackMessage={t('errors.content_viewer') || 'The content viewer encountered an error. Try regenerating the resource or switching views.'}>
               <div id="screenshot-target" ref={contentRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
                 {activeView === 'analysis' && window.AlloModules && window.AlloModules.AnalysisView && React.createElement(window.AlloModules.AnalysisView, {
                     onUpdateResource, onCorrectAnalysisText,

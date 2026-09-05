@@ -1,0 +1,525 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Day Sky, Night Sky — Why the Sky Changes",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "1st Grade",
+    "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); NGSS 1-ESS1-2 (make observations at different times of day to describe patterns of change); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions about key details in a text); CCSS.ELA-LITERACY.SL.1.1 (participate in conversations about grade 1 topics with peers and adults)",
+    "createdAt": "2026-09-05T21:10:00.000Z",
+    "imageShotList": "allopacks/day_night_sky_grade1.IMAGES.md"
+  },
+  "sourceTopic": "Day and Night, and Patterns in the Sky",
+  "history": [
+    {
+      "id": "sk-directions",
+      "type": "directions",
+      "title": "Watch the Sky",
+      "timestamp": "2026-09-05T21:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThe sky looks different in the morning than it does at bedtime. This week you find out why — and the answer is not what most people guess.\n\n1. Read **Day Sky, Night Sky** with a grown-up or a partner.\n2. Learn the words in **Sky Words**, then win the **Matching** game.\n3. Look at the **What the Sky Does** chart.\n4. Play **True or Not True?** and put each card in the right pile.\n5. Take **Sky Check** — say each answer out loud before you pick it.\n6. Lock the big idea in with **Remember Why the Sky Changes**.\n7. Read **Sky Questions Kids Ask** if you are wondering about something.\n8. Finish with **Investigation: The Shadow Watch** — go outside and find out for yourself.\n\nYour job this week: look up at least once in the morning and once at night, and tell someone one thing you saw. ☀️🌙",
+        "objectives": [
+          {
+            "id": "sk-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "sk-glossary"
+          },
+          {
+            "id": "sk-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "sk-glossary"
+          },
+          {
+            "id": "sk-goal-xp",
+            "label": "Earn 15 XP",
+            "kind": "xp",
+            "amount": 15
+          },
+          {
+            "id": "sk-goal-look",
+            "label": "I looked at the sky in the morning and at night and told someone",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "1st Grade • 4 goals • look up twice a day"
+    },
+    {
+      "id": "sk-reading",
+      "type": "simplified",
+      "title": "Day Sky, Night Sky",
+      "timestamp": "2026-09-05T21:10:01.000Z",
+      "data": "## Day Sky, Night Sky\n\nLook up in the morning. The sky is blue and bright. Look up at bedtime. The sky is dark. Why does the sky change?\n\nHere is the secret. **Earth** is turning. Our whole planet goes around and around, like a very slow top. It makes one full **spin** every day.\n\nWhen your side of Earth faces the **Sun**, you have **day**. The sky is bright. When your side turns away, you have **night**. The sky goes dark.\n\nSo the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at **sunrise**. Later it turns you away at **sunset**.\n\nThe Sun is a **star**. It looks big and bright because it is much closer to us than the other stars are. Those far stars do not leave in the morning. They are still up there. The bright blue sky just hides them.\n\nAt night you may see the **Moon**. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes. That is why it glows.\n\nHere is a surprise. You can see the Moon in the daytime too! Look for a pale white curve up in the blue.\n\nDay, night, day, night. It goes in the same order every time. That is a **pattern**. A pattern lets you guess what comes next.",
+      "meta": "1st Grade • Leveled reading • ~245 words • read-aloud friendly",
+      "imageSlot": "sk-img-earth-turning"
+    },
+    {
+      "id": "sk-glossary",
+      "type": "glossary",
+      "title": "Sky Words",
+      "timestamp": "2026-09-05T21:10:02.000Z",
+      "data": [
+        {
+          "term": "Sun",
+          "def": "The star closest to us. It gives Earth light and warmth.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Star",
+          "def": "A huge ball of hot, glowing gas very far away in space.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Moon",
+          "def": "The big round rock that circles Earth and shines with light from the Sun.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Earth",
+          "def": "The planet we live on. It turns all the way around once each day.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Spin",
+          "def": "To turn around and around in one place, the way a top does.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Day",
+          "def": "The time when your part of the planet faces the Sun and the sky is bright.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Night",
+          "def": "The time when your part of the planet faces away from the Sun and the sky is dark.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Sunrise",
+          "def": "The moment the Sun first shows above the far edge of the ground.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sunset",
+          "def": "The moment the Sun drops out of sight below the far edge of the ground.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pattern",
+          "def": "Something that happens again and again in the same order.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "sk-anchor",
+      "type": "anchor-chart",
+      "title": "What the Sky Does",
+      "timestamp": "2026-09-05T21:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THE SKY FOLLOWS A PATTERN",
+        "sections": [
+          {
+            "label": "EARTH TURNS",
+            "bullets": [
+              "One full spin every day",
+              "You are the one moving",
+              "The Sun stays put"
+            ],
+            "iconPrompt": "a round planet with a curved arrow around it"
+          },
+          {
+            "label": "DAY",
+            "bullets": [
+              "Your side faces the Sun",
+              "The sky is bright blue",
+              "Stars are up there, just hidden"
+            ],
+            "iconPrompt": "a bright sun over a small house"
+          },
+          {
+            "label": "NIGHT",
+            "bullets": [
+              "Your side faces away",
+              "The sky is dark",
+              "Now you can see the stars"
+            ],
+            "iconPrompt": "a dark sky with small dots of light over the same house"
+          },
+          {
+            "label": "THE MOON",
+            "bullets": [
+              "Makes no light of its own",
+              "Bounces light from the Sun",
+              "Sometimes up in the daytime"
+            ],
+            "iconPrompt": "a curved moon with an arrow of light arriving from one side"
+          }
+        ]
+      },
+      "meta": "4 parts • picture reference for the wall"
+    },
+    {
+      "id": "sk-memory",
+      "type": "memory-aid",
+      "title": "Remember Why the Sky Changes",
+      "timestamp": "2026-09-05T21:10:04.000Z",
+      "meta": "1st Grade • 2 memory aids • Earth turns, the Moon borrows",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Why the Sky Changes",
+        "instructions": "Two cards hold the big ideas from Day Sky, Night Sky. Look at the example, make one your own, then say out loud how it helps you remember.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Our whole planet goes around and around, like a very slow top. When your side of Earth faces the Sun, you have day. When your side turns away, you have night. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes.",
+        "lessonRef": {
+          "resourceId": "sk-reading",
+          "title": "Day Sky, Night Sky"
+        },
+        "cards": [
+          {
+            "id": "sk-ma-turn",
+            "target": "Earth turns, and that is what makes day and night",
+            "essentialFacts": [
+              "Earth makes one full spin every day.",
+              "When your side faces the Sun it is day.",
+              "When your side turns away it is night.",
+              "The Sun is not the one moving across the sky."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Stand up and turn around slowly. Face the lamp and say 'day.' Keep turning until the lamp is behind you and say 'night.' You moved. The lamp never did.",
+            "mapping": "Your body is Earth and the lamp is the Sun, so turning your own body shows that the change comes from you spinning, not from the light going anywhere.",
+            "scaffoldStarter": "I turn toward the lamp: ____. I turn away from the lamp: ____.",
+            "scaffoldSteps": [
+              "Pick something bright to be the Sun.",
+              "Turn your body all the way around one time.",
+              "Say 'day' and 'night' at the right moments."
+            ],
+            "coachPrompts": [
+              "In your turn, what moved: you or the lamp?"
+            ],
+            "studentPrompt": "Make your own turning motion for day and night.",
+            "reasoningPrompt": "How does turning your body help you remember why the sky changes?",
+            "hookFact": {
+              "text": "The Sun does not really walk across the sky. You are the one who is moving.",
+              "sourceTitle": "Day Sky, Night Sky (this lesson)"
+            }
+          },
+          {
+            "id": "sk-ma-moon",
+            "target": "The Moon shines with light it borrows from the Sun",
+            "essentialFacts": [
+              "The Moon does not make its own light.",
+              "Light from the Sun lands on the Moon and bounces to your eyes.",
+              "The Moon can sometimes be seen in the daytime."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a mirror on a wall. The mirror is not a lamp, but it can still fill a room with light because the light bounces off it. The Moon is the mirror and the Sun is the lamp.",
+            "mapping": "A mirror is something every kid has watched bounce light, so it carries the one idea that matters: the Moon is bright without being a light of its own.",
+            "scaffoldStarter": "The Moon is like a ____, and the Sun is like a ____.",
+            "scaffoldSteps": [
+              "Think of something shiny that has no light inside it.",
+              "Say where its light comes from.",
+              "Say the same thing about the Moon."
+            ],
+            "coachPrompts": [
+              "If the Sun went out, what would happen to the Moon's glow?"
+            ],
+            "studentPrompt": "Make your own picture for a thing that shines with borrowed light.",
+            "reasoningPrompt": "Why is a mirror a better match for the Moon than a candle is?",
+            "hookFact": {
+              "text": "You can see the Moon in the daytime too. Look for a pale white curve up in the blue.",
+              "sourceTitle": "Day Sky, Night Sky (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sk-sort",
+      "type": "concept-sort",
+      "title": "True or Not True?",
+      "timestamp": "2026-09-05T21:10:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "sk-true",
+            "label": "TRUE",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "sk-false",
+            "label": "NOT TRUE",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "sk1",
+            "content": "Earth spins all the way around once each day",
+            "categoryId": "sk-true"
+          },
+          {
+            "id": "sk2",
+            "content": "The Sun walks across the sky and then goes home",
+            "categoryId": "sk-false"
+          },
+          {
+            "id": "sk3",
+            "content": "The stars are still up there in the daytime",
+            "categoryId": "sk-true"
+          },
+          {
+            "id": "sk4",
+            "content": "The Moon makes its own light",
+            "categoryId": "sk-false"
+          },
+          {
+            "id": "sk5",
+            "content": "The Sun is a star",
+            "categoryId": "sk-true"
+          },
+          {
+            "id": "sk6",
+            "content": "The Moon can never be seen in the daytime",
+            "categoryId": "sk-false"
+          },
+          {
+            "id": "sk7",
+            "content": "Sunrise happens as Earth turns you toward the Sun",
+            "categoryId": "sk-true"
+          },
+          {
+            "id": "sk8",
+            "content": "The stars fall down every morning",
+            "categoryId": "sk-false"
+          }
+        ]
+      },
+      "meta": "2 piles • 8 cards • four of them are the guesses kids usually make"
+    },
+    {
+      "id": "sk-quiz",
+      "type": "quiz",
+      "title": "Sky Check",
+      "timestamp": "2026-09-05T21:10:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What makes day turn into night?",
+            "options": [
+              "The Sun flies away to another sky",
+              "Earth spins, and your side turns away",
+              "Clouds cover the Sun until morning",
+              "The Sun turns off its light at bedtime"
+            ],
+            "correctAnswer": "Earth spins, and your side turns away",
+            "conceptLabel": "earth spins"
+          },
+          {
+            "type": "mcq",
+            "question": "The Sun is really a ______.",
+            "options": [
+              "cloud that glows in the daytime",
+              "very big fire we lit long ago",
+              "star that is close to us",
+              "hole in the sky letting light in"
+            ],
+            "correctAnswer": "star that is close to us",
+            "conceptLabel": "the sun is a star"
+          },
+          {
+            "type": "mcq",
+            "question": "Where are the stars in the middle of the day?",
+            "options": [
+              "Still in the sky, hidden by the bright blue",
+              "Gone away until the sky gets dark again",
+              "Sleeping behind the Moon until night",
+              "Falling down to the ground each morning"
+            ],
+            "correctAnswer": "Still in the sky, hidden by the bright blue",
+            "conceptLabel": "stars in daylight"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the Moon glow?",
+            "options": [
+              "It is a small hot star of its own",
+              "It burns a fire deep inside itself",
+              "It catches light from the streets below",
+              "Sunlight lands on it and bounces to us"
+            ],
+            "correctAnswer": "Sunlight lands on it and bounces to us",
+            "conceptLabel": "the moon borrows light"
+          },
+          {
+            "type": "mcq",
+            "question": "You see a pale white Moon in a blue afternoon sky. What is going on?",
+            "options": [
+              "Something is wrong; the Moon has lost its way",
+              "That can happen; the Moon is up in the daytime too",
+              "It must be a cloud, because the Moon comes only at night",
+              "The sky is getting ready to turn dark much too early"
+            ],
+            "correctAnswer": "That can happen; the Moon is up in the daytime too",
+            "conceptLabel": "the moon borrows light"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Tell what Earth does to make day and night.",
+            "expectedAnswer": "Earth spins all the way around one time each day. When your side faces the Sun it is day, and when your side turns away it is night.",
+            "conceptLabel": "earth spins"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says the stars go away every morning. What would you tell them?",
+            "expectedAnswer": "The stars do not go away. They are still up in the sky, but the daytime sky is so bright that it hides them until it gets dark again.",
+            "conceptLabel": "stars in daylight"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one thing you saw in the sky this week?"
+          },
+          {
+            "text": "What do you still wonder about the Sun, the Moon, or the stars?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • read-aloud friendly"
+    },
+    {
+      "id": "sk-faq",
+      "type": "faq",
+      "title": "Sky Questions Kids Ask",
+      "timestamp": "2026-09-05T21:10:07.000Z",
+      "data": [
+        {
+          "question": "Can I feel Earth spinning? 🌍",
+          "answer": "No, and that is the strange part. Everything near you is turning at the same speed you are — the ground, the air, the trees, your chair. Nothing is being left behind, so there is nothing to feel."
+        },
+        {
+          "question": "Is the Sun bigger than the other stars? ☀️",
+          "answer": "Not really. Many stars are much bigger than the Sun. The Sun only looks huge because it is so much closer to us. Hold a coin near your eye and it can block a whole building."
+        },
+        {
+          "question": "Why is the sky blue in the daytime? 💙",
+          "answer": "Sunlight is made of many colors mixed together. When it comes through the air, the blue part gets bounced all over the sky. So you see blue coming at you from every direction."
+        },
+        {
+          "question": "Does the Moon change shape? 🌙",
+          "answer": "The Moon stays the same round rock. What changes is how much of its sunny side you can see from Earth. That is why it looks like a curve some nights and a full circle on others."
+        },
+        {
+          "question": "Why can I sometimes see the Moon at lunchtime?",
+          "answer": "Because the Moon is simply up in the sky then. It is bright enough to show through the blue if you look carefully. Try it on a clear afternoon and see if you can spot it."
+        },
+        {
+          "question": "Is it night everywhere at the same time?",
+          "answer": "No. While it is night where you are, your side of Earth is facing away from the Sun and the other side is having its day. Someone far away is eating lunch while you are asleep."
+        }
+      ],
+      "meta": "6 questions • honest answers to the ones they really ask"
+    },
+    {
+      "id": "sk-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Shadow Watch",
+      "timestamp": "2026-09-05T21:10:08.000Z",
+      "meta": "1st Grade • Investigation brief • one chalk mark, three times",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Shadow Watch",
+        "instructions": "Stand in the same spot three times in one day and trace your shadow with chalk. Guess first what will happen, then find out.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The lesson says Earth turns, but a first grader cannot feel it. A shadow that moves and changes size across one day is the evidence they can see with their own eyes, which is exactly what the standard asks for: observe a pattern that can be predicted.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has sidewalk chalk, a sunny paved spot outside, and three times in the day when you can go out: morning, the middle of the day, and late afternoon.",
+          "role": "Shadow watchers",
+          "audience": "The kindergarten class, who will come outside to look at your chalk marks",
+          "drivingQuestion": "If you stand in the very same spot three times in one day, will your shadow stay in the same place and stay the same size?",
+          "seedDirection": "Stand on the same X every single time. If you move your feet, you will not know whether the shadow moved or you did.",
+          "lockedLessonFacts": [
+            "Earth makes one full spin every day.",
+            "Earth turns you toward the Sun at sunrise and away from it at sunset.",
+            "The Sun is not the thing that moves across the sky.",
+            "Day and night come in the same order every time, which makes a pattern."
+          ],
+          "openQuestions": [
+            "Will your shadow be longer in the morning or in the middle of the day?",
+            "Which way will your shadow point when you come back out?",
+            "How will you make sure you stand in exactly the same place each time?"
+          ],
+          "stakeholders": [
+            "The kindergarten class who will visit your marks",
+            "Your partner who traces while you stand still",
+            "The teacher who takes you outside on time"
+          ],
+          "criteria": [
+            "Your feet are on the same chalk X all three times",
+            "A guess is drawn or said out loud before the first tracing",
+            "Each shadow is traced and labeled with the time of day",
+            "You use the word pattern or the word spin when you explain what happened"
+          ],
+          "constraints": [
+            "One sunny day",
+            "Three trips outside",
+            "Nobody looks straight at the Sun"
+          ],
+          "deliverable": "A chalk drawing on the ground with three traced shadows and the time on each one, plus one sentence you tell the visiting class: what changed, and why it changed.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student wanted to know if a flagpole's shadow moved.",
+            "move": "He put a rock at the tip of the flagpole shadow before school and a second rock at the tip after lunch, then walked the distance between the two rocks and counted eleven steps.",
+            "whyItHelps": "He left the flagpole alone and marked only the shadow, so the eleven steps could not be anything except the shadow moving."
+          },
+          "frameStarter": "In the morning my shadow was ____. Later it was ____. It changed because Earth ____.",
+          "frameChoices": [
+            "long and pointing one way",
+            "short and close to my feet",
+            "pointing the other way now",
+            "about the same as before"
+          ],
+          "coachPrompts": [
+            "Did you stand on the same X every time?",
+            "What did your shadow do that surprised you?",
+            "Was the Sun moving, or were you?"
+          ]
+        },
+        "coachHint": "Same spot. Three times. Chalk it every time.",
+        "sourceExcerpt": "So the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at sunrise. Later it turns you away at sunset.",
+        "lessonRef": {
+          "resourceId": "sk-reading",
+          "title": "Day Sky, Night Sky"
+        }
+      }
+    }
+  ]
+}

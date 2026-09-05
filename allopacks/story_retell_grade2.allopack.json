@@ -1,0 +1,561 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Tell It Back — Beginning, Middle, and End",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "2nd Grade",
+    "standards": "CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LITERACY.RL.2.2 (recount stories and determine their central message); CCSS.ELA-LITERACY.SL.2.4 (tell a story with relevant descriptive details, speaking audibly in coherent sentences)",
+    "createdAt": "2026-09-05T21:20:00.000Z",
+    "imageShotList": "allopacks/story_retell_grade2.IMAGES.md"
+  },
+  "sourceTopic": "Story Structure and Retelling",
+  "history": [
+    {
+      "id": "st-directions",
+      "type": "directions",
+      "title": "Tell It Back",
+      "timestamp": "2026-09-05T21:20:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nWhen someone asks what a book was about, it is easy to say \"it was good\" and get stuck. This week you learn a way to tell it back that always works.\n\n1. Read **Three Parts of Every Story**.\n2. Learn the words in **Story Words**, then win the **Crossword**.\n3. Keep the **Retell It in Three Parts** chart where you can see it.\n4. Sort the cards in **Beginning, Middle, or End?**\n5. Use the **Retelling Frames** out loud with a partner before you write anything.\n6. Take **Story Check**.\n7. Lock it in with **Remember the Three Parts**.\n8. Peek at **Story Questions Kids Ask** if something is bugging you.\n9. Finish with **Design: A Retelling Card for a Reading Buddy** — make something a younger kid can really use.\n\nYour job this week: retell one book out loud to somebody at home, in order, without skipping the middle. 📚",
+        "objectives": [
+          {
+            "id": "st-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "st-glossary"
+          },
+          {
+            "id": "st-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "st-glossary"
+          },
+          {
+            "id": "st-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "st-goal-retell",
+            "label": "I retold a book out loud at home, in order",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "2nd Grade • 4 goals • retell one book out loud"
+    },
+    {
+      "id": "st-reading",
+      "type": "simplified",
+      "title": "Three Parts of Every Story",
+      "timestamp": "2026-09-05T21:20:01.000Z",
+      "data": "## Three Parts of Every Story\n\nEvery **story** has three parts. Once you know them, you can tell any book back to somebody.\n\nThe **beginning** tells you who and where. You meet the **character**, and you find out the **setting** — the place and the time.\n\nThe **middle** is where the trouble starts. Something goes wrong. That trouble is the **problem**. The character tries to fix it, and the first try often flops.\n\nThe **end** is where the trouble gets fixed at last. That fix is the **solution**. Then things go quiet again.\n\nHere is a short one. Ada gets a new puppy. The puppy chews her shoe, then her hat, then her library book. Ada hides them all, but the puppy keeps finding them. So Ada gives the puppy a rope toy of its own. Now the puppy chews the rope, and the shoes are safe.\n\nCan you hear the three parts? The puppy arrives. The chewing goes on and on. The rope toy fixes it.\n\nNow **retell** it. Say the beginning, then the middle, then the end. Keep that **order**. If you tell the end first, nobody knows why the rope toy matters.\n\nOne more trick. Listen for the word \"but.\" Stories turn at a but. Ada loved her puppy, but it chewed her things. That little word is the door into the middle.",
+      "meta": "2nd Grade • Leveled reading • ~235 words • includes a story to point at",
+      "imageSlot": "st-img-three-parts"
+    },
+    {
+      "id": "st-glossary",
+      "type": "glossary",
+      "title": "Story Words",
+      "timestamp": "2026-09-05T21:20:02.000Z",
+      "data": [
+        {
+          "term": "Story",
+          "def": "Something that happens to somebody, told from start to finish.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Beginning",
+          "def": "The first part, where you meet who it is about and find out where they are.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Middle",
+          "def": "The part where trouble shows up and somebody tries to fix it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "End",
+          "def": "The last part, where the trouble is settled and things go quiet.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Character",
+          "def": "A person or an animal that things happen to in a book.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Setting",
+          "def": "Where and when it all takes place.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Problem",
+          "def": "The trouble that gets in the way and needs fixing.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Solution",
+          "def": "The way the trouble finally gets fixed.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Retell",
+          "def": "To say what happened in your own words, in the right order.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Order",
+          "def": "The way things come one after another, from first to last.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all fit the crossword grid"
+    },
+    {
+      "id": "st-anchor",
+      "type": "anchor-chart",
+      "title": "Retell It in Three Parts",
+      "timestamp": "2026-09-05T21:20:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "TELL IT BACK IN ORDER",
+        "sections": [
+          {
+            "label": "BEGINNING",
+            "bullets": [
+              "Who is it about?",
+              "Where and when?",
+              "Say this part first"
+            ],
+            "iconPrompt": "an open book at the first page with a small figure standing on it"
+          },
+          {
+            "label": "MIDDLE",
+            "bullets": [
+              "What goes wrong?",
+              "What do they try?",
+              "Listen for the word but"
+            ],
+            "iconPrompt": "a winding path with a rock in the way"
+          },
+          {
+            "label": "END",
+            "bullets": [
+              "How is it fixed?",
+              "How do things settle?",
+              "Say this part last"
+            ],
+            "iconPrompt": "the same path, clear now, leading to a small house"
+          },
+          {
+            "label": "WORDS THAT KEEP YOU IN ORDER",
+            "bullets": [
+              "First… / At the start…",
+              "Then… / But then…",
+              "At the end… / So finally…"
+            ],
+            "iconPrompt": "three numbered stepping stones in a row"
+          }
+        ]
+      },
+      "meta": "3 parts + transition words • for the wall"
+    },
+    {
+      "id": "st-memory",
+      "type": "memory-aid",
+      "title": "Remember the Three Parts",
+      "timestamp": "2026-09-05T21:20:04.000Z",
+      "meta": "2nd Grade • 2 memory aids • the three parts, and where the middle starts",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Three Parts",
+        "instructions": "Two cards hold what you need for any book. Look at the example, then make one of your own and say how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The beginning tells you who and where. The middle is where the trouble starts. The end is where the trouble gets fixed at last. One more trick. Listen for the word \"but.\" Stories turn at a but.",
+        "lessonRef": {
+          "resourceId": "st-reading",
+          "title": "Three Parts of Every Story"
+        },
+        "cards": [
+          {
+            "id": "st-ma-three",
+            "target": "The three parts of a story, and the order they go in",
+            "essentialFacts": [
+              "The beginning tells you who the character is and what the setting is.",
+              "The middle is where the problem shows up and gets tried at.",
+              "The end is where the solution fixes the problem and things go quiet.",
+              "Telling the end first makes the rest stop making sense."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Three fingers. Thumb up: WHO and WHERE. Pointer up: WHAT WENT WRONG. Middle finger up: HOW IT GOT FIXED. Count them on your hand while you retell, and you cannot skip the middle.",
+            "mapping": "Your fingers go up in a fixed order that you cannot shuffle, so the hand itself keeps the parts from coming out backwards.",
+            "scaffoldStarter": "One: ____. Two: ____. Three: ____.",
+            "scaffoldSteps": [
+              "Name the three parts in order.",
+              "Give each one a finger and a short question.",
+              "Retell a book while counting on your hand."
+            ],
+            "coachPrompts": [
+              "Which finger do people forget when they retell too fast?"
+            ],
+            "studentPrompt": "Make your own three-step motion for the three parts.",
+            "reasoningPrompt": "Why does your motion make it hard to skip the middle?",
+            "hookFact": {
+              "text": "If you tell the end first, nobody knows why the rope toy matters.",
+              "sourceTitle": "Three Parts of Every Story (this lesson)"
+            }
+          },
+          {
+            "id": "st-ma-but",
+            "target": "The word but is the door into the middle of a story",
+            "essentialFacts": [
+              "Stories turn at the word but.",
+              "Ada loved her puppy, but it chewed her things.",
+              "The turn is where the problem begins."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "BUT is a door. Say the sentence and stop right at the word but, then push the door open: everything after it is the trouble. Ada loved her puppy | BUT | it chewed her things.",
+            "mapping": "A door is a spot where one room ends and another begins, which is exactly what the word but does between the calm beginning and the messy middle.",
+            "scaffoldStarter": "____ was going fine, but ____.",
+            "scaffoldSteps": [
+              "Find a but in the book you are reading.",
+              "Say what was fine before it.",
+              "Say what went wrong after it."
+            ],
+            "coachPrompts": [
+              "What other words can open the same door? Try 'until' and 'then one day'."
+            ],
+            "studentPrompt": "Make your own picture for the word that turns a story.",
+            "reasoningPrompt": "How does hunting for a but help you find the problem faster?",
+            "hookFact": {
+              "text": "Ada hides them all, but the puppy keeps finding them.",
+              "sourceTitle": "Three Parts of Every Story (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "st-sort",
+      "type": "concept-sort",
+      "title": "Beginning, Middle, or End?",
+      "timestamp": "2026-09-05T21:20:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "st-beg",
+            "label": "BEGINNING",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "st-mid",
+            "label": "MIDDLE",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "st-end",
+            "label": "END",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "sc1",
+            "content": "Sam gets a bike for his birthday",
+            "categoryId": "st-beg"
+          },
+          {
+            "id": "sc2",
+            "content": "You meet Sam in his driveway on a summer morning",
+            "categoryId": "st-beg"
+          },
+          {
+            "id": "sc3",
+            "content": "The front wheel wobbles and Sam falls in the grass",
+            "categoryId": "st-mid"
+          },
+          {
+            "id": "sc4",
+            "content": "Sam tries to push the wheel straight with his hands",
+            "categoryId": "st-mid"
+          },
+          {
+            "id": "sc5",
+            "content": "It wobbles again on the very next ride",
+            "categoryId": "st-mid"
+          },
+          {
+            "id": "sc6",
+            "content": "Sam's aunt shows him how to tighten the bolt",
+            "categoryId": "st-end"
+          },
+          {
+            "id": "sc7",
+            "content": "Sam rides all the way to the park with no wobble",
+            "categoryId": "st-end"
+          },
+          {
+            "id": "sc8",
+            "content": "Sam puts the wrench away and says thank you",
+            "categoryId": "st-end"
+          }
+        ]
+      },
+      "meta": "3 buckets • 8 cards • a different story than the reading, on purpose"
+    },
+    {
+      "id": "st-quiz",
+      "type": "quiz",
+      "title": "Story Check",
+      "timestamp": "2026-09-05T21:20:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which part tells you who the character is and where they are?",
+            "options": [
+              "The middle, once the trouble starts",
+              "The end, after everything calms down",
+              "The beginning, before much happens",
+              "Any part; it does not really matter"
+            ],
+            "correctAnswer": "The beginning, before much happens",
+            "conceptLabel": "story parts"
+          },
+          {
+            "type": "mcq",
+            "question": "In a story, the problem is ______.",
+            "options": [
+              "the trouble that gets in the way",
+              "the place where the story happens",
+              "the person the story is about",
+              "the last thing that happens"
+            ],
+            "correctAnswer": "the trouble that gets in the way",
+            "conceptLabel": "problem and solution"
+          },
+          {
+            "type": "mcq",
+            "question": "Ada gives the puppy a rope toy, and it stops chewing her shoes. That is the ______.",
+            "options": [
+              "setting of the story",
+              "problem of the story",
+              "character of the story",
+              "solution of the story"
+            ],
+            "correctAnswer": "solution of the story",
+            "conceptLabel": "problem and solution"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the order matter when you retell?",
+            "options": [
+              "It sounds nicer when you go fastest at the end",
+              "The end stops making sense if it comes first",
+              "Teachers just like it to be done that way",
+              "It makes the story much shorter to tell"
+            ],
+            "correctAnswer": "The end stops making sense if it comes first",
+            "conceptLabel": "retelling in order"
+          },
+          {
+            "type": "mcq",
+            "question": "Where in a sentence is a story most likely to turn?",
+            "options": [
+              "Right at the very first sentence you read",
+              "Right after the last sentence has ended",
+              "Right at a word like but, where things change",
+              "Right where the pictures stop appearing"
+            ],
+            "correctAnswer": "Right at a word like but, where things change",
+            "conceptLabel": "story parts"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Retell the puppy story in three sentences: one for the beginning, one for the middle, one for the end.",
+            "expectedAnswer": "At the start, Ada gets a new puppy. Then the puppy chews her shoe, her hat, and her library book, and hiding them does not work. At the end, Ada gives the puppy a rope toy of its own, so the puppy chews that instead.",
+            "conceptLabel": "retelling in order"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Think of a book you have read. What was the problem, and how was it solved?",
+            "expectedAnswer": "Answers vary. A full answer names one trouble that got in the character's way, then names the thing that finally fixed it, and the two match each other.",
+            "conceptLabel": "problem and solution"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which part is hardest for you to remember when you tell a book back?"
+          },
+          {
+            "text": "Tell about a time something went wrong for you and then got fixed. What was the middle?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • one card story is retold from memory"
+    },
+    {
+      "id": "st-frames",
+      "type": "sentence-frames",
+      "title": "Retelling Frames",
+      "timestamp": "2026-09-05T21:20:07.000Z",
+      "meta": "6 frames • say them out loud first • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "At the start, ____ was ____."
+          },
+          {
+            "text": "The story takes place in ____."
+          },
+          {
+            "text": "But then ____ happened, and that was the problem."
+          },
+          {
+            "text": "____ tried ____, but it did not work because ____."
+          },
+          {
+            "text": "At the end, ____ fixed it by ____."
+          },
+          {
+            "text": "The part I would tell a friend about is ____, because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Storyteller |\n|---|---|---|---|\n| Order | Parts come out jumbled | Beginning and end are in order | All three parts in order, no backing up |\n| The middle | Skipped or one word | Names the problem | Names the problem and at least one try that did not work |\n| Your own words | Copies whole sentences from the book | Mostly own words | All own words, and still true to the book |"
+    }
+    },
+    {
+      "id": "st-faq",
+      "type": "faq",
+      "title": "Story Questions Kids Ask",
+      "timestamp": "2026-09-05T21:20:08.000Z",
+      "data": [
+        {
+          "question": "What if a book has more than one problem? 🤔",
+          "answer": "Lots of good books do. Pick the biggest one, the trouble the whole book is really about, and retell that. You can mention a smaller one after, if there is time."
+        },
+        {
+          "question": "Is retelling the same as reading it out loud? 📖",
+          "answer": "No. Reading out loud uses the author's words. Retelling uses yours. That is why it is harder, and also why your teacher can tell whether you understood it."
+        },
+        {
+          "question": "How long should a retelling be?",
+          "answer": "Long enough that someone who has not read the book could follow it. Three good sentences often beat twenty rushed ones. If your listener looks confused, you skipped the middle."
+        },
+        {
+          "question": "What if I forget the middle? 😬",
+          "answer": "Go back and look for the word but, or for the moment things went wrong. That is almost always where the middle starts. Then ask yourself what the character tried."
+        },
+        {
+          "question": "Do true stories have three parts too?",
+          "answer": "Usually, yes. A story about your own day can have a beginning, something that went wrong, and how it worked out. That is why the three parts help you tell about real things too."
+        },
+        {
+          "question": "Can I tell the ending first if it is exciting?",
+          "answer": "You can, and grown-up writers sometimes do it on purpose. But it is a hard trick. Learn to tell it in order first, and save the flashy way for when the plain way is easy."
+        }
+      ],
+      "meta": "6 questions • the ones that come up during retelling"
+    },
+    {
+      "id": "st-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Retelling Card for a Reading Buddy",
+      "timestamp": "2026-09-05T21:20:09.000Z",
+      "meta": "2nd Grade • Design brief • one card a first grader can hold",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Retelling Card for a Reading Buddy",
+        "instructions": "Make one small card that helps a first grader tell a book back in order. Test it on a real buddy, then fix the part that did not work.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Making a tool for someone younger forces a second grader to say the three parts in their own words and to cut anything they cannot explain, which is the standard's real ask: describe the structure of a story rather than recite a label.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your class visits the first graders on Friday. Each of you gets one index card, markers, and about fifteen minutes with a buddy who is still learning to retell.",
+          "role": "Card designers",
+          "audience": "One first grader who will hold your card while they retell a picture book",
+          "drivingQuestion": "What has to be on a card so that a first grader who cannot read many words yet can still retell a book in the right order?",
+          "seedDirection": "You get one card and no more. Anything you add pushes something else off, so every mark has to earn its place.",
+          "lockedLessonFacts": [
+            "The beginning tells who the character is and what the setting is.",
+            "The middle is where the problem shows up.",
+            "The end is where the solution fixes the problem.",
+            "Told out of order, the end stops making sense."
+          ],
+          "openQuestions": [
+            "How do you show the three parts without using many words?",
+            "Which question should go with each part?",
+            "Does your buddy hold it, or do you?"
+          ],
+          "stakeholders": [
+            "Your first-grade buddy",
+            "The first-grade teacher who will keep the cards",
+            "Your partner, who will test the card with you"
+          ],
+          "criteria": [
+            "The three parts are on the card in the right order",
+            "A first grader can use it with very few words to read",
+            "It uses at least three words from Story Words",
+            "You tried it with a real buddy and changed one thing afterwards"
+          ],
+          "constraints": [
+            "One index card only",
+            "Fifteen minutes with your buddy",
+            "It has to survive being held by a six-year-old"
+          ],
+          "deliverable": "The finished card, plus one sentence you say to the class: what your buddy got stuck on, and the one thing you changed because of it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student made a card with three big boxes and no words at all.",
+            "move": "She drew a door in the first box, a rock in the path in the second, and an open gate in the third, then pointed at each box in turn while her buddy talked. Her buddy stopped skipping the middle.",
+            "whyItHelps": "The pictures did the ordering, so the buddy's whole attention went to remembering the story instead of decoding the card."
+          },
+          "frameStarter": "My card shows ____, ____, and ____. My buddy got stuck at ____, so I changed ____.",
+          "frameChoices": [
+            "Three boxes across the card",
+            "Three boxes down the card",
+            "One picture for each part",
+            "One question for each part"
+          ],
+          "coachPrompts": [
+            "Can your buddy use it without you reading it to them?",
+            "Which part did your buddy skip?",
+            "What did you take off the card to make room?"
+          ]
+        },
+        "coachHint": "One card. Three parts. Test it on a real kid.",
+        "sourceExcerpt": "Now retell it. Say the beginning, then the middle, then the end. Keep that order. If you tell the end first, nobody knows why the rope toy matters.",
+        "lessonRef": {
+          "resourceId": "st-reading",
+          "title": "Three Parts of Every Story"
+        }
+      }
+    }
+  ]
+}

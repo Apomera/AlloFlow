@@ -71,7 +71,11 @@ for (const f of files) {
     if (fk.grade > band.hi + 2) flags.push(`reading FK ${fk.grade} above grade band ${band.lo}-${band.hi}`);
     if (fk.grade < band.lo - 2.5) flags.push(`reading FK ${fk.grade} well below grade band ${band.lo}-${band.hi}`);
   }
-  if (fk && (fk.words < 300 || fk.words > 600)) flags.push(`reading ${fk.words} words (target 350-550)`);
+  // A primary reading is SHORT on purpose: a grade-1 sitting is a page, not an essay.
+  // Holding K-2 to the same 350-550 target would push authors into text no six-year-old finishes.
+  const lo = band && band.hi <= 2 ? 140 : 300;
+  const hi = band && band.hi <= 2 ? 280 : 600;
+  if (fk && (fk.words < lo || fk.words > hi)) flags.push(`reading ${fk.words} words (target ${lo + 40}-${hi - 50})`);
 
   // Glossary terms bolded on first use in the reading.
   let bolded = 0, missing = [];
