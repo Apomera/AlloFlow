@@ -18,13 +18,20 @@
       "title": "Design a Government That Cannot Be Trusted",
       "timestamp": "2026-07-21T04:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nThe framers had a strange design problem: build a government strong enough to work, but assume the people running it will eventually be selfish, ambitious, or wrong. Everything in the Constitution follows from that assumption.\n\n1. Read **Rules for the Rule-Makers** — look for the phrase \"what if the wrong person wins?\"\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Use the **Three Branches** chart as your map while you work.\n4. Walk the **Road to Ratification** timeline — the arguments are still being had today.\n5. Sort the powers in **Who Can Do That?**\n6. Take the quiz — it asks you to reason like a framer, not recite.\n7. Take a position in the **Sentence Frames**. Disagreeing with the framers is allowed if you can argue it.\n8. Lock the ideas in with **Remember the Machine** — study the example aid, then make one your own.\n9. Finish with **Proposal: Rules for Our Own Rule-Makers** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig question to hold the whole time: is a slow government a broken one, or a safe one? ⚖️",
+        "body": "**Due:** (your teacher will tell you)\n\nThe framers had a strange design problem: build a government strong enough to work, but assume the people running it will eventually be selfish, ambitious, or wrong. Everything in the Constitution follows from that assumption.\n\n1. Read **Rules for the Rule-Makers** — look for the phrase \"what if the wrong person wins?\"\n2. Learn the terms in the **Glossary**, then win the **Crossword** and the **Matching** game.\n3. Use the **Three Branches** chart as your map while you work.\n4. Walk the **Road to Ratification** timeline — the arguments are still being had today.\n5. Sort the powers in **Who Can Do That?**\n6. Take the quiz — it asks you to reason like a framer, not recite.\n7. Take a position in the **Sentence Frames**. Disagreeing with the framers is allowed if you can argue it.\n8. Lock the ideas in with **Remember the Machine** — study the example aid, then make one your own.\n9. Finish with **Proposal: Rules for Our Own Rule-Makers** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig question to hold the whole time: is a slow government a broken one, or a safe one? ⚖️",
         "objectives": [
           {
             "id": "ct-goal-crossword",
             "label": "Win the Crossword",
             "kind": "game",
             "gameType": "crossword",
+            "resourceRef": "ct-glossary"
+          },
+          {
+            "id": "ct-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
             "resourceRef": "ct-glossary"
           },
           {

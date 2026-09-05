@@ -65,7 +65,9 @@ describe('illustrated water cycle accessibility and portability',()=>{
    expect(html).toContain('alt="'+glossary[0].imageAlt+'"');
    expect(html).not.toContain('role="presentation"');
   }
- });
+ // Babel-transforms three JSX tags and server-renders each one. That is well over
+ // vitest's 5s default on this OneDrive tree, where it failed intermittently.
+ }, 30000);
  it('preserves images and alt text through JSON serialization',()=>{
   const restored=JSON.parse(JSON.stringify(pack));
   expect(restored.history).toEqual(pack.history);

@@ -44,6 +44,23 @@ Each has an `.IMAGES.md` shot list written to the text-free policy from the Wate
 
 `catalog/index.json` is unchanged. The 24 text-only packs are ready for the seed plan's manual smoke checks (2-7). `node dev-tools/build_allopack_catalog_entries.cjs` prints the manifest entries for every pack not yet listed, and only `--apply` writes them; because raw main is the live catalog and other sessions deploy from this tree, adding entries is a publication act that should be a deliberate decision.
 
+## Second pass (same day): closing every remaining audit flag
+
+The first pass left eight heuristic flags open. All are now closed, and `dev-tools/audit_allopacks.cjs` reports zero flags across all 24 packs.
+
+- **Four circular glossary definitions rewritten.** "Orbit" was defined with "orbits", "Magnet" with "magnetic", "Energy" with "energy", and "Quotation" with "quotation marks". A student who does not know the word learned nothing from those. Each replacement is checked against the term's own stem so it cannot regress.
+- **Retention pairing added to two quizzes.** American Revolution and Linear Equations gave every item a unique `conceptLabel`, so no concept was ever tested twice and retention tracking had nothing to pair. Three labels were merged onto existing concepts: the Intolerable Acts item now shares "escalation pattern", and computing slope and modelling a drain now share the labels of the items that introduce those ideas.
+- **Every glossary term is now introduced in its own reading.** Central Idea (5 terms), Linear Equations (6), Proportional Relationships (5) and Fractions (4) each had vocabulary that appeared in the glossary and games but never in the text. Thirteen edits weave them in, bolded on first use. Fractions also rose from 278 to 382 words, clearing the 350-word floor, and Linear Equations from 444 to 509, which also lifted its reading level closer to its grade band.
+
+### New check: do the promised games actually work?
+
+The shape suite verifies a game objective points at a glossary; it never asked whether that glossary is *playable*. The audit now mirrors the real eligibility rules from `games_source.jsx`: the crossword grid takes 3 to 15 cells, the scramble needs more than two characters and at least two distinct ones, and both strip spaces so multi-word terms fold together. Answer checking folds the same way, so a student typing "unit rate" still matches.
+
+That surfaced one genuine gap. The Constitution pack offered only a crossword, and "Unconstitutional" is 16 letters, so the grid silently dropped the pack's central civics term and no game ever drilled it. Rather than shorten the vocabulary word for a grid's sake, the pack gained a matching objective, which has no length rule. The check now flags only terms that *no* game can reach, and it was calibrated against a deliberately broken copy to confirm it is not blind.
+
+### Test debt
+
+`tests/allopack_illustrated.test.js` intermittently failed on the 5-second default budget: one case Babel-transforms three JSX tags and server-renders each. It now carries an explicit 30-second timeout, and both suites pass at the default budget (155 checks).
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 3 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4}.IMAGES.md`

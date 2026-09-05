@@ -37,6 +37,19 @@ function gradeBand(label) {
   return { lo: Math.min(...a), hi: Math.max(...a) };
 }
 
+
+// ── GAME PLAYABILITY ──────────────────────────────────────────────────────
+// A pack's directions can promise a word game, but the game only sees glossary
+// terms it can actually lay out. Rules mirrored from games_source.jsx:
+//   gameWordLetters  strips all but letters/marks/numbers (spaces + hyphens vanish)
+//   crossword        3 <= cells <= CROSSWORD_MAX_CELLS (15) for latin script
+//   wordScramble     cells > 2 AND at least two distinct characters
+// matching / memory / bingo pair term with definition and have no length rule.
+const CROSSWORD_MAX_CELLS = 15;
+const gameLetters = (s) => String(s == null ? '' : s).normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+const crosswordOk = (t) => { const c = Array.from(gameLetters(t)); return c.length >= 3 && c.length <= CROSSWORD_MAX_CELLS; };
+const scrambleOk = (t) => { const c = Array.from(gameLetters(t)); return c.length > 2 && new Set(c.map((x) => x.toLocaleLowerCase())).size > 1; };
+
 const rows = [];
 for (const f of files) {
   const pack = read(path.join(dir, f));
@@ -117,6 +130,26 @@ for (const f of files) {
     const body = String(directions.data.body || '');
     const named = items.filter((r) => r.type !== 'directions' && body.includes(r.title.split(/[—:]/)[0].trim())).length;
     if (named < Math.floor((items.length - 1) / 2)) flags.push(`directions body names ${named}/${items.length - 1} resources`);
+  }
+  // Games the directions promise must have enough eligible terms to be worth playing.
+  if (directions && directions.data && Array.isArray(directions.data.objectives)) {
+    const practised = new Set(), everSkipped = [];
+    for (const o of directions.data.objectives.filter((x) => x.kind === 'game')) {
+      const ref = o.resourceRef ? items.find((r) => r.id === o.resourceRef) : glossary;
+      const terms = (ref && Array.isArray(ref.data)) ? ref.data.map((g) => g.term) : [];
+      let skipped = [];
+      if (o.gameType === 'crossword') skipped = terms.filter((t) => !crosswordOk(t));
+      else if (o.gameType === 'wordScramble') skipped = terms.filter((t) => !scrambleOk(t));
+      const eligible = terms.length - skipped.length;
+      if (eligible === 0) flags.push(`${o.gameType} objective has NO playable terms`);
+      else if (eligible < 6) flags.push(`${o.gameType} objective has only ${eligible} playable terms`);
+      for (const t of terms) if (!skipped.includes(t)) practised.add(t);
+      everSkipped.push(...skipped.map((t) => `${t} (${o.gameType})`));
+    }
+    // A term the grid cannot fit is fine as long as SOME game still drills it;
+    // a term no game can reach is vocabulary the student never practises.
+    const stranded = [...new Set(everSkipped.map((s) => s.replace(/ \(.*\)$/, '')))].filter((t) => !practised.has(t));
+    if (stranded.length) flags.push(`no game can practise: ${stranded.join(', ')} (too long or too short for every game the pack offers)`);
   }
   if (faq && faq.data.length < 4) flags.push(`faq has ${faq.data.length} questions`);
   if (frames && frames.data.items.length < 4) flags.push(`sentence-frames has ${frames.data.items.length} frames`);

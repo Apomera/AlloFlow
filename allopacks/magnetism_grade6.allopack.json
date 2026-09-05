@@ -66,7 +66,7 @@
       "data": [
         {
           "term": "Magnet",
-          "def": "An object that attracts iron and produces a magnetic field.",
+          "def": "An object that pulls on iron, nickel, and cobalt, and always has a north and a south pole.",
           "tier": "Domain-Specific"
         },
         {
