@@ -1468,7 +1468,7 @@ const d = labToolData.artStudio || {};
             var mode = d[opts.stateKey] === activeValue ? 'draw' : 'scroll';
             return React.createElement("div", { className: "mb-2 rounded-xl border border-slate-300 bg-white/95 p-2" },
               React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": opts.groupLabel },
-                React.createElement("span", { className: "mr-1 text-[11px] font-black text-slate-700" }, "Finger input:"),
+                React.createElement("span", { className: "mr-1 text-[0.6875rem] font-black text-slate-700" }, "Finger input:"),
                 React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
                 React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
               ),
@@ -1499,7 +1499,7 @@ const d = labToolData.artStudio || {};
               { suffix: 'Lit', id: 'lightness', label: 'Lightness', max: 100, value: color.l, valueText: color.l + ' percent' }
             ];
             return React.createElement("fieldset", { className: "mt-3 rounded-xl border border-slate-300 bg-white/90 p-3" },
-              React.createElement("legend", { className: "px-1 text-[11px] font-black text-slate-700" }, opts.label || 'Artwork color'),
+              React.createElement("legend", { className: "px-1 text-[0.6875rem] font-black text-slate-700" }, opts.label || 'Artwork color'),
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", {
                   role: "img",
@@ -1507,12 +1507,12 @@ const d = labToolData.artStudio || {};
                   className: "block h-10 w-10 shrink-0 rounded-lg border-2 border-white shadow ring-1 ring-slate-400",
                   style: { background: 'hsl(' + color.h + ',' + color.s + '%,' + color.l + '%)' }
                 }),
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'HSL(' + color.h + ', ' + color.s + '%, ' + color.l + '%)')
+                React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'HSL(' + color.h + ', ' + color.s + '%, ' + color.l + '%)')
               ),
               React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-3" },
                 controls.map(function (control) {
                   var inputId = 'artstudio-' + opts.prefix + '-' + control.id;
-                  return React.createElement("label", { key: control.id, htmlFor: inputId, className: "block text-[10px] font-bold text-slate-700" },
+                  return React.createElement("label", { key: control.id, htmlFor: inputId, className: "block text-[0.625rem] font-bold text-slate-700" },
                     control.label + ': ' + control.value,
                     React.createElement("input", {
                       id: inputId,
@@ -1532,7 +1532,7 @@ const d = labToolData.artStudio || {};
                 })
               ),
               studioThreadPalette.length > 0 && React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-2" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Use a Thread Kit color"),
+                React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, "Use a Thread Kit color"),
                 React.createElement("div", { className: "mt-2 flex flex-wrap gap-2", role: "group", 'aria-label': "Choose a Thread Kit color for " + (opts.label || 'this artwork') },
                   studioThreadPalette.map(function (threadColor, index) {
                     return React.createElement("button", {
@@ -1546,7 +1546,7 @@ const d = labToolData.artStudio || {};
                   })
                 )
               ),
-              opts.note && React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed text-slate-600" }, opts.note)
+              opts.note && React.createElement("p", { className: "mt-2 text-[0.625rem] leading-relaxed text-slate-600" }, opts.note)
             );
           };
           const focusArtStudioTarget = function (targetId) {
@@ -5611,15 +5611,15 @@ const d = labToolData.artStudio || {};
                 className: "rounded-xl border border-violet-200 bg-white p-2.5"
               },
                 React.createElement("div", { className: "flex items-start gap-2" },
-                  React.createElement("span", { className: "mt-0.5 grid h-7 min-w-[28px] place-items-center rounded-full bg-violet-100 px-1 text-[10px] font-black text-violet-800", 'aria-hidden': "true" }, depth === 0 ? "\u25CF" : depth),
+                  React.createElement("span", { className: "mt-0.5 grid h-7 min-w-[28px] place-items-center rounded-full bg-violet-100 px-1 text-[0.625rem] font-black text-violet-800", 'aria-hidden': "true" }, depth === 0 ? "\u25CF" : depth),
                   React.createElement("div", { className: "min-w-0 flex-1" },
                     React.createElement("p", { className: "text-xs font-black text-slate-900" }, relationship),
-                    React.createElement("p", { className: "mt-0.5 text-[10px] leading-relaxed text-slate-600" }, describeVariationDifference(snapshot, parent))
+                    React.createElement("p", { className: "mt-0.5 text-[0.625rem] leading-relaxed text-slate-600" }, describeVariationDifference(snapshot, parent))
                   ),
                   parent && React.createElement("button", {
                     type: "button",
                     onClick: function () { setStudioCompareIds([parent.id, snapshot.id]); },
-                    className: "min-h-[36px] shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-2 text-[10px] font-black text-indigo-800",
+                    className: "min-h-[36px] shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-2 text-[0.625rem] font-black text-indigo-800",
                     'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_compare_parent", "Compare {title} with parent {parent}"), { title: artStudioStudyDisplayTitle(snapshot), parent: artStudioStudyDisplayTitle(parent) })
                   }, __alloT("stem.artstudio.process_compare_button", "Compare"))
                 ),
@@ -5635,7 +5635,7 @@ const d = labToolData.artStudio || {};
             });
             return React.createElement("details", { open: !isCompactStudio, className: "mt-4 rounded-2xl border-2 border-violet-200 bg-violet-50/70 p-3" },
               React.createElement("summary", { id: "artstudio-variation-garden-title", className: "min-h-[44px] cursor-pointer py-3 text-sm font-black text-violet-950" }, __alloT("stem.artstudio.process_lineage_title", "Variation Garden")),
-              React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-violet-900" }, __alloT("stem.artstudio.process_lineage_help", "Each indentation shows where an idea branched. Compare a variation with its parent to isolate what changed.")),
+              React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-violet-900" }, __alloT("stem.artstudio.process_lineage_help", "Each indentation shows where an idea branched. Compare a variation with its parent to isolate what changed.")),
               React.createElement("ol", {
                 'data-artstudio-variation-lineage': "true",
                 'aria-labelledby': "artstudio-variation-garden-title",
@@ -5665,7 +5665,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("div", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-2xl", 'aria-hidden': "true" }, "\uD83C\uDF9E"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-800" }, __alloT("stem.artstudio.process_shelf_title", "Process Shelf")),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-amber-800" }, __alloT("stem.artstudio.process_shelf_title", "Process Shelf")),
                   React.createElement("h3", { id: "artstudio-process-title", tabIndex: -1, className: "text-lg font-black " + (isContrast ? "text-white" : "text-slate-950") + " focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_recover_title", "Recover archived studies") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_title", "See how the idea changed") : __alloT("stem.artstudio.process_empty_title", "Save the work between decisions")),
                   React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, studioProcessScope === 'archived' ? __alloT("stem.artstudio.process_archive_help", "Archived work stays intact until you choose to restore it.") : scopedProcessStudies.length ? __alloT("stem.artstudio.process_review_help", "Compare checkpoints, fork a setup, and notice what you carried forward.") : __alloT("stem.artstudio.process_empty_help", "Save a study from any lab. A small preview and the editable setup will appear here.")),
                   React.createElement("p", {
@@ -5673,7 +5673,7 @@ const d = labToolData.artStudio || {};
                     'aria-live': "polite",
                     'aria-atomic': "true",
                     'data-artstudio-persistence': studioPersistenceStatus,
-                    className: "mt-2 inline-flex min-h-[24px] items-center rounded-full border px-2.5 py-1 text-[10px] font-black " + (studioPersistenceStatus === 'session-only'
+                    className: "mt-2 inline-flex min-h-[24px] items-center rounded-full border px-2.5 py-1 text-[0.625rem] font-black " + (studioPersistenceStatus === 'session-only'
                       ? "border-amber-300 bg-amber-100 text-amber-950"
                       : studioPersistenceStatus === 'loading'
                         ? "border-slate-200 bg-slate-50 text-slate-600"
@@ -5704,10 +5704,10 @@ const d = labToolData.artStudio || {};
                 ) : React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-3 xl:grid-cols-2", role: "group", 'aria-label': __alloT("stem.artstudio.process_scope_label", "Choose which Art Studio studies to show") },
                   processScopes.map(function (scope) {
                     var selected = studioProcessScope === scope.id;
-                    return React.createElement("button", { type: "button", key: scope.id, 'aria-pressed': selected, onClick: function () { selectStudioProcessScope(scope.id); }, className: "min-h-[42px] rounded-xl px-2 text-[11px] font-black " + (selected ? "bg-amber-800 text-white" : "bg-amber-50 text-amber-950 hover:bg-amber-100") }, formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_count", "{label} ({count})"), { label: scope.label, count: studioProcessScopeCounts[scope.id] }));
+                    return React.createElement("button", { type: "button", key: scope.id, 'aria-pressed': selected, onClick: function () { selectStudioProcessScope(scope.id); }, className: "min-h-[42px] rounded-xl px-2 text-[0.6875rem] font-black " + (selected ? "bg-amber-800 text-white" : "bg-amber-50 text-amber-950 hover:bg-amber-100") }, formatArtStudioLearningText(__alloT("stem.artstudio.process_scope_count", "{label} ({count})"), { label: scope.label, count: studioProcessScopeCounts[scope.id] }));
                   })
                 ),
-                !isCompactStudio && React.createElement("p", { className: "mt-2 px-1 text-[10px] font-semibold text-slate-600" }, studioProcessScope === 'archived'
+                !isCompactStudio && React.createElement("p", { className: "mt-2 px-1 text-[0.625rem] font-semibold text-slate-600" }, studioProcessScope === 'archived'
                   ? (visibleProcessStudies.length === 1 ? formatArtStudioLearningText(__alloT("stem.artstudio.process_archived_count_one", "Showing {count} archived study."), { count: visibleProcessStudies.length }) : formatArtStudioLearningText(__alloT("stem.artstudio.process_archived_count_many", "Showing {count} archived studies."), { count: visibleProcessStudies.length }))
                   : formatArtStudioLearningText(__alloT("stem.artstudio.process_active_count", "Showing {shown} of {total} active saved studies. Comparisons reset when you change views."), { shown: visibleProcessStudies.length, total: artStudioStudies.length }))
               ),
@@ -5718,7 +5718,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("input", { id: "artstudio-study-search", type: "search", maxLength: 200, value: studioProcessQuery, 'aria-describedby': "artstudio-study-search-help artstudio-study-results", onChange: function (event) { setStudioProcessQuery(event.target.value.slice(0, 200)); }, className: "min-h-[44px] min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-900" }),
                     studioProcessQuery && React.createElement("button", { type: "button", onClick: function () { setStudioProcessQuery(''); focusArtStudioTarget('artstudio-study-search'); }, 'aria-label': __alloT('stem.artstudio.process_search_clear', 'Clear study search'), className: "min-h-[44px] rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_search_clear_button', 'Clear'))
                   ),
-                  React.createElement("p", { id: "artstudio-study-search-help", className: "mt-1 text-[11px] text-slate-600" }, __alloT('stem.artstudio.process_search_help', 'Find titles, notes, intentions, or labs in this view.'))
+                  React.createElement("p", { id: "artstudio-study-search-help", className: "mt-1 text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.process_search_help', 'Find titles, notes, intentions, or labs in this view.'))
                 ),
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
                   React.createElement("label", { htmlFor: "artstudio-study-sort", className: "text-xs font-bold text-slate-800" }, __alloT('stem.artstudio.process_sort_label', 'Sort studies')),
@@ -5762,14 +5762,14 @@ const d = labToolData.artStudio || {};
                               React.createElement("span", { className: "px-3 text-xs font-bold text-slate-600" }, __alloT("stem.artstudio.process_preview_missing", "Visual preview unavailable — the saved setup is still here."))),
                         React.createElement("div", { className: "mt-3 flex items-start gap-2" },
                           React.createElement("div", { className: "min-w-0 flex-1" },
-                            React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-amber-800" }, Number.isInteger(study.stepIndex) ? formatArtStudioLearningText(__alloT("stem.artstudio.process_study_step", "Step {step} · {lab}"), { step: study.stepIndex + 1, lab: ART_STUDIO_TAB_LABELS[study.sourceTab] || study.sourceTab }) : (ART_STUDIO_TAB_LABELS[study.sourceTab] || 'Art Studio')),
+                            React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-amber-800" }, Number.isInteger(study.stepIndex) ? formatArtStudioLearningText(__alloT("stem.artstudio.process_study_step", "Step {step} · {lab}"), { step: study.stepIndex + 1, lab: ART_STUDIO_TAB_LABELS[study.sourceTab] || study.sourceTab }) : (ART_STUDIO_TAB_LABELS[study.sourceTab] || 'Art Studio')),
                             React.createElement("h4", { className: "mt-0.5 text-sm font-black text-slate-900" }, artStudioStudyDisplayTitle(snapshot)),
-                            isArchived && React.createElement("p", { className: "mt-1 inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-700" }, __alloT("stem.artstudio.process_scope_archived", "Archived")),
-                            React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, study.summary)
+                            isArchived && React.createElement("p", { className: "mt-1 inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wider text-slate-700" }, __alloT("stem.artstudio.process_scope_archived", "Archived")),
+                            React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, study.summary)
                           ),
-                          React.createElement("time", { dateTime: new Date(snapshot.timestamp || 0).toISOString(), className: "shrink-0 text-[9px] font-bold text-slate-500" }, new Date(snapshot.timestamp || 0).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))
+                          React.createElement("time", { dateTime: new Date(snapshot.timestamp || 0).toISOString(), className: "shrink-0 text-[0.5625rem] font-bold text-slate-500" }, new Date(snapshot.timestamp || 0).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))
                         ),
-                        React.createElement("p", { className: "mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-950" },
+                        React.createElement("p", { className: "mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[0.6875rem] leading-relaxed text-amber-950" },
                           React.createElement("strong", null, reflectionLabel + ": "), study.note || ((study.reflection !== 'change' && study.reflection !== 'wonder') ? __alloT("stem.artstudio.process_keep_default", "A decision worth carrying forward.") : study.reflection === 'change' ? __alloT("stem.artstudio.process_change_default", "A decision to revise next.") : __alloT("stem.artstudio.process_wonder_default", "A question to keep exploring."))),
                         study.intention && React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.artstudio.study_intention_label', 'Intention') + ': ' + study.intention),
                         isArchived
@@ -5798,16 +5798,16 @@ const d = labToolData.artStudio || {};
                       : comparisonStudies[0].data.genSeed === comparisonStudies[1].data.genSeed && comparisonStudies[0].data.genFrame === comparisonStudies[1].data.genFrame
                       ? __alloT('stem.artstudio.compare_seed_match', 'Same seed and step. Check the other settings and any added bursts to identify what changed.')
                       : __alloT('stem.artstudio.compare_seed_mismatch', 'The seed or step differs. For a controlled experiment, use the same seed and compare at the same step.')),
-                React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-indigo-900" }, __alloT("stem.artstudio.process_comparison_prompt", "What stayed consistent? What became clearer? Which decision better serves your intention?")),
+                React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-indigo-900" }, __alloT("stem.artstudio.process_comparison_prompt", "What stayed consistent? What became clearer? Which decision better serves your intention?")),
                 React.createElement("div", { className: "mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1" },
                   comparisonStudies.map(function (snapshot, index) {
                     var study = snapshot.artStudioStudy;
                     var slot = index === 0 ? 'A' : 'B';
                     return React.createElement("article", { key: snapshot.id, 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_study_label", "Comparison {slot}: {title}"), { slot: slot, title: artStudioStudyDisplayTitle(snapshot) }), className: "rounded-xl border border-indigo-200 bg-white p-3" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_slot", "Comparison {slot}"), { slot: slot })),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.process_comparison_slot", "Comparison {slot}"), { slot: slot })),
                       study.previewSrc && React.createElement("img", { src: study.previewSrc, alt: study.previewAlt || '', style: { backgroundColor: artStudioPaperColor((snapshot.data || {}).tab, snapshot.data) }, className: "mt-2 h-36 w-full rounded-lg bg-slate-950 object-contain" }),
                       React.createElement("h5", { className: "mt-2 text-sm font-black text-slate-900" }, artStudioStudyDisplayTitle(snapshot)),
-                      React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, study.summary),
+                      React.createElement("p", { className: "mt-1 text-[0.6875rem] text-slate-600" }, study.summary),
                       study.intention && React.createElement("p", { className: "mt-2 text-xs text-indigo-950" }, __alloT('stem.artstudio.study_intention_label', 'Intention') + ': ' + study.intention),
                       study.note && React.createElement("p", { className: "mt-2 text-xs text-slate-800" }, study.note)
                     );
@@ -5833,11 +5833,11 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, activeCreativeThread.icon),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_creative_thread_41cdd22", "Creative Thread")),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_creative_thread_41cdd22", "Creative Thread")),
                   React.createElement("h3", { id: "artstudio-thread-title", className: "text-sm font-black " + (isContrast ? "text-white" : "text-slate-950") }, activeCreativeThread.title),
-                  React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (activeCreativeThread.constraint) }))
+                  React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (activeCreativeThread.constraint) }))
                 ),
-                React.createElement("p", { className: "rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black text-indigo-800" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_of_value2_196d3db", "Step {value1} of {value2}"), { value1: (activeCreativeThreadStep + 1), value2: (activeCreativeThread.steps.length) }))
+                React.createElement("p", { className: "rounded-full bg-indigo-100 px-3 py-1 text-[0.625rem] font-black text-indigo-800" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_of_value2_196d3db", "Step {value1} of {value2}"), { value1: (activeCreativeThreadStep + 1), value2: (activeCreativeThread.steps.length) }))
               ),
               React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2", 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_steps_11a083b", "{value1} steps"), { value1: (activeCreativeThread.title) }) },
                 activeCreativeThread.steps.map(function (step, stepIndex) {
@@ -5852,7 +5852,7 @@ const d = labToolData.artStudio || {};
                       'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_go_to_step_value1_value2_value3_f760000", "Go to step {value1}: {value2}{value3}"), { value1: (stepIndex + 1), value2: (step.label), value3: (isComplete ? ', completed' : isCurrent ? ', current' : '') }),
                       className: "min-h-[52px] w-full rounded-xl border px-3 py-2 text-left transition-colors " + (isCurrent ? "border-indigo-500 bg-indigo-700 text-white shadow-sm" : isComplete ? "border-emerald-300 bg-emerald-50 text-emerald-950 hover:bg-emerald-100" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
                     },
-                      React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wider " + (isCurrent ? "text-indigo-100" : isComplete ? "text-emerald-700" : "text-slate-500") }, savedStudy ? __alloT("stem.artstudio.learning_study_saved_cf7a246", "📸 Study saved") : isComplete ? formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_e3415b9", "✓ Step {value1}"), { value1: (stepIndex + 1) }) : formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_cd4a348", "Step {value1}"), { value1: (stepIndex + 1) })),
+                      React.createElement("span", { className: "block text-[0.625rem] font-black uppercase tracking-wider " + (isCurrent ? "text-indigo-100" : isComplete ? "text-emerald-700" : "text-slate-500") }, savedStudy ? __alloT("stem.artstudio.learning_study_saved_cf7a246", "📸 Study saved") : isComplete ? formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_e3415b9", "✓ Step {value1}"), { value1: (stepIndex + 1) }) : formatArtStudioLearningText(__alloT("stem.artstudio.learning_step_value1_cd4a348", "Step {value1}"), { value1: (stepIndex + 1) })),
                       React.createElement("span", { className: "mt-0.5 block text-xs font-black" }, step.label)
                     )
                   );
@@ -5863,18 +5863,18 @@ const d = labToolData.artStudio || {};
                   ? React.createElement("p", { id: "artstudio-thread-current-prompt", className: "text-xs leading-relaxed text-slate-800" }, React.createElement("strong", null, __alloT("stem.artstudio.learning_your_move_981ab1b", "Your move: ")), currentStep.prompt)
                   : React.createElement("p", { id: "artstudio-thread-current-prompt", role: "status", className: "text-xs leading-relaxed text-amber-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_you_are_exploring_value1_your_thread_is_waiting__f7f1a61", "You are exploring {value1}. Your thread is waiting at {value2}."), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'another lab'), value2: (currentStep.label) })),
                 onCurrentStep && React.createElement("fieldset", { className: "mt-3 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3" },
-                  React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800" }, __alloT("stem.artstudio.learning_optional_reflection_f371c5f", "Optional reflection")),
+                  React.createElement("legend", { className: "px-1 text-[0.625rem] font-black uppercase tracking-wider text-indigo-800" }, __alloT("stem.artstudio.learning_optional_reflection_f371c5f", "Optional reflection")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     [{ id: 'keep', label: __alloT("stem.artstudio.learning_keep_183f00f", "Keep") }, { id: 'change', label: __alloT("stem.artstudio.learning_change_c0bf75b", "Change") }, { id: 'wonder', label: __alloT("stem.artstudio.learning_wonder_f3cb6ed", "Wonder") }].map(function (reflection) {
                       return React.createElement("label", { key: reflection.id, className: "flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg border px-3 text-xs font-black " + (studioReflectionKind === reflection.id ? "border-indigo-600 bg-indigo-700 text-white" : "border-indigo-200 bg-white text-indigo-900") },
                         React.createElement("input", { type: "radio", name: "artstudio-thread-reflection", value: reflection.id, checked: studioReflectionKind === reflection.id, onChange: function () { setStudioReflectionKind(reflection.id); }, className: "accent-indigo-700" }), reflection.label);
                     })
                   ),
-                  React.createElement("label", { htmlFor: "artstudio-thread-reflection-note", className: "mt-2 block text-[10px] font-black text-indigo-900" }, __alloT("stem.artstudio.learning_short_note_optional_095d2cf", "Short note (optional)")),
+                  React.createElement("label", { htmlFor: "artstudio-thread-reflection-note", className: "mt-2 block text-[0.625rem] font-black text-indigo-900" }, __alloT("stem.artstudio.learning_short_note_optional_095d2cf", "Short note (optional)")),
                   React.createElement("input", { id: "artstudio-thread-reflection-note", type: "text", maxLength: 160, value: studioReflectionNote, onChange: function (event) { setStudioReflectionNote(event.target.value.slice(0, 160)); }, placeholder: studioReflectionKind === 'keep' ? __alloT("stem.artstudio.learning_what_should_carry_forward_d6820ac", "What should carry forward?") : studioReflectionKind === 'change' ? __alloT("stem.artstudio.learning_what_will_you_revise_3896390", "What will you revise?") : __alloT("stem.artstudio.learning_what_question_appeared_53d10f7", "What question appeared?"), className: "mt-1 min-h-[44px] w-full rounded-lg border border-indigo-300 bg-white px-3 text-xs text-slate-900" })
                 ),
-                onCurrentStep && studioVariationForkPending && React.createElement("p", { className: "mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-900" }, __alloT("stem.artstudio.learning_fork_ready_saving_creates_a_new_branch_and_prese_16292e1", "Fork ready: saving creates a new branch and preserves the original study.")),
-                onCurrentStep && canReplaceCurrentThreadStudy && React.createElement("p", { className: "mt-2 text-[10px] font-bold text-indigo-800" }, __alloT("stem.artstudio.learning_this_step_already_has_a_study_saving_again_updat_7abf721", "This step already has a study. Saving again updates that checkpoint.")),
+                onCurrentStep && studioVariationForkPending && React.createElement("p", { className: "mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-[0.625rem] font-bold text-violet-900" }, __alloT("stem.artstudio.learning_fork_ready_saving_creates_a_new_branch_and_prese_16292e1", "Fork ready: saving creates a new branch and preserves the original study.")),
+                onCurrentStep && canReplaceCurrentThreadStudy && React.createElement("p", { className: "mt-2 text-[0.625rem] font-bold text-indigo-800" }, __alloT("stem.artstudio.learning_this_step_already_has_a_study_saving_again_updat_7abf721", "This step already has a study. Saving again updates that checkpoint.")),
                 React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" },
                   onCurrentStep && activeCreativeThreadStep > 0 && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep - 1, 'Moved back'); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-xs font-black text-slate-700 hover:bg-slate-50" }, __alloT("stem.artstudio.learning_back_aceb696", "← Back")),
                   !onCurrentStep && React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep, 'Returned to creative thread'); }, className: "min-h-[40px] rounded-lg bg-indigo-700 px-3 text-xs font-black text-white hover:bg-indigo-800" }, __alloT("stem.artstudio.learning_return_to_current_step_29e3562", "Return to current step")),
@@ -5902,18 +5902,18 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-xl", 'aria-hidden': "true" }, "\uD83E\uDDF0"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-violet-700" }, __alloT("stem.artstudio.learning_carry_ideas_between_labs_9e835f3", "Carry ideas between labs")),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-violet-700" }, __alloT("stem.artstudio.learning_carry_ideas_between_labs_9e835f3", "Carry ideas between labs")),
                   React.createElement("h3", {
                     id: "artstudio-thread-kit-title",
                     tabIndex: -1,
                     className: "rounded text-sm font-black text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
                   }, __alloT("stem.artstudio.learning_thread_kit_f20ce46", "Thread Kit")),
-                  React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, hasPalette
+                  React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-slate-600" }, hasPalette
                     ? __alloT("stem.artstudio.learning_this_palette_stays_with_the_project_until_you_ex_e0789b1", "This palette stays with the project until you explicitly apply it.")
                     : __alloT("stem.artstudio.learning_collect_a_palette_in_color_wheel_then_carry_it_i_de84c90", "Collect a palette in Color Wheel, then carry it into Pixel Art and Contrast."))
                 )
               ),
-              React.createElement("p", { className: "mt-3 text-[10px] font-black uppercase tracking-wider text-slate-500" }, paletteLabel),
+              React.createElement("p", { className: "mt-3 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, paletteLabel),
               hasPalette
                 ? React.createElement("ol", { className: "mt-2 flex flex-wrap gap-2", 'aria-label': __alloT("stem.artstudio.learning_thread_kit_palette_colors_6c952d1", "Thread Kit palette colors") },
                     studioThreadPalette.map(function (color, colorIndex) {
@@ -5929,7 +5929,7 @@ const d = labToolData.artStudio || {};
                       );
                     })
                   )
-                : React.createElement("div", { className: "mt-2 rounded-xl border border-dashed border-violet-300 bg-white/80 p-3 text-[11px] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_nothing_is_applied_automatically_your_current_ar_ca4f6a0", "Nothing is applied automatically. Your current artwork always stays unchanged until you choose a transfer.")),
+                : React.createElement("div", { className: "mt-2 rounded-xl border border-dashed border-violet-300 bg-white/80 p-3 text-[0.6875rem] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_nothing_is_applied_automatically_your_current_ar_ca4f6a0", "Nothing is applied automatically. Your current artwork always stays unchanged until you choose a transfer.")),
               React.createElement("div", { className: "mt-3 grid gap-2" },
                 tab === 'colorWheel' && React.createElement("button", {
                   type: "button",
@@ -5950,7 +5950,7 @@ const d = labToolData.artStudio || {};
                   : formatArtStudioLearningText(__alloT("stem.artstudio.learning_use_value1_goal_in_contrast_1949282", "Use {value1} goal in Contrast"), { value1: (studioThreadKit.accessibilityTarget === 7 ? "AAA" : "AA") }))
               ),
               React.createElement("div", { className: "mt-3 rounded-xl border border-slate-200 bg-white/90 p-2.5" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_accessibility_intention_afbf78b", "Accessibility intention")),
+                React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_accessibility_intention_afbf78b", "Accessibility intention")),
                 React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", role: "group", 'aria-label': __alloT("stem.artstudio.learning_thread_kit_contrast_target_cbbbf2c", "Thread Kit contrast target") },
                   [{ value: 4.5, label: __alloT("stem.artstudio.learning_aa_4_5_1_da4f455", "AA 4.5:1") }, { value: 7, label: __alloT("stem.artstudio.learning_aaa_7_1_6c099a2", "AAA 7:1") }].map(function (target) {
                     var selected = studioThreadKit.accessibilityTarget === target.value;
@@ -5961,7 +5961,7 @@ const d = labToolData.artStudio || {};
                       onClick: function () {
                         storeStudioThreadKitEntry(Object.assign({}, studioThreadKit, { accessibilityTarget: target.value }), studioThreadKitRunId);
                       },
-                      className: "min-h-[40px] rounded-lg px-2 text-[11px] font-black " + (selected ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700")
+                      className: "min-h-[40px] rounded-lg px-2 text-[0.6875rem] font-black " + (selected ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700")
                     }, target.label);
                   })
                 )
@@ -5980,9 +5980,9 @@ const d = labToolData.artStudio || {};
             },
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_studio_coach_value1_398fe5d", "Studio coach · {value1}"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Creative lab') })),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-pink-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_studio_coach_value1_398fe5d", "Studio coach · {value1}"), { value1: (ART_STUDIO_TAB_LABELS[tab] || 'Creative lab') })),
                   React.createElement("h3", { id: "artstudio-coach-title", tabIndex: -1, className: "mt-1 text-sm font-black " + (isContrast ? "text-white" : "text-slate-950") + " focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2" }, __alloT("stem.artstudio.learning_one_useful_next_move_6200585", "One useful next move")),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_use_one_prompt_or_ignore_the_guide_and_follow_wh_935d388", "Use one prompt, or ignore the guide and follow what the work needs."))
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_use_one_prompt_or_ignore_the_guide_and_follow_wh_935d388", "Use one prompt, or ignore the guide and follow what the work needs."))
                 ),
                 React.createElement("button", { type: "button", onClick: function () { toggleStudioCoach(false); }, className: "min-h-[40px] rounded-lg border border-pink-200 bg-white px-3 text-xs font-black text-pink-800 hover:bg-pink-50", 'aria-label': __alloT("stem.artstudio.learning_close_studio_coach_7d7fe8e", "Close Studio coach") }, __alloT("stem.artstudio.learning_close_7d9eb7a", "Close"))
               ),
@@ -5999,7 +5999,7 @@ const d = labToolData.artStudio || {};
                       { title: simpleStudioGuide ? __alloT("stem.artstudio.guide_simple_stretch_label", "Try next") : __alloT("stem.artstudio.learning_stretch_a33fbcf", "Stretch"), text: visibleCoach.stretch, style: "border-violet-200 bg-violet-50 text-violet-950" }
                     ].map(function (prompt) {
                       return React.createElement("section", { key: prompt.title, className: "rounded-xl border p-3 " + prompt.style },
-                        React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wider" }, prompt.title),
+                        React.createElement("h4", { className: "text-[0.625rem] font-black uppercase tracking-wider" }, prompt.title),
                         React.createElement("p", { className: simpleStudioGuide ? "mt-1 text-sm leading-7" : "mt-1 text-xs leading-relaxed" }, prompt.text)
                       );
                     })
@@ -6009,10 +6009,10 @@ const d = labToolData.artStudio || {};
                 React.createElement('summary', {className:'min-h-[40px] cursor-pointer content-center text-sm font-bold text-slate-900'}, __alloT('stem.artstudio.guide_word_to_explore','Word to explore') + ': ' + simpleStudioCoach.term),
                 React.createElement('p', {className:'mt-2 text-sm leading-7 text-slate-800'}, simpleStudioCoach.definition)),
               studioCoach && Array.isArray(studioCoach.next) && React.createElement("div", { className: "mt-3 grid gap-2" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_continue_the_idea_in_1e4f02d", "Continue the idea in")),
+                React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_continue_the_idea_in_1e4f02d", "Continue the idea in")),
                 studioCoach.next.map(function (nextTab) {
                   var nextLabel = ART_STUDIO_TAB_LABELS[nextTab] || nextTab;
-                  return React.createElement("button", { type: "button", key: nextTab, onClick: function () { selectArtStudioTab(nextTab, nextLabel, { focusPanel: true }); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-left text-[11px] font-black text-slate-700 hover:bg-slate-50" }, nextLabel + " \u2192");
+                  return React.createElement("button", { type: "button", key: nextTab, onClick: function () { selectArtStudioTab(nextTab, nextLabel, { focusPanel: true }); }, className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 text-left text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50" }, nextLabel + " \u2192");
                 })
               )
             );
@@ -6120,7 +6120,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
                 React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-500 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-[0.18em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
                   React.createElement("p", { className: "truncate text-lg font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
                 ),
                 React.createElement("button", { type: "button", onClick: function () { var picked = surpriseTabs[Math.floor(Math.random() * surpriseTabs.length)]; beginStudioPath(picked, 'a surprise creative lab'); }, className: "ml-auto min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800" }, __alloT("stem.artstudio.learning_surprise_me_70c269b", "✦ Surprise me"))
@@ -6143,7 +6143,7 @@ const d = labToolData.artStudio || {};
                 ? React.createElement("button", { type: "button", onClick: function () { openCreativeThreadStep(activeCreativeThread, activeCreativeThreadStep, 'Resumed ' + activeCreativeThread.title); }, className: "mt-4 w-full flex items-center gap-4 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4 text-left hover:border-indigo-500 hover:bg-indigo-100 transition-colors" },
                     React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, activeCreativeThread.icon),
                     React.createElement("span", { className: "min-w-0 flex-1" },
-                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-indigo-700" }, __alloT("stem.artstudio.learning_resume_your_creative_thread_870f808", "Resume your Creative Thread")),
+                      React.createElement("span", { className: "block text-[0.6875rem] font-black uppercase tracking-wider text-indigo-700" }, __alloT("stem.artstudio.learning_resume_your_creative_thread_870f808", "Resume your Creative Thread")),
                       React.createElement("span", { className: "block text-sm font-black text-slate-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_step_value2_of_value3_c1fed9f", "{value1} · step {value2} of {value3}"), { value1: (activeCreativeThread.title), value2: (activeCreativeThreadStep + 1), value3: (activeCreativeThread.steps.length) })),
                       React.createElement("span", { className: "mt-0.5 block text-xs text-slate-600" }, activeCreativeThread.steps[activeCreativeThreadStep].label)
                     ),
@@ -6152,7 +6152,7 @@ const d = labToolData.artStudio || {};
                 : recentTab && React.createElement("button", { type: "button", onClick: function () { beginStudioPath(recentTab, ART_STUDIO_TAB_LABELS[recentTab]); }, className: "mt-4 w-full flex items-center gap-4 rounded-2xl border-2 border-pink-200 bg-pink-50 p-4 text-left hover:border-pink-400 hover:bg-pink-100 transition-colors" },
                     React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, "\u21BB"),
                     React.createElement("span", { className: "flex-1" },
-                      React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-pink-700" }, __alloT("stem.artstudio.learning_return_to_your_last_lab_9a35b75", "Return to your last lab")),
+                      React.createElement("span", { className: "block text-[0.6875rem] font-black uppercase tracking-wider text-pink-700" }, __alloT("stem.artstudio.learning_return_to_your_last_lab_9a35b75", "Return to your last lab")),
                       React.createElement("span", { className: "block text-sm font-black text-slate-900" }, ART_STUDIO_TAB_LABELS[recentTab])
                     ),
                     React.createElement("span", { className: "text-pink-700 font-black", 'aria-hidden': "true" }, "\u2192")
@@ -6170,7 +6170,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("span", { className: "flex items-center gap-3" },
                   React.createElement("span", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, "\uD83C\uDF9E"),
                   React.createElement("span", { className: "min-w-0 flex-1" },
-                    React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-amber-800" }, __alloT("stem.artstudio.learning_review_your_last_project_a95004a", "Review your last project")),
+                    React.createElement("span", { className: "block text-[0.6875rem] font-black uppercase tracking-wider text-amber-800" }, __alloT("stem.artstudio.learning_review_your_last_project_a95004a", "Review your last project")),
                     React.createElement("span", { className: "block text-sm font-black text-slate-900" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_saved_value2_aeb4480", "{value1} saved {value2}"), { value1: (lastCompletedProcessStudies.length), value2: (lastCompletedProcessStudies.length === 1 ? "study" : "studies") })),
                     React.createElement("span", { className: "mt-0.5 block text-xs text-slate-600" }, __alloT("stem.artstudio.learning_compare_the_decisions_you_kept_changed_and_quest_778403c", "Compare the decisions you kept, changed, and questioned."))
                   ),
@@ -6180,14 +6180,14 @@ const d = labToolData.artStudio || {};
                   lastCompletedProcessStudies.slice(0, 3).map(function (snapshot) {
                     return snapshot.artStudioStudy.previewSrc
                       ? React.createElement("img", { key: snapshot.id, src: snapshot.artStudioStudy.previewSrc, alt: "", style: { backgroundColor: artStudioPaperColor((snapshot.data || {}).tab, snapshot.data) }, className: "h-12 w-20 rounded-lg border border-amber-200 bg-slate-950 object-cover" })
-                      : React.createElement("span", { key: snapshot.id, className: "grid h-12 w-20 place-items-center rounded-lg border border-dashed border-amber-300 bg-white text-[10px] font-bold text-amber-800" }, __alloT("stem.artstudio.learning_study_3ff5620", "Study"));
+                      : React.createElement("span", { key: snapshot.id, className: "grid h-12 w-20 place-items-center rounded-lg border border-dashed border-amber-300 bg-white text-[0.625rem] font-bold text-amber-800" }, __alloT("stem.artstudio.learning_study_3ff5620", "Study"));
                   })
                 )
               ),
 
               React.createElement("section", { className: "mt-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-rose-50 p-4 sm:p-5", 'aria-labelledby': "artstudio-threads-title" },
                 React.createElement("div", { className: "max-w-2xl" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_guided_projects_5e5932a", "Guided projects")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-[0.16em] text-indigo-700" }, __alloT("stem.artstudio.learning_guided_projects_5e5932a", "Guided projects")),
                   React.createElement("h2", { id: "artstudio-threads-title", className: "mt-1 text-xl font-black " + (isContrast ? "text-white" : "text-slate-950") }, __alloT("stem.artstudio.learning_follow_one_idea_through_three_labs_89a0e96", "Follow one idea through three labs")),
                   React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_a_creative_thread_gives_you_a_flexible_brief_and_ff9c8be", "A Creative Thread gives you a flexible brief and keeps your next step nearby. Explore freely; your place will wait."))
                 ),
@@ -6202,11 +6202,11 @@ const d = labToolData.artStudio || {};
                     },
                       React.createElement("div", { className: "flex items-start justify-between gap-3" },
                         React.createElement("span", { className: "grid h-10 w-10 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, thread.icon),
-                        React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_steps_11a083b", "{value1} steps"), { value1: (thread.steps.length) }))
+                        React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wider text-indigo-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_steps_11a083b", "{value1} steps"), { value1: (thread.steps.length) }))
                       ),
                       React.createElement("span", { className: "mt-3 block text-sm font-black text-slate-950" }, thread.title),
-                      React.createElement("span", { className: "mt-1 block text-[11px] leading-relaxed text-slate-600" }, thread.description),
-                      React.createElement("span", { className: "mt-2 block text-[10px] font-bold leading-relaxed text-slate-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (thread.constraint) }))
+                      React.createElement("span", { className: "mt-1 block text-[0.6875rem] leading-relaxed text-slate-600" }, thread.description),
+                      React.createElement("span", { className: "mt-2 block text-[0.625rem] font-bold leading-relaxed text-slate-700" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_constraint_value1_f523f52", "Constraint: {value1}"), { value1: (thread.constraint) }))
                     );
                   })
                 )
@@ -6215,7 +6215,7 @@ const d = labToolData.artStudio || {};
               React.createElement("section", { className: "mt-6", 'aria-labelledby': "artstudio-starting-points-title" },
                 React.createElement("div", { className: "flex items-end justify-between gap-3 mb-3" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, __alloT("stem.artstudio.learning_starting_points_c018c0c", "Starting points")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-[0.16em] text-slate-500" }, __alloT("stem.artstudio.learning_starting_points_c018c0c", "Starting points")),
                     React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT("stem.artstudio.learning_choose_a_creative_path_96f880f", "Choose a creative path"))
                   ),
                   React.createElement("button", { type: "button", onClick: function () { beginStudioPath('colorWheel', 'the full lab navigator'); }, className: "text-xs font-black text-pink-700 hover:text-pink-900" }, __alloT("stem.artstudio.learning_open_full_lab_navigator_bce593b", "Open full lab navigator →"))
@@ -6225,7 +6225,7 @@ const d = labToolData.artStudio || {};
                     return React.createElement("button", { type: "button", key: path.id, onClick: function () { beginStudioPath(path.tab, path.title); }, className: "group min-h-[150px] rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0 " + path.accent, 'aria-label': path.title + '. ' + path.description },
                       React.createElement("div", { className: "flex items-start justify-between gap-3" },
                         React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-2xl group-hover:bg-white", 'aria-hidden': "true" }, path.icon),
-                        React.createElement("span", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, path.eyebrow)
+                        React.createElement("span", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-slate-500" }, path.eyebrow)
                       ),
                       React.createElement("span", { className: "mt-4 block text-base font-black text-slate-900" }, path.title),
                       React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, path.description)
@@ -6244,10 +6244,10 @@ const d = labToolData.artStudio || {};
             React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
               React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
               React.createElement("div", { className: "min-w-0" },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
+                React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
                 React.createElement("h2", { className: "truncate text-sm sm:text-base font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
               ),
-              React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || __alloT("stem.artstudio.learning_creative_24674ae", "CREATIVE")),
+              React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[0.625rem] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || __alloT("stem.artstudio.learning_creative_24674ae", "CREATIVE")),
               React.createElement("div", { className: "ml-auto flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto" },
                 React.createElement("button", { type: "button", onClick: openStudioHome, className: "px-3 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-100", 'aria-label': __alloT("stem.artstudio.learning_open_studio_home_72a7ad7", "Open Studio home") }, __alloT("stem.artstudio.learning_home_3a78695", "Home")),
                 React.createElement("button", {
@@ -6264,12 +6264,12 @@ const d = labToolData.artStudio || {};
                 React.createElement("details", { className: "relative", onKeyDown: function (event) { if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); event.currentTarget.open = false; var summary = event.currentTarget.querySelector('summary'); if (summary && typeof summary.focus === 'function') summary.focus(); } } },
                   React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': __alloT("stem.artstudio.learning_studio_actions_a34974e", "Studio actions") }, __alloT("stem.artstudio.learning_actions_ff8059d", "Actions")),
                   React.createElement("div", { className: "absolute right-0 mt-2 w-56 space-y-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl" },
-                    React.createElement("p", { className: "px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_save_or_continue_in_9842b9c", "Save or continue in")),
-                    React.createElement("p", { id: "artstudio-snapshot-count", 'aria-live': "polite", className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] font-semibold text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_saved_value2_aeb4480", "{value1} saved {value2}"), { value1: (artStudioSnapshotCount), value2: (artStudioSnapshotCount === 1 ? "study" : "studies") })),
+                    React.createElement("p", { className: "px-2 py-1 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_save_or_continue_in_9842b9c", "Save or continue in")),
+                    React.createElement("p", { id: "artstudio-snapshot-count", 'aria-live': "polite", className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[0.6875rem] font-semibold text-slate-600" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_saved_value2_aeb4480", "{value1} saved {value2}"), { value1: (artStudioSnapshotCount), value2: (artStudioSnapshotCount === 1 ? "study" : "studies") })),
                     React.createElement("button", { type: "button", "aria-label": canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_replace_saved_study_for_this_thread_step_0d8905f", "Replace saved study for this thread step") : __alloT("stem.artstudio.learning_save_current_study_f90ef3d", "Save current study"), onClick: function (event) { saveArtStudioSnapshot({ replace: canReplaceCurrentThreadStudy }); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, canReplaceCurrentThreadStudy ? __alloT("stem.artstudio.learning_replace_saved_study_e1c6696", "📸 Replace saved study") : studioVariationForkPending ? __alloT("stem.artstudio.learning_save_as_new_branch_20e1466", "🌱 Save as new branch") : __alloT("stem.artstudio.learning_save_study_8f477d3", "📸 Save study")),
                     typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('page-designer'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50", title: __alloT("stem.artstudio.learning_insert_this_static_image_into_page_designer_51860e0", "Insert this static image into Page Designer") }, __alloT("stem.artstudio.learning_page_designer_ed06901", "↗ Page Designer")),
                     typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function (event) { sendArtworkTo('visual-support'); closeStudioActionsMenu(event, true); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-violet-800 hover:bg-violet-50", title: __alloT("stem.artstudio.learning_save_this_static_image_as_a_visual_support_15268fb", "Save this static image as a Visual Support") }, __alloT("stem.artstudio.learning_visual_support_62e55b9", "＋ Visual Support")),
-                    typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-600" }, __alloT("stem.artstudio.learning_artwork_handoff_is_available_in_canvas_labs_03c1709", "Artwork handoff is available in canvas labs.")),
+                    typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[0.6875rem] text-slate-600" }, __alloT("stem.artstudio.learning_artwork_handoff_is_available_in_canvas_labs_03c1709", "Artwork handoff is available in canvas labs.")),
                     React.createElement("button", { type: "button", onClick: function () { closeArtStudio('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
                   )
                 )
@@ -6278,7 +6278,7 @@ const d = labToolData.artStudio || {};
 
             React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
               React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-500 bg-white p-3 shadow-sm' },
-                React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[11px] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_choose_a_studio_tool_44b120e", "Choose a studio tool")),
+                React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[0.6875rem] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_choose_a_studio_tool_44b120e", "Choose a studio tool")),
                 React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-500 bg-white px-3 text-sm font-bold text-slate-900' },
                   ART_STUDIO_GROUPS.map(function (group) {
                     return React.createElement('optgroup', { key: group.id, label: group.label },
@@ -6376,7 +6376,7 @@ const d = labToolData.artStudio || {};
                 },
                   React.createElement('span', { style: { fontSize: 24, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 14, fontWeight: 900, margin: 0, lineHeight: 1.2, flex: 1 } }, meta.title),
-                  React.createElement('span', { className: 'rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-slate-600' }, __alloT("stem.artstudio.learning_why_it_works_913e56b", "Why it works"))
+                  React.createElement('span', { className: 'rounded-full bg-white/80 px-2 py-1 text-[0.625rem] font-black text-slate-600' }, __alloT("stem.artstudio.learning_why_it_works_913e56b", "Why it works"))
                 ),
                 React.createElement('div', { className: 'border-t border-slate-200/70 bg-white/70 px-4 py-3' },
                   React.createElement('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.55 } }, meta.hint)
@@ -6489,22 +6489,22 @@ const d = labToolData.artStudio || {};
                       React.createElement('h4', { id: 'artist-explorer-intro', className: 'text-base font-black text-rose-900' }, __alloT("stem.artstudio.learning_a_wider_map_of_artistic_intelligence_538206c", "A wider map of artistic intelligence")),
                       React.createElement('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, __alloT("stem.artstudio.learning_explore_artists_across_seven_regions_many_media__abbad8f", "Explore artists across seven regions, many media, and different relationships among art, place, history, technology, and community. No profile is a style preset: notice decisions, investigate context, and make from your own experience."))
                     ),
-                    React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[11px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_profiles_7322db8", "{value1} profiles"), { value1: (ARTIST_EXPLORER_PROFILES.length) }))
+                    React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[0.6875rem] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_profiles_7322db8", "{value1} profiles"), { value1: (ARTIST_EXPLORER_PROFILES.length) }))
                   )
                 ),
                 React.createElement('section', { className: 'rounded-xl border border-slate-500 bg-white p-3', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_and_traditions_73b9b7b", "Filter artists and traditions") },
                   React.createElement('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_search_49c266b", "Search"),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_search_49c266b", "Search"),
                       React.createElement('input', { type: 'search', value: filters.query, onChange: function (event) { upd('artistQuery', event.target.value.slice(0, 80)); }, placeholder: __alloT("stem.artstudio.learning_artist_place_idea_medium_007bc98", "Artist, place, idea, medium…"), className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 px-3 text-sm', 'aria-label': __alloT("stem.artstudio.learning_search_artist_profiles_955147c", "Search artist profiles"), 'aria-describedby': 'artist-search-help' }),
-                      React.createElement('span', { id: 'artist-search-help', className: 'mt-1 block text-[10px] font-normal leading-relaxed text-slate-600' }, __alloT('stem.artstudio.artist_search_help', 'Accents are optional. Each search word can match anywhere in a profile.'))
+                      React.createElement('span', { id: 'artist-search-help', className: 'mt-1 block text-[0.625rem] font-normal leading-relaxed text-slate-600' }, __alloT('stem.artstudio.artist_search_help', 'Accents are optional. Each search word can match anywhere in a profile.'))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_region_d3a008e", "Region"),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_region_d3a008e", "Region"),
                       React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_region_23f1146", "Filter artists by region") }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_era_60c87e4", "Era"),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_era_60c87e4", "Era"),
                       React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_era_da99abd", "Filter artists by era") }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     ),
-                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_medium_8e588cd", "Medium"),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT("stem.artstudio.learning_medium_8e588cd", "Medium"),
                       React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': __alloT("stem.artstudio.learning_filter_artists_by_medium_e68bb39", "Filter artists by medium") }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, artStudioCategoryText(value)); }))
                     )
                   ),
@@ -6521,8 +6521,8 @@ const d = labToolData.artStudio || {};
                       React.createElement('p', { className: 'mt-1 text-xs text-indigo-900' }, comparison.profiles.length < 2 ? __alloT("stem.artstudio.learning_choose_at_least_one_more_profile_to_begin_a_side_cc3541b", "Choose at least one more profile to begin a side-by-side inquiry.") : __alloT("stem.artstudio.learning_compare_context_and_choices_without_flattening_d_413cdf7", "Compare context and choices without flattening distinct practices into a shared style."))
                     ),
                     React.createElement('div', { className: 'flex items-center gap-2' },
-                      React.createElement('span', { className: 'rounded-full bg-indigo-900 px-3 py-1 text-[10px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_of_3_4eb6922", "{value1} of 3"), { value1: (comparison.profiles.length) })),
-                      React.createElement('button', { type: 'button', onClick: function () { setArtistCompareIds([]); upd('artistCompareIds', []); }, className: 'min-h-[36px] rounded-lg border border-indigo-400 bg-white px-3 text-[11px] font-black text-indigo-950' }, __alloT("stem.artstudio.learning_clear_83b12c2", "Clear"))
+                      React.createElement('span', { className: 'rounded-full bg-indigo-900 px-3 py-1 text-[0.625rem] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_value1_of_3_4eb6922", "{value1} of 3"), { value1: (comparison.profiles.length) })),
+                      React.createElement('button', { type: 'button', onClick: function () { setArtistCompareIds([]); upd('artistCompareIds', []); }, className: 'min-h-[36px] rounded-lg border border-indigo-400 bg-white px-3 text-[0.6875rem] font-black text-indigo-950' }, __alloT("stem.artstudio.learning_clear_83b12c2", "Clear"))
                     )
                   ),
                   React.createElement('div', { className: 'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': __alloT("stem.artstudio.learning_artists_selected_for_comparison_6d8ea0d", "Artists selected for comparison") }, comparison.profiles.map(function (profile) {
@@ -6531,18 +6531,18 @@ const d = labToolData.artStudio || {};
                       React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
                         React.createElement('div', null,
                           React.createElement('h5', { className: 'text-sm font-black text-slate-950' }, profile.name),
-                          React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, artStudioProfileText(profile, "places") + ' \u00B7 ' + artStudioCategoryText(profile.medium))
+                          React.createElement('p', { className: 'text-[0.625rem] font-bold text-slate-600' }, artStudioProfileText(profile, "places") + ' \u00B7 ' + artStudioCategoryText(profile.medium))
                         ),
-                        React.createElement('button', { type: 'button', onClick: function () { toggleComparison(profile); }, 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_remove_value1_from_comparison_0604b1b", "Remove {value1} from comparison"), { value1: (profile.name) }), className: 'rounded-lg border border-slate-300 px-2 py-1 text-[10px] font-black text-slate-700' }, __alloT("stem.artstudio.learning_remove_c3812fc", "Remove"))
+                        React.createElement('button', { type: 'button', onClick: function () { toggleComparison(profile); }, 'aria-label': formatArtStudioLearningText(__alloT("stem.artstudio.learning_remove_value1_from_comparison_0604b1b", "Remove {value1} from comparison"), { value1: (profile.name) }), className: 'rounded-lg border border-slate-300 px-2 py-1 text-[0.625rem] font-black text-slate-700' }, __alloT("stem.artstudio.learning_remove_c3812fc", "Remove"))
                       ),
-                      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "lookFor")),
-                      React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-950' }, artStudioProfileText(profile, "tryThis"))
+                      React.createElement('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "lookFor")),
+                      React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 p-2 text-[0.625rem] leading-relaxed text-emerald-950' }, artStudioProfileText(profile, "tryThis"))
                     );
                   })),
                   comparison.profiles.length >= 2 && React.createElement('div', { className: 'mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
                     React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, __alloT("stem.artstudio.learning_inquiry_prompts_ffa4b15", "Inquiry prompts")),
-                      React.createElement('ol', { className: 'mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-slate-700' }, comparison.prompts.map(function (prompt, index) { return React.createElement('li', { key: prompt }, __alloT('stem.artstudio.learning_artist_comparison_prompt_' + index, prompt)); }))
+                      React.createElement('ol', { className: 'mt-2 list-decimal space-y-1 pl-5 text-[0.6875rem] leading-relaxed text-slate-700' }, comparison.prompts.map(function (prompt, index) { return React.createElement('li', { key: prompt }, __alloT('stem.artstudio.learning_artist_comparison_prompt_' + index, prompt)); }))
                     ),
                     React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, comparison.sharedLabs.length ? __alloT("stem.artstudio.learning_shared_studio_labs_92ccae8", "Shared Studio labs") : __alloT("stem.artstudio.learning_different_lab_pathways_608addd", "Different lab pathways")),
@@ -6551,7 +6551,7 @@ const d = labToolData.artStudio || {};
                         return ids;
                       }, [])).map(function (labId) {
                         var label = ART_STUDIO_TAB_LABELS[labId] || labId;
-                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, label); }, className: 'min-h-[36px] rounded-lg bg-indigo-900 px-3 text-[10px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (label) }));
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, label); }, className: 'min-h-[36px] rounded-lg bg-indigo-900 px-3 text-[0.625rem] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (label) }));
                       }))
                     )
                   )
@@ -6572,81 +6572,81 @@ const d = labToolData.artStudio || {};
                         React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
                           React.createElement('div', null,
                             React.createElement('h5', { className: 'text-sm font-black text-slate-900' }, profile.name),
-                            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600' }, artStudioProfileText(profile, "life") + ' · ' + artStudioProfileText(profile, "places"))
+                            React.createElement('p', { className: 'text-[0.6875rem] font-bold text-slate-600' }, artStudioProfileText(profile, "life") + ' · ' + artStudioProfileText(profile, "places"))
                           ),
-                          React.createElement('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-700' }, artStudioCategoryText(profile.region))
+                          React.createElement('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[0.5625rem] font-black text-slate-700' }, artStudioCategoryText(profile.region))
                         ),
-                        React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "overview"))
+                        React.createElement('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-700' }, artStudioProfileText(profile, "overview"))
                       ),
                       React.createElement('button', {
                         type: 'button',
                         'aria-pressed': comparison.profiles.some(function (item) { return item.id === profile.id; }),
                         onClick: function () { toggleComparison(profile); },
-                        className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[11px] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-500 bg-white text-slate-700')
+                        className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[0.6875rem] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-500 bg-white text-slate-700')
                       }, comparison.profiles.some(function (item) { return item.id === profile.id; }) ? __alloT("stem.artstudio.learning_in_comparison_57af59b", "✓ In comparison") : __alloT("stem.artstudio.learning_add_to_compare_9a066a7", "+ Add to compare"))
                     );
                   })),
                   selected && React.createElement('aside', { id: 'artist-selected-detail', ref: artistDetailRef, className: 'scroll-mt-4 lg:sticky lg:top-2 max-h-[72vh] overflow-y-auto rounded-xl border-2 border-rose-300 bg-[#fffaf3] p-4 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 focus-visible:ring-offset-2', tabIndex: -1, 'aria-label': __alloT("stem.artstudio.learning_selected_artist_study_details_0c68366", "Selected artist study details"), 'aria-labelledby': 'artist-selected-detail-title' },
                     palettePreview(selected, 82),
-                    React.createElement('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-wider text-rose-800' }, artStudioCategoryText(selected.region) + ' · ' + artStudioCategoryText(selected.era)),
+                    React.createElement('p', { className: 'mt-3 text-[0.625rem] font-black uppercase tracking-wider text-rose-800' }, artStudioCategoryText(selected.region) + ' · ' + artStudioCategoryText(selected.era)),
                     React.createElement('div', { className: 'mt-1 flex items-start justify-between gap-2' },
                       React.createElement('h4', { id: 'artist-selected-detail-title', className: 'font-serif text-xl font-black text-slate-900' }, selected.name),
-                      React.createElement('button', { type: 'button', onClick: function () { toggleComparison(selected); }, 'aria-pressed': comparison.profiles.some(function (item) { return item.id === selected.id; }), className: 'shrink-0 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-[10px] font-black text-indigo-950' }, comparison.profiles.some(function (item) { return item.id === selected.id; }) ? __alloT("stem.artstudio.learning_compare_99d7e96", "✓ Compare") : __alloT("stem.artstudio.learning_compare_7556ba0", "+ Compare"))
+                      React.createElement('button', { type: 'button', onClick: function () { toggleComparison(selected); }, 'aria-pressed': comparison.profiles.some(function (item) { return item.id === selected.id; }), className: 'shrink-0 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-950' }, comparison.profiles.some(function (item) { return item.id === selected.id; }) ? __alloT("stem.artstudio.learning_compare_99d7e96", "✓ Compare") : __alloT("stem.artstudio.learning_compare_7556ba0", "+ Compare"))
                     ),
                     React.createElement('p', { className: 'text-xs font-bold text-slate-600' }, artStudioProfileText(selected, "life") + ' · ' + artStudioCategoryText(selected.medium)),
                     React.createElement('p', { className: 'mt-3 text-xs leading-relaxed text-slate-700' }, artStudioProfileText(selected, "overview")),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-sky-950' }, __alloT("stem.artstudio.learning_look_closely_73dcf27", "Look closely")),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-sky-950' }, artStudioProfileText(selected, "lookFor"))
+                      React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-sky-950' }, artStudioProfileText(selected, "lookFor"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-violet-950' }, __alloT("stem.artstudio.learning_context_matters_4c2b465", "Context matters")),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-violet-950' }, artStudioProfileText(selected, "context"))
+                      React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-violet-950' }, artStudioProfileText(selected, "context"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-emerald-950' }, __alloT("stem.artstudio.learning_try_the_underlying_question_03f40d8", "Try the underlying question")),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-emerald-950' }, artStudioProfileText(selected, "tryThis"))
+                      React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-emerald-950' }, artStudioProfileText(selected, "tryThis"))
                     ),
                     React.createElement('section', { className: 'mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3' },
                       React.createElement('h5', { className: 'text-xs font-black text-amber-950' }, __alloT("stem.artstudio.learning_learn_with_respect_62c58d8", "Learn with respect")),
-                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-amber-950' }, artStudioProfileText(selected, "respect"))
+                      React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-amber-950' }, artStudioProfileText(selected, "respect"))
                     ),
                     React.createElement('div', { className: 'mt-3' },
-                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_carry_the_inquiry_into_a_studio_lab_9ee59ea", "Carry the inquiry into a Studio lab")),
+                      React.createElement('p', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_carry_the_inquiry_into_a_studio_lab_9ee59ea", "Carry the inquiry into a Studio lab")),
                       React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' }, selected.labs.map(function (labId) {
                         var labLabel = ART_STUDIO_TAB_LABELS[labId] || labId;
-                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, labLabel); }, className: 'min-h-[38px] rounded-lg bg-slate-900 px-3 text-[11px] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (labLabel) }));
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, labLabel); }, className: 'min-h-[38px] rounded-lg bg-slate-900 px-3 text-[0.6875rem] font-black text-white' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_open_value1_f5cc17a", "Open {value1}"), { value1: (labLabel) }));
                       }))
                     ),
                     React.createElement('section', { className: 'mt-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3', 'aria-labelledby': 'artist-sourcebook-title' },
-                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.16em] text-emerald-800' }, __alloT("stem.artstudio.learning_sourcebook_bridge_db3b850", "Sourcebook bridge")),
+                      React.createElement('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.16em] text-emerald-800' }, __alloT("stem.artstudio.learning_sourcebook_bridge_db3b850", "Sourcebook bridge")),
                       React.createElement('h5', { id: 'artist-sourcebook-title', className: 'mt-1 text-xs font-black text-emerald-950' }, __alloT("stem.artstudio.learning_find_reusable_collection_images_500a5f8", "Find reusable collection images")),
-                      React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-950' }, __alloT("stem.artstudio.learning_searches_sourcebook_providers_and_fails_closed_n_9f8b741", "Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.")),
-                      React.createElement('label', { className: 'mt-2 block text-[10px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_reuse_rights_2477b47", "Reuse rights"),
-                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-600 bg-white px-2 text-[11px]', 'aria-label': __alloT("stem.artstudio.learning_rights_filter_for_artist_collection_search_ab98871", "Rights filter for artist collection search") },
+                      React.createElement('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-emerald-950' }, __alloT("stem.artstudio.learning_searches_sourcebook_providers_and_fails_closed_n_9f8b741", "Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.")),
+                      React.createElement('label', { className: 'mt-2 block text-[0.625rem] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_reuse_rights_2477b47", "Reuse rights"),
+                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-600 bg-white px-2 text-[0.6875rem]', 'aria-label': __alloT("stem.artstudio.learning_rights_filter_for_artist_collection_search_ab98871", "Rights filter for artist collection search") },
                           React.createElement('option', { value: 'pd' }, __alloT("stem.artstudio.learning_public_domain_only_19144e2", "Public domain only")),
                           React.createElement('option', { value: 'pd-cc0' }, __alloT("stem.artstudio.learning_public_domain_cc0_e6d13f4", "Public domain + CC0")),
                           React.createElement('option', { value: 'all' }, __alloT("stem.artstudio.learning_public_domain_cc0_cc_by_e9c22da", "Public domain + CC0 + CC BY"))
                         )
                       ),
                       React.createElement('div', { className: 'mt-2 grid gap-2' },
-                        React.createElement('button', { type: 'button', disabled: currentWorks.status === 'loading', onClick: function () { findRightsClearedWorks(selected); }, className: 'min-h-[40px] rounded-lg bg-emerald-900 px-3 text-[11px] font-black text-white disabled:opacity-50' }, currentWorks.status === 'loading' ? __alloT("stem.artstudio.learning_checking_rights_7b138e7", "Checking rights…") : (sourcebookReady ? __alloT("stem.artstudio.learning_find_rights_cleared_images_02275a0", "Find rights-cleared images") : __alloT("stem.artstudio.learning_load_sourcebook_find_images_7e85633", "Load Sourcebook & find images"))),
-                        React.createElement('button', { type: 'button', onClick: function () { continueInSourcebook(selected); }, className: 'min-h-[40px] rounded-lg border border-emerald-700 bg-white px-3 text-[11px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_continue_this_search_in_sourcebook_8bbf2a6", "Continue this search in Sourcebook →"))
+                        React.createElement('button', { type: 'button', disabled: currentWorks.status === 'loading', onClick: function () { findRightsClearedWorks(selected); }, className: 'min-h-[40px] rounded-lg bg-emerald-900 px-3 text-[0.6875rem] font-black text-white disabled:opacity-50' }, currentWorks.status === 'loading' ? __alloT("stem.artstudio.learning_checking_rights_7b138e7", "Checking rights…") : (sourcebookReady ? __alloT("stem.artstudio.learning_find_rights_cleared_images_02275a0", "Find rights-cleared images") : __alloT("stem.artstudio.learning_load_sourcebook_find_images_7e85633", "Load Sourcebook & find images"))),
+                        React.createElement('button', { type: 'button', onClick: function () { continueInSourcebook(selected); }, className: 'min-h-[40px] rounded-lg border border-emerald-700 bg-white px-3 text-[0.6875rem] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_continue_this_search_in_sourcebook_8bbf2a6", "Continue this search in Sourcebook →"))
                       ),
-                      !sourcebookReady && React.createElement('p', { className: 'mt-2 text-[10px] font-bold text-emerald-900', role: 'status' }, __alloT("stem.artstudio.learning_sourcebook_s_verified_provider_service_will_load_b0bab1c", "Sourcebook’s verified provider service will load on demand. If it cannot load, Art Studio shows no substitute results."))
+                      !sourcebookReady && React.createElement('p', { className: 'mt-2 text-[0.625rem] font-bold text-emerald-900', role: 'status' }, __alloT("stem.artstudio.learning_sourcebook_s_verified_provider_service_will_load_b0bab1c", "Sourcebook’s verified provider service will load on demand. If it cannot load, Art Studio shows no substitute results."))
                     ),
                     React.createElement('a', { href: artistExplorerSourceUrl(selected), target: '_blank', rel: 'noopener noreferrer', className: 'mt-4 inline-flex min-h-[40px] items-center rounded-lg border border-rose-700 bg-white px-3 text-xs font-black text-rose-900' }, __alloT("stem.artstudio.learning_read_artist_source_9966e4a", "Read artist source ↗")),
-                    React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-500' }, __alloT("stem.artstudio.learning_external_collection_records_are_for_further_stud_651b261", "External collection records are for further study. Rights vary by individual artwork; this tab does not grant reuse permission or reproduce those works."))
+                    React.createElement('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-slate-500' }, __alloT("stem.artstudio.learning_external_collection_records_are_for_further_stud_651b261", "External collection records are for further study. Rights vary by individual artwork; this tab does not grant reuse permission or reproduce those works."))
                   )
                 ),
                 selected && currentWorks.status !== 'idle' && React.createElement('section', { className: 'rounded-2xl border-2 border-emerald-300 bg-[#f4fbf7] p-4', 'aria-labelledby': 'artist-sourcebook-results-title', 'data-artist-sourcebook-results': currentWorks.status },
                   React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     React.createElement('div', null,
-                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.18em] text-emerald-800' }, __alloT("stem.artstudio.learning_rights_verified_visual_assets_5a9290b", "Rights-verified visual assets")),
+                      React.createElement('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.18em] text-emerald-800' }, __alloT("stem.artstudio.learning_rights_verified_visual_assets_5a9290b", "Rights-verified visual assets")),
                       React.createElement('h4', { id: 'artist-sourcebook-results-title', className: 'mt-1 font-serif text-xl font-black text-emerald-950' }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_sourcebook_matches_for_value1_cc30f03", "Sourcebook matches for {value1}"), { value1: (selected.name) })),
-                      React.createElement('p', { className: 'mt-1 max-w-3xl text-[11px] leading-relaxed text-emerald-950', role: 'status', 'aria-live': 'polite' }, currentWorks.message)
+                      React.createElement('p', { className: 'mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-emerald-950', role: 'status', 'aria-live': 'polite' }, currentWorks.message)
                     ),
-                    React.createElement('span', { className: 'rounded-full bg-emerald-900 px-3 py-1 text-[10px] font-black text-white' }, artistRightsScope === 'pd' ? __alloT("stem.artstudio.learning_public_domain_only_19144e2", "Public domain only") : (artistRightsScope === 'pd-cc0' ? __alloT("stem.artstudio.learning_pd_cc0_b582414", "PD + CC0") : __alloT("stem.artstudio.learning_pd_cc0_cc_by_c5b5129", "PD + CC0 + CC BY")))
+                    React.createElement('span', { className: 'rounded-full bg-emerald-900 px-3 py-1 text-[0.625rem] font-black text-white' }, artistRightsScope === 'pd' ? __alloT("stem.artstudio.learning_public_domain_only_19144e2", "Public domain only") : (artistRightsScope === 'pd-cc0' ? __alloT("stem.artstudio.learning_pd_cc0_b582414", "PD + CC0") : __alloT("stem.artstudio.learning_pd_cc0_cc_by_c5b5129", "PD + CC0 + CC BY")))
                   ),
                   currentWorks.status === 'loading' && React.createElement('div', { className: 'mt-4 h-2 overflow-hidden rounded-full bg-emerald-100', 'aria-hidden': 'true' }, React.createElement('div', { className: 'h-full w-1/2 animate-pulse rounded-full bg-emerald-700' })),
                   currentWorks.status === 'ready' && currentWorks.items.length === 0 && React.createElement('div', { className: 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950' }, __alloT("stem.artstudio.learning_nothing_was_shown_because_no_collection_result_p_f71a2ad", "Nothing was shown because no collection result passed both relevance and the active rights allowlist.")),
@@ -6657,13 +6657,13 @@ const d = labToolData.artStudio || {};
                       React.createElement('div', { className: 'p-3' },
                         React.createElement('div', { className: 'flex items-start justify-between gap-2' },
                           React.createElement('h5', { className: 'text-xs font-black leading-snug text-slate-950' }, item.title),
-                          React.createElement('span', { className: 'shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-black text-emerald-950' }, item.rightsShort || item.license)
+                          React.createElement('span', { className: 'shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[0.5625rem] font-black text-emerald-950' }, item.rightsShort || item.license)
                         ),
-                        React.createElement('p', { className: 'mt-1 text-[10px] font-bold text-slate-600' }, (item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Open collection')),
-                        React.createElement('p', { className: 'mt-2 text-[9px] leading-relaxed text-slate-600' }, credit),
+                        React.createElement('p', { className: 'mt-1 text-[0.625rem] font-bold text-slate-600' }, (item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Open collection')),
+                        React.createElement('p', { className: 'mt-2 text-[0.5625rem] leading-relaxed text-slate-600' }, credit),
                         React.createElement('div', { className: 'mt-3 grid gap-2' },
-                          React.createElement('button', { type: 'button', onClick: function () { saveWorkToSourcebook(item); }, className: 'min-h-[38px] rounded-lg bg-emerald-900 px-3 text-[10px] font-black text-white' }, __alloT("stem.artstudio.learning_save_to_sourcebook_palette_d32e66d", "Save to Sourcebook palette")),
-                          React.createElement('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'min-h-[38px] inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-white px-3 text-[10px] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_verify_source_rights_a23341e", "Verify source & rights ↗"))
+                          React.createElement('button', { type: 'button', onClick: function () { saveWorkToSourcebook(item); }, className: 'min-h-[38px] rounded-lg bg-emerald-900 px-3 text-[0.625rem] font-black text-white' }, __alloT("stem.artstudio.learning_save_to_sourcebook_palette_d32e66d", "Save to Sourcebook palette")),
+                          React.createElement('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'min-h-[38px] inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-white px-3 text-[0.625rem] font-black text-emerald-950' }, __alloT("stem.artstudio.learning_verify_source_rights_a23341e", "Verify source & rights ↗"))
                         )
                       )
                     );
@@ -6697,7 +6697,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat !== undefined ? d.sat : 100) + "%, " + (d.lit !== undefined ? d.lit : 50) + "%)"),
 
-                        React.createElement("p", { id: "artstudio-color-wheel-help", className: "text-[11px] text-slate-600" }, "Click the wheel, or focus it and use Arrow keys to adjust hue; hold Shift for 10-degree steps; Home selects 0 degrees and End selects 359 degrees.")
+                        React.createElement("p", { id: "artstudio-color-wheel-help", className: "text-[0.6875rem] text-slate-600" }, "Click the wheel, or focus it and use Arrow keys to adjust hue; hold Shift for 10-degree steps; Home selects 0 degrees and End selects 359 degrees.")
 
                       )
 
@@ -6707,7 +6707,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-color-' + s.k, className: "text-[11px] font-bold text-pink-700 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
+                        React.createElement("label", { htmlFor: 'artstudio-color-' + s.k, className: "text-[0.6875rem] font-bold text-pink-700 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
 
                         React.createElement("input", { id: 'artstudio-color-' + s.k, type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
 
@@ -6719,13 +6719,13 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { id: "artstudio-color-harmony-label", className: "text-[11px] font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
+                    React.createElement("p", { id: "artstudio-color-harmony-label", className: "text-[0.6875rem] font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
 
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-color-harmony-label" },
 
                       ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
 
-                        return React.createElement("button", { key: h, "aria-pressed": (d.harmony || 'complementary') === h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                        return React.createElement("button", { key: h, "aria-pressed": (d.harmony || 'complementary') === h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
 
                       })
 
@@ -6765,7 +6765,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': __alloT('stem.artstudio.color_mix_ratio', 'Color mix ratio'), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
 
                 ),
 
@@ -6801,12 +6801,12 @@ const d = labToolData.artStudio || {};
 
               React.createElement("section", { 'aria-label': "Watercolor canvas workspace", className: "space-y-2" },
                 React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': "Watercolor touch interaction" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
                     React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR('Watercolor touch mode set to scroll page.'); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
                     React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR('Watercolor touch mode set to draw on paper.'); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
                   ),
-                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[10px] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
+                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
                 ),
                 React.createElement("div", { className: "rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg" },
                   React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.', 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } })
@@ -6821,8 +6821,8 @@ const d = labToolData.artStudio || {};
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR('Watercolor dried.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Watercolor PNG exported without diagnostic overlays.'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
                 ),
-                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[11px] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
-                React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[11px] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
+                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+                React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
               ),
 
               (function () {
@@ -6835,7 +6835,7 @@ const d = labToolData.artStudio || {};
                 var granulationLabel = granulationValue < 34 ? 'smooth' : (granulationValue < 67 ? 'moderately granulating' : 'granulating');
                 var mobilityLabel = mobilityValue < 34 ? 'low mobility' : (mobilityValue < 67 ? 'medium mobility' : 'high mobility');
                 var character = opacityLabel + ' / ' + stainingLabel + ' / ' + granulationLabel + ' / ' + mobilityLabel;
-                return React.createElement("div", { role: "note", 'aria-label': 'Current pigment character: ' + character, className: "text-[11px] font-semibold text-teal-900 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2" },
+                return React.createElement("div", { role: "note", 'aria-label': 'Current pigment character: ' + character, className: "text-[0.6875rem] font-semibold text-teal-900 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2" },
                   React.createElement("strong", null, __alloT('stem.artstudio.pigment_character', 'Pigment character: ')), character
                 );
               })(),
@@ -6858,31 +6858,31 @@ const d = labToolData.artStudio || {};
                   React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
                     React.createElement("div", null,
                       React.createElement("h4", { id: "artstudio-watercolor-mixing-title", className: "text-xs font-extrabold text-amber-950" }, __alloT('stem.artstudio.watercolor_mixing_tray', 'Pigment mixing tray')),
-                      React.createElement("p", { className: "text-[11px] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Blend two material profiles using optical absorbance.'))
+                      React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Blend two material profiles using optical absorbance.'))
                     ),
                     React.createElement("div", { role: "img", 'aria-label': 'Mixture preview: ' + mixtureSummary, title: mixtureSummary, className: "ml-auto h-10 w-16 rounded-lg border-2 border-white shadow-sm", style: { background: mixture.color } })
                   ),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
-                    React.createElement("label", { htmlFor: "artstudio-watercolor-mix-a", className: "text-[11px] font-bold text-amber-950" },
+                    React.createElement("label", { htmlFor: "artstudio-watercolor-mix-a", className: "text-[0.6875rem] font-bold text-amber-950" },
                       __alloT('stem.artstudio.mix_pigment_a', 'Pigment A'),
                       React.createElement("select", { id: "artstudio-watercolor-mix-a", value: firstPigment.id, onChange: function (e) { upd('watercolorMixA', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs" },
                         WATERCOLOR_PIGMENTS.map(function (pigment) { return React.createElement("option", { key: pigment.id, value: pigment.id }, pigment.label); })
                       )
                     ),
-                    React.createElement("label", { htmlFor: "artstudio-watercolor-mix-b", className: "text-[11px] font-bold text-amber-950" },
+                    React.createElement("label", { htmlFor: "artstudio-watercolor-mix-b", className: "text-[0.6875rem] font-bold text-amber-950" },
                       __alloT('stem.artstudio.mix_pigment_b', 'Pigment B'),
                       React.createElement("select", { id: "artstudio-watercolor-mix-b", value: secondPigment.id, onChange: function (e) { upd('watercolorMixB', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs" },
                         WATERCOLOR_PIGMENTS.map(function (pigment) { return React.createElement("option", { key: pigment.id, value: pigment.id }, pigment.label); })
                       )
                     )
                   ),
-                  React.createElement("label", { htmlFor: "artstudio-watercolor-mix-ratio", className: "block text-[11px] font-bold text-amber-950" },
+                  React.createElement("label", { htmlFor: "artstudio-watercolor-mix-ratio", className: "block text-[0.6875rem] font-bold text-amber-950" },
                     'Mix ratio: ' + mixtureSummary,
                     React.createElement("input", { id: "artstudio-watercolor-mix-ratio", type: "range", min: 0, max: 100, step: 5, value: secondPercent, 'aria-label': 'Pigment B proportion', onChange: function (e) { upd('watercolorMixRatio', parseInt(e.target.value)); }, className: "block w-full accent-amber-700 mt-1" })
                   ),
                   React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                     React.createElement("button", { id: "artstudio-watercolor-load-mixture", type: "button", onClick: loadMixture, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800" }, __alloT('stem.artstudio.load_mixed_pigment', 'Load mixed pigment')),
-                    React.createElement("span", { role: "status", 'aria-live': "polite", className: "text-[11px] text-amber-950" },
+                    React.createElement("span", { role: "status", 'aria-live': "polite", className: "text-[0.6875rem] text-amber-950" },
                       'Profile: granulation ' + mixture.values.watercolorGranulation + '%, staining ' + mixture.values.watercolorStaining + '%, opacity ' + mixture.values.watercolorOpacity + '%, mobility ' + mixture.values.watercolorMobility + '%.'
                     )
                   )
@@ -6917,7 +6917,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("span", { className: "text-xs font-bold text-cyan-950" }, __alloT('stem.artstudio.watercolor_diagnostics', 'View diagnostics:')),
                 React.createElement("button", { id: "artstudio-watercolor-wetness-map", type: "button", 'aria-pressed': !!d.watercolorShowWetness, onClick: function () { upd('watercolorShowWetness', !d.watercolorShowWetness); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.watercolorShowWetness ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-800 border border-cyan-200 hover:bg-cyan-100') }, __alloT('stem.artstudio.wetness_map', 'Wetness map')),
                 React.createElement("button", { id: "artstudio-watercolor-flow-guides", type: "button", 'aria-pressed': !!d.watercolorShowFlow, onClick: function () { upd('watercolorShowFlow', !d.watercolorShowFlow); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.watercolorShowFlow ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-800 border border-cyan-200 hover:bg-cyan-100') }, __alloT('stem.artstudio.flow_guides', 'Flow guides')),
-                React.createElement("span", { className: "text-[11px] text-cyan-900" }, __alloT('stem.artstudio.diagnostics_export_note', 'Screen-only overlays; autosaves and exports remain clean.'))
+                React.createElement("span", { className: "text-[0.6875rem] text-cyan-900" }, __alloT('stem.artstudio.diagnostics_export_note', 'Screen-only overlays; autosaves and exports remain clean.'))
               ),
 
               React.createElement("div", { id: "artstudio-watercolor-paper-presets", role: "group", 'aria-label': "Watercolor paper presets", className: "flex items-center gap-2 flex-wrap bg-indigo-50 rounded-xl p-2 border border-indigo-200" },
@@ -6962,7 +6962,7 @@ const d = labToolData.artStudio || {};
                 var renderControl = function (control) {
                   var value = Number(d[control.key]);
                   if (!isFinite(value)) value = control.fallback;
-                  return React.createElement("label", { key: control.key, className: "text-[11px] font-bold text-slate-600" },
+                  return React.createElement("label", { key: control.key, className: "text-[0.6875rem] font-bold text-slate-600" },
                     control.label + ': ' + Math.round(value) + control.unit,
                     React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1" })
                   );
@@ -6979,23 +6979,23 @@ const d = labToolData.artStudio || {};
               React.createElement("details", { className: "rounded-xl border border-teal-600 bg-white" },
                 React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-black text-teal-950" }, "Learn why watercolor behaves this way"),
                 React.createElement("div", { className: "space-y-2 border-t border-teal-200 p-3" },
-              React.createElement("p", { role: "note", className: "text-[11px] text-violet-900 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2" },
+              React.createElement("p", { role: "note", className: "text-[0.6875rem] text-violet-900 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2" },
                 React.createElement("strong", null, __alloT('stem.artstudio.separation_tip', 'Chromatic separation: ')),
                 __alloT('stem.artstudio.separation_tip_desc', 'When pigments with different mobility meet on wet paper, higher settings let faster color channels travel ahead of heavier ones. Premixed pigments remain more uniform.')
               ),
 
-              React.createElement("p", { role: "note", className: "text-[11px] text-sky-900 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2" },
+              React.createElement("p", { role: "note", className: "text-[0.6875rem] text-sky-900 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2" },
                 React.createElement("strong", null, __alloT('stem.artstudio.rewetting_tip', 'Rewetting and glazing: ')),
                 __alloT('stem.artstudio.rewetting_tip_desc', 'Clear water and wet glazes reactivate low-staining color more readily. Highly staining and strongly granulating layers stay anchored in the paper.')
               ),
 
-              React.createElement("p", { role: "note", className: "text-[11px] text-indigo-950 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2" },
+              React.createElement("p", { role: "note", className: "text-[0.6875rem] text-indigo-950 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2" },
                 React.createElement("strong", null, __alloT('stem.artstudio.paper_chemistry_tip', 'Paper chemistry: ')),
                 __alloT('stem.artstudio.paper_chemistry_tip_desc', 'Higher sizing keeps water and pigment near the surface, extending flow and making dry color easier to lift. Lower sizing pulls washes into the fibers sooner. Bloom sensitivity controls how strongly wetness boundaries create backruns and cauliflower edges.')
               ),
 
               React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 border border-teal-200" },
-                React.createElement("p", { className: "text-[11px] text-teal-900 leading-relaxed" }, React.createElement("strong", null, __alloT('stem.artstudio.watercolor_science', "Why it looks wet: ")), __alloT('stem.artstudio.watercolor_science_desc', "Water diffuses pigment into nearby paper fibers. Every deposited wash carries its own granulation, staining, opacity, and mobility through mixtures. Each color channel retains mobility-weighted transport, so faster pigments can separate at wet edges while heavier colors lag and settle. Granulating particles collect in texture, staining colors resist lifting, and opaque particles scatter more light. Paper sizing controls how long water and pigment remain mobile on the surface before absorption; highly sized sheets lift and rewet more readily, while lightly sized sheets anchor washes sooner. Bloom sensitivity controls the strength of backruns at uneven wetness boundaries. Dry layers can be selectively remobilized by clear water or wet glazes; low-staining color releases more readily while staining and granulation anchor pigment in the fibers. Studio humidity slows evaporation and preserves blooms, while airflow accelerates surface drying. Round, flat, mop, rigger, wash, and dry brushes vary footprint, softness, water load, spacing, and reservoir drain. Slow, pressured strokes deposit more paint, stylus tilt spreads the footprint, and optical absorption deepens mixtures. Masking fluid, evaporation, gravity, clear water, salt, blooms, and tide marks remain physically layered. Wetness maps and flow guides visualize the simulation without changing saved artwork."))
+                React.createElement("p", { className: "text-[0.6875rem] text-teal-900 leading-relaxed" }, React.createElement("strong", null, __alloT('stem.artstudio.watercolor_science', "Why it looks wet: ")), __alloT('stem.artstudio.watercolor_science_desc', "Water diffuses pigment into nearby paper fibers. Every deposited wash carries its own granulation, staining, opacity, and mobility through mixtures. Each color channel retains mobility-weighted transport, so faster pigments can separate at wet edges while heavier colors lag and settle. Granulating particles collect in texture, staining colors resist lifting, and opaque particles scatter more light. Paper sizing controls how long water and pigment remain mobile on the surface before absorption; highly sized sheets lift and rewet more readily, while lightly sized sheets anchor washes sooner. Bloom sensitivity controls the strength of backruns at uneven wetness boundaries. Dry layers can be selectively remobilized by clear water or wet glazes; low-staining color releases more readily while staining and granulation anchor pigment in the fibers. Studio humidity slows evaporation and preserves blooms, while airflow accelerates surface drying. Round, flat, mop, rigger, wash, and dry brushes vary footprint, softness, water load, spacing, and reservoir drain. Slow, pressured strokes deposit more paint, stylus tilt spreads the footprint, and optical absorption deepens mixtures. Masking fluid, evaporation, gravity, clear water, salt, blooms, and tide marks remain physically layered. Wetness maps and flow guides visualize the simulation without changing saved artwork."))
               )
                 )
               ),
@@ -7010,7 +7010,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + pixelColor.h + ',' + pixelColor.s + '%,' + pixelColor.l + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
 
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, __alloT('stem.artstudio.current_color', "Current color")),
+                React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600" }, __alloT('stem.artstudio.current_color', "Current color")),
 
                 React.createElement("div", { className: "ml-auto flex gap-1 flex-wrap" },
 
@@ -7059,13 +7059,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes', "\uD83C\uDFA8 Palettes")),
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes', "\uD83C\uDFA8 Palettes")),
 
                   Array.isArray(d.pixelCustomPalette) && d.pixelCustomPalette.length > 0 && React.createElement("button", {
                     type: "button",
                     "aria-pressed": pixelActivePalette === 'threadKit',
                     onClick: function () { upd('pixelActivePalette', 'threadKit'); },
-                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (pixelActivePalette === 'threadKit' ? 'bg-violet-700 text-white' : 'bg-white text-violet-800 border border-violet-300 hover:bg-violet-50')
+                    className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (pixelActivePalette === 'threadKit' ? 'bg-violet-700 text-white' : 'bg-white text-violet-800 border border-violet-300 hover:bg-violet-50')
                   }, "\uD83E\uDDF0 Thread Kit"),
 
                   [{ id: 'retro', label: __alloT('stem.artstudio.retro', '\uD83D\uDD79 Retro'), colors: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]] },
@@ -7078,7 +7078,7 @@ const d = labToolData.artStudio || {};
 
                    { id: 'neon', label: __alloT('stem.artstudio.neon', '\uD83D\uDCA5 Neon'), colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, "aria-pressed": pixelActivePalette === pal.id, onClick: function () { upd('pixelActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (pixelActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": pixelActivePalette === pal.id, onClick: function () { upd('pixelActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (pixelActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -7146,19 +7146,19 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symSmoothing)) ? Math.max(0, Math.min(0.85, Number(d.symSmoothing))) : 0) * 100) + "%"),
 
-                React.createElement("button", { "aria-label": "Use pen pressure for symmetry brush size", "aria-pressed": !!d.symPressureEnabled, onClick: function() { upd('symPressureEnabled', !d.symPressureEnabled); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symPressureEnabled ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, "\u270D Pen pressure"),
+                React.createElement("button", { "aria-label": "Use pen pressure for symmetry brush size", "aria-pressed": !!d.symPressureEnabled, onClick: function() { upd('symPressureEnabled', !d.symPressureEnabled); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.symPressureEnabled ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, "\u270D Pen pressure"),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Stroke:"),
 
                 [{ id: 'dots', label: '\u2022 Dots', aria: 'Dot stamp stroke mode' }, { id: 'freehand', label: '\u223F Freehand', aria: 'Continuous freehand stroke mode' }, { id: 'line', label: '\u2571 Line', aria: 'Straight line stroke mode' }, { id: 'eraser', label: '\u232B Eraser', aria: 'Symmetric continuous eraser mode' }].map(function (stroke) {
-                  return React.createElement("button", { key: stroke.id, "aria-label": stroke.aria, "aria-pressed": (d.symStrokeMode || 'freehand') === stroke.id, onClick: function () { upd('symStrokeMode', stroke.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symStrokeMode || 'freehand') === stroke.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, stroke.label);
+                  return React.createElement("button", { key: stroke.id, "aria-label": stroke.aria, "aria-pressed": (d.symStrokeMode || 'freehand') === stroke.id, onClick: function () { upd('symStrokeMode', stroke.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symStrokeMode || 'freehand') === stroke.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, stroke.label);
                 }),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Color:"),
 
-                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
+                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
 
-                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
+                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Pattern:"),
 
@@ -7167,7 +7167,7 @@ const d = labToolData.artStudio || {};
                   return React.createElement("button", { key: pattern.id, "aria-label": pattern.aria, "aria-pressed": activePattern === pattern.id, onClick: function () {
                     if (activePattern === pattern.id) return;
                     updMany({ symPatternMode: pattern.id, symMirrorOnly: pattern.id === 'kaleidoscope' });
-                  }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (activePattern === pattern.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, pattern.label);
+                  }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (activePattern === pattern.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, pattern.label);
                 }),
 
                 React.createElement("button", { "aria-label": "Undo symmetry change", onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symUndoAction) c._symUndoAction(); }, className: "ml-auto px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B6 Undo"),
@@ -7189,13 +7189,13 @@ const d = labToolData.artStudio || {};
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Origin Y:"),
                 React.createElement("input", { type: "range", min: 10, max: 90, step: 5, value: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100), "aria-label": "Symmetry origin vertical position", "aria-valuetext": Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + " percent", onChange: function(e) { upd('symCenterY', parseInt(e.target.value, 10) / 100); }, className: "w-24 accent-violet-600" }),
                 React.createElement("output", { className: "min-w-[32px] text-xs font-black text-violet-700" }, Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) + "%"),
-                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": "Reset symmetry origin to center", onClick: function() { updMany({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR('Symmetry origin reset to the center.'); } }, "Center"),
+                React.createElement("button", { className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-200 hover:bg-violet-100", "aria-label": "Reset symmetry origin to center", onClick: function() { updMany({ symCenterX: 0.5, symCenterY: 0.5 }); if (typeof announceToSR === 'function') announceToSR('Symmetry origin reset to the center.'); } }, "Center"),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Blend:"),
                 [{ id: 'normal', label: 'Normal', aria: 'Normal symmetry brush blending' }, { id: 'glow', label: '\u2728 Glow', aria: 'Glow symmetry brush blending' }].map(function(blend) {
                   var activeBlend = d.symBlendMode === 'glow' ? 'glow' : 'normal';
-                  return React.createElement("button", { key: blend.id, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (activeBlend === blend.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-violet-200 hover:bg-violet-100'), "aria-label": blend.aria, "aria-pressed": activeBlend === blend.id, onClick: function() { upd('symBlendMode', blend.id); } }, blend.label);
+                  return React.createElement("button", { key: blend.id, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (activeBlend === blend.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-violet-200 hover:bg-violet-100'), "aria-label": blend.aria, "aria-pressed": activeBlend === blend.id, onClick: function() { upd('symBlendMode', blend.id); } }, blend.label);
                 }),
-                React.createElement("span", { className: "text-[10px] text-slate-500" }, "Pattern, fold, and origin changes affect new marks; existing artwork stays.")
+                React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, "Pattern, fold, and origin changes affect new marks; existing artwork stays.")
               ),
 
               (function() {
@@ -7210,41 +7210,41 @@ const d = labToolData.artStudio || {};
                   React.createElement("summary", { className: "cursor-pointer text-xs font-black text-cyan-900" }, 'Pattern rotation, repeat variation & canvas'),
                   React.createElement("div", { className: "mt-2 space-y-2" },
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Symmetry pattern geometry" },
-                      React.createElement("label", { className: "grid grid-cols-[54px_110px_38px] items-center gap-1 text-[10px] font-bold text-slate-600" }, 'Rotate',
+                      React.createElement("label", { className: "grid grid-cols-[54px_110px_38px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Rotate',
                         React.createElement("input", { type: "range", min: -180, max: 180, step: 5, value: phaseValue, "aria-label": "Symmetry pattern rotation", "aria-valuetext": Math.round(phaseValue) + ' degrees', onChange: function(event) { upd('symPhaseDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
                         React.createElement("output", null, Math.round(phaseValue) + '\u00B0')
                       ),
-                      React.createElement("label", { className: "grid grid-cols-[66px_110px_38px] items-center gap-1 text-[10px] font-bold text-slate-600" }, 'Mirror axis',
+                      React.createElement("label", { className: "grid grid-cols-[66px_110px_38px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Mirror axis',
                         React.createElement("input", { type: "range", min: 0, max: 180, step: 5, value: mirrorValue, disabled: currentPattern === 'rotate', "aria-label": "Symmetry mirror axis angle", "aria-valuetext": Math.round(mirrorValue) + ' degrees', onChange: function(event) { upd('symMirrorAxisDeg', parseInt(event.target.value, 10)); }, className: "accent-cyan-600" }),
                         React.createElement("output", null, Math.round(mirrorValue) + '\u00B0')
                       ),
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, 'Direction'),
+                      React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Direction'),
                       [{ id: 'clockwise', label: '\u21BB CW', aria: 'Repeat symmetry copies clockwise' }, { id: 'counterclockwise', label: '\u21BA CCW', aria: 'Repeat symmetry copies counterclockwise' }].map(function(direction) {
                         var activeDirection = (d.symCopyDirection === 'counterclockwise' ? 'counterclockwise' : 'clockwise') === direction.id;
-                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 text-[10px] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { upd('symCopyDirection', direction.id); } }, direction.label);
+                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { upd('symCopyDirection', direction.id); } }, direction.label);
                       })
                     ),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-3", role: "group", "aria-label": "Variation across symmetry copies" },
                       [{ field: 'symCopyHueStep', label: 'Hue / copy', value: hueStepValue, min: -180, max: 180, unit: '\u00B0', aria: 'Hue change per symmetry copy' }, { field: 'symCopySizeStep', label: 'Size / copy', value: sizeStepValue, min: -25, max: 25, unit: '%', aria: 'Brush size change per symmetry copy' }, { field: 'symCopyOpacityStep', label: 'Opacity / copy', value: opacityStepValue, min: -20, max: 20, unit: '%', aria: 'Opacity change per symmetry copy' }].map(function(variation) {
-                        return React.createElement("label", { key: variation.field, className: "grid grid-cols-[72px_110px_42px] items-center gap-1 text-[10px] font-bold text-slate-600" }, variation.label,
+                        return React.createElement("label", { key: variation.field, className: "grid grid-cols-[72px_110px_42px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, variation.label,
                           React.createElement("input", { type: "range", min: variation.min, max: variation.max, step: 5, value: variation.value, "aria-label": variation.aria, "aria-valuetext": Math.round(variation.value) + variation.unit, onChange: function(event) { upd(variation.field, parseInt(event.target.value, 10)); }, className: "accent-fuchsia-600" }),
                           React.createElement("output", null, Math.round(variation.value) + variation.unit)
                         );
                       }),
-                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[10px] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": "Reset symmetry repeat variation", onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR('Symmetry repeat variation reset.'); } }, 'Reset variation')
+                      React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": "Reset symmetry repeat variation", onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR('Symmetry repeat variation reset.'); } }, 'Reset variation')
                     ),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Symmetry canvas appearance" },
-                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 text-[10px] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": "Show symmetry guides", "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
-                      React.createElement("label", { className: "grid grid-cols-[78px_100px_36px] items-center gap-1 text-[10px] font-bold text-slate-600" }, 'Guide opacity',
+                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": "Show symmetry guides", "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
+                      React.createElement("label", { className: "grid grid-cols-[78px_100px_36px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Guide opacity',
                         React.createElement("input", { type: "range", min: 5, max: 60, step: 5, value: Math.round(guideOpacityValue * 100), disabled: d.symShowGuides === false, "aria-label": "Symmetry guide opacity", "aria-valuetext": Math.round(guideOpacityValue * 100) + ' percent', onChange: function(event) { upd('symGuideOpacity', parseInt(event.target.value, 10) / 100); }, className: "accent-cyan-600" }),
                         React.createElement("output", null, Math.round(guideOpacityValue * 100) + '%')
                       ),
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, 'Background'),
+                      React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Background'),
                       [{ id: 'dark', label: 'Dark' }, { id: 'light', label: 'Light' }, { id: 'transparent', label: 'Transparent' }].map(function(background) {
                         var activeBackground = (['dark', 'light', 'transparent'].indexOf(d.symBackgroundMode) !== -1 ? d.symBackgroundMode : 'dark') === background.id;
-                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 text-[10px] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { upd('symBackgroundMode', background.id); } }, background.label);
+                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { upd('symBackgroundMode', background.id); } }, background.label);
                       }),
-                      React.createElement("span", { className: "text-[10px] text-slate-500" }, 'Guides are editing aids and are not included in PNG exports.')
+                      React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, 'Guides are editing aids and are not included in PNG exports.')
                     )
                   )
                 );
@@ -7256,11 +7256,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_2', "\uD83C\uDFA8 Palettes")),
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_2', "\uD83C\uDFA8 Palettes")),
 
                   [{ id: 'retro', label: __alloT('stem.artstudio.retro_2', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_2', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_2', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_2', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_2', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, "aria-pressed": symmetryActivePalette === pal.id, onClick: function () { upd('symmetryActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (symmetryActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": symmetryActivePalette === pal.id, onClick: function () { upd('symmetryActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (symmetryActivePalette === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -7420,7 +7420,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: stateKey, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: inputId, className: "text-[11px] text-slate-700 font-bold block" }, control.label + ': ' + control.val),
+                        React.createElement("label", { htmlFor: inputId, className: "text-[0.6875rem] text-slate-700 font-bold block" }, control.label + ': ' + control.val),
 
                         React.createElement("input", { id: inputId, type: "range", min: 0, max: control.max, value: control.val, "aria-valuetext": control.valueText, onChange: function (e) { upd(stateKey, parseInt(e.target.value)); }, className: "w-full accent-slate-700" })
 
@@ -7665,17 +7665,17 @@ const d = labToolData.artStudio || {};
                 function setCoord(axis, value) { var next = profile.map(function (pt) { return pt.slice(); }); next[padSel][axis] = value / 100; commitProfile(next); }
                 var padSummary = (isLathe ? 'Lathe profile' : 'Outline') + ' with ' + profile.length + ' points; point ' + (padSel + 1) + ' selected.';
                 return React.createElement("div", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-2", "data-artstudio-profile-pad": padPart.shape },
-                  React.createElement("p", { className: "mb-1 text-[11px] font-black text-fuchsia-800" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe', 'Draw your own shape - it spins around the axis') : __alloT('stem.artstudio.sculpt_draw_extrude', 'Draw your own outline - it is pushed out into a solid')),
-                  React.createElement("p", { id: "artstudio-profile-pad-help", className: "mb-1 text-[10px] text-slate-600" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe_help', 'Click on the pad to add a point, drag a point to move it. Points run from the bottom to the top; the dashed line is the spin axis.') : __alloT('stem.artstudio.sculpt_draw_extrude_help', 'Click on the pad to add a point after the nearest one, drag a point to move it. The outline closes itself.')),
+                  React.createElement("p", { className: "mb-1 text-[0.6875rem] font-black text-fuchsia-800" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe', 'Draw your own shape - it spins around the axis') : __alloT('stem.artstudio.sculpt_draw_extrude', 'Draw your own outline - it is pushed out into a solid')),
+                  React.createElement("p", { id: "artstudio-profile-pad-help", className: "mb-1 text-[0.625rem] text-slate-600" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe_help', 'Click on the pad to add a point, drag a point to move it. Points run from the bottom to the top; the dashed line is the spin axis.') : __alloT('stem.artstudio.sculpt_draw_extrude_help', 'Click on the pad to add a point after the nearest one, drag a point to move it. The outline closes itself.')),
                   React.createElement("div", { className: "flex flex-wrap items-start gap-2" },
                     React.createElement("canvas", { id: "artstudio-profile-pad", ref: padRef, width: PAD, height: PAD, role: "img", "aria-label": padSummary, "aria-describedby": "artstudio-profile-pad-help", className: "rounded-lg border border-fuchsia-300 bg-white", style: { width: PAD + 'px', height: PAD + 'px', touchAction: 'none', cursor: padLocked ? 'not-allowed' : 'crosshair' } }),
                     React.createElement("div", { className: "flex-1 min-w-[160px]", role: "group", "aria-label": isLathe ? 'Lathe profile points' : 'Outline points' },
-                      React.createElement("label", { className: "grid grid-cols-[52px_1fr] items-center gap-1 text-[10px] text-slate-600" }, 'Point',
-                        React.createElement("select", { value: padSel, "aria-label": "Selected shape point", className: "rounded border border-slate-300 px-1 py-0.5 text-[10px]", onChange: function(event) { upd('sculptProfilePoint', Number(event.target.value)); } }, profile.map(function (_, i) { return React.createElement("option", { key: i, value: i }, 'Point ' + (i + 1)); }))),
-                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, isLathe ? 'Radius' : 'X',
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr] items-center gap-1 text-[0.625rem] text-slate-600" }, 'Point',
+                        React.createElement("select", { value: padSel, "aria-label": "Selected shape point", className: "rounded border border-slate-300 px-1 py-0.5 text-[0.625rem]", onChange: function(event) { upd('sculptProfilePoint', Number(event.target.value)); } }, profile.map(function (_, i) { return React.createElement("option", { key: i, value: i }, 'Point ' + (i + 1)); }))),
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[0.625rem] text-slate-600" }, isLathe ? 'Radius' : 'X',
                         React.createElement("input", { type: "range", "data-profile-axis": "x", min: xMin, max: 100, step: 1, value: Math.round(selPt[0] * 100), disabled: padLocked, "aria-label": (isLathe ? 'Radius of point ' : 'X of point ') + (padSel + 1), onChange: function(event) { setCoord(0, Number(event.target.value)); } }),
                         React.createElement("output", null, Math.round(selPt[0] * 100))),
-                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, isLathe ? 'Height' : 'Y',
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[0.625rem] text-slate-600" }, isLathe ? 'Height' : 'Y',
                         React.createElement("input", { type: "range", "data-profile-axis": "y", min: yMin, max: 100, step: 1, value: Math.round(selPt[1] * 100), disabled: padLocked, "aria-label": (isLathe ? 'Height of point ' : 'Y of point ') + (padSel + 1), onChange: function(event) { setCoord(1, Number(event.target.value)); } }),
                         React.createElement("output", null, Math.round(selPt[1] * 100))),
                       React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
@@ -8183,13 +8183,13 @@ const d = labToolData.artStudio || {};
                       React.createElement('button', { className: mini + ' flex-1', 'aria-label': 'Scale sculpture parts', 'aria-pressed': sculptMode === 'scale', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'scale'); } }, '\u2922 Scale')
                     ),
                     React.createElement('div', { className: 'flex gap-1 items-center', role: 'group', 'aria-label': 'Transform axis constraint' },
-                      React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Axis:'),
+                      React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Axis:'),
                       [{ id: 'free', label: 'Free', aria: 'Transform freely' }, { id: 'x', label: 'X', aria: 'Constrain transforms to X axis' }, { id: 'y', label: 'Y', aria: 'Constrain transforms to Y axis' }, { id: 'z', label: 'Z', aria: 'Constrain transforms to Z axis' }].map(function(option) {
                         return React.createElement('button', { key: option.id, className: mini + ' px-2', 'aria-label': option.aria, 'aria-pressed': sculptTransformAxis === option.id, disabled: sculptMode === 'orbit' || !parts.length, onClick: function() { upd('sculptTransformAxis', option.id); } }, option.label);
                       })
                     ),
                     React.createElement('div', { className: 'flex gap-1 items-center', role: 'group', 'aria-label': 'Position snapping' },
-                      React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Snap:'),
+                      React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Snap:'),
                       [{ value: 0, label: 'Off' }, { value: 0.1, label: '0.1' }, { value: 0.25, label: '0.25' }, { value: 0.5, label: '0.5' }].map(function(option) {
                         return React.createElement('button', { key: option.label, className: mini + ' px-2', 'aria-label': option.value ? 'Snap positions to ' + option.label + ' units' : 'Turn position snapping off', 'aria-pressed': sculptSnap === option.value, onClick: function() { upd('sculptSnap', option.value); } }, option.label);
                       })
@@ -8219,7 +8219,7 @@ const d = labToolData.artStudio || {};
                     onDragOver: function(event) { event.preventDefault(); },
                     onDrop: placeDroppedShape
                   }),
-                  React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[11px] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose Free or an X/Y/Z axis constraint and a Snap grid; hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. In Free mode, Arrow keys rotate X or Y and Page Up or Page Down rotates Z; choose an axis to lock every turn to it. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Morph parts: select and drag diagonally. Free scales the whole form; choose X, Y, or Z to stretch only that axis. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
+                  React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[0.6875rem] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose Free or an X/Y/Z axis constraint and a Snap grid; hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. In Free mode, Arrow keys rotate X or Y and Page Up or Page Down rotates Z; choose an axis to lock every turn to it. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Morph parts: select and drag diagonally. Free scales the whole form; choose X, Y, or Z to stretch only that axis. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": "3D preview actions" },
                     React.createElement("button", { className: mini, "aria-label": "Undo sculpture change", disabled: !sculptUndo.length, onClick: undoSculpt }, '\u21B6'),
                     React.createElement("button", { className: mini, "aria-label": "Redo sculpture change", disabled: !sculptRedo.length, onClick: redoSculpt }, '\u21B7'),
@@ -8247,13 +8247,13 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "space-y-2" },
                   React.createElement("h3", { className: "font-black " + (isContrast ? "text-white" : "text-slate-700") + " text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
                   React.createElement("div", null,
-                    React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
+                    React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
                       return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": 'Preset: ' + ps.label, onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
                     }))
                   ),
                   React.createElement("div", null,
-                    React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part \u2014 click, or drag it onto the preview')),
+                    React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part \u2014 click, or drag it onto the preview')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-add-label" }, (P3D.SHAPES || []).map(function(shp) {
                       return React.createElement("button", { key: shp, className: mini, draggable: true, title: 'Add or drag ' + shp, "aria-label": 'Add ' + shp + '; it can also be dragged onto the preview', onDragStart: function(event) { event.dataTransfer.setData('application/x-artstudio-shape', shp); event.dataTransfer.setData('text/plain', shp); }, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
                     }))
@@ -8269,21 +8269,21 @@ const d = labToolData.artStudio || {};
                     ),
                     (selectedPart.shape === 'lathe' || selectedPart.shape === 'extrude') ? renderProfilePad() : null,
                     React.createElement("div", { className: "mb-2 rounded-xl border border-violet-200 bg-violet-50 p-2" },
-                      React.createElement("p", { className: "mb-1 text-[11px] font-black text-violet-800" }, 'Morph selected form'),
+                      React.createElement("p", { className: "mb-1 text-[0.6875rem] font-black text-violet-800" }, 'Morph selected form'),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": "Morph selected form" }, builtInMorphProfiles.map(function(profile) {
                         var profileActive = selectedMorphSignature === morphSignature(profile);
-                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[10px] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": 'Apply ' + profile.label + ' form profile', "aria-pressed": profileActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
+                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": 'Apply ' + profile.label + ' form profile', "aria-pressed": profileActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
                       })),
                       customMorphProfiles.length ? React.createElement("div", { className: "mt-1 flex flex-wrap gap-1", role: "group", "aria-label": "Saved custom form profiles" }, customMorphProfiles.map(function(profile, profileIndex) {
                         var customActive = selectedMorphSignature === morphSignature(profile);
                         return React.createElement("span", { key: profile.id || profileIndex, className: "inline-flex overflow-hidden rounded border border-fuchsia-200 bg-white" },
-                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[10px] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": 'Apply saved ' + profile.label + ' form profile', "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
-                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[10px] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": 'Delete custom form profile ' + profile.label, onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR('Deleted form profile ' + profile.label + '.'); } }, '\u00D7')
+                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": 'Apply saved ' + profile.label + ' form profile', "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
+                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": 'Delete custom form profile ' + profile.label, onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR('Deleted form profile ' + profile.label + '.'); } }, '\u00D7')
                         );
                       })) : null,
                       React.createElement("div", { className: "mt-2 flex gap-1" },
-                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": "Name for reusable form profile", placeholder: 'My vase form', onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-200 bg-white px-2 py-1 text-[10px]" }),
-                        React.createElement("button", { type: "button", className: "rounded bg-fuchsia-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-fuchsia-700", "aria-label": "Save selected form as reusable profile", onClick: saveSelectedMorphProfile }, 'Save form')
+                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": "Name for reusable form profile", placeholder: 'My vase form', onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-200 bg-white px-2 py-1 text-[0.625rem]" }),
+                        React.createElement("button", { type: "button", className: "rounded bg-fuchsia-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-fuchsia-700", "aria-label": "Save selected form as reusable profile", onClick: saveSelectedMorphProfile }, 'Save form')
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-6 gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_move', 'Move the selected part') },
@@ -8295,7 +8295,7 @@ const d = labToolData.artStudio || {};
                         }); } }, cfg[0]);
                       })),
                     React.createElement("div", { className: "flex items-center gap-1 mb-1", role: "group", "aria-label": "Mirror copy axis" },
-                      React.createElement("span", { className: "mr-1 text-[11px] font-bold text-slate-600" }, "Mirror axis:"),
+                      React.createElement("span", { className: "mr-1 text-[0.6875rem] font-bold text-slate-600" }, "Mirror axis:"),
                       ['x', 'y', 'z'].map(function(axis) {
                         return React.createElement("button", { key: axis, className: mini + " min-h-[32px] px-3", "aria-label": 'Mirror across ' + axis.toUpperCase() + ' axis', "aria-pressed": sculptMirrorAxis === axis, onClick: function() { upd('sculptMirrorAxis', axis); } }, axis.toUpperCase());
                       })
@@ -8312,33 +8312,33 @@ const d = labToolData.artStudio || {};
                     selectedPart ? React.createElement("details", { className: "mt-2 rounded-xl border border-slate-200 bg-slate-50 p-2" },
                       React.createElement("summary", { className: "cursor-pointer text-xs font-black text-slate-700" }, 'Fine-tune selected part'),
                       React.createElement("div", { className: "mt-2 space-y-2" },
-                        React.createElement("label", { className: "block text-[11px] font-bold text-slate-600" }, 'Part name',
+                        React.createElement("label", { className: "block text-[0.6875rem] font-bold text-slate-600" }, 'Part name',
                           React.createElement("input", { type: "text", maxLength: 40, value: selectedPart.label, "aria-label": "Selected part name", placeholder: selectedPart.shape + ' part', className: "mt-1 w-full rounded border border-slate-300 bg-white p-1", onFocus: beginSculptRangeEdit, onBlur: commitSculptRangeEdit, onChange: function(event) { var nextName = event.target.value; rangePartOp(function(P, r) { return P.updatePart(r, sel, { label: nextName }); }); } })
                         ),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                          React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Shape',
+                          React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'Shape',
                             React.createElement("select", { value: selectedPart.shape, className: "mt-1 w-full rounded border border-slate-500 bg-white p-1", onChange: function(event) { var nextShape = event.target.value; partOp(function(P, r) { var starter = P.newPart(nextShape, sel); return P.updatePart(r, sel, { shape: nextShape, size: starter.size }); }); } }, (P3D.SHAPES || []).map(function(shape) { return React.createElement("option", { key: shape, value: shape }, shape); }))
                           ),
-                          React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Color',
+                          React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'Color',
                             React.createElement("input", { type: "color", value: selectedPart.color, className: "mt-1 h-8 w-full", onChange: function(event) { partOp(function(P, r) { return P.updatePart(r, sel, { color: event.target.value }); }); } })
                           )
                         ),
                         React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2" },
-                          React.createElement("p", { className: "text-[11px] font-black text-slate-600 mb-1" }, 'Surface finish'),
+                          React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600 mb-1" }, 'Surface finish'),
                           React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": "Selected part surface finish" },
                             [{ id: 'standard', label: 'Standard' }, { id: 'matte', label: 'Matte' }, { id: 'gloss', label: 'Gloss' }, { id: 'metal', label: 'Metal' }, { id: 'wire', label: 'Wire' }].map(function(finish) {
-                              return React.createElement("button", { key: finish.id, type: "button", className: "rounded px-2 py-1 text-[10px] font-bold " + (selectedPart.finish === finish.id ? 'bg-violet-600 text-white' : 'border border-slate-300 bg-white text-slate-600 hover:bg-violet-50'), "aria-label": finish.label + " selected part finish", "aria-pressed": selectedPart.finish === finish.id, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { finish: finish.id }); }); } }, finish.label);
+                              return React.createElement("button", { key: finish.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (selectedPart.finish === finish.id ? 'bg-violet-600 text-white' : 'border border-slate-300 bg-white text-slate-600 hover:bg-violet-50'), "aria-label": finish.label + " selected part finish", "aria-pressed": selectedPart.finish === finish.id, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { finish: finish.id }); }); } }, finish.label);
                             })
                           ),
-                          React.createElement("label", { className: "mt-2 grid grid-cols-[52px_1fr_38px] items-center gap-1 text-[10px] text-slate-600" }, 'Opacity',
+                          React.createElement("label", { className: "mt-2 grid grid-cols-[52px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, 'Opacity',
                             React.createElement("input", Object.assign({ type: "range", min: 15, max: 100, step: 5, value: Math.round(selectedPart.opacity * 100), "aria-label": "Selected part opacity", "aria-valuetext": Math.round(selectedPart.opacity * 100) + " percent", onChange: function(event) { var nextOpacity = parseInt(event.target.value, 10) / 100; rangePartOp(function(P, r) { return P.updatePart(r, sel, { opacity: nextOpacity }); }); } }, sculptRangeProps())),
                             React.createElement("output", null, Math.round(selectedPart.opacity * 100) + '%')
                           )
                         ),
                         React.createElement("div", null,
-                          React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, 'Size'),
+                          React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, 'Size'),
                           (selectedPart.shape === 'box' ? ['Width', 'Height', 'Depth'] : selectedPart.shape === 'sphere' ? ['Radius'] : selectedPart.shape === 'torus' ? ['Ring radius', 'Tube radius'] : selectedPart.shape === 'extrude' ? ['Width', 'Height', 'Depth'] : ['Radius', 'Height']).map(function(label, axis) {
-                            return React.createElement("label", { key: label, className: "grid grid-cols-[72px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, label,
+                            return React.createElement("label", { key: label, className: "grid grid-cols-[72px_1fr_34px] items-center gap-1 text-[0.625rem] text-slate-600" }, label,
                               React.createElement("input", Object.assign({ type: "range", min: 0.02, max: 4, step: 0.02, value: selectedPart.size[axis], disabled: selectedPartLocked, onChange: function(event) { var size = selectedPart.size.slice(); size[axis] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePart(r, sel, { size: size }); }); } }, sculptRangeProps())),
                               React.createElement("output", null, Number(selectedPart.size[axis]).toFixed(2))
                             );
@@ -8346,11 +8346,11 @@ const d = labToolData.artStudio || {};
                         ),
                         React.createElement("div", null,
                           React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                            React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, 'Stretch / morph'),
-                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-violet-50", "aria-label": "Reset selected part stretch", disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { stretch: [1, 1, 1] }); }); } }, 'Reset')
+                            React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, 'Stretch / morph'),
+                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": "Reset selected part stretch", disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { stretch: [1, 1, 1] }); }); } }, 'Reset')
                           ),
                           ['X', 'Y', 'Z'].map(function(axisLabel, axis) {
-                            return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[10px] text-slate-600" }, axisLabel,
+                            return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, axisLabel,
                               React.createElement("input", Object.assign({ type: "range", min: 0.1, max: 4, step: 0.05, value: selectedPart.stretch[axis], "aria-label": 'Morph selected part on ' + axisLabel + ' axis', disabled: selectedPartLocked, onChange: function(event) { var stretch = selectedPart.stretch.slice(); stretch[axis] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePart(r, sel, { stretch: stretch }); }); } }, sculptRangeProps())),
                               React.createElement("output", null, Number(selectedPart.stretch[axis]).toFixed(2))
                             );
@@ -8358,11 +8358,11 @@ const d = labToolData.artStudio || {};
                         ),
                         React.createElement("div", { className: "rounded-lg border border-violet-100 bg-white p-2" },
                           React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                            React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, 'Shape deformation'),
-                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-violet-50", "aria-label": "Reset selected part deformation", disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { deform: { taper: 0, twist: 0, bulge: 0 } }); }); } }, 'Reset')
+                            React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, 'Shape deformation'),
+                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": "Reset selected part deformation", disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { deform: { taper: 0, twist: 0, bulge: 0 } }); }); } }, 'Reset')
                           ),
                           [{ field: 'taper', label: 'Taper', min: -0.85, max: 0.85, step: 0.05, unit: '' }, { field: 'twist', label: 'Twist', min: -180, max: 180, step: 5, unit: ' degrees' }, { field: 'bulge', label: 'Bulge', min: -0.75, max: 1.5, step: 0.05, unit: '' }].map(function(modifier) {
-                            return React.createElement("label", { key: modifier.field, className: "grid grid-cols-[46px_1fr_42px] items-center gap-1 text-[10px] text-slate-600" }, modifier.label,
+                            return React.createElement("label", { key: modifier.field, className: "grid grid-cols-[46px_1fr_42px] items-center gap-1 text-[0.625rem] text-slate-600" }, modifier.label,
                               React.createElement("input", Object.assign({ type: "range", min: modifier.min, max: modifier.max, step: modifier.step, value: selectedPart.deform[modifier.field], "aria-label": modifier.label + ' selected part form', "aria-valuetext": Number(selectedPart.deform[modifier.field]).toFixed(modifier.field === 'twist' ? 0 : 2) + modifier.unit, disabled: selectedPartLocked, onChange: function(event) { var patch = {}; patch[modifier.field] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePartDeform ? P.updatePartDeform(r, sel, patch) : P.updatePart(r, sel, { deform: Object.assign({}, selectedPart.deform, patch) }); }); } }, sculptRangeProps())),
                               React.createElement("output", null, modifier.field === 'twist' ? Math.round(selectedPart.deform[modifier.field]) + '\u00B0' : Number(selectedPart.deform[modifier.field]).toFixed(2))
                             );
@@ -8370,10 +8370,10 @@ const d = labToolData.artStudio || {};
                         ),
                         [{ field: 'position', title: 'Position', step: sculptSnap || 0.05, min: -4, max: 4 }, { field: 'rotation', title: 'Rotation', step: 5, min: -180, max: 180 }].map(function(group) {
                           return React.createElement("div", { key: group.field },
-                            React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, group.title),
+                            React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, group.title),
                             ['X', 'Y', 'Z'].map(function(axisLabel, axis) {
                               var upper = group.field === 'position' && axis === 1 ? 8 : group.max;
-                              return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[10px] text-slate-600" }, axisLabel,
+                              return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, axisLabel,
                                 React.createElement("input", Object.assign({ type: "range", min: group.min, max: upper, step: group.step, value: selectedPart[group.field][axis], disabled: selectedPartLocked, onChange: function(event) { var values = selectedPart[group.field].slice(); values[axis] = parseFloat(event.target.value); var patch = {}; patch[group.field] = values; rangePartOp(function(P, r) { return P.updatePart(r, sel, patch); }); } }, sculptRangeProps())),
                                 React.createElement("output", null, Math.round(selectedPart[group.field][axis] * 100) / 100)
                               );
@@ -8389,7 +8389,7 @@ const d = labToolData.artStudio || {};
                   ) : null,
                   // gallery — named recipes persisted in toolData
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, '🖼 ' + __alloT('stem.artstudio.sculpt_gallery', 'My gallery')),
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-500 mb-1" }, '🖼 ' + __alloT('stem.artstudio.sculpt_gallery', 'My gallery')),
                     recipe ? React.createElement("form", { className: "flex gap-1 mb-1", onSubmit: function(e) {
                       e.preventDefault();
                       var nm = (e.target.elements.sculptname.value || '').trim().slice(0, 40);
@@ -8406,7 +8406,7 @@ const d = labToolData.artStudio || {};
                         React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": 'Load ' + nm }, nm),
                         React.createElement("button", { className: mini, "aria-label": 'Delete ' + nm, onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
                       );
-                    })) : React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
+                    })) : React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
                   )
                 )
               );
@@ -8454,12 +8454,12 @@ const d = labToolData.artStudio || {};
               return React.createElement('div', { className: 'space-y-3' },
                 React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-pink-300 shadow-sm space-y-3' },
                   React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, __alloT('stem.artstudio.color_harmony_discovery', '🎶 Color harmony discovery')),
-                  React.createElement('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                  React.createElement('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
                     __alloT('stem.artstudio.adjust_base_hue_saturation_lightness_v', 'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.')),
                   // Classification badge
                   React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: '#f5f3ff', border: '2px solid #c4b5fd' } },
                     React.createElement('div', { className: 'text-base font-black text-violet-700' }, hMeta.label),
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 mt-1' }, hMeta.desc)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, hMeta.desc)
                   ),
                   // SVG harmony wheel visualization
                   React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
@@ -8495,7 +8495,7 @@ const d = labToolData.artStudio || {};
                   // Palette swatches with HSL values
                   React.createElement('div', { className: 'flex flex-wrap gap-1' },
                     palette.map(function(p, i) {
-                      return React.createElement('div', { key: 'sw' + i, 'data-harmony-swatch': i, className: 'flex-1 min-w-[60px] rounded text-center text-[10px] font-mono', style: { background: p.css, color: p.foreground, padding: '8px 4px' } },
+                      return React.createElement('div', { key: 'sw' + i, 'data-harmony-swatch': i, className: 'flex-1 min-w-[60px] rounded text-center text-[0.625rem] font-mono', style: { background: p.css, color: p.foreground, padding: '8px 4px' } },
                         '#' + (i + 1), React.createElement('div', null, p.hue.toFixed(0) + '°'));
                     })
                   ),
@@ -8507,7 +8507,7 @@ const d = labToolData.artStudio || {};
                      { k: 'rotation', l: 'Rotation (°)', mn: -90, mx: 90, st: 5 },
                      { k: 'paletteSize', l: 'Palette size', mn: 2, mx: 12, st: 1 }].map(function(s) {
                       return React.createElement('div', { key: s.k },
-                        React.createElement('label', { htmlFor: 'hh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-pink-700' }, iq[s.k])),
+                        React.createElement('label', { htmlFor: 'hh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-pink-700' }, iq[s.k])),
                         React.createElement('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                           onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                           className: 'w-full', 'aria-label': s.l }));
@@ -8515,13 +8515,13 @@ const d = labToolData.artStudio || {};
                   ),
                   // Log + reset
                   React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.artstudio.log', '📋 Log')),
-                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.artstudio.reset', '↺ Reset')),
-                    (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.artstudio.log', '📋 Log')),
+                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.artstudio.reset', '↺ Reset')),
+                    (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                   ),
                   // Log table
                   (iq.log || []).length > 0 && React.createElement('div', { className: 'overflow-x-auto' },
-                    React.createElement('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                    React.createElement('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
                       React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-100' },
                         ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                       React.createElement('tbody', null, iq.log.map(function(o, idx) {
@@ -8536,9 +8536,9 @@ const d = labToolData.artStudio || {};
                     )
                   ),
                   React.createElement('textarea', { 'aria-label': 'Color harmony hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
-                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
-                  iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
+                  iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                     React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.artstudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                     React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
                       React.createElement('li', null, __alloT('stem.artstudio.find_the_smallest_palette_that_still_f', 'Find the smallest palette that still feels "complete" to you.')),
@@ -8548,11 +8548,11 @@ const d = labToolData.artStudio || {};
                   React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                     React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                       React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                      React.createElement('label', { htmlFor: 'hh-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+                      React.createElement('label', { htmlFor: 'hh-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
                         __alloT('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
                     iq.understood && React.createElement('textarea', { 'aria-label': 'Explain your understanding of color harmony', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
-                      className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
-                  React.createElement('div', { className: 'mt-3 text-[10px] italic text-slate-500' },
+                      className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
+                  React.createElement('div', { className: 'mt-3 text-[0.625rem] italic text-slate-500' },
                     __alloT('stem.artstudio.design_note_discrete_5_state_harmony_m', 'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.'))
                 )
               );
@@ -8582,7 +8582,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-indigo-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-indigo-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'spiroSpeed' ? val + ' drawing steps per frame' : val + ' units', onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
 
@@ -8610,11 +8610,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-spiro-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-spiro-presets-label", className: "text-[11px] font-bold text-indigo-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-spiro-presets-label", className: "text-[0.6875rem] font-bold text-indigo-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.star', 'Star'), R: 120, r: 45, p: 55 }, { label: __alloT('stem.artstudio.flower', 'Flower'), R: 150, r: 50, p: 25 }, { label: __alloT('stem.artstudio.lace', 'Lace'), R: 100, r: 73, p: 80 }, { label: __alloT('stem.artstudio.atom', 'Atom'), R: 180, r: 25, p: 90 }, { label: __alloT('stem.artstudio.spiral', 'Spiral'), R: 140, r: 91, p: 60 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' spirograph preset', onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' spirograph preset', onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -8624,9 +8624,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, __alloT('stem.artstudio.math_connection', "\uD83D\uDCDA Math Connection")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 mb-1" }, __alloT('stem.artstudio.math_connection', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { id: "artstudio-spiro-description", className: "text-[11px] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, __alloT('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), __alloT('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), __alloT('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
+                    React.createElement("p", { id: "artstudio-spiro-description", className: "text-[0.6875rem] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, __alloT('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), __alloT('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), __alloT('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
 
                   )
 
@@ -8773,11 +8773,11 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-2 mb-2" },
 
-                React.createElement("label", { htmlFor: "artstudio-generative-density", className: "text-[11px] font-bold text-slate-600" }, "Density:"),
+                React.createElement("label", { htmlFor: "artstudio-generative-density", className: "text-[0.6875rem] font-bold text-slate-600" }, "Density:"),
 
                 React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: d.genDensity || 100, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { resetGenerativeRun({ genDensity: parseInt(e.target.value) }); }, className: "w-32 max-w-full accent-fuchsia-600" }),
 
-                React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
+                React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[0.6875rem] text-slate-600" }, (d.genDensity || 100) + ' particles')
 
               ),
 
@@ -9251,7 +9251,7 @@ const d = labToolData.artStudio || {};
                 style: { display: 'none' }
               }),
 
-              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves."),
+              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves."),
 
               React.createElement("fieldset", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3", 'aria-describedby': "artstudio-generative-experiment-help" },
                 React.createElement("legend", { className: "px-1 text-xs font-bold text-fuchsia-950" }, __alloT('stem.artstudio.repeatable_experiment', 'Repeatable experiment')),
@@ -9298,17 +9298,17 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("input", { id: "artstudio-spin-rpm", type: "range", min: 20, max: 300, value: d.spinRPM || 120, "aria-describedby": "artstudio-spin-rpm-value", onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 max-w-full accent-orange-600" }),
 
-                React.createElement("span", { id: "artstudio-spin-rpm-value", className: "text-[11px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
+                React.createElement("span", { id: "artstudio-spin-rpm-value", className: "text-[0.6875rem] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
 
                 React.createElement("label", { htmlFor: "artstudio-spin-brush", className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
 
                 React.createElement("input", { id: "artstudio-spin-brush", type: "range", min: 2, max: 20, value: d.spinBrush || 6, "aria-describedby": "artstudio-spin-brush-value", onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 max-w-full accent-orange-600" }),
 
-                React.createElement("span", { id: "artstudio-spin-brush-value", className: "text-[11px] text-slate-600 font-bold" }, (d.spinBrush || 6) + ' pixels'),
+                React.createElement("span", { id: "artstudio-spin-brush-value", className: "text-[0.6875rem] text-slate-600 font-bold" }, (d.spinBrush || 6) + ' pixels'),
 
-                React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-500') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-500') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
                 React.createElement("button", {
                   "aria-label": (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? "Resume spin art animation" : "Pause spin art animation",
@@ -9318,7 +9318,7 @@ const d = labToolData.artStudio || {};
                     upd('spinPaused', !isPaused);
                     if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Spin art animation resumed.' : 'Spin art animation paused.');
                   },
-                  className: "px-2 py-1 rounded-lg text-[11px] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                  className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                 }, (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                 React.createElement("button", { onClick: function () { updMany({ spinReset: Date.now(), spinSnapshot: '', spinDrips: [], spinAngle: 0 }); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
@@ -9332,13 +9332,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { id: "artstudio-spin-palettes-label", className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_3', "\uD83C\uDFA8 Palettes")),
+                  React.createElement("span", { id: "artstudio-spin-palettes-label", className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_3', "\uD83C\uDFA8 Palettes")),
 
                   React.createElement("div", { className: "contents", role: "group", "aria-labelledby": "artstudio-spin-palettes-label" },
 
                     [{ id: 'retro', label: __alloT('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": spinActivePalette === pal.id, key: pal.id, onClick: function () { upd('spinActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (spinActivePalette === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-orange-50') }, pal.label);
+                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": spinActivePalette === pal.id, key: pal.id, onClick: function () { upd('spinActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (spinActivePalette === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-orange-50') }, pal.label);
 
                     })
 
@@ -9725,7 +9725,7 @@ const d = labToolData.artStudio || {};
                 style: { display: 'none' }
               }),
 
-              React.createElement("p", { id: "artstudio-spin-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click and drag to drip paint. Keyboard: Arrow keys move the cursor; Space or Enter adds paint; Shift with an Arrow key moves and adds paint; Home returns to center; Alt makes one-pixel moves."),
+              React.createElement("p", { id: "artstudio-spin-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click and drag to drip paint. Keyboard: Arrow keys move the cursor; Space or Enter adds paint; Shift with an Arrow key moves and adds paint; Home returns to center; Alt makes one-pixel moves."),
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
@@ -9765,13 +9765,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-string-shape-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.shape', "Shape")),
+                      React.createElement("span", { id: "artstudio-string-shape-label", className: "text-[0.6875rem] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.shape', "Shape")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-string-shape-label" },
 
                         [{ id: 'circle', label: __alloT('stem.artstudio.circle', '\u25CB Circle') }, { id: 'square', label: __alloT('stem.artstudio.square', '\u25A1 Square') }, { id: 'triangle', label: __alloT('stem.artstudio.triangle', '\u25B3 Triangle') }, { id: 'star', label: __alloT('stem.artstudio.star_2', '\u2606 Star') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -9789,7 +9789,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-rose-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-rose-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'strOpacity' ? val + ' percent opacity' : val + (s.k === 'strNails' ? ' nails' : ' multiplier'), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
 
@@ -9817,11 +9817,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-string-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-string-presets-label", className: "text-[11px] font-bold text-rose-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-string-presets-label", className: "text-[0.6875rem] font-bold text-rose-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.cardioid', 'Cardioid'), nails: 100, mult: 2 }, { label: __alloT('stem.artstudio.nephroid', 'Nephroid'), nails: 100, mult: 3 }, { label: __alloT('stem.artstudio.star_burst', 'Star Burst'), nails: 72, mult: 37 }, { label: __alloT('stem.artstudio.lace_2', 'Lace'), nails: 150, mult: 71 }, { label: __alloT('stem.artstudio.weave', 'Weave'), nails: 60, mult: 23 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' string-art preset', onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' string-art preset', onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -9831,9 +9831,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-pink-700 mb-1" }, __alloT('stem.artstudio.math_connection_2', "\uD83D\uDCDA Math Connection")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-pink-700 mb-1" }, __alloT('stem.artstudio.math_connection_2', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { id: "artstudio-string-description", className: "text-[11px] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, __alloT('stem.artstudio.envelope_curves', "envelope curves")), __alloT('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), __alloT('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), __alloT('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, __alloT('stem.artstudio.modular_arithmetic', "modular arithmetic")), __alloT('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
+                    React.createElement("p", { id: "artstudio-string-description", className: "text-[0.6875rem] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, __alloT('stem.artstudio.envelope_curves', "envelope curves")), __alloT('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), __alloT('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), __alloT('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, __alloT('stem.artstudio.modular_arithmetic', "modular arithmetic")), __alloT('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
 
                   )
 
@@ -10031,13 +10031,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-op-style-label", className: "text-[11px] font-bold text-fuchsia-700 block mb-1" }, __alloT('stem.artstudio.style_2', "Style")),
+                      React.createElement("span", { id: "artstudio-op-style-label", className: "text-[0.6875rem] font-bold text-fuchsia-700 block mb-1" }, __alloT('stem.artstudio.style_2', "Style")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-op-style-label" },
 
                         [{ id: 'concentric', label: __alloT('stem.artstudio.rings', '\u25CE Rings') }, { id: 'checkerboard', label: __alloT('stem.artstudio.checker', '\u2593 Checker') }, { id: 'moire', label: __alloT('stem.artstudio.moir', '\u2261 Moir\u00E9') }, { id: 'vibrating', label: __alloT('stem.artstudio.vibrate', '\u2248 Vibrate') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-fuchsia-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-fuchsia-50') }, s.label);
 
                         })
 
@@ -10057,7 +10057,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-fuchsia-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-fuchsia-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'opSpeed' ? val + ' animation speed' : s.k === 'opDensity' ? val + ' pattern density' : val + ' degrees hue', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
 
@@ -10075,7 +10075,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-op-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-op-presets-label", className: "text-[11px] font-bold text-fuchsia-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-op-presets-label", className: "text-[0.6875rem] font-bold text-fuchsia-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.classic_b_w', 'Classic B&W'), style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
 
@@ -10085,13 +10085,13 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.wave_grid', 'Wave Grid'), style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' Op Art preset', onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' Op Art preset', onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
                     ),
 
-                    React.createElement("p", { id: "artstudio-op-motion-status", className: "mt-3 text-[11px] text-fuchsia-700 leading-relaxed" }, ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'Animation paused. ' : 'Animation running. ') + 'Use the pause or resume button to control motion; reduced-motion preferences start this view paused.')
+                    React.createElement("p", { id: "artstudio-op-motion-status", className: "mt-3 text-[0.6875rem] text-fuchsia-700 leading-relaxed" }, ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'Animation paused. ' : 'Animation running. ') + 'Use the pause or resume button to control motion; reduced-motion preferences start this view paused.')
 
                   ),
 
@@ -10382,13 +10382,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-tess-shape-label", className: "text-[11px] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.base_shape', "Base Shape")),
+                      React.createElement("span", { id: "artstudio-tess-shape-label", className: "text-[0.6875rem] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.base_shape', "Base Shape")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-tess-shape-label" },
 
                         [{ id: 'triangle', label: __alloT('stem.artstudio.triangle_2', '\u25B3 Triangle') }, { id: 'square', label: __alloT('stem.artstudio.square_2', '\u25A1 Square') }, { id: 'hexagon', label: __alloT('stem.artstudio.hexagon', '\u2B21 Hexagon') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -10406,7 +10406,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: "artstudio-" + s.k, className: "text-[11px] font-bold text-teal-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: "artstudio-" + s.k, className: "text-[0.6875rem] font-bold text-teal-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: "artstudio-" + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
 
@@ -10416,13 +10416,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-tess-scheme-label", className: "text-[11px] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.color_scheme', "Color Scheme")),
+                      React.createElement("span", { id: "artstudio-tess-scheme-label", className: "text-[0.6875rem] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.color_scheme', "Color Scheme")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-tess-scheme-label" },
 
                         [{ id: 'rainbow', label: __alloT('stem.artstudio.rainbow_2', '\uD83C\uDF08 Rainbow') }, { id: 'warm', label: __alloT('stem.artstudio.warm_4', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_4', '\u2744 Cool') }, { id: 'mono', label: __alloT('stem.artstudio.mono', '\u25AB Mono') }, { id: 'custom', label: __alloT('stem.artstudio.custom', '\uD83C\uDFA8 Custom') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -10440,7 +10440,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap", role: "group", "aria-labelledby": "artstudio-tess-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-tess-presets-label", className: "text-[11px] font-bold text-teal-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-tess-presets-label", className: "text-[0.6875rem] font-bold text-teal-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.honeycomb', 'Honeycomb'), shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
 
@@ -10450,7 +10450,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.escher_fish', 'Escher Fish'), shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-700 border border-teal-700 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-teal-700 border border-teal-700 hover:bg-teal-50 transition-all" }, pr.label);
 
                       })
 
@@ -10482,7 +10482,7 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { id: "artstudio-tess-keyboard-help", className: "text-[11px] text-center text-slate-600 italic" }, "Click a tile to cycle its color. Keyboard: Arrow keys move between tiles; Space or Enter cycles the selected tile; Shift with an Arrow key moves and cycles; Home selects the center tile.")
+                  React.createElement("p", { id: "artstudio-tess-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic" }, "Click a tile to cycle its color. Keyboard: Arrow keys move between tiles; Space or Enter cycles the selected tile; Shift with an Arrow key moves and cycles; Home selects the center tile.")
 
                 ),
 
@@ -11042,13 +11042,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-fractal-type-label", className: "text-[11px] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.fractal_type', "Fractal Type")),
+                      React.createElement("span", { id: "artstudio-fractal-type-label", className: "text-[0.6875rem] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.fractal_type', "Fractal Type")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-fractal-type-label" },
 
                         [{ id: 'mandelbrot', label: __alloT('stem.artstudio.mandelbrot', '\uD83C\uDF00 Mandelbrot') }, { id: 'julia', label: __alloT('stem.artstudio.julia', '\u2728 Julia') }, { id: 'burningShip', label: __alloT('stem.artstudio.burning_ship', '\uD83D\uDD25 Burning Ship') }, { id: 'sierpinski', label: __alloT('stem.artstudio.sierpinski', '\u25B3 Sierpinski') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -11074,7 +11074,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-violet-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-violet-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": valueText, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
@@ -11084,7 +11084,7 @@ const d = labToolData.artStudio || {};
 
                     (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, __alloT('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700" }, __alloT('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
 
                       [{ k: 'juliaReal', label: __alloT('stem.artstudio.c_real', 'c real'), min: -200, max: 200, def: -70 },
 
@@ -11094,7 +11094,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("div", { key: s.k },
 
-                          React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-violet-700 block" }, s.label + ': ' + (val / 100).toFixed(2)),
+                          React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-violet-700 block" }, s.label + ': ' + (val / 100).toFixed(2)),
 
                           React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": (val / 100).toFixed(2), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
@@ -11106,13 +11106,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3 mt-2" },
 
-                      React.createElement("span", { id: "artstudio-fractal-color-label", className: "text-[11px] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.color_scheme_2', "Color Scheme")),
+                      React.createElement("span", { id: "artstudio-fractal-color-label", className: "text-[0.6875rem] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.color_scheme_2', "Color Scheme")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-fractal-color-label" },
 
                         [{ id: 'classic', label: __alloT('stem.artstudio.classic', '\uD83C\uDF08 Classic') }, { id: 'fire', label: __alloT('stem.artstudio.fire', '\uD83D\uDD25 Fire') }, { id: 'ocean', label: __alloT('stem.artstudio.ocean', '\uD83C\uDF0A Ocean') }, { id: 'psychedelic', label: __alloT('stem.artstudio.psychedelic', '\uD83D\uDC9C Psychedelic') }, { id: 'grayscale', label: __alloT('stem.artstudio.grayscale', '\u25AB Grayscale') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -11130,7 +11130,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-fractal-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-fractal-presets-label", className: "text-[11px] font-bold text-violet-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-fractal-presets-label", className: "text-[0.6875rem] font-bold text-violet-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.seahorse_valley', 'Seahorse Valley'), type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
 
@@ -11140,13 +11140,13 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.spiral_arm', 'Spiral Arm'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' fractal preset', onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' fractal preset', onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
                     ),
 
-                    React.createElement("p", { id: "artstudio-fractal-instructions", className: "mt-3 text-[11px] text-violet-700 leading-relaxed" }, __alloT('stem.artstudio.fractal_keyboard_instructions', "Keyboard: use the Zoom, Horizontal pan, and Vertical pan sliders to explore every view. Pointer users can also double-click a location or use the mouse wheel."))
+                    React.createElement("p", { id: "artstudio-fractal-instructions", className: "mt-3 text-[0.6875rem] text-violet-700 leading-relaxed" }, __alloT('stem.artstudio.fractal_keyboard_instructions', "Keyboard: use the Zoom, Horizontal pan, and Vertical pan sliders to explore every view. Pointer users can also double-click a location or use the mouse wheel."))
 
                   ),
 
@@ -11480,7 +11480,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.double_click_to_zoom_in_scroll_wheel_t', "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out"))
+              React.createElement("p", { className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.double_click_to_zoom_in_scroll_wheel_t', "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out"))
 
             ),
 
@@ -11498,13 +11498,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-gradient-type-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.gradient_type', "Gradient Type")),
+                      React.createElement("span", { id: "artstudio-gradient-type-label", className: "text-[0.6875rem] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.gradient_type', "Gradient Type")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-gradient-type-label" },
 
                         [{ id: 'linear', label: __alloT('stem.artstudio.linear', '\u2194 Linear') }, { id: 'radial', label: __alloT('stem.artstudio.radial', '\u25CE Radial') }, { id: 'conic', label: __alloT('stem.artstudio.conic', '\uD83C\uDF00 Conic') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -11514,7 +11514,7 @@ const d = labToolData.artStudio || {};
 
                     (d.gradType || 'linear') === 'linear' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { htmlFor: "artstudio-grad-angle", className: "text-[11px] font-bold text-rose-700 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
+                      React.createElement("label", { htmlFor: "artstudio-grad-angle", className: "text-[0.6875rem] font-bold text-rose-700 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
 
                       React.createElement("input", { id: "artstudio-grad-angle", type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, "aria-valuetext": (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + ' degrees', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
 
@@ -11522,13 +11522,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-gradient-blend-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.blend_mode', "Blend Mode")),
+                      React.createElement("span", { id: "artstudio-gradient-blend-label", className: "text-[0.6875rem] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.blend_mode', "Blend Mode")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-gradient-blend-label" },
 
                         [{ id: 'smooth', label: __alloT('stem.artstudio.smooth', 'Smooth') }, { id: 'hard', label: __alloT('stem.artstudio.hard_edge', 'Hard Edge') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -11542,7 +11542,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                        React.createElement("span", { id: "artstudio-gradient-stops-label", className: "text-[11px] font-bold text-rose-700" }, __alloT('stem.artstudio.color_stops', "Color Stops")),
+                        React.createElement("span", { id: "artstudio-gradient-stops-label", className: "text-[0.6875rem] font-bold text-rose-700" }, __alloT('stem.artstudio.color_stops', "Color Stops")),
 
                         React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "Add color stop"), "aria-describedby": "artstudio-gradient-stop-help", disabled: (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length >= 8, onClick: function () {
 
@@ -11562,11 +11562,11 @@ const d = labToolData.artStudio || {};
 
                           }
 
-                        }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
+                        }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
 
                       ),
 
-                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[11px] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length + " of 8 stops."),
+                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[0.6875rem] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length + " of 8 stops."),
 
                       (function () {
 
@@ -11580,7 +11580,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("div", { className: "flex-1 min-w-[8rem]" },
 
-                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-hue', className: "text-[10px] font-bold text-rose-700 block" }, 'Hue: ' + stop.hue + '\u00B0'),
+                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-hue', className: "text-[0.625rem] font-bold text-rose-700 block" }, 'Hue: ' + stop.hue + '\u00B0'),
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-hue', type: "range", min: 0, max: 360, value: stop.hue, "aria-valuetext": stop.hue + ' degrees', onChange: function (e) {
 
@@ -11596,7 +11596,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("div", { className: "w-24 flex-shrink-0" },
 
-                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-position', className: "text-[10px] font-bold text-rose-700 block" }, 'Position: ' + stop.pos + '%'),
+                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-position', className: "text-[0.625rem] font-bold text-rose-700 block" }, 'Position: ' + stop.pos + '%'),
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-position', type: "range", min: idx === 0 ? 0 : stops[idx - 1].pos, max: idx === stops.length - 1 ? 100 : stops[idx + 1].pos, value: stop.pos, "aria-valuetext": stop.pos + ' percent', onChange: function (e) {
 
@@ -11638,7 +11638,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-gradient-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-gradient-presets-label", className: "text-[11px] font-bold text-rose-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-gradient-presets-label", className: "text-[0.6875rem] font-bold text-rose-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.sunset', 'Sunset'), stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
 
@@ -11650,7 +11650,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.deep_space', 'Deep Space'), stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' gradient preset', onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' gradient preset', onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -11664,7 +11664,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { id: "artstudio-gradient-css-label", className: "text-[11px] font-bold text-slate-300" }, __alloT('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
+                      React.createElement("span", { id: "artstudio-gradient-css-label", className: "text-[0.6875rem] font-bold text-slate-300" }, __alloT('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.copy_gradient_css', "Copy gradient CSS to clipboard"), onClick: function () {
 
@@ -11682,11 +11682,11 @@ const d = labToolData.artStudio || {};
 
                         navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR('Gradient CSS copied to the clipboard.'); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR('Unable to copy gradient CSS.'); });
 
-                      }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
+                      }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
                     ),
 
-                    React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[11px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
+                    React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[0.6875rem] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
 
                       var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -12015,13 +12015,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-stereo-depth-brush-label", className: "text-[11px] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.depth_brush', "Depth Brush")),
+                      React.createElement("span", { id: "artstudio-stereo-depth-brush-label", className: "text-[0.6875rem] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.depth_brush', "Depth Brush")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-stereo-depth-brush-label" },
 
                         [{ id: 'near', label: __alloT('stem.artstudio.near', '\u2B1C Near') }, { id: 'mid', label: __alloT('stem.artstudio.mid', '\uD83D\uDD18 Mid') }, { id: 'far', label: __alloT('stem.artstudio.far', '\u2B1B Far') }, { id: 'erase', label: __alloT('stem.artstudio.erase', '\uD83E\uDDFD Erase') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoDepth || 'near') === s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoDepth || 'near') === s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -12031,7 +12031,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { htmlFor: "artstudio-stereo-brush-size", className: "text-[11px] font-bold text-cyan-700 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
+                      React.createElement("label", { htmlFor: "artstudio-stereo-brush-size", className: "text-[0.6875rem] font-bold text-cyan-700 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
 
                       React.createElement("input", { id: "artstudio-stereo-brush-size", type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
@@ -12039,13 +12039,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("span", { id: "artstudio-stereo-pattern-label", className: "text-[11px] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.pattern_type', "Pattern Type")),
+                      React.createElement("span", { id: "artstudio-stereo-pattern-label", className: "text-[0.6875rem] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.pattern_type', "Pattern Type")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-stereo-pattern-label" },
 
                         [{ id: 'bw', label: __alloT('stem.artstudio.b_w', '\u26AB B&W') }, { id: 'color', label: __alloT('stem.artstudio.color', '\uD83C\uDFA8 Color') }, { id: 'noise', label: __alloT('stem.artstudio.noise', '\uD83D\uDCFA Noise') }, { id: 'ai', label: __alloT('stem.artstudio.ai', '\u2728 AI') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -12061,7 +12061,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-cyan-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-cyan-700 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
@@ -12077,9 +12077,9 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
-                        React.createElement("label", { htmlFor: "artstudio-stereo-ai-description", className: "text-[11px] font-bold text-indigo-700" }, __alloT('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
+                        React.createElement("label", { htmlFor: "artstudio-stereo-ai-description", className: "text-[0.6875rem] font-bold text-indigo-700" }, __alloT('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
 
-                        d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-700 font-bold" + (reducedMotion ? "" : " animate-pulse") }, "Generating " + d.stereoAiGen + "...")
+                        d.stereoAiGen && React.createElement("span", { className: "text-[0.6875rem] text-indigo-700 font-bold" + (reducedMotion ? "" : " animate-pulse") }, "Generating " + d.stereoAiGen + "...")
 
                       ),
 
@@ -12148,7 +12148,7 @@ const d = labToolData.artStudio || {};
 
                           disabled: !!d.stereoAiGen || !d.stereoAiStr,
 
-                          className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
 
                         }, __alloT('stem.artstudio.generate_depth_map', "\u2B1C Generate Depth Map")),
 
@@ -12198,7 +12198,7 @@ const d = labToolData.artStudio || {};
 
                           disabled: !!d.stereoAiGen || !d.stereoAiStr,
 
-                          className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
 
                         }, __alloT('stem.artstudio.generate_ai_base_tile', "\uD83C\uDFA8 Generate AI Base Tile"))
 
@@ -12218,11 +12218,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap", role: "group", "aria-labelledby": "artstudio-stereo-presets-label" },
 
-                      React.createElement("span", { id: "artstudio-stereo-presets-label", className: "text-[11px] font-bold text-cyan-700 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-stereo-presets-label", className: "text-[0.6875rem] font-bold text-cyan-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: __alloT('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: __alloT('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: __alloT('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: __alloT('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": 'Use ' + pr.label + ' depth-map preset', "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": 'Use ' + pr.label + ' depth-map preset', "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
@@ -12234,11 +12234,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "relative" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
 
-                    React.createElement("p", { id: "artstudio-depth-map-legend", className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
+                    React.createElement("p", { id: "artstudio-depth-map-legend", className: "text-[0.6875rem] text-slate-600 mb-1" }, __alloT('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
 
-                    React.createElement("p", { id: "artstudio-depth-map-keyboard-help", className: "text-[11px] text-slate-700 mb-1" }, "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw; Space or Enter stamps the brush; Home returns to center; Alt makes one-pixel moves."),
+                    React.createElement("p", { id: "artstudio-depth-map-keyboard-help", className: "text-[0.6875rem] text-slate-700 mb-1" }, "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw; Space or Enter stamps the brush; Home returns to center; Alt makes one-pixel moves."),
 
                     renderCanvasTouchMode({
                       stateKey: 'stereoDepthTouchMode',
@@ -12534,7 +12534,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, __alloT('stem.artstudio.stereogram_output', "\uD83D\uDC53 Stereogram Output")),
 
-                  React.createElement("p", { id: "artstudio-stereogram-output-help", className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
+                  React.createElement("p", { id: "artstudio-stereogram-output-help", className: "text-[0.6875rem] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
                     role: "img",
@@ -12689,9 +12689,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, __alloT('stem.artstudio.how_to_view', "\uD83D\uDCA1 How to View")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 mb-1" }, __alloT('stem.artstudio.how_to_view', "\uD83D\uDCA1 How to View")),
 
-                    React.createElement("ol", { className: "text-[11px] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
+                    React.createElement("ol", { className: "text-[0.6875rem] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
 
                       React.createElement("li", null, __alloT('stem.artstudio.hold_your_face_close_to_the_screen', "Hold your face close to the screen")),
 
@@ -12717,7 +12717,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("h4", { className: "text-xs font-bold text-purple-700 mb-3" }, __alloT('stem.artstudio.animated_stereogram_studio', "\uD83C\uDFAC Animated Stereogram Studio")),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" }, __alloT('stem.artstudio.create_animated_3d_stereograms_from_pr', "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!")),
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mb-3" }, __alloT('stem.artstudio.create_animated_3d_stereograms_from_pr', "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!")),
 
 
 
@@ -12725,7 +12725,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("span", { id: "artstudio-animation-source-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.animation_source', "\uD83D\uDCE1 Animation Source")),
+                    React.createElement("span", { id: "artstudio-animation-source-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.animation_source', "\uD83D\uDCE1 Animation Source")),
 
                     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-1", role: "group", "aria-labelledby": "artstudio-animation-source-label" },
 
@@ -12733,7 +12733,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoAnimSource || 'preset') === s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[0.6875rem] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
 
                         }, s.icon + ' ' + s.label);
 
@@ -12749,7 +12749,7 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource || 'preset') === 'preset' && React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("span", { id: "artstudio-animation-preset-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.animation_presets', "\u2728 Animation Presets")),
+                    React.createElement("span", { id: "artstudio-animation-preset-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.animation_presets', "\u2728 Animation Presets")),
 
                     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-1", role: "group", "aria-labelledby": "artstudio-animation-preset-label" },
 
@@ -12757,7 +12757,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: p.id, "aria-pressed": d.stereoAnimPreset === p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[0.6875rem] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
 
                         }, p.icon + ' ' + p.label);
 
@@ -12773,11 +12773,11 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'draw' && React.createElement("div", { className: "relative mb-3 space-y-2" },
 
-                    React.createElement("h5", { className: "text-[11px] font-bold text-purple-700 block" }, __alloT('stem.artstudio.draw_depth_keyframes', "\u270F\uFE0F Draw Depth Keyframes")),
+                    React.createElement("h5", { className: "text-[0.6875rem] font-bold text-purple-700 block" }, __alloT('stem.artstudio.draw_depth_keyframes', "\u270F\uFE0F Draw Depth Keyframes")),
 
-                    React.createElement("p", { id: "artstudio-anim-draw-description", className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.draw_a_depth_map_capture_it_as_a_keyfr', "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them.")),
+                    React.createElement("p", { id: "artstudio-anim-draw-description", className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.draw_a_depth_map_capture_it_as_a_keyfr', "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them.")),
 
-                    React.createElement("p", { id: "artstudio-anim-draw-keyboard-help", className: "text-[11px] text-slate-700" }, "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw; Space or Enter stamps the brush; Home returns to center; Alt makes one-pixel moves."),
+                    React.createElement("p", { id: "artstudio-anim-draw-keyboard-help", className: "text-[0.6875rem] text-slate-700" }, "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw; Space or Enter stamps the brush; Home returns to center; Alt makes one-pixel moves."),
 
                     React.createElement("div", { className: "flex gap-1 mb-2", role: "group", "aria-label": "Animation depth brush" },
 
@@ -12785,7 +12785,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s2.id, "aria-pressed": (d.stereoAnimDrawBrush || 'near') === s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s2.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s2.label);
 
                       })
 
@@ -12793,7 +12793,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                      React.createElement("label", { htmlFor: "artstudio-anim-draw-size", className: "text-[11px] font-bold text-purple-700" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
+                      React.createElement("label", { htmlFor: "artstudio-anim-draw-size", className: "text-[0.6875rem] font-bold text-purple-700" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
 
                       React.createElement("input", { id: "artstudio-anim-draw-size", type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
 
@@ -13084,7 +13084,7 @@ const d = labToolData.artStudio || {};
 
                     (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length > 0) && React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-purple-700 mb-1" }, "\uD83C\uDFAC Keyframes: " + d.stereoAnimKeyframes.length),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-purple-700 mb-1" }, "\uD83C\uDFAC Keyframes: " + d.stereoAnimKeyframes.length),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
@@ -13132,9 +13132,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'upload' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { htmlFor: "artstudio-anim-depth-upload", className: "text-[11px] font-bold text-purple-700 block" }, __alloT('stem.artstudio.upload_depth_map_image', "\uD83D\uDCC2 Upload Depth Map Image")),
+                    React.createElement("label", { htmlFor: "artstudio-anim-depth-upload", className: "text-[0.6875rem] font-bold text-purple-700 block" }, __alloT('stem.artstudio.upload_depth_map_image', "\uD83D\uDCC2 Upload Depth Map Image")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.upload_a_grayscale_image_white_near_bl', "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform.")),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.upload_a_grayscale_image_white_near_bl', "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform.")),
 
                     React.createElement("input", { id: "artstudio-anim-depth-upload", type: "file", accept: "image/png,image/jpeg,image/webp",
 
@@ -13202,13 +13202,13 @@ const d = labToolData.artStudio || {};
 
                       } }),
 
-                      React.createElement("span", { role: "status", "aria-live": "polite", className: "text-[11px] text-green-700 font-bold" }, __alloT('stem.artstudio.depth_map_loaded_400_400', "\u2705 Depth map loaded (400\u00D7400)"))
+                      React.createElement("span", { role: "status", "aria-live": "polite", className: "text-[0.6875rem] text-green-700 font-bold" }, __alloT('stem.artstudio.depth_map_loaded_400_400', "\u2705 Depth map loaded (400\u00D7400)"))
 
                     ),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("span", { id: "artstudio-upload-transform-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type', "\uD83D\uDD04 Transform Type")),
+                      React.createElement("span", { id: "artstudio-upload-transform-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type', "\uD83D\uDD04 Transform Type")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-upload-transform-label" },
 
@@ -13216,7 +13216,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { key: t.id, "aria-pressed": (d.stereoAnimTransform || 'zoom') === t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -13232,13 +13232,13 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'transform' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("h5", { className: "text-[11px] font-bold text-purple-700 block" }, __alloT('stem.artstudio.transform_depth_map', "\uD83D\uDD04 Transform Depth Map")),
+                    React.createElement("h5", { className: "text-[0.6875rem] font-bold text-purple-700 block" }, __alloT('stem.artstudio.transform_depth_map', "\uD83D\uDD04 Transform Depth Map")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.animates_the_depth_map_from_the_static', "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map.")),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.animates_the_depth_map_from_the_static', "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map.")),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("span", { id: "artstudio-static-transform-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type_2', "\uD83D\uDD04 Transform Type")),
+                      React.createElement("span", { id: "artstudio-static-transform-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type_2', "\uD83D\uDD04 Transform Type")),
 
                       React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-static-transform-label" },
 
@@ -13246,7 +13246,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { key: t.id, "aria-pressed": (d.stereoAnimTransform || 'zoom') === t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -13256,7 +13256,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 mt-2 border border-amber-200" },
 
-                      React.createElement("p", { role: "status", className: "text-[11px] text-amber-700" }, (d.stereoStaticDepthSnapshot ? "\u2705 Static depth map captured. " : "\u26A0 No static depth map captured yet. ") + __alloT('stem.artstudio.tip_draw_a_depth_map_in_the_static_tab', "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform."))
+                      React.createElement("p", { role: "status", className: "text-[0.6875rem] text-amber-700" }, (d.stereoStaticDepthSnapshot ? "\u2705 Static depth map captured. " : "\u26A0 No static depth map captured yet. ") + __alloT('stem.artstudio.tip_draw_a_depth_map_in_the_static_tab', "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform."))
 
                     )
 
@@ -13268,9 +13268,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'ai' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { htmlFor: "artstudio-stereo-animation-ai-prompt", className: "text-[11px] font-bold text-purple-600 block" }, __alloT('stem.artstudio.ai_generated_depth_map', "\uD83E\uDD16 AI-Generated Depth Map")),
+                    React.createElement("label", { htmlFor: "artstudio-stereo-animation-ai-prompt", className: "text-[0.6875rem] font-bold text-purple-600 block" }, __alloT('stem.artstudio.ai_generated_depth_map', "\uD83E\uDD16 AI-Generated Depth Map")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.describe_a_3d_scene_and_ai_will_genera', "Describe a 3D scene and AI will generate a depth map, then animate it with a transform.")),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.describe_a_3d_scene_and_ai_will_genera', "Describe a 3D scene and AI will generate a depth map, then animate it with a transform.")),
 
                     callImagen ? React.createElement("div", null,
 
@@ -13359,13 +13359,13 @@ const d = labToolData.artStudio || {};
 
                         } }),
 
-                        React.createElement("span", { role: "status", "aria-live": "polite", className: "text-[11px] text-green-700 font-bold" }, __alloT('stem.artstudio.ai_depth_map_ready', "\u2705 AI depth map ready!"))
+                        React.createElement("span", { role: "status", "aria-live": "polite", className: "text-[0.6875rem] text-green-700 font-bold" }, __alloT('stem.artstudio.ai_depth_map_ready', "\u2705 AI depth map ready!"))
 
                       ),
 
                       React.createElement("div", { className: "mt-2" },
 
-                        React.createElement("span", { id: "artstudio-ai-transform-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type_3', "\uD83D\uDD04 Transform Type")),
+                        React.createElement("span", { id: "artstudio-ai-transform-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.transform_type_3', "\uD83D\uDD04 Transform Type")),
 
                         React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-1", role: "group", "aria-labelledby": "artstudio-ai-transform-label" },
 
@@ -13387,13 +13387,13 @@ const d = labToolData.artStudio || {};
 
                             },
 
-                              className: "px-1 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
+                              className: "px-1 py-1 rounded-lg text-[0.625rem] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                           })
 
                         ),
 
-                        (d.stereoAnimTransform === 'ai-motion') && React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" },
+                        (d.stereoAnimTransform === 'ai-motion') && React.createElement("p", { className: "text-[0.625rem] text-purple-700 mt-1 italic" },
 
                           __alloT('stem.artstudio.ai_motion_calls_gemini_to_plan_poses_t', "AI Motion calls Gemini to plan poses then Imagen to render each frame as its own depth map. ~5\u20137s per frame; rate-limit-safe.")
 
@@ -13403,7 +13403,7 @@ const d = labToolData.artStudio || {};
 
                     ) : React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[11px] text-amber-700 font-bold" }, __alloT('stem.artstudio.ai_image_generation_is_not_available_u', "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead."))
+                      React.createElement("p", { className: "text-[0.6875rem] text-amber-700 font-bold" }, __alloT('stem.artstudio.ai_image_generation_is_not_available_u', "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead."))
 
                     )
 
@@ -13417,7 +13417,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("label", { htmlFor: "artstudio-anim-frame-count", className: "text-[11px] font-bold text-purple-700 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
+                      React.createElement("label", { htmlFor: "artstudio-anim-frame-count", className: "text-[0.6875rem] font-bold text-purple-700 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
 
                       React.createElement("input", { id: "artstudio-anim-frame-count", type: "range", min: 6, max: 30, value: d.stereoAnimFrameCount || 12, onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -13425,7 +13425,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("label", { htmlFor: "artstudio-anim-speed", className: "text-[11px] font-bold text-purple-700 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
+                      React.createElement("label", { htmlFor: "artstudio-anim-speed", className: "text-[0.6875rem] font-bold text-purple-700 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
 
                       React.createElement("input", { id: "artstudio-anim-speed", type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -13435,7 +13435,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("span", { id: "artstudio-anim-pattern-label", className: "text-[11px] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.pattern_type_2', "Pattern Type")),
+                    React.createElement("span", { id: "artstudio-anim-pattern-label", className: "text-[0.6875rem] font-bold text-purple-700 block mb-1" }, __alloT('stem.artstudio.pattern_type_2', "Pattern Type")),
 
                     React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-anim-pattern-label" },
 
@@ -13443,7 +13443,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function() { upd('stereoPattern', s.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s.label);
 
                       })
 
@@ -13459,7 +13459,7 @@ const d = labToolData.artStudio || {};
 
                     return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                      React.createElement("label", { htmlFor: 'artstudio-anim-' + s.k, className: "text-[11px] font-bold text-purple-700 block mb-0.5" }, s.label + ': ' + val),
+                      React.createElement("label", { htmlFor: 'artstudio-anim-' + s.k, className: "text-[0.6875rem] font-bold text-purple-700 block mb-0.5" }, s.label + ': ' + val),
 
                       React.createElement("input", { id: 'artstudio-anim-' + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function(e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -14108,11 +14108,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-xs font-bold text-purple-700" }, __alloT('stem.artstudio.animated_stereogram_output', "\uD83D\uDC53 Animated Stereogram Output")),
 
-                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
+                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
 
                   ),
 
-                  React.createElement("p", { id: "artstudio-animated-stereogram-help", className: "text-[11px] text-slate-600 mb-2" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_a', "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move")),
+                  React.createElement("p", { id: "artstudio-animated-stereogram-help", className: "text-[0.6875rem] text-slate-600 mb-2" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_a', "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move")),
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
                     role: "img",
@@ -14187,9 +14187,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-3" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, __alloT('stem.artstudio.tips_for_animated_stereograms', "\uD83D\uDCA1 Tips for Animated Stereograms")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 mb-1" }, __alloT('stem.artstudio.tips_for_animated_stereograms', "\uD83D\uDCA1 Tips for Animated Stereograms")),
 
-                    React.createElement("ul", { className: "text-[11px] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
+                    React.createElement("ul", { className: "text-[0.6875rem] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
 
                       React.createElement("li", null, __alloT('stem.artstudio.lock_your_eyes_into_the_3d_view_before', "Lock your eyes into the 3D view before clicking Play")),
 
